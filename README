@@ -1,0 +1,17 @@
+        PyKolab - The framework of the Kolab Groupware Solution
+=======================================================================
+
+= PyKolab components =
+
+kolab:
+
+    A Kolab Runtime Query and Modify Utility
+
+kolabd:
+
+    The Kolab Server
+
+pykolab/:
+
+    The Python library with Kolab capabilities
+
