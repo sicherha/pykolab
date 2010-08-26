@@ -7,4 +7,4 @@ autom4te.cache/
 config.log
 config.status
 configure
-pykolab/__init__.py
+pykolab/constants.py
