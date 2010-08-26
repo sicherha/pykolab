@@ -1,7 +1,7 @@
 AC_INIT([pykolab], 0.1)
 AC_SUBST([RELEASE], 0.1)
 
-AC_CONFIG_SRCDIR(pykolab/__init__.py.in)
+AC_CONFIG_SRCDIR(pykolab/constants.py.in)
 
 ALL_LINGUAS="bn_IN bn ca cs da de el es fi fr gl gu hi hr hu is it ja ko ml ms nb nl or pa pl pt pt_BR ru sk sl sr@latin sr sv ta tr uk zh_CN zh_TW"
 
