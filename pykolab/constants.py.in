@@ -22,6 +22,18 @@ import sys
 
 from pykolab.translate import _
 
+__license__   = "GPLv2+"
+__copyright__ = "Kolab Systems AG"
+__version__   = @VERSION@
+__release__   = @RELEASE@
+
+if @RELEASE@ < 1:
+    __status__    = 'snapshot'
+elif math.round(@RELEASE@,0) < @RELEASE@:
+    __status__    = 'prerelease'
+else:
+    __status__    = 'stable'
+
 domain = 'pykolab'
 
 epilog = _( "PyKolab is a Kolab Systems product. For more information " + \

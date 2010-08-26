@@ -16,18 +16,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-__license__   = "GPLv2+"
-__copyright__ = "Kolab Systems AG"
-__version__   = @VERSION@
-__release__   = @RELEASE@
-
-if @RELEASE@ < 1:
-    __status__    = 'snapshot'
-elif math.round(@RELEASE@,0) < @RELEASE@:
-    __status__    = 'prerelease'
-else:
-    __status__    = 'stable'
-
 import traceback
 import shutil
 import sys
@@ -38,3 +26,12 @@ import pykolab.plugins
 from pykolab.translate import _
 
 from pykolab.conf import Conf
+from pykolab.constants import *
+
+class Cli(object):
+    def __init__(self):
+        self.conf = Conf()
+        print "%r" %(self.conf.args)
+
+    def run(self):
+        print >> sys.stderr, _("Running")

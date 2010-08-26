@@ -5,7 +5,10 @@ DISTCLEANFILES = \
 
 EXTRA_DIST = \
 	AUTHORS \
+	ChangeLog \
 	COPYING \
+	INSTALL \
+	NEWS \
 	README
 
 execdir = $(sbindir)

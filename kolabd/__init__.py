@@ -16,18 +16,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-__license__   = "GPLv2+"
-__copyright__ = "Kolab Systems AG"
-__version__   = 0.1
-__release__   = 0.1
-
-if 0.1 < 1:
-    __status__    = 'snapshot'
-elif math.round(0.1,0) < 0.1:
-    __status__    = 'prerelease'
-else:
-    __status__    = 'stable'
-
 from optparse import OptionParser
 from ConfigParser import SafeConfigParser
 

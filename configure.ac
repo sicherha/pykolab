@@ -19,9 +19,7 @@ AC_SUBST(DATESTAMP,`date +"%a %b %d %Y"`)
 
 AC_CONFIG_FILES([
 Makefile
-kolab/__init__.py
-kolabd/__init__.py
-pykolab/__init__.py
+pykolab/constants.py
 ])
 
 AC_OUTPUT
