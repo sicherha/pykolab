@@ -47,7 +47,10 @@ class Conf(object):
         # The location where our configuration parser is going to end up
         self.cfg_parser = None
 
-        # Create and parse the options
+        # Create the options
+        self.create_options()
+
+    def finalize_conf(self):
         self.parse_options()
 
         # At this point, 'self' isn't much yet, so:
@@ -88,7 +91,11 @@ class Conf(object):
             self.log.debug(_("Setting %s to %r") % (option, self.runtime.__dict__[option]), level=9)
             setattr(self,option,self.runtime.__dict__[option])
 
-    def parse_options(self, load_plugins=True):
+        # Also set the cli options
+        for option in self.cli_options.__dict__.keys():
+            setattr(self,option,self.cli_options.__dict__[option])
+
+    def create_options(self, load_plugins=True):
         """
             Create the OptionParser for the options passed to us from runtime
             Command Line Interface.
@@ -122,11 +129,17 @@ class Conf(object):
                                     default = "/var/log/kolabd/kolabd.log",
                                     help    = _("Log file to use"))
 
+        runtime_group.add_option(   "-q", "--quiet",
+                                    dest    = "quiet",
+                                    action  = "store_true",
+                                    default = False,
+                                    help    = _("Be quiet."))
+
         runtime_group.add_option(   "-y", "--yes",
                                     dest    = "answer_yes",
                                     action  = "store_true",
                                     default = False,
-                                    help    = _("Configuration file to use"))
+                                    help    = _("Answer yes to all questions."))
 
         ##
         ## Get options from plugins
@@ -135,6 +148,7 @@ class Conf(object):
             self.plugins = pykolab.plugins.KolabPlugins(init=True)
             self.plugins.add_options(self.parser)
 
+    def parse_options(self):
         # Parse Options
         (self.cli_options, self.args) = self.parser.parse_args()
 
@@ -203,18 +217,7 @@ class Conf(object):
         """
         exec("args = %r" % args)
 
-        if not self.cfg_parser:
-            self.read_config()
-
-        if len(args) == 1:
-            self.log.error(_("Only one option supplied"), recoverable=False)
-
-        if len(args) == 2:
-            if self.cfg_parser.has_option(args[0], args[1]):
-                print "%s/%s: %r" %(args[0],args[1],self.cfg_parser.get(args[0],args[1]))
-            else:
-                self.log.warning(_("Option does not exist in config file, pulling from defaults"))
-                print "Something default"
+        print "%s/%s: %r" %(args[0],args[1],self.get(args[0], args[1]))
 
 #        if len(args) == 3:
 #            # Return non-zero if no match
@@ -264,3 +267,23 @@ class Conf(object):
                 continue
             setattr(self.defaults,self.parser._long_opt[long_opt].dest,self.parser._long_opt[long_opt].default)
 
+    def get(self, section, key):
+        if not self.cfg_parser:
+            self.read_config()
+
+        if self.cfg_parser.has_option(section, key):
+            return self.cfg_parser.get(section,key)
+        else:
+            self.log.warning(_("Option does not exist in config file, pulling from defaults"))
+            if hasattr(self.defaults, "%s_%s" %(section,key)):
+                return getattr(self.defaults, "%s_%s" %(section,key))
+            elif hasattr(self.defaults, "%s" %(section)):
+                if key in getattr(self.defaults, "%s" %(section)):
+                    _dict = getattr(self.defaults, "%s" %(section))
+                    return _dict[key]
+                else:
+                    self.log.warning(_("Option does not exist in defaults."))
+                    return _("Not available")
+            else:
+                self.log.warning(_("Option does not exist in defaults."))
+                return _("Not available")
