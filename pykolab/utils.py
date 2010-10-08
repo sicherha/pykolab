@@ -20,6 +20,40 @@ def ask_question(question, default="", password=False):
     else:
         return answer
 
+def ask_confirmation(question, default="y", all_inclusive_no=True):
+    if default in [ "y", "Y" ]:
+        default_answer = True
+        default_no = "n"
+        default_yes = "Y"
+    elif default in [ "n", "N" ]:
+        default_answer = True
+        default_no = "N"
+        default_yes = "y"
+    else:
+        # This is a 'yes' or 'no' question the user
+        # needs to provide the full yes or no for.
+        default_no = "'no'"
+        default_yes = "Please type 'yes'"
+    answer = False
+    while answer == False:
+        answer = raw_input("%s [%s/%s]: " %(question,default_yes,default_no))
+        # Parse answer and set back to False if not appropriate
+        if all_inclusive_no:
+            if not answer in [ "y", "Y", "yes" ]:
+                return False
+            else:
+                return True
+        else:
+            if answer in [ "y", "Y", "yes" ]:
+                return True
+            elif answer in [ "n", "N", "no" ]:
+                return False
+            elif answer == "" and not default_answer == None:
+                return default_answer
+            else:
+                answer = False
+                print >> sys.stderr, _("Please answer 'yes' or 'no'.")
+
 def parse_input(_input, splitchars= [ ' ' ]):
     """
         Split the input string using the split characters defined
