@@ -56,7 +56,8 @@ class Logger:
         self.cfg = cfg
 
     def info(self, msg):
-        self.log.info(msg)
+        if not self.cfg.quiet:
+            self.log.info(msg)
 
     def debug(self, msg, level=1):
         # By default, level=1 so that debug messages are suppressed
