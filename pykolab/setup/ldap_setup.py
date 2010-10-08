@@ -19,10 +19,14 @@
 #
 
 import getpass
-import ldap
 import logging
 import os
 import sys
+
+try:
+    import ldap
+except ImportError, e:
+    print >> sys.stderr, _("Cannot load Python LDAP libraries.")
 
 from pykolab.translate import _
 from pykolab import constants
