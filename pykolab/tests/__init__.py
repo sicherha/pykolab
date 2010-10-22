@@ -27,11 +27,11 @@ import pykolab.conf
 
 class Tests(object):
     def __init__(self):
-        print "yeah i'm here"
+
+        self.plugins = dict()
+        self.tests = dict()
 
     def run(self):
-        print "and now i start running"
-
         # Create 3 users, john, joe and max
         # Create the default groupware folders for each user
         # Mark each of them as groupware folders (annotations, in python, how?)
