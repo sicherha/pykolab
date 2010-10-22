@@ -54,7 +54,7 @@ class Tests(object):
         for user in users:
             # Each of the users gets 500 events
             num = 1
-            while num < 501:
+            while num < 21:
                 uid = "%s.%s" %(str(random.randint(1000000000,9999999999)),str(random.randint(0,999)).zfill(3))
                 if not uid in uids_alloc:
                     uids_alloc.append(uid)
@@ -89,9 +89,10 @@ class Tests(object):
                     'time_end': time_end
                 }
 
-                if num % 100 == 0:
+                if num % 5 == 0:
                     print "User %s calendaring events %s done" %(user,num)
-                    event['recurrence'] = """<recurrence cycle="weekly">
+                    event['recurrence'] = """
+<recurrence cycle="weekly">
   <interval>1</interval>
   <day>thursday</day>
   <range type="none"></range>

@@ -50,8 +50,7 @@ Content-Disposition: attachment;
   <request-response>false</request-response>
   <invitation-sent>false</invitation-sent>
   <role>required</role>
- </attendee>
-@@recurrence@@
+ </attendee>@@recurrence@@
  <alarm>15</alarm>
  <advanced-alarms>
   <alarm type="display">
