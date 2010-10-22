@@ -46,18 +46,18 @@ if __name__ == "__main__":
             domain = domains[random.randint(0,2)]
 
             birthday = ""
-            if random.randint(0,100) => 75:
+            if random.randint(0,100) >= 75:
                 year = str(random.randint(1960, 2010))
                 month = str(random.randint(1,12))
                 day = str(random.randint(1,27))
                 birthday = "%s-%s-%s" % (year, month, day)
 
             middle_names = ""
-            if random.randint(0,100) => 50:
+            if random.randint(0,100) >= 50:
                 middle_names = random.sample(alphabet, (4, 8)).capitalize()
 
             number = ""
-            if random.randint(0,100) => 25:
+            if random.randint(0,100) >= 25:
                 number = "+441234567890"
 
             given_name = random.sample(alphabet, (4, 8)).capitalized()
