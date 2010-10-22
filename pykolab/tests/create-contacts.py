@@ -39,7 +39,7 @@ if __name__ == "__main__":
         for contact in xrange(num):
             uid = "%s.%s" %(str(random.randint(1000000000,9999999999)),str(random.randint(0,999)).zfill(3))
             if not uid in uid_alloc:
-                uid_alloc.append(uid):
+                uid_alloc.append(uid)
             else:
                 continue
 
