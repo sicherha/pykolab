@@ -50,6 +50,7 @@ class Tests(object):
 
         uids_alloc = []
 
+        user_num = 0
         for user in users:
             # Each of the users gets 500 events
             num = 1
@@ -98,9 +99,9 @@ class Tests(object):
                 else:
                     event['recurrence'] = ""
 
-                directory = "/kolab/var/imapd/spool/domains/t/test90.kolabsys.com/%s/user/%s/Calendar" %(user[0],user)
+                directory = "/kolab/var/imapd/spool/domains/%s/%s/%s/user/%s/Calendar" %(domains[user_num][0],domains[user_num],user[0],user)
                 if not os.path.isdir(directory):
-                    directory = "./kolab/var/imapd/spool/domains/t/test90.kolabsys.com/%s/user/%s/Calendar" %(user[0],user)
+                    directory = "./kolab/var/imapd/spool/domains/%s/%s/%s/user/%s/Calendar" %(domains[user_num][0],domains[user_num],user[0],user)
                     if not os.path.isdir(directory):
                         os.makedirs(directory)
 
@@ -116,3 +117,5 @@ class Tests(object):
                 except:
                     pass
                 num += 1
+
+            user_num += 1
