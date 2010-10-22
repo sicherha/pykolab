@@ -67,7 +67,7 @@ if __name__ == "__main__":
                 'user': user,
                 'user_email': "%s@%s" % (user, domain),
                 'given_name': given_name,
-                'middle_names': middle_names.
+                'middle_names': middle_names,
                 'last_name': last_name,
                 'full_name': "%s %s %s" % (given_name, middle_names, last_name),
                 'display_name': "%s %s" % (given_name, last_name),
