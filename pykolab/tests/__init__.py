@@ -64,7 +64,7 @@ class Tests(object):
                 success = False
                 while not success:
                     try:
-                        myday = mydate.replace(day=random.randint(1,31))
+                        myday = mydate.replace(day=random.randint(1,31)).day
                         success = True
                     except:
                         success = False
