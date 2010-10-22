@@ -48,8 +48,8 @@ if __name__ == "__main__":
             birthday = ""
             if random.randint(0,100) >= 75:
                 year = str(random.randint(1960, 2010))
-                month = str(random.randint(1,12))
-                day = str(random.randint(1,27))
+                month = str(random.randint(1,12)).zfill(2)
+                day = str(random.randint(1,27)).zfill(2)
                 birthday = "%s-%s-%s" % (year, month, day)
 
             middle_names = ""
