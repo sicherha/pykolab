@@ -76,9 +76,9 @@ if __name__ == "__main__":
                 'birthday': birthday
                 }
 
-            directory = "/kolab/var/imapd/spool/domains/%s/%s/%s/user/%s/Contacts" %(domains[user_num][0],domains[user_num],user[0],user)
+            directory = "/kolab/var/imapd/spool/domain/%s/%s/%s/user/%s/Contacts" %(domains[user_num][0],domains[user_num],user[0],user)
             if not os.path.isdir(directory):
-                directory = "./kolab/var/imapd/spool/domains/%s/%s/%s/user/%s/Contacts" %(domains[user_num][0],domains[user_num],user[0],user)
+                directory = "./kolab/var/imapd/spool/domain/%s/%s/%s/user/%s/Contacts" %(domains[user_num][0],domains[user_num],user[0],user)
                 if not os.path.isdir(directory):
                     os.makedirs(directory)
 
