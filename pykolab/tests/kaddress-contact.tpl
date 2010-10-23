@@ -32,13 +32,17 @@ Content-Disposition: attachment;
 <contact version="1.0">
  <product-id>KAddressBook 3.3, Kolab resource</product-id>
  <uid>@@uid@@</uid>
+ <body>body</body>
+ <creation-date>2009-09-13T11:49:18Z</creation-date>
  <sensitivity>public</sensitivity>
  <name>
   <given-name>@@given_name@@</given_name>
-  <middle-names>@@middle_names@@</middle-names>
   <last-name>@@last_name@@</last-name>
   <full-name>@@full_name@@</full-name>
  </name>
+ <organization></organization>
+ <web-page></web-page>
+ <role></role>
  <email>
    <display-name>@@display_name@@</display-name>
    <smtp-address>@@email_address@@</smtp-address>
@@ -47,8 +51,7 @@ Content-Disposition: attachment;
     <type>mobile</type>
     <number>@@number@@</number>
  </phone>
- <birthday>@@birthday@@</birthday>
- <preferred-address>home</preferred-address>
+ <preferred-address>business</preferred-address>
 </contact>
 
 --Boundary-00=@@uid@@--
