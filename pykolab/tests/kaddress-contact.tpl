@@ -1,4 +1,4 @@
-From:  @@user@@ <@@user_email@@>
+From: @@user@@ <@@user_email@@>
 Subject: @@uid@@
 Date: Thu, 20 May 2010 09:04:51 +0100
 MIME-Version: 1.0
