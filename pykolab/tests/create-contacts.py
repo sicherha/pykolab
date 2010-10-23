@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # -*- coding: utf-8 -*-
 # Copyright 2010 Kolab Systems AG (http://www.kolabsys.com)
@@ -23,7 +24,7 @@
 import os, random, sys
 
 if __name__ == "__main__":
-    num = int(sys.argv[1])
+    wanted_num = int(sys.argv[1])
 
     contact_tpl_file = open('./kaddress-contact.tpl', 'r')
     contact_tpl_orig = contact_tpl_file.read()
@@ -35,8 +36,11 @@ if __name__ == "__main__":
 
     alphabet = "abcdefghijklmnopqrstuvwxwz"
 
+    user_num = 0
+
     for user in users:
-        for contact in xrange(num):
+        num = 0
+        while num <= wanted_num:
             uid = "%s.%s" %(str(random.randint(1000000000,9999999999)),str(random.randint(0,999)).zfill(3))
             if not uid in uid_alloc:
                 uid_alloc.append(uid)
@@ -44,6 +48,8 @@ if __name__ == "__main__":
                 continue
 
             domain = domains[random.randint(0,2)]
+
+            contact_tpl = contact_tpl_orig
 
             birthday = ""
             if random.randint(0,100) >= 75:
@@ -54,16 +60,17 @@ if __name__ == "__main__":
 
             middle_names = ""
             if random.randint(0,100) >= 50:
-                middle_names = random.sample(alphabet, (4, 8)).capitalize()
+                middle_names = ''.join(random.sample(alphabet, random.randint(4, 8))).capitalize()
 
             number = ""
             if random.randint(0,100) >= 25:
                 number = "+441234567890"
 
-            given_name = random.sample(alphabet, (4, 8)).capitalized()
-            last_name  = random.sample(alphabet, (4, 8)).capitalized()
+            given_name = ''.join(random.sample(alphabet, random.randint(4, 8))).capitalize()
+            last_name  = ''.join(random.sample(alphabet, random.randint(4, 8))).capitalize()
 
             contact = {
+                'uid': uid,
                 'user': user,
                 'user_email': "%s@%s" % (user, domain),
                 'given_name': given_name,
@@ -87,10 +94,13 @@ if __name__ == "__main__":
             for key in contact.keys():
                 contact_tpl = contact_tpl.replace("@@%s@@" % key, '%s' % contact[key])
 
-            out.write(event_tpl)
+            out.write(contact_tpl)
             out.close()
+
             try:
                 os.chown("%s/%d." %(directory,num), 19415, 19415)
             except:
                 pass
+            num += 1
 
+        user_num += 1

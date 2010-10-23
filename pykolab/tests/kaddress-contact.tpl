@@ -4,7 +4,7 @@ Date: Thu, 20 May 2010 09:04:51 +0100
 MIME-Version: 1.0
 X-Kolab-Type: application/x-vnd.kolab.contact
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_j0O9Lpj9TsAjYEA"
+  boundary="Boundary-00=@@uid@@"
 Status: RO
 X-Status: OT
 X-KMail-EncryptionState:
@@ -37,7 +37,7 @@ Content-Disposition: attachment;
   <given-name>@@given_name@@</given_name>
   <middle-names>@@middle_names@@</middle-names>
   <last-name>@@last_name@@</last-name>
-  <full-name>@@full_name@</full-name>
+  <full-name>@@full_name@@</full-name>
  </name>
  <email>
    <display-name>@@display_name@@</display-name>
