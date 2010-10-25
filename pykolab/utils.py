@@ -21,6 +21,12 @@ def ask_question(question, default="", password=False):
         return answer
 
 def ask_confirmation(question, default="y", all_inclusive_no=True):
+    """
+        Create a confirmation dialog, including a default option (capitalized),
+        and a "yes" or "no" parsing that can either require an explicit, full
+        "yes" or "no", or take the default or any YyNn answer.
+    """
+
     if default in [ "y", "Y" ]:
         default_answer = True
         default_no = "n"
