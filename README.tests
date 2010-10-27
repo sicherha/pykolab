@@ -1,0 +1,44 @@
+== /!\ Test Execution /!\ ==
+
+Do NOT execute the tests against a production environment.
+
+In case you've missed the previous statement;
+
+Do NOT execute the tests against a production environment.
+
+== To Execute Tests ==
+
+A configuration section [testing] can be added to /etc/kolab/kolab.conf, which
+may contain the following key/value pairs:
+
+  admin_login = "string"
+
+    Set this to the login name of a (global, cross-domain) Cyrus IMAP manager.
+
+  admin_password = "string"
+
+    This would be... the password for the aforementioned login.
+
+  server = "hostname-or-ip-address"
+
+    A server we can execute the testing against.
+
+  users = [ ]
+
+    A list of dictionaries, each dictionary representing one user with the
+    following attributes:
+
+      givenname
+      sn
+      domain
+      password
+
+    All tests assume %(givenname)s@%(domain)s as the email address corresponding
+    to the user.
+
+    Don't forget that using different domains for the users implies you have set
+    up the Kolab server accordingly.
+
+Now that you have this information, the following might just start testing;
+
+  python ./kolabtest.py --debug 9 --conf /path/to/conf --suite zpush --use-imap

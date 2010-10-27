@@ -9,12 +9,13 @@ EXTRA_DIST = \
 	COPYING \
 	INSTALL \
 	NEWS \
-	README
+	README \
+	README.tests
 
 execdir = $(sbindir)
 
 install-exec-local:
 	mkdir -p $(DESTDIR)/$(sbindir) $(DISTDIR)/$(bindir)
-	$(INSTALL) -p 755 pykolab.py $(DESTDIR)/$(sbindir)
+	$(INSTALL) -p -m 755 pykolab.py $(DESTDIR)/$(sbindir)/pykolab
 	pushd $(DESTDIR)$(bindir);$(LN_S) consolehelper pykolab;popd
 
