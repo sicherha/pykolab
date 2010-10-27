@@ -17,106 +17,64 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import cyruslib
 import datetime
 import os
 import random
 import time
 
-from pykolab.conf import Defaults, Runtime
-import pykolab.conf
+from pykolab.conf import Conf
+from pykolab.constants import *
+from pykolab.tests.constants import *
+from pykolab.translate import _
 
 class Tests(object):
     def __init__(self):
+        self.conf = Conf()
 
-        self.plugins = dict()
-        self.tests = dict()
+        test_group = self.conf.parser.add_option_group(_("Test Options"))
+
+        for item in TEST_ITEMS:
+            test_group.add_option(  "--%s" %(item['name']),
+                                    dest    = "%s" %(item['name']),
+                                    action  = "store_true",
+                                    default = False,
+                                    help    = _("Submit a number of items to the %s") %(item['mailbox']))
+
+        test_group.add_option(  "--suite",
+                                dest    = "test_suites",
+                                action  = "append",
+                                default = [],
+                                help    = _("Run tests in suite SUITE. Implies a certain set of items being tested."),
+                                metavar = "SUITE")
+
+        delivery_group = self.conf.parser.add_option_group(_("Content Delivery Options"))
+
+        delivery_group.add_option(  "--use-mail",
+                                    dest    = "use_mail",
+                                    action  = "store_true",
+                                    default = False,
+                                    help    = _("Send messages containing the items through mail (requires proper infrastructure)"))
+
+        delivery_group.add_option(  "--use-imap",
+                                    dest    = "use_imap",
+                                    action  = "store_true",
+                                    default = False,
+                                    help    = _("Inject messages containing the items through IMAP (requires imaplib)"))
+
+        delivery_group.add_option(  "--use-lmtp",
+                                    dest    = "use_lmtp",
+                                    action  = "store_true",
+                                    default = False,
+                                    help    = _("Deliver messages containing the items through LMTP (requires imaplib)"))
+
+        self.conf.finalize_conf()
 
     def run(self):
-        # Create 3 users, john, joe and max
-        # Create the default groupware folders for each user
-        # Mark each of them as groupware folders (annotations, in python, how?)
-        # Generate a lot of content for each folder
-
-        event_tpl_file = open('./pykolab/tests/kcal-event.tpl', 'r')
-        event_tpl_orig = event_tpl_file.read()
-        event_tpl_file.close()
-
-        users = [ 'john', 'joe', 'max' ]
-        domains = [ 'doe.org', 'sixpack.com', 'imum.net' ]
-
-        mydate = datetime.date(1111, 11, 11).today()
-
-        this_month = mydate.month
-
-        uids_alloc = []
-
-        user_num = 0
-        for user in users:
-            # Each of the users gets 500 events
-            num = 1
-            while num < 21:
-                uid = "%s.%s" %(str(random.randint(1000000000,9999999999)),str(random.randint(0,999)).zfill(3))
-                if not uid in uids_alloc:
-                    uids_alloc.append(uid)
-                else:
-                    continue
-
-                success = False
-                while not success:
-                    try:
-                        myday = mydate.replace(day=random.randint(1,31)).day
-                        success = True
-                    except:
-                        success = False
-
-                event_tpl = event_tpl_orig
-
-                domain = domains[random.randint(0,2)]
-
-                time_start = random.randint(0,21)
-                time_end = time_start + 2
-
-                time_start = str(time_start).zfill(2)
-                time_end = str(time_end).zfill(2)
-
-                event = {
-                    'uid': uid,
-                    'user': user,
-                    'user_email': "%s@%s" %(user,domain),
-                    'date_start': "2010-%s-%s" %(this_month,str(myday).zfill(2)),
-                    'date_end': "2010-%s-%s" %(this_month,str(myday).zfill(2)),
-                    'time_start': time_start,
-                    'time_end': time_end
-                }
-
-                if num % 5 == 0:
-                    print "User %s calendaring events %s done" %(user,num)
-                    event['recurrence'] = """
-<recurrence cycle="weekly">
-  <interval>1</interval>
-  <day>thursday</day>
-  <range type="none"></range>
- </recurrence>"""
-                else:
-                    event['recurrence'] = ""
-
-                directory = "/kolab/var/imapd/spool/domain/%s/%s/%s/user/%s/Calendar" %(domains[user_num][0],domains[user_num],user[0],user)
-                if not os.path.isdir(directory):
-                    directory = "./kolab/var/imapd/spool/domain/%s/%s/%s/user/%s/Calendar" %(domains[user_num][0],domains[user_num],user[0],user)
-                    if not os.path.isdir(directory):
-                        os.makedirs(directory)
-
-                out = open("%s/%d." %(directory,num), 'w')
-
-                for key in event.keys():
-                    event_tpl = event_tpl.replace("@@%s@@" % key, '%s' % event[key])
-
-                out.write(event_tpl)
-                out.close()
-                try:
-                    os.chown("%s/%d." %(directory,num), 19415, 19415)
-                except:
-                    pass
-                num += 1
-
-            user_num += 1
+        # Execute the suites first.
+        for suite in self.conf.test_suites:
+            try:
+                exec("from pykolab.tests.%s import %sTest" %(suite,suite.capitalize()))
+                exec("%stest = %sTest(self.conf)" %(suite,suite.capitalize()))
+            except ImportError, e:
+                self.conf.log.error(_("Tests for suite %s failed to load. Aborting.") %(suite.capitalize()), recoverable=False)
