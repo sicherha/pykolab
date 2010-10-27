@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2010 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
@@ -23,6 +24,6 @@ import sys
 import pykolab
 import pykolab.plugins
 
-from pykolab.translate import _
 from pykolab.conf import Conf
 from pykolab.constants import *
+from pykolab.translate import _
