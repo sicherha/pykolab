@@ -36,3 +36,10 @@ class Defaults(object):
                 'user_base_dn': "ou=People,%(base_dn)s",
                 'group_base_dn': "ou=Groups,%(base_dn)s"
             }
+
+        self.testing = {
+                'admin_password': 'secret',
+                'admin_login': 'manager',
+                'server': '127.0.0.1',
+                'users': []
+            }

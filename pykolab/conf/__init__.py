@@ -76,24 +76,162 @@ class Conf(object):
         # Look, we want defaults
         self.defaults = Defaults(self.plugins)
 
-        # This is where we check our parser for the defaults being set there.
-        self.set_defaults_from_cli_options()
-
         # But, they should be available in our class as well
         for option in self.defaults.__dict__.keys():
+            self.log.debug(_("Setting %s to %r (from defaults)") %(option, self.defaults.__dict__[option]), level=9)
             setattr(self,option,self.defaults.__dict__[option])
+
+        # This is where we check our parser for the defaults being set there.
+        self.set_defaults_from_cli_options()
 
         # There is also a number of runtime specific variables
         self.runtime = Runtime(self.plugins, self.defaults)
 
         # Which should also be available here
         for option in self.runtime.__dict__.keys():
-            self.log.debug(_("Setting %s to %r") % (option, self.runtime.__dict__[option]), level=9)
+            self.log.debug(_("Setting %s to %r (from runtime)") %(option, self.runtime.__dict__[option]), level=9)
             setattr(self,option,self.runtime.__dict__[option])
+
+        self.options_set_from_config()
 
         # Also set the cli options
         for option in self.cli_options.__dict__.keys():
-            setattr(self,option,self.cli_options.__dict__[option])
+            if hasattr(self, "check_setting_%s" %(option)):
+                exec("retval = self.check_setting_%s(%r)" % (option, self.cli_options.__dict__[option]))
+
+                # The warning, error or confirmation dialog is in the check_setting_%s() function
+                if not retval:
+                    continue
+
+                self.log.debug(_("Setting %s to %r (from CLI, verified)") %(option, self.cli_options.__dict__[option]), level=9)
+                setattr(self,option,self.cli_options.__dict__[option])
+            else:
+                self.log.debug(_("Setting %s to %r (from CLI, not checked)") %(option, self.cli_options.__dict__[option]), level=9)
+                setattr(self,option,self.cli_options.__dict__[option])
+
+    def load_config(self, config):
+        """
+            Given a SafeConfigParser instance, loads a configuration
+            file and checks, then sets everything it can find.
+        """
+
+        for section in self.defaults.__dict__.keys():
+            if section == 'testing':
+                continue
+
+            #print "section: %s" %(section)
+            if not config.has_section(section):
+                #print "no section for section %s, continuing" %(section)
+                continue
+
+            for key in self.defaults.__dict__[section].keys():
+                #print "key: %s" %(key)
+                if not config.has_option(section, key):
+                    #print "no key for option %s in section %s, continuing" %(key,section)
+                    continue
+
+                if isinstance(self.defaults.__dict__[section][key], int):
+                    value = config.getint(section,key)
+                elif isinstance(self.defaults.__dict__[section][key], bool):
+                    value = config.getboolean(section,key)
+                elif isinstance(self.defaults.__dict__[section][key], str):
+                    value = config.get(section,key)
+                elif isinstance(self.defaults.__dict__[section][key], list):
+                    value = eval(config.get(section,key))
+                elif isinstance(self.defaults.__dict__[section][key], dict):
+                    value = eval(config.get(section,key))
+
+                if hasattr(self,"check_setting_%s_%s" %(section,key)):
+                    exec("retval = self.check_setting_%s_%s(%r)" %(section,key,value))
+                    if not retval:
+                        # We just don't set it, check_setting_%s should have
+                        # taken care of the error messages
+                        continue
+
+                if not self.defaults.__dict__[section][key] == value:
+                    setattr(self,"%s_%s" %(section,key),value)
+                    if key.count('password') >= 1:
+                        self.log.debug(_("Setting %s_%s to '****' (from configuration file)") %(section,key), level=9)
+                    else:
+                        self.log.debug(_("Setting %s_%s to %r (from configuration file)") %(section,key,value), level=9)
+
+    def options_set_from_config(self):
+        """
+            Sets the default configuration options from a
+            configuration file. Configuration file may be
+            customized using the --config CLI option
+        """
+
+        self.log.debug(_("Setting options from configuration file"), level=4)
+
+        # Check from which configuration file we should get the defaults
+        # Other then default?
+        if not self.cli_options.config_file == self.defaults.config_file:
+            self.config_file = self.cli_options.config_file
+
+        config = self.check_config()
+        self.load_config(config)
+
+    def set_options_from_testing_section(self):
+        """
+            Go through the options in the [testing] section if it exists.
+        """
+        config = self.check_config()
+
+        if not config.has_section('testing'):
+            return
+
+        for key in config.options('testing'):
+
+            if isinstance(self.defaults.__dict__['testing'][key], int):
+                value = config.getint('testing',key)
+            elif isinstance(self.defaults.__dict__['testing'][key], bool):
+                value = config.getboolean('testing',key)
+            elif isinstance(self.defaults.__dict__['testing'][key], str):
+                value = config.get('testing',key)
+            elif isinstance(self.defaults.__dict__['testing'][key], list):
+                value = eval(config.get('testing',key))
+            elif isinstance(self.defaults.__dict__['testing'][key], dict):
+                value = eval(config.get('testing',key))
+
+            if hasattr(self,"check_setting_%s_%s" %('testing',key)):
+                exec("retval = self.check_setting_%s(%r)" % ('testing',key,value))
+                if not retval:
+                    # We just don't set it, check_setting_%s should have
+                    # taken care of the error messages
+                    continue
+
+            setattr(self,"%s_%s" %('testing',key),value)
+            if key.count('password') >= 1:
+                self.log.debug(_("Setting %s_%s to '****' (from configuration file)") %('testing',key), level=9)
+            else:
+                self.log.debug(_("Setting %s_%s to %r (from configuration file)") %('testing',key,value), level=9)
+
+    def check_config(self, val=None):
+        """
+            Checks self.config_file or the filename passed using 'val'
+            and returns a SafeConfigParser instance if everything is OK.
+        """
+
+        if not val == None:
+            config_file = val
+        else:
+            config_file = self.config_file
+
+        if not os.access(config_file, os.R_OK):
+            self.log.error(_("Configuration file %s not readable") % config_file, recoverable=False)
+
+        config = SafeConfigParser()
+        self.log.debug(_("Reading configuration file %s") % config_file, level=9)
+        try:
+            config.read(config_file)
+        except:
+            self.log.error(_("Invalid configuration file %s") % config_file, recoverable=False)
+
+        if not config.has_section("kolab"):
+            self.log.warning(_("No master configuration section [revisor] in configuration file %s") % config_file)
+
+        return config
 
     def create_options(self, load_plugins=True):
         """
@@ -149,21 +287,25 @@ class Conf(object):
             self.plugins.add_options(self.parser)
 
     def parse_options(self):
-        # Parse Options
+        """
+            Parse options passed to our call.
+        """
+
         (self.cli_options, self.args) = self.parser.parse_args()
 
     def run(self):
         """
             Run Forest, RUN!
         """
+
         exitcode = 0
 
-        if len(self.args) >= 1:
-            if hasattr(self,"command_%s" % self.args[0].replace('-','_')):
-                exec("self.command_%s(%r)" %  (self.args[0].replace('-','_'), self.args[1:]))
-        else:
-            print >> sys.stderr, _("No command supplied")
-
+        if self.args:
+            if len(self.args) >= 1:
+                if hasattr(self,"command_%s" % self.args[0].replace('-','_')):
+                    exec("self.command_%s(%r)" %  (self.args[0].replace('-','_'), self.args[1:]))
+            else:
+                print >> sys.stderr, _("No command supplied")
 
     def command_dump(self, *args, **kw):
         """
@@ -201,13 +343,16 @@ class Conf(object):
             for key in keys:
                 print "%s_%s = %s" %(mode, key ,self.cfg_parser.get(mode,key))
 
-    def read_config(self):
+    def read_config(self, value=None):
         """
             Reads the configuration file, sets a self.cfg_parser.
         """
 
+        if not value:
+            value = self.cli_options.config_file
+
         self.cfg_parser = SafeConfigParser()
-        self.cfg_parser.read(self.cli_options.config_file)
+        self.cfg_parser.read(value)
 
     def command_get(self, *args, **kw):
         """
@@ -215,6 +360,7 @@ class Conf(object):
 
             Pass me a section and key please.
         """
+
         exec("args = %r" % args)
 
         print "%s/%s: %r" %(args[0],args[1],self.get(args[0], args[1]))
@@ -234,6 +380,7 @@ class Conf(object):
             TODO: Add a strict parameter
             TODO: Add key value checking
         """
+
         exec("args = %r" % args)
 
         if not self.cfg_parser:
@@ -251,7 +398,10 @@ class Conf(object):
         fp.close()
 
     def create_logger(self):
-        """Create a logger instance using cli_options.debuglevel"""
+        """
+            Create a logger instance using cli_options.debuglevel
+        """
+
         if not self.cli_options.debuglevel == None:
             loglevel = logging.DEBUG
         else:
@@ -266,6 +416,11 @@ class Conf(object):
             if long_opt == "--help":
                 continue
             setattr(self.defaults,self.parser._long_opt[long_opt].dest,self.parser._long_opt[long_opt].default)
+
+        # But, they should be available in our class as well
+        for option in self.parser.values.__dict__.keys():
+            self.log.debug(_("Setting %s to %r (from the default values for CLI options)") %(option, self.parser._long_opt[long_opt].default), level=9)
+            setattr(self,option,self.parser._long_opt[long_opt].default)
 
     def get(self, section, key):
         if not self.cfg_parser:
@@ -287,3 +442,66 @@ class Conf(object):
             else:
                 self.log.warning(_("Option does not exist in defaults."))
                 return _("Not available")
+
+    def check_setting_config_file(self, value):
+        if os.path.isfile(value):
+            if os.access(value, os.R_OK):
+                self.read_config(value=value)
+                self.config_file = value
+                return True
+            else:
+                self.log.error(_("Configuration file %s not readable.") %(value), recoverable=False)
+                return False
+        else:
+            self.log.error(_("Configuration file %s does not exist.") %(value), recoverable=False)
+            return False
+
+    def check_setting_debuglevel(self, value):
+        if value < 0:
+            self.log.info(_("WARNING: A negative debug level value does not make this program be any more silent."))
+        elif value == 0:
+            return True
+        elif value <= 9:
+            return True
+        else:
+            self.log.info(_("WARNING: This program has 9 levels of verbosity. Using the maximum of 9."))
+            return True
+
+    def check_setting_use_imap(self, value):
+        if value:
+            try:
+                import imaplib
+                setattr(self,"use_imap",value)
+                return True
+            except ImportError, e:
+                self.log.error(_("No imaplib library found."))
+                return False
+
+    def check_setting_use_lmtp(self, value):
+        if value:
+            try:
+                from smtplib import LMTP
+                setattr(self,"use_lmtp",value)
+                return True
+            except ImportError, e:
+                self.log.error(_("No LMTP class found in the smtplib library."))
+                return False
+
+    def check_setting_use_mail(self, value):
+        if value:
+            try:
+                from smtplib import SMTP
+                setattr(self,"use_mail",value)
+                return True
+            except ImportError, e:
+                self.log.error(_("No SMTP class found in the smtplib library."))
+                return False
+
+    def check_setting_test_suites(self, value):
+        # Attempt to load the suite,
+        # Get the suite's options,
+        # Set them here.
+        if "zpush" in value:
+            self.cli_options.__dict__['calendar'] = True
+            self.cli_options.__dict__['contacts'] = True
+            self.test_suites.append('zpush')

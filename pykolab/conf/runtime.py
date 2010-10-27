@@ -19,5 +19,5 @@
 
 class Runtime(object):
     def __init__(self, plugins, defaults):
-        pass
+        self.test_suites = []
 
