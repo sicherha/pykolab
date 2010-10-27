@@ -34,11 +34,11 @@ class PyKolabBase(object):
         """
 
         # Get the options parser, it's valuable ;-)
-        self.parser = revisor.parser
+        self.parser = pykolab.parser
 
         # The options it has defined are valuable too
-        self.cli_options = revisor.cli_options
-        self.plugins = revisor.plugins
+        self.cli_options = pykolab.cli_options
+        self.plugins = pykolab.plugins
         self.plugins.base = self
 
         # At this point, 'self' isn't much yet, so:
