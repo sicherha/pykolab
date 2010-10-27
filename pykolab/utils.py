@@ -6,7 +6,16 @@ import os
 from pykolab import constants
 
 def ask_question(question, default="", password=False):
+    """
+        Ask a question on stderr.
 
+        Since the answer to the question may actually be a password, cover that
+        case with a getpass.getpass() prompt.
+
+        Accepts a default value, but ignores defaults for password prompts.
+
+        Usage: pykolab.utils.ask_question("What is the server?", default="localhost")
+    """
     if password:
         answer = getpass.getpass("%s: " %(question))
     else:
@@ -40,6 +49,7 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
         # needs to provide the full yes or no for.
         default_no = "'no'"
         default_yes = "Please type 'yes'"
+
     answer = False
     while answer == False:
         answer = raw_input("%s [%s/%s]: " %(question,default_yes,default_no))
@@ -96,7 +106,7 @@ def pop_empty_from_list(_input_list):
 def is_service(services):
     """
         Checks each item in list services to see if it has a RC script in
-        constants.RC_DIR to see if it's a service, and returns
+        pykolab.constants.RC_DIR to see if it's a service, and returns
         the name of the service for the first service it can find. However,
         it also checks whether the other services exist and issues a warning if
         more then one service exists.
