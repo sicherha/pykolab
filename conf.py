@@ -42,5 +42,6 @@ import pykolab
 
 if __name__ == "__main__":
     pykolab = pykolab.Conf()
+    pykolab.finalize_conf()
     pykolab.run()
 
