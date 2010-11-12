@@ -31,18 +31,18 @@ TEST_ITEMS = [
                 'name': 'calendar',
                 'mailbox': 'Calendar',
                 'template': 'kcal-event.tpl',
-                'number': 10000,
+                'number': 10,
                 # 6 years ago
                 'calendar_start': "%d" %(time.time() - (60*60*24*365*6)),
                 # 4 years forward
                 'calendar_end': "%d" %(time.time() - (60*60*24*365*6)),
             },
-        #{
-                #'name': 'contacts',
-                #'mailbox': 'Contacts',
-                #'template': 'kaddress-contact.tpl',
-                #'number': 1000,
-            #},
+        {
+                'name': 'contacts',
+                'mailbox': 'Contacts',
+                'template': 'kaddress-contact.tpl',
+                'number': 10,
+            },
     ]
 
 TEST_USERS = [

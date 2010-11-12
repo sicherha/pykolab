@@ -29,6 +29,7 @@ class Test_000_001(object):
 
         if not conf:
             self.conf = Conf()
+            self.conf.finalize_conf()
         else:
             self.conf = conf
 
