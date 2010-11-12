@@ -21,7 +21,7 @@ http://www.kolab.org/kolab2-clients.html
 --Boundary-00=%(uid)s
 Content-Type: application/x-vnd.kolab.contact;
   name="kolab.xml"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
   filename="kolab.xml"
 
@@ -33,7 +33,7 @@ Content-Disposition: attachment;
  <creation-date>%(kolab_creation_date)s</creation-date>
  <sensitivity>public</sensitivity>
  <name>
-  <given-name>%(kolab_contact_given_name)s</given_name>
+  <given-name>%(kolab_contact_given_name)s</given-name>
   <last-name>%(kolab_contact_last_name)s</last-name>
   <full-name>%(kolab_contact_given_name)s %(kolab_contact_last_name)s</full-name>
  </name>
