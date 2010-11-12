@@ -136,14 +136,14 @@ class CalendarItem(object):
         return tpl_orig % self.__dict__
 
 def create_items(conf, num=None, folder=None):
-    conf.log.debug(_("Creating %d Calendar events") %(num), level=3)
-
     for item in TEST_ITEMS:
         if item['name'] == 'calendar':
             info = item
 
     if num:
         info['number'] = int(num)
+
+    conf.log.debug(_("Creating %d Events") %(info['number']), level=3)
 
     alloc_uids = []
 

@@ -19,6 +19,7 @@
 
 import calendar
 import datetime
+import mailbox
 import os
 import random
 import time
@@ -28,10 +29,10 @@ from pykolab.constants import *
 from pykolab.tests.constants import *
 from pykolab.translate import _
 
-class ContactsItem(object):
+class MailItem(object):
     def __init__(self, item_num=0, total_num=1, folder=None, user=None):
         """
-            A contact item is created from a template.
+            A mail item is created from a template.
 
             The attributes that can be modified are set to defaults first.
         """
@@ -66,37 +67,29 @@ class ContactsItem(object):
         if folder:
             self.mailbox = folder
         else:
-            self.mailbox = "INBOX/Contacts"
+            self.mailbox = "INBOX"
 
-        self.randomize_contact()
+        self.randomize_mail()
 
-    def randomize_contact(self):
+    def randomize_mail(self):
         """
-            Randomize the contact's information.
-
+            Randomize some of the contents of the mail.
         """
+
         pass
 
     def __str__(self):
-        for tpl_file_location in [ '/usr/share/kolab/tests/kaddress-contact.tpl', './share/tests/kaddress-contact.tpl' ]:
-            if os.path.isfile(tpl_file_location):
-                tpl_file = open(tpl_file_location, 'r')
-                tpl_orig = tpl_file.read()
-                tpl_file.close()
-                break
-        return tpl_orig % self.__dict__
+        return ""
 
 def create_items(conf, num=None, folder=None):
     for item in TEST_ITEMS:
-        if item['name'] == 'contacts':
+        if item['name'] == 'mail':
             info = item
 
     if num:
         info['number'] = int(num)
 
-    conf.log.debug(_("Creating %d Contacts") %(info['number']), level=3)
-
-    alloc_uids = []
+    conf.log.debug(_("Creating %d Mails") %(info['number']), level=3)
 
     imap = True
 
@@ -114,31 +107,19 @@ def create_items(conf, num=None, folder=None):
         else:
             pass
 
-        #print "Running for user %(givenname)s@%(domain)s" %(user)
-        item_num = 0
+        mb = mailbox.mbox('./share/tests/mail/lists.fedoraproject.org/devel/2010-September.txt')
+        for key in mb.keys():
 
-        while item_num < int(info['number']):
-            conf.log.debug(_("Creating Contact item number %d") %(item_num+1), level=5)
-
-            item = ContactsItem(item_num=(item_num+1), total_num=num, folder=folder, user=user)
-
-            if not item.uid in alloc_uids:
-                alloc_uids.append(item.uid)
-            else:
-                continue
-
-            msg = str(item)
+            msg = mb.get_string(key)
 
             if conf.use_mail:
-                conf.log.debug(_("Sending UID message %s through SMTP targeting user %s@%s") %(item.uid,user['givenname'],user['domain']), level=9)
+                conf.log.debug(_("Sending message %s through SMTP targeting user %s@%s") %(key,user['givenname'],user['domain']), level=9)
 
             elif conf.use_lmtp:
-                conf.log.debug(_("Sending UID message %s through LMTP targeting user %s@%s") %(item.uid,user['givenname'],user['domain']), level=9)
+                conf.log.debug(_("Sending message %s through LMTP targeting user %s@%s") %(key,user['givenname'],user['domain']), level=9)
 
             elif conf.use_imap:
-                conf.log.debug(_("Saving UID message %s to IMAP (user %s, folder %s)") %(item.uid,user['givenname'],item.mailbox), level=9)
-                imap.append(item.mailbox, '', imaplib.Time2Internaldate(time.time()), msg)
+                conf.log.debug(_("Saving message %s to IMAP (user %s, folder %s)") %(key,user['givenname'],"INBOX"), level=9)
+                imap.append("INBOX", '', imaplib.Time2Internaldate(time.time()), msg)
             else:
                 conf.log.debug(_("Somehow ended up NOT sending these messages"), level=9)
-
-            item_num +=1

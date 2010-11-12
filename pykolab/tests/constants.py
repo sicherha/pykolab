@@ -43,6 +43,13 @@ TEST_ITEMS = [
                 'template': 'kaddress-contact.tpl',
                 'number': 10,
             },
+
+        {
+                'name': 'mail',
+                'mailbox': 'INBOX',
+                'template': 'kaddress-contact.tpl',
+                'number': 10,
+            },
     ]
 
 TEST_USERS = [
