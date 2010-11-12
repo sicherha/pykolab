@@ -6,6 +6,11 @@ In case you've missed the previous statement;
 
 Do NOT execute the tests against a production environment.
 
+Why not:
+
+  - the test suites re-initialize your environment without regard to any
+    existing data whatsoever.
+
 == To Execute Tests ==
 
 A configuration section [testing] can be added to /etc/kolab/kolab.conf, which
@@ -42,3 +47,32 @@ may contain the following key/value pairs:
 Now that you have this information, the following might just start testing;
 
   python ./kolabtest.py --debug 9 --conf /path/to/conf --suite zpush --use-imap
+
+== Writing Test Suites ==
+
+A Test Suite has a title such as "zpush" which then becomes a pykolab.tests
+module. This Test Suite will contain a number of test series (000 through 999),
+each of which contains tests (numbered 000 through 999).
+
+Each Test Suite will (need to) have a file
+
+  "pykolab/tests/%s/__init__.py" %(name.tolower())
+
+defining a
+
+  "class %sTest" %(name.capitalize())
+
+such as in the example here:
+
+  http://git.kolabsys.com/pykolab.git/tree/pykolab/tests/zpush/__init__.py#n30
+
+Creating an object from the class should immediately start loading tests and
+executing them.
+
+Tests themselves are stored in separate files;
+
+  - test_000_000.py with class Test_000_000
+
+  The 000 test in each series (in this case series 000) will *initialize* the
+  environment. That means: Delete all mailboxes, create all mailboxes, set
+  annotations and such and so forth.
