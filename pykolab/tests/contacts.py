@@ -87,7 +87,7 @@ class ContactsItem(object):
         return tpl_orig % self.__dict__
 
 def create_items(conf, num=None, folder=None):
-    conf.log.debug(_("Creating %d Contact events") %(num), level=3)
+    conf.log.debug(_("Creating %d Contacts") %(num), level=3)
 
     for item in TEST_ITEMS:
         if item['name'] == 'contacts':
