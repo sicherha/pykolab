@@ -23,6 +23,13 @@ from pykolab.tests.constants import *
 from pykolab.translate import _
 
 class Test_000_001(object):
+    """
+        First, basic test.
+
+        Populate the previously created and existing INBOX, Calendar and Contact
+        folders with a limited amount of data.
+    """
+
     def __init__(self, conf):
         self.suite_num = "000"
         self.suite_test_num = "001"
@@ -41,8 +48,9 @@ class Test_000_001(object):
                 self.conf.log.warning(_("Could not load %sItem from %s, skipping the testing.") %(item['name'].capitalize(),item['name']))
                 continue
 
+            self.conf.log.debug("self.conf.%s = %r" %(item['name'], getattr(self.conf, "%s" %(item['name']))), level=9)
+
             if getattr(self.conf, "%s" %(item['name'])):
-                self.conf.log.info("Would have populated %s a little" %(item['name'].capitalize()))
                 exec("create_%s_items(self.conf, num=%d)" %(item['name'],item['number']))
             else:
                 self.conf.log.info("not executing %s" %(item['name'].capitalize()))
