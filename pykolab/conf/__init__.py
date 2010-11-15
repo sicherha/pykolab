@@ -502,6 +502,36 @@ class Conf(object):
         # Get the suite's options,
         # Set them here.
         if "zpush" in value:
-            self.cli_options.__dict__['calendar'] = True
-            self.cli_options.__dict__['contacts'] = True
+            selectively = False
+            for item in [ 'calendar', 'contacts', 'mail' ]:
+                if self.cli_options.__dict__[item]:
+                    self.log.debug(_("Found you specified a specific set of items to test: %s") %(item), level=9)
+                    selectively = item
+
+            if not selectively:
+                self.calendar = True
+                self.contacts = True
+                self.mail = True
+            else:
+                self.log.debug(_("Selectively selecting: %s") %(selectively), level=9)
+                setattr(self, selectively, True)
+
             self.test_suites.append('zpush')
+
+    def check_setting_calendar(self, value):
+        if self.parser._long_opt['--calendar'].default == value:
+            return False
+        else:
+            return True
+
+    def check_setting_contacts(self, value):
+        if self.parser._long_opt['--contacts'].default == value:
+            return False
+        else:
+            return True
+
+    def check_setting_mail(self, value):
+        if self.parser._long_opt['--mail'].default == value:
+            return False
+        else:
+            return True
