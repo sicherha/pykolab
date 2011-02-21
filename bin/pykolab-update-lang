@@ -1,0 +1,9 @@
+#!/bin/bash
+
+echo "Updating language files"
+cd po/
+intltool-update --pot
+if [ "$1" == "po" ]; then
+    ls *po | cut -f1 -d'.' | xargs -I'{}' intltool-update -d '{}'
+fi
+cd ..
