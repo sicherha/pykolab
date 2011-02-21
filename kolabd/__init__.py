@@ -1,4 +1,4 @@
-# Copyright 2010 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2011 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -19,14 +19,19 @@
 from optparse import OptionParser
 from ConfigParser import SafeConfigParser
 
-import traceback
+import os
 import shutil
+import time
+import traceback
 
+from pykolab.auth import Auth
+from pykolab.conf import Conf
+from pykolab.imap import IMAP
 from pykolab.constants import *
 from pykolab.translate import _
 
 class KolabDaemon(object):
-    def __init__(self, init_base=True):
+    def __init__(self):
         """
             self.args == Arguments passed on the CLI
             self.cli_options == Parser results (again, CLI)
@@ -34,48 +39,21 @@ class KolabDaemon(object):
             self.plugins == Our Kolab Plugins
         """
 
-        self.args = None
-        self.cli_options = None
-        self.parser = None
-        self.plugins = None
+        self.conf = Conf()
 
-        # Create and parse the options
-        self.parse_options()
+        daemon_group = self.conf.parser.add_option_group(_("Daemon Options"))
 
-    def parse_options(self, load_plugins=True):
-        """
-            Create the OptionParser for the options passed to us from runtime
-            Command Line Interface.
-        """
+        daemon_group.add_option(  "--fork",
+                                dest    = "fork_mode",
+                                action  = "store_true",
+                                default = False,
+                                help    = _("For to the background."))
 
-        epilog = "The Kolab Daemon is part of the Kolab Groupware Solution. For" + \
-                 "about Kolab or PyKolab, visit http://www.kolabsys.com"
+        self.conf.finalize_conf()
 
-        # Enterprise Linux 5 does not have an "epilog" parameter to OptionParser
-        try:
-            self.parser = OptionParser(epilog=epilog)
-        except:
-            self.parser = OptionParser()
+        self.log = self.conf.log
 
-        ##
-        ## Runtime Options
-        ##
-        runtime_group = self.parser.add_option_group(_("Runtime Options"))
-        runtime_group.add_option(   "-d", "--debug",
-                                    dest    = "debuglevel",
-                                    type    = 'int',
-                                    default = 0,
-                                    help    = _("Set the debugging verbosity. Maximum is 99"))
-
-        ##
-        ## Get options from plugins
-        ##
-        if load_plugins:
-            self.plugins = pykolab.plugins.KolabPlugins(init=True)
-            self.plugins.add_options(self.parser)
-
-        # Parse Options
-        (self.cli_options, self.args) = self.parser.parse_args()
+        self.thread_count = 0
 
     def run(self):
         """Run Forest, RUN!"""
@@ -83,31 +61,40 @@ class KolabDaemon(object):
         exitcode = 0
 
         try:
-            self.base.run()
+            if self.conf.fork_mode:
+                pid = os.fork()
+            else:
+                self.do_sync()
+
+            if pid == 0:
+                self.log.remove_stdout_handler()
+                self.do_sync()
+
         except SystemExit, e:
             exitcode = e
         except KeyboardInterrupt:
             exitcode = 1
-            self.base.log.info(_("Interrupted by user"))
+            self.log.info(_("Interrupted by user"))
         except AttributeError, e:
             exitcode = 1
             traceback.print_exc()
             print >> sys.stderr, _("Traceback occurred, please report a bug at http://issues.kolab.org")
         except TypeError, e:
+            exitcode = 1
+            traceback.print_exc()
             self.log.error(_("Type Error: %s") % e)
         except:
             exitcode = 2
             traceback.print_exc()
             print >> sys.stderr, _("Traceback occurred, please report a bug at http://issues.kolab.org")
-        finally:
-            if self.base.cfg.clean_up == 0:
-                # Leave everything as it is
-                pass
-            if self.base.cfg.clean_up > 0:
-                # Remove our directories in the working directory
-                pass
-            if self.base.cfg.clean_up > 1:
-                # Remove everything
-                pass
         sys.exit(exitcode)
+
+    def do_sync(self):
+        while 1:
+            self.log.debug(_("Sleeping for 10 seconds..."), 5)
+            time.sleep(10)
+            auth = Auth(self.conf)
+            users = auth.users()
+            imap = IMAP(self.conf)
+            imap.synchronize(users)
 

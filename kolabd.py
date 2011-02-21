@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright 2010 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2011 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #

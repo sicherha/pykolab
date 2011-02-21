@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
+# Copyright 2010-2011 Kolab Systems AG (http://www.kolabsys.com)
 #
-# Copyright 2007-2010 Fedora Unity Project (http://fedoraunity.org)
-#
-# Jonathan Steffan <jon a fedoraunity.org>
-# Jeroen van Meeuwen <kanarip a fedoraunity.org>
+# Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
 
 import logging
 import os
@@ -27,6 +26,8 @@ import pdb
 # Translation
 from pykolab.translate import _
 
+import pykolab.plugin
+
 class KolabPlugins:
     """Detects, loads and interfaces with plugins for Kolab"""
     def __init__(self, init=False):
@@ -35,32 +36,20 @@ class KolabPlugins:
         """
         self.plugins = {}
 
-        for plugin_path in [ '/usr/share/pykolab/plugins/', './plugins/' ]:
+        for plugin_path in [ '/usr/share/pykolab/plugin/', './pykolab/plugin/' ]:
             if os.path.isdir(plugin_path):
                 for plugin in os.listdir(plugin_path):
-                    if os.path.isdir('%s/%s/' % (plugin_path,plugin,)):
+                    if os.path.isdir('%s/%s/' %(plugin_path,plugin,)):
                         self.plugins[plugin] = False
 
         self.check_plugins(init=init)
-
-    def load_plugins(self, plugins=[], init=False):
-        """Loads plugins specified by a list of plugins or loads them all"""
-        if len(plugins) < 1:
-            plugins = self.plugins.keys()
-
-        for plugin in plugins:
-            if self.plugins[plugin]:
-                try:
-                    exec("self.%s = revisor.%s.Revisor%s()" % (plugin,plugin,plugin.replace("mod","").capitalize()))
-                except Exception, e:
-                    if not init: print >> sys.stderr, _("Plugin %s failed to load (%s: %s)") % (plugin, e.__class__, e)
 
     def check_plugins(self, init=False):
         """Checks all plugins in self.plugins and sets the values to
         True (loadable) or False (not enabled, not installed or not loadable)"""
         for plugin in self.plugins:
             try:
-                exec("import revisor.%s" % plugin)
+                exec("from pykolab.plugin.%s import Kolab%s" %(plugin,plugin.capitalize()))
                 self.plugins[plugin] = True
                 self.load_plugins(plugins=[plugin], init=init)
             except ImportError, e:
@@ -71,6 +60,16 @@ class KolabPlugins:
                 self.plugins[plugin] = False
             except Exception, e:
                 if not init: print >> sys.stderr, _("Plugin %s failed to load (%s: %s)") % (plugin, e.__class__, e)
+
+    def load_plugins(self, plugins=[], init=False):
+        """Loads plugins specified by a list of plugins or loads them all"""
+
+        if len(plugins) < 1:
+            plugins = self.plugins.keys()
+
+        for plugin in plugins:
+            if self.plugins[plugin]:
+                exec("self.%s = pykolab.plugin.%s.Kolab%s()" % (plugin,plugin,plugin.capitalize()))
 
     def set_defaults(self, defaults, plugins=[]):
         """Test for a function set_defaults() in all available and loaded plugins and execute plugin.set_defaults()"""
@@ -134,7 +133,7 @@ class KolabPlugins:
             else:
                 print >> sys.stderr, _("Not adding options for plugin %s: No function 'add_options()'") % plugin
 
-    def check_options(self, cfg, plugins=[]):
+    def check_options(self, conf, plugins=[]):
         """Executes plugin.check_plugins() for all enabled plugins or the list of plugin names specified."""
 
         if len(plugins) < 1:
@@ -148,7 +147,7 @@ class KolabPlugins:
 
             if hasattr(getattr(self,plugin),"check_options"):
                 try:
-                    exec("self.%s.check_options(cfg, cfg.cli_options)" % plugin)
+                    exec("self.%s.check_options(conf, conf.cli_options)" % plugin)
                 except AttributeError, e:
                     print >> sys.stderr, _("Cannot check options for plugin %s: %s") % (plugin,e)
             else:
@@ -172,7 +171,7 @@ class KolabPlugins:
 
         return False
 
-    def exec_hook(self, hook, plugins=[]):
+    def exec_hook(self, hook, plugins=[], args=()):
         """Execute a hook"""
 
         if len(plugins) < 1:
@@ -184,11 +183,18 @@ class KolabPlugins:
             if not hasattr(self,plugin):
                 continue
 
+            retval = None
+
             if hasattr(getattr(self,plugin),hook):
                 try:
-                    exec("self.%s.%s()" % (plugin,hook))
+                    exec("retval = self.%s.%s(args=%r)" % (plugin,hook,args))
+                except TypeError, e:
+                    print >> sys.stderr, _("Cannot execute hook %s for plugin %s: %s") % (hook,plugin,e)
                 except AttributeError, e:
                     print >> sys.stderr, _("Cannot execute hook %s for plugin %s: %s") % (hook,plugin,e)
+
+                return retval
+
 
     def return_true_boolean_from_plugins(self, bool, plugins=[]):
         """Given the name of a boolean, walks all specified plugins, or all available plugins, and returns True if a plugin has it set to true"""

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2011 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -34,7 +34,8 @@ class Defaults(object):
                 'bind_dn': "",
                 'bind_pw': "",
                 'user_base_dn': "ou=People,%(base_dn)s",
-                'group_base_dn': "ou=Groups,%(base_dn)s"
+                'group_base_dn': "ou=Groups,%(base_dn)s",
+                'kolab_user_filter': '(objectClass=*)'
             }
 
         self.testing = {

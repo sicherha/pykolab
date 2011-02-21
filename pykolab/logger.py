@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2011 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -26,13 +26,14 @@ from pykolab.translate import _, N_
 
 class Logger:
     def __init__(self, loglevel=logging.INFO, debuglevel=0, logfile="/var/log/kolab/kolabd.log"):
+
         self.loglevel = loglevel
         self.debuglevel = debuglevel
 
         plaintextformatter = logging.Formatter("%(message)s")
 
-        console_stdout = logging.StreamHandler(sys.stdout)
-        console_stdout.setFormatter(plaintextformatter)
+        self.console_stdout = logging.StreamHandler(sys.stdout)
+        self.console_stdout.setFormatter(plaintextformatter)
 
         try:
             filelog_handler = logging.FileHandler(filename=logfile)
@@ -40,14 +41,19 @@ class Logger:
         except IOError, e:
             print >> sys.stderr, _("Cannot log to file %s: %s") % (logfile, e)
 
-        self.log = logging.getLogger()
-        self.log.addHandler(console_stdout)
-        try:
-            self.log.addHandler(filelog_handler)
-        except:
-            pass
+        self.log = logging.getLogger('pykolab')
 
-        self.log.setLevel(self.loglevel)
+        if not len(self.log.handlers) > 1:
+            self.log.addHandler(self.console_stdout)
+            try:
+                self.log.addHandler(filelog_handler)
+            except:
+                pass
+
+            self.log.setLevel(self.loglevel)
+
+    def remove_stdout_handler(self):
+        self.log.removeHandler(self.console_stdout)
 
     def set_config(self, cfg):
         """Let the Logger instance know what our configuration is and she might

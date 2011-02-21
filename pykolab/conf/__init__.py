@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2011 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -168,6 +168,8 @@ class Conf(object):
         # Other then default?
         if not self.cli_options.config_file == self.defaults.config_file:
             self.config_file = self.cli_options.config_file
+        else:
+            self.config_file = self.defaults.config_file
 
         config = self.check_config()
         self.load_config(config)
@@ -422,6 +424,13 @@ class Conf(object):
             self.log.debug(_("Setting %s to %r (from the default values for CLI options)") %(option, self.parser._long_opt[long_opt].default), level=9)
             setattr(self,option,self.parser._long_opt[long_opt].default)
 
+    def get_raw(self, section, key):
+        if not self.cfg_parser:
+            self.read_config()
+
+        if self.cfg_parser.has_option(section, key):
+            return self.cfg_parser.get(section,key, 1)
+
     def get(self, section, key):
         if not self.cfg_parser:
             self.read_config()
@@ -429,7 +438,7 @@ class Conf(object):
         if self.cfg_parser.has_option(section, key):
             return self.cfg_parser.get(section,key)
         else:
-            self.log.warning(_("Option does not exist in config file, pulling from defaults"))
+            self.log.warning(_("Option %s/%s does not exist in config file %s, pulling from defaults") %(section, key, self.config_file))
             if hasattr(self.defaults, "%s_%s" %(section,key)):
                 return getattr(self.defaults, "%s_%s" %(section,key))
             elif hasattr(self.defaults, "%s" %(section)):
