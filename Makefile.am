@@ -9,7 +9,12 @@ INTLTOOL_FILES = \
 	intltool-update.in
 
 PYTHON_FILES = \
-	cyruslib.py
+	cyruslib.py \
+	conf.py \
+	kolab.py \
+	kolabd.py \
+	kolabtest.py \
+	setup-kolab.py
 
 EXTRA_DIST = \
 	AUTHORS \
@@ -39,7 +44,9 @@ srpm: ChangeLog dist
 execdir = $(sbindir)
 
 install-exec-local:
-	mkdir -p $(DESTDIR)/$(sbindir) $(DISTDIR)/$(bindir)
-	$(INSTALL) -p -m 755 pykolab.py $(DESTDIR)/$(sbindir)/pykolab
-	pushd $(DESTDIR)$(bindir);$(LN_S) consolehelper pykolab;popd
-
+	mkdir -p $(DESTDIR)/$(sbindir) $(DESTDIR)/$(bindir)
+	$(INSTALL) -p -m 755 conf.py $(DESTDIR)/$(sbindir)/kolab-conf
+	$(INSTALL) -p -m 755 kolab.py $(DESTDIR)/$(sbindir)/kolab
+	$(INSTALL) -p -m 755 kolabd.py $(DESTDIR)/$(sbindir)/kolabd
+	$(INSTALL) -p -m 755 kolabtest.py $(DESTDIR)/$(bindir)/kolab-test
+	$(INSTALL) -p -m 644 cyruslib.py $(DESTDIR)/$(datadir)/$(PACKAGE)/
