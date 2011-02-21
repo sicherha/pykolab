@@ -62,6 +62,7 @@ class KolabDaemon(object):
 
         try:
             if self.conf.fork_mode:
+                self.thread_count += 1
                 pid = os.fork()
             else:
                 self.do_sync()
