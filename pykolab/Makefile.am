@@ -39,3 +39,18 @@ pykolab_setup_PYTHON = \
 	setup/__init__.py \
 	setup/ldap_setup.py
 
+pykolab_testsdir = $(datadir)/$(PACKAGE)/tests
+pykolab_setup_PYTHON = \
+	tests/calendar.py \
+	tests/constants.py \
+	tests/contacts.py \
+	tests/create-contacts.py \
+	tests/__init__.py \
+	tests/mail.py
+
+pykolab_tests_zpushdir = $(datadir)/$(PACKAGE)/tests/zpush
+pykolab_tests_zpush_PYTHON = \
+	tests/zpush/test_000_000.py \
+	tests/zpush/test_000_001.py \
+	tests/zpush/__init__.py
+
