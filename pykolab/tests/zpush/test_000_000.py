@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2011 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -74,6 +74,10 @@ class Test_000_000(object):
     def __init__(self, conf=None):
         self.suite_num = "000"
         self.suite_test_num = "000"
+
+        self.log.info("About to execute preperation task #000 in Test Suite #000");
+        self.log.info("We will assume the start situation has been configured");
+        self.log.info("such as is described in the documentation");
 
         if not conf:
             self.conf = Conf()
