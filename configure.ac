@@ -11,15 +11,21 @@ AM_PATH_PYTHON
 
 GETTEXT_PACKAGE=pykolab
 AC_SUBST(GETTEXT_PACKAGE)
-#AM_GLIB_GNU_GETTEXT
-#AC_PROG_INTLTOOL
+AM_GLIB_GNU_GETTEXT
+AC_PROG_INTLTOOL
 AC_PROG_LN_S
 
 AC_SUBST(DATESTAMP,`date +"%a %b %d %Y"`)
 
 AC_CONFIG_FILES([
 Makefile
+pykolab.spec
+conf/Makefile
+kolab/Makefile
+kolabd/Makefile
+po/Makefile.in
 pykolab/constants.py
+pykolab/Makefile
 ])
 
 AC_OUTPUT

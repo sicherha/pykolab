@@ -3,6 +3,14 @@ DISTCLEANFILES = \
 	intltool-merge \
 	intltool-update
 
+INTLTOOL_FILES = \
+	intltool-extract.in \
+	intltool-merge.in \
+	intltool-update.in
+
+PYTHON_FILES = \
+	cyruslib.py
+
 EXTRA_DIST = \
 	AUTHORS \
 	ChangeLog \
@@ -10,7 +18,23 @@ EXTRA_DIST = \
 	INSTALL \
 	NEWS \
 	README \
-	README.tests
+	README.tests \
+	pykolab.spec \
+	pykolab.spec.in \
+	$(PYTHON_FILES)
+
+SUBDIRS = \
+	conf \
+	kolab \
+	kolabd \
+	po \
+	pykolab
+
+ChangeLog:
+	(GIT_DIR=.git git log > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || (touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
+
+srpm: ChangeLog dist
+	@rpmbuild -ts $(PACKAGE)-$(VERSION).tar.gz
 
 execdir = $(sbindir)
 
