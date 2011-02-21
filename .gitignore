@@ -2,9 +2,13 @@ Makefile
 Makefile.in
 *.pyc
 *.pyo
+*.spec
+*.tar.gz
 aclocal.m4
 autom4te.cache/
 config.log
 config.status
 configure
+po/POTFILES
 pykolab/constants.py
+pykolab-[0-9]*.*/
