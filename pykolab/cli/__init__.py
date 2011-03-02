@@ -47,7 +47,11 @@ class Cli(object):
         self.conf.finalize_conf()
 
         # The first argument has to be a command
-        action = self.conf.args.pop(0)
+        try:
+            action = self.conf.args.pop(0)
+        except IndexError, e:
+            self.no_command()
+
         action_function = action.replace('-','_')
         action_components = action.split('-')
 
@@ -65,6 +69,10 @@ class Cli(object):
                 pass
 
             self.print_usage()
+
+    def no_command(self):
+        print >> sys.stderr, _("No command given, see --help for details")
+        sys.exit(1)
 
     def action_list_domains(self):
         ldap_con = ldap.initialize(self.conf.get('ldap', 'uri'))
