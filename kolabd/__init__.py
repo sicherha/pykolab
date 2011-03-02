@@ -47,7 +47,7 @@ class KolabDaemon(object):
                                 dest    = "fork_mode",
                                 action  = "store_true",
                                 default = False,
-                                help    = _("For to the background."))
+                                help    = _("Fork to the background."))
 
         self.conf.finalize_conf()
 
