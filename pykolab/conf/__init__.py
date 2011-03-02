@@ -285,7 +285,7 @@ class Conf(object):
         ## Get options from plugins
         ##
         if load_plugins:
-            self.plugins = pykolab.plugins.KolabPlugins(init=True)
+            self.plugins = pykolab.plugins.KolabPlugins(init=True, conf=self)
             self.plugins.add_options(self.parser)
 
     def parse_options(self):
