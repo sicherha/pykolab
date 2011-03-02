@@ -22,7 +22,9 @@ class KolabDefaultfolders(object):
         Example plugin to create a set of default folders.
     """
 
-    def __init__(self):
+    def __init__(self, conf=None):
+        if not conf == None:
+            self.conf = conf
         pass
 
     def create_user_folders(self, kw={}, args=()):

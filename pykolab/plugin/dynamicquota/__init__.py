@@ -22,7 +22,9 @@ class KolabDynamicquota(object):
         Example plugin making quota adjustments given arbitrary conditions.
     """
 
-    def __init__(self):
+    def __init__(self, conf=None):
+        if not conf == None:
+            self.conf = conf
         pass
 
     def set_user_folder_quota(self, kw={}, args=()):
@@ -35,8 +37,6 @@ class KolabDynamicquota(object):
         """
 
         (used, current_quota, new_quota) = args
-
-        print args
 
         # Escape the user without quota
         if new_quota == 0:
