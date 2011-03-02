@@ -16,10 +16,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-from pykolab.auth import ldap
-from pykolab.auth import sql
 from pykolab.conf import Conf
-from pykolab.imap import IMAP
 
 from pykolab.translate import _
 
@@ -32,13 +29,9 @@ class Auth(object):
         """
             Initialize the authentication class.
         """
-        if not conf:
-            self.conf = Conf()
-            self.conf.finalize_conf()
+        self.conf = conf
+        if hasattr(self.conf, "log"):
             self.log = self.conf.log
-        else:
-            self.conf = conf
-            self.log = conf.log
 
         self._auth = None
 
@@ -47,6 +40,12 @@ class Auth(object):
             return
 
         if self.conf.get('kolab', 'auth_mechanism') == 'ldap':
+            try:
+                from pykolab.auth import ldap
+            except:
+                if hasattr(self, "log"):
+                    self.log.error(_("Failure to import authentication layer %s," +
+                        " please verify module dependencies have been installed") % "ldap")
             self._auth = ldap.LDAP(self.conf)
 
     def users(self):
@@ -55,7 +54,6 @@ class Auth(object):
         return users
 
     def set_user_attribute(self, user, attribute, value):
-        print "Setting attribute %s to %s for user %s" %(attribute, value, user)
         self._connect()
         self._auth._set_user_attribute(user, attribute, value)
 

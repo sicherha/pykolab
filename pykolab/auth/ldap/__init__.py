@@ -17,6 +17,7 @@
 #
 
 import ldap
+import time
 
 from pykolab.conf import Conf
 from pykolab.constants import *
@@ -56,7 +57,14 @@ class LDAP(object):
 
         self.ldap.simple_bind(bind_dn, bind_pw)
 
-        self.ldap.modify_s(dn, [(ldap.MOD_REPLACE, attribute, value)])
+        try:
+            self.ldap.modify(dn, [(ldap.MOD_REPLACE, attribute, value)])
+        except:
+            if hasattr(self.conf, "log"):
+                self.conf.log.warning(_("LDAP modification of attribute %s to value %s failed") %(attribute,value))
+            else:
+                print "LDAP modification of attribute %s to value %s failed" %(attribute,value)
+            self._disconnect()
 
     def _kolab_users(self):
         self._connect()
@@ -68,32 +76,44 @@ class LDAP(object):
 
         self.ldap.simple_bind(bind_dn, bind_pw)
 
-        _users = self.ldap.search_s(user_base_dn, ldap.SCOPE_SUBTREE, kolab_user_filter)
-
-        self._disconnect()
+        _search = self.ldap.search(user_base_dn, ldap.SCOPE_SUBTREE, kolab_user_filter)
 
         users = []
+        _result_type = None
 
-        for _user in _users:
-            user_attrs = {}
+        while not _result_type == ldap.RES_SEARCH_RESULT:
+            (_result_type, _users) = self.ldap.result(_search, False, 0)
+            if not _users == None:
+                for _user in _users:
+                    user_attrs = {}
 
-            (user_dn, _user_attrs) = _user
-            _user_attrs['dn'] = user_dn
+                    (user_dn, _user_attrs) = _user
+                    _user_attrs['dn'] = user_dn
 
-            for key in _user_attrs.keys():
-                if type(_user_attrs[key]) == list:
-                    if len(_user_attrs[key]) == 1:
-                        user_attrs[key.lower()] = ''.join(_user_attrs[key])
-                    else:
-                        user_attrs[key.lower()] = _user_attrs[key]
-                else:
-                    # What the heck?
-                    user_attrs[key.lower()] = _user_attrs[key]
+                    self.conf.log.debug(_("Found user %s") %(user_dn), level=9)
+
+                    for key in _user_attrs.keys():
+                        if type(_user_attrs[key]) == list:
+                            if len(_user_attrs[key]) == 1:
+                                user_attrs[key.lower()] = ''.join(_user_attrs[key])
+                            else:
+                                user_attrs[key.lower()] = _user_attrs[key]
+                        else:
+                            # What the heck?
+                            user_attrs[key.lower()] = _user_attrs[key]
 
 
-            user_attrs = self.conf.plugins.exec_hook("set_user_attrs", args=(user_attrs))
+                    mail = self.conf.plugins.exec_hook("set_user_attrs_mail", args=(user_attrs))
+                    alternative_mail = self.conf.plugins.exec_hook("set_user_attrs_alternative_mail", args=(user_attrs))
 
-            users.append(user_attrs)
+                    if not mail == user_attrs['mail']:
+                        self._set_user_attribute(user_attrs['dn'], "mail", mail)
+
+#                    if not user_attrs.has_key('mailAlternateAddress'):
+#                        # Also make sure the required object class is available.
+#                        self._set_user_attribute(user_attrs['dn'], 'mailAlternateAddress', alternative_mail)
+
+                    users.append(user_attrs)
 
         return users
 
