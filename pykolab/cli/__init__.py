@@ -29,7 +29,9 @@ import pykolab
 import pykolab.plugins
 
 from pykolab import utils
+from pykolab.auth import Auth
 from pykolab.conf import Conf
+from pykolab.imap import IMAP
 from pykolab.constants import *
 from pykolab.translate import _
 
@@ -55,7 +57,9 @@ class Cli(object):
         action_function = action.replace('-','_')
         action_components = action.split('-')
 
-        if hasattr(self, "action_%s" %(action_function)):
+        if hasattr(self, "action_%s" %(action)):
+            exec("self.action_%s()" %(action))
+        elif hasattr(self, "action_%s" %(action_function)):
             self.conf.log.info(_("TODO: self.check_%s()") %(action_function))
             exec("self.action_%s()" %(action_function))
         else:
@@ -73,6 +77,12 @@ class Cli(object):
     def no_command(self):
         print >> sys.stderr, _("No command given, see --help for details")
         sys.exit(1)
+
+    def action_sync(self):
+        auth = Auth(self.conf)
+        users = auth.users()
+        imap = IMAP(self.conf)
+        imap.synchronize(users)
 
     def action_list_domains(self):
         ldap_con = ldap.initialize(self.conf.get('ldap', 'uri'))
