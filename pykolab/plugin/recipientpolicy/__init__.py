@@ -24,38 +24,40 @@ class KolabRecipientpolicy(object):
         Example plugin making quota adjustments given arbitrary conditions.
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, conf=None):
+        self.conf = conf
 
-    def set_user_attrs(self, kw={}, args=()):
+    def set_user_attrs_mail(self, kw={}, args=()):
         """
-            The arguments passed to the 'set_user_folder_quota' hook:
+            The arguments passed to the 'set_user_attrs_mail' hook:
 
-            - used (integer, in KB)
-            - current quota (integer, in KB)
-            - quota (integer, in KB)
+            - current user attributes
+        """
+        (user_attrs) = args
+        mail = self.conf.get_raw('recipient_policy', 'primary_email') % self.normalize(user_attrs)
+        return mail
+
+    def set_user_attrs_alternative_mail(self, kw={}, args=()):
+        """
+            The arguments passed to the 'set_user_attrs_alternative_mail' hook:
+
+            - current user attributes
         """
 
         (user_attrs) = args
 
-        auth = Auth()
-
-        user_attrs['mail'] = auth.conf.get_raw('recipient_policy', 'primary_email') % self.normalize(user_attrs)
-        other_email_routines = auth.conf.get_raw('recipient_policy', 'other_email')
+        mail = self.conf.get_raw('recipient_policy', 'primary_email') % self.normalize(user_attrs)
+        other_email_routines = self.conf.get_raw('recipient_policy', 'other_email')
 
         exec("other_email_routines = %s" % other_email_routines)
 
-        other_email = []
+        alternative_email = []
 
         for routine in other_email_routines.keys():
             exec("retval = '%s'.%s" % (routine,other_email_routines[routine] % self.normalize(user_attrs)))
-            other_email.append(retval)
+            alternative_email.append(retval)
 
-        print other_email
-
-        auth.set_user_attribute(user_attrs['dn'], 'mail', user_attrs['mail'])
-
-        return user_attrs
+        return alternative_email
 
     def normalize(self, user_attrs):
         if user_attrs.has_key('sn'):
