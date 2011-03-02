@@ -95,7 +95,10 @@ class KolabPlugins:
                     print >> sys.stderr, _("Cannot set defaults for plugin %s: Unknown Error") % (plugin)
 
             else:
-                print >> sys.stderr, _("Not setting defaults for plugin %s: No function 'set_defaults()'") % plugin
+                if hasattr(self.conf, "log"):
+                    self.conf.log.debug(_("Not setting defaults for plugin %s: No function 'set_defaults()'") % plugin, level=5)
+                else:
+                    print >> sys.stderr, _("Not setting defaults for plugin %s: No function 'set_defaults()'") % plugin
 
     def set_runtime(self, runtime, plugins=[]):
         """Set runtime variables from plugins, like 'i_did_all_this'"""
@@ -133,7 +136,10 @@ class KolabPlugins:
                 except RuntimeError, e:
                     print >> sys.stderr, _("Cannot add options for plugin %s: %s") % (plugin,e)
             else:
-                print >> sys.stderr, _("Not adding options for plugin %s: No function 'add_options()'") % plugin
+                if hasattr(self.conf, "log"):
+                    self.conf.log.debug(_("Not adding options for plugin %s: No function 'add_options()'") % plugin, level=5)
+                else:
+                    print >> sys.stderr, _("Not adding options for plugin %s: No function 'add_options()'") % plugin
 
     def check_options(self, conf, plugins=[]):
         """Executes plugin.check_plugins() for all enabled plugins or the list of plugin names specified."""
