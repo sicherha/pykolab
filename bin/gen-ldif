@@ -1,0 +1,30 @@
+#!/bin/bash
+
+i=0
+while [ $i -lt 0$1 ]; do
+
+    givenname=`head -c 200 /dev/urandom | tr -dc A-Za-z | head -c5`
+    surname=`head -c 200 /dev/urandom | tr -dc A-Za-z | head -c10`
+
+    givenname="$(echo ${givenname:0:1} | tr '[:lower:]' '[:upper:]')$(echo ${givenname:1} | tr '[:upper:]' '[:lower:]')"
+    surname="$(echo ${surname:0:1} | tr '[:lower:]' '[:upper:]')$(echo ${surname:1} | tr '[:upper:]' '[:lower:]')"
+
+    uid="$(echo ${givenname:0:1}.${surname} | tr '[:upper:]' '[:lower:]')"
+
+    userpassword="VerySecret"
+
+    echo "dn: uid=$uid,ou=People,dc=kanarip,dc=com"
+    echo "uid: $uid"
+    echo "givenName: $givenname"
+    echo "objectClass: top"
+    echo "objectClass: person"
+    echo "objectClass: inetOrgPerson"
+    echo "objectClass: organizationalPerson"
+    echo "sn: $surname"
+    echo "cn: $givenname $surname"
+    echo "mail: $uid@kanarip.com"
+    echo "userPassword: {SSHA}zJ3oU5kqtS3MxnLWmKpnE7+eGVbmQKmj"
+    echo ""
+
+    let i++
+done
