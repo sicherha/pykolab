@@ -40,7 +40,7 @@ class LDAP(object):
         if not self.ldap == None:
             return
 
-        self.log.debug(_("Connecting to LDAP..."), 9)
+        self.log.debug(_("Connecting to LDAP..."), level=9)
         uri = self.conf.get('ldap', 'uri')
         self.ldap = ldap.initialize(uri)
 
@@ -61,9 +61,12 @@ class LDAP(object):
             self.ldap.modify(dn, [(ldap.MOD_REPLACE, attribute, value)])
         except:
             if hasattr(self.conf, "log"):
-                self.conf.log.warning(_("LDAP modification of attribute %s to value %s failed") %(attribute,value))
+                self.conf.log.warning(_("LDAP modification of attribute %s" + \
+                    " to value %s failed") %(attribute,value))
             else:
-                print "LDAP modification of attribute %s to value %s failed" %(attribute,value)
+                # Cannot but print in case someone's interested
+                print "LDAP modification of attribute %s to value %s" + \
+                    " failed" %(attribute,value)
             self._disconnect()
 
     def _kolab_users(self):
@@ -76,7 +79,11 @@ class LDAP(object):
 
         self.ldap.simple_bind(bind_dn, bind_pw)
 
-        _search = self.ldap.search(user_base_dn, ldap.SCOPE_SUBTREE, kolab_user_filter)
+        _search = self.ldap.search(
+                user_base_dn,
+                ldap.SCOPE_SUBTREE,
+                kolab_user_filter
+            )
 
         users = []
         _result_type = None
@@ -102,16 +109,21 @@ class LDAP(object):
                             # What the heck?
                             user_attrs[key.lower()] = _user_attrs[key]
 
-
+                    # Execute plugin hooks that may change the value(s) of the
+                    # user attributes we are going to be using.
                     mail = self.conf.plugins.exec_hook("set_user_attrs_mail", args=(user_attrs))
                     alternative_mail = self.conf.plugins.exec_hook("set_user_attrs_alternative_mail", args=(user_attrs))
 
                     if not mail == user_attrs['mail']:
                         self._set_user_attribute(user_attrs['dn'], "mail", mail)
 
-#                    if not user_attrs.has_key('mailAlternateAddress'):
-#                        # Also make sure the required object class is available.
-#                        self._set_user_attribute(user_attrs['dn'], 'mailAlternateAddress', alternative_mail)
+                    if len(alternative_mail) > 0:
+                        # Also make sure the required object class is available.
+                        if not "mailrecipient" in user_attrs['objectclass']:
+                            user_attrs['objectclass'].append('mailrecipient')
+                            self._set_user_attribute(user_attrs['dn'], 'objectclass', user_attrs['objectclass'])
+
+                    self._set_user_attribute(user_attrs['dn'], 'mailalternateaddress', alternative_mail)
 
                     users.append(user_attrs)
 
