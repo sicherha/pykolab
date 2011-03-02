@@ -74,12 +74,12 @@ class IMAP(object):
                     self.log.info(_("Creating new INBOX for user: %s") %(folder))
                     self.imap.cm("user/%s" %(folder))
                     self.imap.sq("user/%s" %(folder), 0)
-                    additional_folders = self.conf.plugins.exec_hook("create_user_folders", args=(folder))
+#                    additional_folders = self.conf.plugins.exec_hook("create_user_folders", args=(folder))
             except:
                 self.log.info(_("Creating new INBOX for user: %s") %(folder))
                 self.imap.cm("user/%s" %(folder))
                 self.imap.sq("user/%s" %(folder), 0)
-                additional_folders = self.conf.plugins.exec_hook("create_user_folders", args=(folder))
+#                additional_folders = self.conf.plugins.exec_hook("create_user_folders", args=(folder))
 
             if not additional_folders == None:
                 self.create_user_additional_folders(folder, additional_folders)
@@ -139,8 +139,6 @@ class IMAP(object):
 
             new_quota = self.conf.plugins.exec_hook("set_user_folder_quota", args=(used, current_quota, int(quota)))
 
-            print new_quota
-
             if new_quota and not new_quota == int(quota):
                 self.log.debug(_("Setting new quota for folder %s to %r") %(folder, new_quota), level=9)
                 quota = new_quota
@@ -170,7 +168,7 @@ class IMAP(object):
         inbox_folders = list(set(inbox_folders))
 
         for folder in folders:
-            print "Checking folder: %s" %(folder)
+            self.log.debug(_("Checking folder: %s") %(folder), level=1)
             try:
                 if inbox_folders.index(folder) > -1:
                     continue
