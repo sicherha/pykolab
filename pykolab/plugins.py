@@ -30,10 +30,12 @@ import pykolab.plugin
 
 class KolabPlugins:
     """Detects, loads and interfaces with plugins for Kolab"""
-    def __init__(self, init=False):
+    def __init__(self, init=False, conf=None):
         """
             Searches the plugin directory for plugins, and loads them into a list.
         """
+        self.conf = conf
+
         self.plugins = {}
 
         for plugin_path in [ '/usr/share/pykolab/plugin/', './pykolab/plugin/' ]:
@@ -69,7 +71,7 @@ class KolabPlugins:
 
         for plugin in plugins:
             if self.plugins[plugin]:
-                exec("self.%s = pykolab.plugin.%s.Kolab%s()" % (plugin,plugin,plugin.capitalize()))
+                exec("self.%s = pykolab.plugin.%s.Kolab%s(conf=self.conf)" % (plugin,plugin,plugin.capitalize()))
 
     def set_defaults(self, defaults, plugins=[]):
         """Test for a function set_defaults() in all available and loaded plugins and execute plugin.set_defaults()"""
