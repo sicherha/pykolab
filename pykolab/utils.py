@@ -4,6 +4,7 @@ import getpass
 import os
 
 from pykolab import constants
+from pykolab.translate import _
 
 def ask_question(question, default="", password=False):
     """
@@ -70,6 +71,32 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
                 answer = False
                 print >> sys.stderr, _("Please answer 'yes' or 'no'.")
 
+def normalize(_dictionary):
+    dictionary = {}
+
+    for key in _dictionary.keys():
+        if type(_dictionary[key]) == list:
+            if len(_dictionary[key]) == 1:
+                dictionary[key.lower()] = ''.join(_dictionary[key])
+            else:
+                dictionary[key.lower()] = _dictionary[key]
+        else:
+            # What the heck?
+            dictionary[key.lower()] = _dictionary[key]
+
+    if dictionary.has_key('sn'):
+        dictionary['surname'] = dictionary['sn'].replace(' ', '')
+
+    if dictionary.has_key('mail'):
+        if len(dictionary['mail']) > 0:
+            if len(dictionary['mail'].split('@')) > 1:
+                dictionary['domain'] = dictionary['mail'].split('@')[1]
+
+    if not dictionary.has_key('domain') and dictionary.has_key('standard_domain'):
+        dictionary['domain'] = dictionary['standard_domain']
+
+    return dictionary
+
 def parse_input(_input, splitchars= [ ' ' ]):
     """
         Split the input string using the split characters defined
@@ -102,6 +129,9 @@ def pop_empty_from_list(_input_list):
     for item in _input_list:
         if not item == '':
             _output_list.append(item)
+
+def standard_root_dn(domain):
+    return 'dc=%s' %(',dc='.join(domain.split('.')))
 
 def is_service(services):
     """
