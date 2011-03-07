@@ -1,5 +1,9 @@
 #!/bin/bash
 
+[ ! -z "$2" ] && domain=$2 || domain="kanarip.com"
+[ ! -z "$3" ] && rootdn=$3 || rootdn="dc=kanarip,dc=com"
+[ ! -z "$4" ] && ou=$4 || ou="ou=People"
+
 i=0
 while [ $i -lt 0$1 ]; do
 
@@ -13,7 +17,7 @@ while [ $i -lt 0$1 ]; do
 
     userpassword="VerySecret"
 
-    echo "dn: uid=$uid,ou=People,dc=kanarip,dc=com"
+    echo "dn: uid=$uid,${ou},${rootdn}"
     echo "uid: $uid"
     echo "givenName: $givenname"
     echo "objectClass: top"
@@ -22,7 +26,7 @@ while [ $i -lt 0$1 ]; do
     echo "objectClass: organizationalPerson"
     echo "sn: $surname"
     echo "cn: $givenname $surname"
-    echo "mail: $uid@kanarip.com"
+    echo "mail: $uid@${domain}"
     echo "userPassword: {SSHA}zJ3oU5kqtS3MxnLWmKpnE7+eGVbmQKmj"
     echo ""
 
