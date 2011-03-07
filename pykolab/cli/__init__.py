@@ -19,9 +19,11 @@
 
 import ldap
 import ldif
+import logging
 import traceback
 import shutil
 import sys
+import time
 
 from ldap.modlist import addModlist
 
@@ -54,6 +56,8 @@ class Cli(object):
         except IndexError, e:
             self.no_command()
 
+        self.log = logging.getLogger('pykolab.cli')
+
         action_function = action.replace('-','_')
         action_components = action.split('-')
 
@@ -79,19 +83,38 @@ class Cli(object):
         sys.exit(1)
 
     def action_sync(self):
+        # Create the authentication object.
+        # TODO: Binds with superuser credentials!
         auth = Auth(self.conf)
-        users = auth.users()
+        domains = auth.list_domains()
+        #print domains
+
         imap = IMAP(self.conf)
-        imap.synchronize(users)
+
+        for primary_domain,secondary_domains in domains:
+            #print "Running for domain %s" %(primary_domain)
+            auth.connect(primary_domain)
+            start_time = time.time()
+            users = auth.list_users(primary_domain, secondary_domains)
+            #print "USERS RETURNED FROM auth.list_users():", users
+            end_time = time.time()
+            self.log.info(_("Listing users for %s (including getting the" + \
+                    " appropriate attributes, took %d seconds")
+                    %(primary_domain, (end_time-start_time))
+                )
+            imap.synchronize(users, primary_domain, secondary_domains)
+            #print users
 
     def action_list_domains(self):
-        ldap_con = ldap.initialize(self.conf.get('ldap', 'uri'))
-        ldap_con.bind_s(self.conf.get('ldap', 'bind_dn'), self.conf.get('ldap', 'bind_pw'))
+        # Create the authentication object.
+        # TODO: Binds with superuser credentials!
+        auth = Auth(self.conf)
+        domains = auth.list_domains()
 
-        results = ldap_con.search_s('cn=kolab,cn=config', ldap.SCOPE_ONELEVEL, '(objectClass=*)', ['associatedDomain'])
-
-        for dn,entry in results:
-            print ''.join(entry['associatedDomain'])
+        # TODO: Take a hint in --quiet, and otherwise print out a nice table
+        # with headers and such.
+        for domain,domain_aliases in domains:
+            print _("Primary domain: %s - Secondary domain(s): %s") %(domain, ', '.join(domain_aliases))
 
     def action_del_domain(self):
         domainname = self.conf.args.pop(0)
