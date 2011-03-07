@@ -332,7 +332,7 @@ class Conf(object):
             print "%s = %s" %(item,mode)
 
             if not self.cfg_parser.has_section(mode):
-                print "WARNING: No configuratino section for %s: %s" %(item,mode,)
+                print "WARNING: No configuration section %s for item %s" %(mode,item)
                 continue
 
             keys = self.cfg_parser.options(mode)
@@ -424,6 +424,12 @@ class Conf(object):
             self.log.debug(_("Setting %s to %r (from the default values for CLI options)") %(option, self.parser._long_opt[long_opt].default), level=9)
             setattr(self,option,self.parser._long_opt[long_opt].default)
 
+    def has_section(self, section):
+        return self.cfg_parser.has_section(section)
+
+    def has_option(self, section, option):
+        return self.cfg_parser.has_option(section, option)
+
     def get_raw(self, section, key):
         if not self.cfg_parser:
             self.read_config()
@@ -431,26 +437,29 @@ class Conf(object):
         if self.cfg_parser.has_option(section, key):
             return self.cfg_parser.get(section,key, 1)
 
-    def get(self, section, key):
+    def get(self, section, key, quiet=False):
         if not self.cfg_parser:
             self.read_config()
 
         if self.cfg_parser.has_option(section, key):
             return self.cfg_parser.get(section,key)
         else:
-            self.log.warning(_("Option %s/%s does not exist in config file %s, pulling from defaults") %(section, key, self.config_file))
-            if hasattr(self.defaults, "%s_%s" %(section,key)):
-                return getattr(self.defaults, "%s_%s" %(section,key))
-            elif hasattr(self.defaults, "%s" %(section)):
-                if key in getattr(self.defaults, "%s" %(section)):
-                    _dict = getattr(self.defaults, "%s" %(section))
-                    return _dict[key]
+            if quiet:
+                return ""
+            else:
+                self.log.warning(_("Option %s/%s does not exist in config file %s, pulling from defaults") %(section, key, self.config_file))
+                if hasattr(self.defaults, "%s_%s" %(section,key)):
+                    return getattr(self.defaults, "%s_%s" %(section,key))
+                elif hasattr(self.defaults, "%s" %(section)):
+                    if key in getattr(self.defaults, "%s" %(section)):
+                        _dict = getattr(self.defaults, "%s" %(section))
+                        return _dict[key]
+                    else:
+                        self.log.warning(_("Option does not exist in defaults."))
+                        return _("Not available")
                 else:
                     self.log.warning(_("Option does not exist in defaults."))
                     return _("Not available")
-            else:
-                self.log.warning(_("Option does not exist in defaults."))
-                return _("Not available")
 
     def check_setting_config_file(self, value):
         if os.path.isfile(value):
@@ -475,6 +484,21 @@ class Conf(object):
         else:
             self.log.info(_("WARNING: This program has 9 levels of verbosity. Using the maximum of 9."))
             return True
+
+    def check_setting_saslauth_mode(self, value):
+        if value:
+            # TODO: I suppose this is platform specific
+            if os.path.isfile("/var/run/saslauthd/mux"):
+                if os.path.isfile("/var/run/saslauthd/saslauthd.pid"):
+                    self.log.error(_("Cannot start SASL authentication daemon"))
+                    return False
+                else:
+                    try:
+                        os.remove("/var/run/saslauthd/mux")
+                    except IOError, e:
+                        self.log.error(_("Cannot start SASL authentication daemon"))
+                        return False
+        return True
 
     def check_setting_use_imap(self, value):
         if value:
