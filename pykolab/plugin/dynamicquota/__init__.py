@@ -23,9 +23,7 @@ class KolabDynamicquota(object):
     """
 
     def __init__(self, conf=None):
-        if not conf == None:
-            self.conf = conf
-        pass
+        self.conf = conf
 
     def set_user_folder_quota(self, kw={}, args=()):
         """
@@ -36,10 +34,18 @@ class KolabDynamicquota(object):
             - quota (integer, in KB)
         """
 
-        (used, current_quota, new_quota) = args
+        #print args
+
+        (used, current_quota, new_quota, default_quota) = args
 
         # Escape the user without quota
         if new_quota == 0:
+            # Unless default quota is set
+            if default_quota > 0:
+                #print "new quota is 0, but default quota > 0, returning default quota"
+                return default_quota
+
+            #print "new quota is 0, and default quota is no larger then 0, returning 0"
             return 0
 
         # Make your adjustments here, for example:
@@ -48,8 +54,16 @@ class KolabDynamicquota(object):
         #   is over 90%
 
         if new_quota < int(float(used) * 1.1):
+            #print "new quota is smaller then 110%% of what is currently used, returning 110%% of used"
             new_quota = int(float(used) * 1.1)
         elif new_quota > int(float(used) * 1.1):
+            # TODO: If the current quota in IMAP had been set to 0, but we want to apply quota, and
+            # 0 is current_quota, 90% of that is still 0...
+            #print "new quota is larger then 110%% of what is currently used, returning 90%% of current quota"
             new_quota = int(float(current_quota) * 0.9)
+
+        if default_quota > new_quota:
+            #print "default quota is more then the calculated new quota"
+            return default_quota
 
         return new_quota
