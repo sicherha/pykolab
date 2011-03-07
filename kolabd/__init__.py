@@ -49,6 +49,12 @@ class KolabDaemon(object):
                                 default = False,
                                 help    = _("Fork to the background."))
 
+        daemon_group.add_option(  "--saslauthd",
+                                dest    = "saslauth_mode",
+                                action  = "store_true",
+                                default = False,
+                                help    = _("Include the SASL Authentication Daemon."))
+
         self.conf.finalize_conf()
 
         self.log = self.conf.log
@@ -59,6 +65,15 @@ class KolabDaemon(object):
         """Run Forest, RUN!"""
 
         exitcode = 0
+
+        # TODO: Add a nosync option
+
+        if self.conf.saslauth_mode:
+            self.thread_count += 1
+            pid = os.fork()
+            if pid == 0:
+                self.log.remove_stdout_handler()
+                self.do_saslauthd()
 
         try:
             if self.conf.fork_mode:
@@ -95,7 +110,69 @@ class KolabDaemon(object):
             self.log.debug(_("Sleeping for 10 seconds..."), 5)
             time.sleep(10)
             auth = Auth(self.conf)
-            users = auth.users()
-            imap = IMAP(self.conf)
-            imap.synchronize(users)
+            domains = auth.list_domains()
+            #print domains
 
+            imap = IMAP(self.conf)
+
+            all_folders = []
+
+            for primary_domain,secondary_domains in domains:
+                #print "Running for domain %s" %(primary_domain)
+                auth.connect(primary_domain)
+                start_time = time.time()
+                users = auth.list_users(primary_domain, secondary_domains)
+                #print "USERS RETURNED FROM auth.list_users():", users
+                end_time = time.time()
+                self.log.info(_("Listing users for %s (including getting the" + \
+                        " appropriate attributes, took %d seconds")
+                        %(primary_domain, (end_time-start_time))
+                    )
+                all_folders.extend(imap.synchronize(users, primary_domain, secondary_domains))
+
+        imap.expunge_user_folders(all_folders)
+
+    def do_saslauthd(self):
+        import binascii
+        import socket
+        import struct
+
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+
+        # TODO: The saslauthd socket path could be a setting.
+
+        try:
+            os.remove('/var/run/saslauthd/mux')
+        except:
+            pass
+
+        s.bind('/var/run/saslauthd/mux')
+        os.chmod('/var/run/saslauthd/mux', 0777)
+
+        s.listen(5)
+
+        while 1:
+            (clientsocket, address) = s.accept()
+            received = clientsocket.recv(4096)
+
+            login = []
+
+            start = 0
+            end = 2
+
+            while end < len(received):
+                (length,) = struct.unpack("!H", received[start:end])
+                start += 2
+                end += length
+                (value,) = struct.unpack("!%ds" %(length), received[start:end])
+                start += length
+                end = start + 2
+                login.append(value)
+
+            auth = Auth(self.conf)
+            if auth.authenticate(login):
+                clientsocket.send(struct.pack("!H2s", 2, "OK"))
+            else:
+                clientsocket.send(struct.pack("!H2s", 2, "NO"))
+
+            clientsocket.close()
