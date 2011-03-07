@@ -4,7 +4,7 @@ Summary:        Kolab Groupware Solution
 Name:           pykolab
 Version:        @VERSION@
 Release:        @RELEASE@%{?dist}
-License:        GPLv2
+License:        GPLv3+
 Group:          Applications/System
 URL:            http://kolab.org/
 Source0:        http://files.kolab.org/releases/%{name}-%{version}.tar.gz
