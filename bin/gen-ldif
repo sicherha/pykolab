@@ -1,7 +1,7 @@
 #!/bin/bash
 
-[ ! -z "$2" ] && domain=$2 || domain="kanarip.com"
-[ ! -z "$3" ] && rootdn=$3 || rootdn="dc=kanarip,dc=com"
+[ ! -z "$2" ] && domain=$2 || domain="example.org"
+[ ! -z "$3" ] && rootdn=$3 || rootdn="dc=example,dc=org"
 [ ! -z "$4" ] && ou=$4 || ou="ou=People"
 
 i=0
