@@ -121,6 +121,7 @@ class IMAP(object):
                     }
 
             self.imap.cm(folder_name)
+
             if additional_folders[additional_folder].has_key("annotations"):
                 for annotation in additional_folders[additional_folder]["annotations"].keys():
                     self.imap.setannotation(
@@ -129,10 +130,23 @@ class IMAP(object):
                             "%s" %(additional_folders[additional_folder]["annotations"][annotation])
                         )
 
+            if additional_folders(additional_folder].has_key("acls"):
+                for acl in additional_folders[additional_folder]["acls"].keys():
+                    self.imap.sam(
+                            folder_name,
+                            "%s" %(acl),
+                            "%s" %(additional_folders[additional_folder]["acls"][acl])
+                        )
+
     def set_user_folder_quota(self, users=[], primary_domain=None, secondary_domain=[], folders=[]):
         self._connect()
 
-        _quota_attr = self.conf.get('cyrus-imap', 'quota_attribute')
+        if self.conf.has_option(primary_domain, 'quota_attribute')
+            _quota_attr = self.conf.get(primary_domain, 'quota_attribute')
+        else:
+            auth_mechanism = self.conf.get('kolab', 'auth_mechanism')
+            _quota_attr = self.conf.get(auth_mechanism, 'quota_attribute')
+
         _inbox_folder_attr = self.conf.get('cyrus-sasl', 'result_attribute')
 
         default_quota = self.auth.domain_default_quota(primary_domain)
