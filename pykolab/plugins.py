@@ -179,7 +179,7 @@ class KolabPlugins:
 
         return False
 
-    def exec_hook(self, hook, plugins=[], args=()):
+    def exec_hook(self, hook, plugins=[], kw={}, args=()):
         """Execute a hook"""
 
         if len(plugins) < 1:
@@ -195,7 +195,7 @@ class KolabPlugins:
 
             if hasattr(getattr(self,plugin),hook):
                 try:
-                    exec("retval = self.%s.%s(args=%r)" % (plugin,hook,args))
+                    exec("retval = self.%s.%s(kw=%r, args=%r)" % (plugin,hook,kw,args))
                 except TypeError, e:
                     print >> sys.stderr, _("Cannot execute hook %s for plugin %s: %s") % (hook,plugin,e)
                 except AttributeError, e:
