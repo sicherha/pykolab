@@ -130,7 +130,7 @@ class KolabDaemon(object):
                     )
                 all_folders.extend(imap.synchronize(users, primary_domain, secondary_domains))
 
-        imap.expunge_user_folders(all_folders)
+            imap.expunge_user_folders(all_folders)
 
     def do_saslauthd(self):
         import binascii
