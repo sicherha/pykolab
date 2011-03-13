@@ -49,6 +49,7 @@ binary:
 		-x BaseHTTPServer \
 		-x ConfigParser \
 		-x FixTk \
+		-x MySQLdb \
 		-x SocketServer \
 		-x StringIO \
 		-x Tkconstants \
@@ -141,6 +142,7 @@ binary:
 
 clean:
 	rm -rf src/*; mkdir -p src/
+	find -type f -name "*.pyo" -o -name "*.pyc" -delete
 
 execdir = $(sbindir)
 
