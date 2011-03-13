@@ -41,6 +41,104 @@ ChangeLog:
 srpm: ChangeLog dist
 	@rpmbuild -ts $(PACKAGE)-$(VERSION).tar.gz
 
+binary:
+	/home/jmeeuwen/devel/src/python.svn/Tools/freeze/freeze.py \
+		-x BaseHTTPServer \
+		-x ConfigParser \
+		-x FixTk \
+		-x SocketServer \
+		-x StringIO \
+		-x Tkconstants \
+		-x Tkinter \
+		-x UserDict \
+		-x __future__ \
+		-x _abcoll \
+		-x _threading_local \
+		-x _weakrefset \
+		-x _xmlplus \
+		-x abc \
+		-x atexit \
+		-x base64 \
+		-x bdb \
+		-x bisect \
+		-x calendar \
+		-x cmd \
+		-x collections \
+		-x copy \
+		-x copy_reg \
+		-x difflib \
+		-x dis \
+		-x distutils \
+		-x doctest \
+		-x dsml \
+		-x dummy_thread \
+		-x encodings \
+		-x fnmatch \
+		-x formatter \
+		-x ftplib \
+		-x functools \
+		-x genericpath \
+		-x getopt \
+		-x getpass \
+		-x gettext \
+		-x glob \
+		-x gzip \
+		-x hashlib \
+		-x hmac \
+		-x httplib \
+		-x imaplib \
+		-x inspect \
+		-x io \
+		-x ldapurl \
+		-x ldif \
+		-x linecache \
+		-x locale \
+		-x logging \
+		-x mimetools \
+		-x mimetypes \
+		-x ntpath \
+		-x nturl2path \
+		-x optparse \
+		-x os2emxpath \
+		-x pdb \
+		-x pickle \
+		-x pkgutil \
+		-x posixpath \
+		-x pprint \
+		-x py_compile \
+		-x pydoc \
+		-x pydoc_data \
+		-x quopri \
+		-x random \
+		-x repr \
+		-x rfc822 \
+		-x shlex \
+		-x shutil \
+		-x site \
+		-x smtplib \
+		-x socket \
+		-x ssl \
+		-x stat \
+		-x string \
+		-x struct \
+		-x subprocess \
+		-x sysconfig \
+		-x tarfile \
+		-x tempfile \
+		-x textwrap \
+		-x threading \
+		-x traceback \
+		-x types \
+		-x urlparse \
+		-x uu \
+		-x warnings \
+		-o src/kolabd/ \
+		kolabd.py
+	cd src/kolabd/; $(MAKE)
+
+clean:
+	rm -rf src/*; mkdir -p src/
+
 execdir = $(sbindir)
 
 install-exec-local:
