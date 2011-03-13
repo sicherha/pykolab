@@ -13,3 +13,4 @@ po/*.gmo
 po/POTFILES
 pykolab/constants.py
 pykolab-[0-9]*.*/
+src/
