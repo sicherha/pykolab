@@ -19,26 +19,36 @@
 
 import logging
 import os
+import pdb
 import pykolab
 import sys
-import pdb
+import traceback
+
+if False:
+    import pykolab.plugins.defaultfolders
+    import pykolab.plugins.dynamicquota
+    import pykolab.plugins.recipientpolicy
 
 # Translation
 from pykolab.translate import _
 
-import pykolab.plugin
-
 class KolabPlugins:
-    """Detects, loads and interfaces with plugins for Kolab"""
+    """
+        Detects, loads and interfaces with plugins for different
+        Kolab components.
+    """
     def __init__(self, init=False, conf=None):
         """
-            Searches the plugin directory for plugins, and loads them into a list.
+            Searches the plugin directory for plugins, and loads
+            them into a list.
         """
         self.conf = conf
 
+        self.log = logging.getLogger('pykolab.plugins')
+
         self.plugins = {}
 
-        for plugin_path in [ '/usr/share/pykolab/plugin/', './pykolab/plugin/' ]:
+        for plugin_path in [ '/usr/share/pykolab/plugins', './pykolab/plugins' ]:
             if os.path.isdir(plugin_path):
                 for plugin in os.listdir(plugin_path):
                     if os.path.isdir('%s/%s/' %(plugin_path,plugin,)):
@@ -47,34 +57,50 @@ class KolabPlugins:
         self.check_plugins(init=init)
 
     def check_plugins(self, init=False):
-        """Checks all plugins in self.plugins and sets the values to
-        True (loadable) or False (not enabled, not installed or not loadable)"""
+        """
+            Checks all plugins in self.plugins and sets the values to
+            True (loadable) or False -- not enabled, not installed or
+            not loadable.
+        """
         for plugin in self.plugins:
             try:
-                exec("from pykolab.plugin.%s import Kolab%s" %(plugin,plugin.capitalize()))
+                exec("from pykolab.plugins import %s" %(plugin))
                 self.plugins[plugin] = True
                 self.load_plugins(plugins=[plugin], init=init)
             except ImportError, e:
                 if not init: print >> sys.stderr, _("ImportError for plugin %s: %s") % (plugin,e)
+                traceback.print_exc()
                 self.plugins[plugin] = False
             except RuntimeError, e:
                 if not init: print >> sys.stderr, _("RuntimeError for plugin %s: %s") % (plugin,e)
+                traceback.print_exc()
                 self.plugins[plugin] = False
             except Exception, e:
                 if not init: print >> sys.stderr, _("Plugin %s failed to load (%s: %s)") % (plugin, e.__class__, e)
+                traceback.print_exc()
+            except:
+                traceback.print_exc()
 
     def load_plugins(self, plugins=[], init=False):
-        """Loads plugins specified by a list of plugins or loads them all"""
+        """
+            Loads plugins specified by a list of plugins or loads them all
+        """
 
         if len(plugins) < 1:
             plugins = self.plugins.keys()
 
         for plugin in plugins:
             if self.plugins[plugin]:
-                exec("self.%s = pykolab.plugin.%s.Kolab%s(conf=self.conf)" % (plugin,plugin,plugin.capitalize()))
+                try:
+                    exec("self.%s = %s.Kolab%s(conf=self.conf)" % (plugin,plugin,plugin.capitalize()))
+                except:
+                    # TODO: A little better verbosity please!
+                    traceback.print_exc()
 
     def set_defaults(self, defaults, plugins=[]):
-        """Test for a function set_defaults() in all available and loaded plugins and execute plugin.set_defaults()"""
+        """
+            Test for a function set_defaults() in all available and loaded plugins and execute plugin.set_defaults()
+        """
         if len(plugins) < 1:
             plugins = self.plugins.keys()
 
@@ -101,7 +127,9 @@ class KolabPlugins:
                     print >> sys.stderr, _("Not setting defaults for plugin %s: No function 'set_defaults()'") % plugin
 
     def set_runtime(self, runtime, plugins=[]):
-        """Set runtime variables from plugins, like 'i_did_all_this'"""
+        """
+            Set runtime variables from plugins, like 'i_did_all_this'
+        """
         if len(plugins) < 1:
             plugins = self.plugins.keys()
 
@@ -120,7 +148,9 @@ class KolabPlugins:
                 print >> sys.stderr, _("Not setting runtime for plugin %s: No function 'set_runtime()'") % plugin
 
     def add_options(self, parser, plugins=[]):
-        """Add options specified in a plugin to parser. Takes a list of plugin names or does them all"""
+        """
+            Add options specified in a plugin to parser. Takes a list of plugin names or does them all
+        """
         if len(plugins) < 1:
             plugins = self.plugins.keys()
 
@@ -142,7 +172,9 @@ class KolabPlugins:
                     print >> sys.stderr, _("Not adding options for plugin %s: No function 'add_options()'") % plugin
 
     def check_options(self, conf, plugins=[]):
-        """Executes plugin.check_plugins() for all enabled plugins or the list of plugin names specified."""
+        """
+            Executes plugin.check_plugins() for all enabled plugins or the list of plugin names specified.
+        """
 
         if len(plugins) < 1:
             plugins = self.plugins.keys()
@@ -162,7 +194,9 @@ class KolabPlugins:
                 print >> sys.stderr, _("Not checking options for plugin %s: No function 'check_options()'") % plugin
 
     def plugin_check_setting(self, func, option, val, plugins=[]):
-        """Checks one setting specified by 'option' against the 'val' it is passed by all plugins or by the list of plugins specified"""
+        """
+            Checks one setting specified by 'option' against the 'val' it is passed by all plugins or by the list of plugins specified
+        """
 
         if len(plugins) < 1:
             plugins = self.plugins.keys()

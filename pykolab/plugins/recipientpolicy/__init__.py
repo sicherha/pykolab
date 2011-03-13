@@ -35,46 +35,53 @@ class KolabRecipientpolicy(object):
         ## Your actions go here. For example:
         #return (mail, alternative_mail)
 
-    def set_user_attrs_mail(self, kw={}, args=()):
+    def set_primary_mail(self, kw={}, args=()):
         """
             The arguments passed to the 'set_user_attrs_mail' hook:
 
             - current user attributes
         """
-        (user_attrs) = args
+
+        (user_attrs, primary_domain, secondary_domains) = args
 
         user_attrs = utils.normalize(user_attrs)
 
+        if not user_attrs.has_key('domain'):
+            user_attrs['domain'] = primary_domain
+        elif not user_attrs['domain'] == primary_domain:
+            user_attrs['domain'] = primary_domain
+
         try:
-            mail = self.conf.get_raw('recipient_policy', 'primary_email') % user_attrs
-            return mail
+            mail = kw['primary_mail'] % user_attrs
+            return mail.lower()
         except KeyError, e:
             self.conf.log.warning(_("Attribute substitution for 'mail' failed in Recipient Policy"))
-            return "user@example.org"
+            return user_attrs['mail'].lower()
 
-    def set_user_attrs_alternative_mail(self, kw={}, args=()):
+    def set_secondary_mail(self, kw={}, args=()):
         """
             The arguments passed to the 'set_user_attrs_alternative_mail' hook:
 
             - current user attributes
         """
 
-        (user_attrs) = args
+        (user_attrs, primary_domain, secondary_domains) = args
 
         user_attrs = utils.normalize(user_attrs)
 
-        other_email_routines = self.conf.get_raw('recipient_policy', 'other_email')
+        user_attrs['standard_domain'] = primary_domain
 
-        exec("other_email_routines = %s" % other_email_routines)
+        exec("alternative_mail_routines = %s" % kw['secondary_mail'])
 
         alternative_mail = []
 
-        for routine in other_email_routines.keys():
-            try:
-                exec("retval = '%s'.%s" % (routine,other_email_routines[routine] % user_attrs))
-            except KeyError, e:
-                self.conf.log.warning(_("Attribute substitution for 'mail' failed in Recipient Policy"))
-                retval = "user@example.org"
-            alternative_mail.append(retval)
+        for routine in alternative_mail_routines.keys():
+            for _domain in [ primary_domain ] + secondary_domains:
+                user_attrs['domain'] = _domain
+                try:
+                    exec("retval = '%s'.%s" % (routine,alternative_mail_routines[routine] % user_attrs))
+                except KeyError, e:
+                    self.conf.log.warning(_("Attribute substitution for 'alternative_mail' failed in Recipient Policy"))
+                alternative_mail.append(retval)
 
         return alternative_mail

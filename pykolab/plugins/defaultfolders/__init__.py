@@ -17,6 +17,10 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+__all__ = [
+        'KolabDefaultfolders'
+    ]
+
 class KolabDefaultfolders(object):
     """
         Example plugin to create a set of default folders.
@@ -33,36 +37,8 @@ class KolabDefaultfolders(object):
             - user folder
         """
 
-        (folder) = args
+        (folder, additional_folders) = args
 
-        folders_to_create = {}
+        exec("additional_folders = %s" %(additional_folders))
 
-        folders_to_create["Calendar"] = {
-                "annotations": {
-                        "/vendor/kolab/folder-test": "true",
-                        "/vendor/kolab/folder-type": "event.default"
-                    }
-            }
-
-        folders_to_create["Calendar/Personlich"] = {
-                "annotations": {
-                        "/vendor/kolab/folder-test": "true",
-                        "/vendor/kolab/folder-type": "event"
-                    }
-            }
-
-        folders_to_create["Contacts"] = {
-                "annotations": {
-                        "/vendor/kolab/folder-test": "true",
-                        "/vendor/kolab/folder-type": "contact.default"
-                    }
-            }
-
-        folders_to_create["Dagboek"] = {
-                "annotations": {
-                        "/vendor/kolab/folder-test": "true",
-                        "/vendor/kolab/folder-type": "journal.default"
-                    }
-            }
-
-        return folders_to_create
+        return additional_folders
