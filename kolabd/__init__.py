@@ -49,12 +49,6 @@ class KolabDaemon(object):
                                 default = False,
                                 help    = _("Fork to the background."))
 
-        daemon_group.add_option(  "--saslauthd",
-                                dest    = "saslauth_mode",
-                                action  = "store_true",
-                                default = False,
-                                help    = _("Include the SASL Authentication Daemon."))
-
         self.conf.finalize_conf()
 
         self.log = self.conf.log
@@ -67,24 +61,16 @@ class KolabDaemon(object):
         exitcode = 0
 
         # TODO: Add a nosync option
-
-        if self.conf.saslauth_mode:
-            self.thread_count += 1
-            pid = os.fork()
-            if pid == 0:
-                self.log.remove_stdout_handler()
-                self.do_saslauthd()
-
         try:
+            pid = 1
             if self.conf.fork_mode:
                 self.thread_count += 1
                 pid = os.fork()
-            else:
-                self.do_sync()
 
             if pid == 0:
                 self.log.remove_stdout_handler()
-                self.do_sync()
+
+            self.do_sync()
 
         except SystemExit, e:
             exitcode = e
@@ -107,6 +93,7 @@ class KolabDaemon(object):
 
     def do_sync(self):
         while 1:
+            # TODO: Interval should be configurable
             self.log.debug(_("Sleeping for 10 seconds..."), 5)
             time.sleep(10)
             auth = Auth(self.conf)
