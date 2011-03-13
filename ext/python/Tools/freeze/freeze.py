@@ -155,7 +155,7 @@ def main():
 
     # Now parse the command line with the extras inserted.
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'r:a:dEe:hmo:p:P:qs:wX:x:l:')
+        opts, args = getopt.getopt(sys.argv[1:], 'r:a:dEe:hmo:p:P:b:qs:wX:x:l:')
     except getopt.error, msg:
         usage('getopt error: ' + str(msg))
 
@@ -164,6 +164,8 @@ def main():
         if o == '-h':
             print __doc__
             return
+        if o == '-b':
+            binlib = a
         if o == '-d':
             debug = debug + 1
         if o == '-e':
@@ -232,8 +234,12 @@ def main():
         if win:
             frozendllmain_c = os.path.join(exec_prefix, 'Pc\\frozen_dllmain.c')
     else:
-        binlib = os.path.join(exec_prefix,
+        if not binlib:
+            binlib = os.path.join(exec_prefix,
                               'lib', 'python%s' % version, 'config')
+        else:
+            binlib = os.path.join(binlib, 'python%s' % version, 'config')
+
         incldir = os.path.join(prefix, 'include', 'python%s' % version)
         config_h_dir = os.path.join(exec_prefix, 'include',
                                     'python%s' % version)
