@@ -130,15 +130,17 @@ class Auth(object):
     def list_users(self, primary_domain, secondary_domains=[]):
         self.connect(domain=primary_domain)
         users = self._auth[primary_domain]._list_users(primary_domain, secondary_domains)
-        #print "USERS RETURNED FROM self._auth['%s']._list_users():", users
         return users
 
     def domain_default_quota(self, domain):
         self.connect(domain=domain)
-        print self._auth
         return self._auth[domain]._domain_default_quota(domain)
 
-    def get_user_attribute(self, user, attribute):
+    def domain_section(self, domain):
+        self.connect(domain=domain)
+        return self._auth[domain]._domain_section(domain)
+
+    def get_user_attribute(self, domain, user, attribute):
         return self._auth[domain]._get_user_attribute(user, attribute)
 
     def set_user_attribute(self, domain, user, attribute, value):
