@@ -140,10 +140,20 @@ class LDAP(object):
 
         _results = self._search(user_base_dn, filterstr=search_filter, attrlist=['dn'])
 
-        if not len(_results) == 1:
-            return False
-
-        (_user_dn, _user_attrs) = _results[0]
+        if len(_results) == 1:
+            (_user_dn, _user_attrs) = _results[0]
+        else:
+            # Retry to find the user_dn with just uid=%s against the root_dn, if the login is not fully qualified
+            if len(login.split('@')) < 2:
+                search_filter = "(uid=%s)" %(login)
+                _results = self._search(domain_root_dn, filterstr=search_filter, attrlist=['dn'])
+                if len(_results) == 1:
+                    (_user_dn, _user_attrs) = _results[0]
+                else:
+                    # Overall fail
+                    return False
+            else:
+                return False
 
         return _user_dn
 
@@ -207,33 +217,50 @@ class LDAP(object):
     def _domain_default_quota(self, domain):
         domain_root_dn = self._kolab_domain_root_dn(domain)
 
-        if self.conf.cfg_parser.has_option(domain_root_dn, 'default_quota'):
+        if self.conf.has_option(domain_root_dn, 'default_quota'):
             return self.conf.get(domain_root_dn, 'default_quota', quiet=True)
-        elif self.conf.cfg_parser.has_option('ldap', 'default_quota'):
+        elif self.conf.has_option('ldap', 'default_quota'):
             return self.conf.get('ldap', 'default_quota', quiet=True)
-        elif self.conf.cfg_parser.has_option('kolab', 'default_quota'):
+        elif self.conf.has_option('kolab', 'default_quota'):
             return self.conf.get('kolab', 'default_quota', quiet=True)
+
+    def _domain_section(self, domain):
+        domain_root_dn = self._kolab_domain_root_dn(domain)
+
+        if self.conf.has_section(domain_root_dn):
+            return domain_root_dn
+        else:
+            return 'ldap'
 
     def _get_user_attribute(self, user, attribute):
         self._bind()
 
-        (user_dn, user_attrs) = self._search(user, ldap.SCOPE_BASE, '(objectclass=*)', [ attribute ])[0]
+        (user_dn, user_attrs) = self._search(user['dn'], ldap.SCOPE_BASE, '(objectclass=*)', [ attribute ])[0]
 
         user_attrs = utils.normalize(user_attrs)
+        if not user_attrs.has_key(attribute):
+            user_attrs[attribute] = None
+
         return user_attrs[attribute]
+
 
     def _set_user_attribute(self, user, attribute, value):
         self._bind()
 
         #print "user:", user
 
-        if type(user) == dict:
-            user_dn = user['dn']
-        elif type(user) == str:
-            user_dn = user
+        attribute = attribute.lower()
+
+        # TODO: This should be a schema check!
+        if attribute in [ 'mailquota', 'mailalternateaddress' ]:
+            if not user.has_key('objectclass'):
+                user['objectclass'] = self._get_user_attribute(user,'objectclass')
+            if not 'mailrecipient' in user['objectclass']:
+                user['objectclass'].append('mailrecipient')
+                self._set_user_attribute(user, 'objectclass', user['objectclass'])
 
         try:
-            self.ldap.modify(user_dn, [(ldap.MOD_REPLACE, attribute, value)])
+            self.ldap.modify(user['dn'], [(ldap.MOD_REPLACE, attribute, value)])
         except:
             self.log.warning(_("LDAP modification of attribute %s" + \
                 " for %s to value %s failed") %(attribute,user_dn,value))
@@ -314,7 +341,10 @@ class LDAP(object):
 
         domain_base_dn = self.conf.get('ldap', 'domain_base_dn', quiet=True)
 
+        print "domain_base_dn:", domain_base_dn
+
         if not domain_base_dn == "":
+            print "domain_base_dn is not \"\""
 
             # If we haven't returned already, let's continue searching
             domain_name_attribute = self.conf.get('ldap', 'domain_name_attribute')
@@ -333,15 +363,16 @@ class LDAP(object):
                 if _domain_attrs.has_key(domain_rootdn_attribute):
                     return _domain_attrs[domain_rootdn_attribute]
 
+        print "domain_base_dn is \"\""
         return utils.standard_root_dn(domain)
 
     def _list_users(self, primary_domain, secondary_domains=[]):
 
-        self.log.info(_("Listing users for domain %s") %(primary_domain))
+        self.log.info(_("Listing users for domain %s (and %s)") %(primary_domain, ' '.join(secondary_domains)))
 
         self._bind()
 
-        # With read-only credentials please
+        # TODO: Bind with read-only credentials, perhaps even domain-specific, please
         bind_dn = self.conf.get('ldap', 'bind_dn')
         #bind_dn = self.conf.get('ldap', 'ro_bind_dn')
         bind_pw = self.conf.get('ldap', 'bind_pw')
@@ -368,14 +399,13 @@ class LDAP(object):
 
         self.ldap.simple_bind(bind_dn, bind_pw)
 
-        # TODO: For (very) large result sets, this may hit a limit and we need
-        # it to just continue.
-        #
+        # TODO: The quota and alternative address attributes are actually
+        # supposed to be settings.
         _search = self._search(
                 user_base_dn,
                 ldap.SCOPE_SUBTREE,
                 kolab_user_filter,
-                attrlist=[ 'dn', 'mail', 'sn', 'givenname', 'cn', 'uid' ],
+                attrlist=[ 'dn', 'mail', 'mailquota', 'mailalternateaddress', 'sn', 'givenname', 'cn', 'uid' ],
                 attrsonly=0
             )
 
@@ -396,16 +426,49 @@ class LDAP(object):
 
             #print "USER_ATTRS:", user_attrs
 
-            for attribute in [ 'mail', 'sn', 'givenname', 'cn', 'uid' ]:
+            for attribute in [ 'mail', 'mailalternateaddress', 'sn', 'givenname', 'cn', 'uid' ]:
                 if not user_attrs.has_key(attribute):
                     #print "doesn't have attribute"
-                    user[attribute] = self._get_user_attribute(user_dn, attribute)
+                    user[attribute] = self._get_user_attribute(user, attribute)
                 else:
                     #print "has attribute"
                     user[attribute] = user_attrs[attribute]
+
+            #print "============== EXECING PLUGINS ================="
+
+            if self.conf.has_option(domain_root_dn, 'primary_mail'):
+                primary_mail = self.conf.plugins.exec_hook("set_primary_mail",
+                        kw={'primary_mail': self.conf.get_raw(domain_root_dn, 'primary_mail')},
+                        args=(user_attrs, primary_domain, secondary_domains)
+                    )
+
+                if not primary_mail == None and (not user.has_key('mail') or not primary_mail == user['mail']):
+                    self._set_user_attribute(user, 'mail', primary_mail)
+                    user['mail'] = primary_mail
+
+                if self.conf.has_option(domain_root_dn, 'secondary_mail'):
+                    secondary_mail = self.conf.plugins.exec_hook("set_secondary_mail",
+                            kw={'secondary_mail': self.conf.get_raw(domain_root_dn, 'secondary_mail')},
+                            args=(user_attrs, primary_domain, secondary_domains)
+                        )
+                    #print "secondary mail:", secondary_mail, len(secondary_mail)
+
+                    if not secondary_mail == None:
+                        secondary_mail = list(set(secondary_mail))
+                        if not secondary_mail == user['mailalternateaddress']:
+                            self._set_user_attribute(user, 'mailalternateaddress', secondary_mail)
+                            user['mailalternateaddress'] = secondary_mail
 
             users.append(user)
 
         #print "USERS:", users
 
         return users
+
+#class SyncControl(ldap.controls.LDAPControl):
+    #controlType = '(1.3.6.1.4.1.4203.1.9.1.1'
+    #def __init__(self, controlType, criticality, controlValue=None, encodedControlValue=None):
+        #LDAPControl.__init__(self, controlType, criticality, controlValue, encodedControlValue)
+
+    #def encodeControlValue(self, value):
+
