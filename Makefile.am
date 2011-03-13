@@ -45,7 +45,7 @@ srpm: ChangeLog dist
 binary:
 	python ext/python/Tools/freeze/freeze.py \
 		-p $(prefix) \
-		-b $(binlib) \
+		-b $(libdir) \
 		-x BaseHTTPServer \
 		-x ConfigParser \
 		-x FixTk \
