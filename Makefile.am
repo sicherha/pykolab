@@ -43,7 +43,9 @@ srpm: ChangeLog dist
 	@rpmbuild -ts $(PACKAGE)-$(VERSION).tar.gz
 
 binary:
-	/home/jmeeuwen/devel/src/python.svn/Tools/freeze/freeze.py \
+	python ext/python/Tools/freeze/freeze.py \
+		-p $(prefix) \
+		-b $(binlib) \
 		-x BaseHTTPServer \
 		-x ConfigParser \
 		-x FixTk \
