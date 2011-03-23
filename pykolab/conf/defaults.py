@@ -17,30 +17,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import logging
+
 class Defaults(object):
     def __init__(self, plugins=None):
-        # Each possible section in the configuration has a dict here.
-
-        # The default authentication mechanism
-        self.kolab = {
-                'auth_mechanism': 'ldap',
-            }
-
-        # The default LDAP URI. Note that these are
-        # prefixed with the section name.
-        self.ldap   = {
-                'uri': "ldap://localhost",
-                'base_dn': "dc=localhost,dc=localdomain",
-                'bind_dn': "",
-                'bind_pw': "",
-                'user_base_dn': "ou=People,%(base_dn)s",
-                'group_base_dn': "ou=Groups,%(base_dn)s",
-                'kolab_user_filter': '(objectClass=*)'
-            }
-
-        self.testing = {
-                'admin_password': 'secret',
-                'admin_login': 'manager',
-                'server': '127.0.0.1',
-                'users': []
-            }
+        self.loglevel = logging.CRITICAL
