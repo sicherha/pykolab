@@ -17,84 +17,72 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import inspect
 import logging
 import logging.handlers
 import sys
+import time
 
-# Translation
-from pykolab.translate import _, N_
+from pykolab.translate import _
 
-class Logger:
-    def __init__(self, loglevel=logging.INFO, debuglevel=0, logfile="/var/log/kolab/kolabd.log"):
+class Logger(logging.Logger):
+    debuglevel = 0
+    loglevel = logging.CRITICAL
 
-        self.loglevel = loglevel
-        self.debuglevel = debuglevel
+    for arg in sys.argv:
+        if debuglevel == -1:
+            debuglevel = int(arg)
+            #print debuglevel
+            loglevel = logging.DEBUG
+            break
+        if '-d' == arg:
+            debuglevel = -1
+            continue
 
-        plaintextformatter = logging.Formatter("%(message)s")
+    #print inspect.stack()
+    #print "debuglevel:", debuglevel
+    #print "loglevel:", loglevel
+
+    def __init__(self, *args, **kw):
+        if kw.has_key('name'):
+            name = kw['name']
+        elif len(args) == 1:
+            name = args[0]
+        else:
+            name = 'pykolab'
+
+        logging.Logger.__init__(self, name)
+
+        plaintextformatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 
         self.console_stdout = logging.StreamHandler(sys.stdout)
         self.console_stdout.setFormatter(plaintextformatter)
 
+        self.addHandler(self.console_stdout)
+
+        if kw.has_key('logfile'):
+            self.logfile = kw['logfile']
+        else:
+            return
         try:
-            filelog_handler = logging.FileHandler(filename=logfile)
+            filelog_handler = logging.FileHandler(filename=self.logfile)
             filelog_handler.setFormatter(plaintextformatter)
         except IOError, e:
-            print >> sys.stderr, _("Cannot log to file %s: %s") % (logfile, e)
+            print >> sys.stderr, _("Cannot log to file %s: %s") % (self.logfile, e)
 
-        self.log = logging.getLogger('pykolab')
-
-        if not len(self.log.handlers) > 1:
-            self.log.addHandler(self.console_stdout)
+        if not len(self.handlers) > 1:
             try:
-                self.log.addHandler(filelog_handler)
+                self.addHandler(filelog_handler)
             except:
                 pass
 
-            self.log.setLevel(self.loglevel)
-
     def remove_stdout_handler(self):
-        self.log.removeHandler(self.console_stdout)
-
-    def set_config(self, cfg):
-        """Let the Logger instance know what our configuration is and she might
-        be able to distinct between CLI and GUI mode, or even give more details
-        about what goes wrong"""
-        self.cfg = cfg
-
-    def info(self, msg):
-        if not self.cfg.quiet:
-            self.log.info(msg)
+        self.removeHandler(self.console_stdout)
 
     def debug(self, msg, level=1):
-        # By default, level=1 so that debug messages are suppressed
+        self.setLevel(self.loglevel)
         if level <= self.debuglevel:
-            self.log.debug(msg)
+            # TODO: Not the way it's supposed to work!
+            self.log(logging.DEBUG, msg)
 
-    def error(self, msg, recoverable=True):
-        self.log.error(msg)
-        if recoverable:
-            self.error_prompt(msg)
-        else:
-            sys.exit(1)
-
-    def warning(self, msg):
-        self.log.warning(msg)
-        self.warning_prompt(msg)
-
-    def error_prompt(self, text):
-        """The error has already been logged to the console, try and catch some input"""
-        if not self.cfg.answer_yes:
-            sys.stderr.write(_("Do you want to continue? [Y/n]") + " ")
-            answer = sys.stdin.readline()[:-1]
-            if answer == "n":
-                self.error(_("Abort! Abort! Abort!"), recoverable=False)
-                sys.exit(1)
-
-    def warning_prompt(self, text):
-        """The error has already been logged to the console, try and catch some input"""
-        if not self.cfg.answer_yes:
-            sys.stdout.write(_("Do you want to continue? [Y/n]") + " ")
-            answer = sys.stdin.readline()[:-1]
-            if answer == "n":
-                self.error(_("Abort! Abort! Abort!"), recoverable=False)
-                sys.exit(1)
+logging.setLoggerClass(Logger)
