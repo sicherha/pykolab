@@ -17,28 +17,39 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-__all__ = [
-        'KolabDefaultfolders'
-    ]
+import pykolab
+
+from pykolab.translate import _
+
+conf = pykolab.getConf()
+log = pykolab.getLogger('pykolab.plugins.defaultfolders')
 
 class KolabDefaultfolders(object):
     """
         Example plugin to create a set of default folders.
     """
 
-    def __init__(self, conf=None):
-        self.conf = conf
+    def __init__(self):
+        pass
 
-    def create_user_folders(self, kw={}, args=()):
+    def add_options(self, *args,  **kw):
+        pass
+
+    def create_user_folders(self, *args, **kw):
         """
             The arguments passed to the 'create_user_folders' hook:
 
-            - imap connection
-            - user folder
+            additional_folders - additional folders to create
+            user_folder - user folder
         """
 
-        (folder, additional_folders) = args
+        if not kw.has_key('additional_folders'):
+            return {}
 
-        exec("additional_folders = %s" %(additional_folders))
+        try:
+            exec("additional_folders = %s" %(kw['additional_folders']))
+        except Exception, e:
+            log.error(_("Could not parse additional_folders"))
+            return {}
 
         return additional_folders

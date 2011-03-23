@@ -17,15 +17,25 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import pykolab
+
+from pykolab.translate import _
+
+conf = pykolab.getConf()
+log = pykolab.getLogger('pykolab.plugins.dynamicquota')
+
 class KolabDynamicquota(object):
     """
         Example plugin making quota adjustments given arbitrary conditions.
     """
 
-    def __init__(self, conf=None):
-        self.conf = conf
+    def __init__(self):
+        pass
 
-    def set_user_folder_quota(self, kw={}, args=()):
+    def add_options(self, *args,  **kw):
+        pass
+
+    def set_user_folder_quota(self, *args, **kw):
         """
             The arguments passed to the 'set_user_folder_quota' hook:
 
@@ -34,16 +44,17 @@ class KolabDynamicquota(object):
             - quota (integer, in KB)
         """
 
-        #print args
-
-        (used, current_quota, new_quota, default_quota) = args
+        for keyword in [ 'used', 'current_quota', 'new_quota', 'default_quota' ]:
+            if not kw.has_key(keyword):
+                log.warning(_("No keyword %s passed to set_user_folder_quota") %(keyword))
+                return 0
 
         # Escape the user without quota
-        if new_quota == 0:
+        if kw['new_quota'] == 0:
             # Unless default quota is set
-            if default_quota > 0:
-                #print "new quota is 0, but default quota > 0, returning default quota"
-                return default_quota
+            if kw['default_quota'] > 0:
+                log.info(_("The new quota was set to 0, but default quota > 0, returning default quota"))
+                return kw['default_quota']
 
             #print "new quota is 0, and default quota is no larger then 0, returning 0"
             return 0
@@ -53,17 +64,17 @@ class KolabDynamicquota(object):
         # - increase the quota by 10% if the currently used storage size
         #   is over 90%
 
-        if new_quota < int(float(used) * 1.1):
+        if kw['new_quota'] < int(float(kw['used']) * 1.1):
             #print "new quota is smaller then 110%% of what is currently used, returning 110%% of used"
-            new_quota = int(float(used) * 1.1)
-        elif new_quota > int(float(used) * 1.1):
+            new_quota = int(float(kw['used']) * 1.1)
+        elif kw['new_quota'] > int(float(kw['used']) * 1.1):
             # TODO: If the current quota in IMAP had been set to 0, but we want to apply quota, and
             # 0 is current_quota, 90% of that is still 0...
             #print "new quota is larger then 110%% of what is currently used, returning 90%% of current quota"
-            new_quota = int(float(current_quota) * 0.9)
+            new_quota = int(float(kw['current_quota']) * 0.9)
 
-        if default_quota > new_quota:
-            #print "default quota is more then the calculated new quota"
-            return default_quota
+        if kw['default_quota'] > new_quota:
+            log.info(_("The default quota is larger then the calculated new quota, using the default quota"))
+            return kw['default_quota']
 
         return new_quota
