@@ -16,6 +16,15 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+"""
+    SASL authentication daemon for multi-domain Kolab deployments.
+
+    The SASL authentication daemon can use the domain name space or realm
+    in the login credentials to determine the backend authentication
+    database, and authenticate the credentials supplied against that
+    backend.
+"""
+
 from optparse import OptionParser
 from ConfigParser import SafeConfigParser
 
@@ -24,23 +33,19 @@ import shutil
 import time
 import traceback
 
+import pykolab
+
 from pykolab.auth import Auth
 from pykolab.conf import Conf
 from pykolab.constants import *
 from pykolab.translate import _
 
+log = pykolab.getLogger('saslauthd')
+conf = pykolab.getConf()
+
 class SASLAuthDaemon(object):
     def __init__(self):
-        """
-            self.args == Arguments passed on the CLI
-            self.cli_options == Parser results (again, CLI)
-            self.parser == The actual Parser (from OptionParser)
-            self.plugins == Our Kolab Plugins
-        """
-
-        self.conf = Conf()
-
-        daemon_group = self.conf.parser.add_option_group(_("Daemon Options"))
+        daemon_group = conf.add_cli_parser_option_group(_("Daemon Options"))
 
         daemon_group.add_option(  "--fork",
                                 dest    = "fork_mode",
@@ -48,23 +53,23 @@ class SASLAuthDaemon(object):
                                 default = False,
                                 help    = _("Fork to the background."))
 
-        self.conf.finalize_conf()
-
-        self.log = self.conf.log
+        conf.finalize_conf()
 
     def run(self):
-        """Run Forest, RUN!"""
+        """
+            Run the SASL authentication daemon.
+        """
 
         exitcode = 0
 
         try:
             pid = 1
-            if self.conf.fork_mode:
+            if conf.fork_mode:
                 self.thread_count += 1
                 pid = os.fork()
 
             if pid == 0:
-                self.log.remove_stdout_handler()
+                log.remove_stdout_handler()
 
             self.do_saslauthd()
 
@@ -72,7 +77,7 @@ class SASLAuthDaemon(object):
             exitcode = e
         except KeyboardInterrupt:
             exitcode = 1
-            self.log.info(_("Interrupted by user"))
+            log.info(_("Interrupted by user"))
         except AttributeError, e:
             exitcode = 1
             traceback.print_exc()
@@ -80,7 +85,7 @@ class SASLAuthDaemon(object):
         except TypeError, e:
             exitcode = 1
             traceback.print_exc()
-            self.log.error(_("Type Error: %s") % e)
+            log.error(_("Type Error: %s") % e)
         except:
             exitcode = 2
             traceback.print_exc()
@@ -88,6 +93,12 @@ class SASLAuthDaemon(object):
         sys.exit(exitcode)
 
     def do_saslauthd(self):
+        """
+            Create the actual listener socket, and handle the authentication.
+
+            The actual authentication handling is passed on to the appropriate
+            backend authentication classes through the more generic Auth().
+        """
         import binascii
         import socket
         import struct
@@ -124,7 +135,7 @@ class SASLAuthDaemon(object):
                 end = start + 2
                 login.append(value)
 
-            auth = Auth(self.conf)
+            auth = Auth()
             if auth.authenticate(login):
                 clientsocket.send(struct.pack("!H2s", 2, "OK"))
             else:
