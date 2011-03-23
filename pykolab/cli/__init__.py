@@ -31,32 +31,31 @@ import pykolab
 import pykolab.plugins
 
 from pykolab import utils
+from pykolab import conf
 from pykolab.auth import Auth
-from pykolab.conf import Conf
 from pykolab.imap import IMAP
 from pykolab.constants import *
 from pykolab.translate import _
 
+log = pykolab.getLogger('pykolab.cli')
+conf = pykolab.getConf()
+
 class Cli(object):
     def __init__(self):
-        self.conf = Conf()
+        domain_group = conf.add_cli_parser_option_group(_("CLI Options"))
 
-        domain_group = self.conf.parser.add_option_group(_("Domain Options"))
         domain_group.add_option(    '--review',
                                     dest    = "review",
                                     action  = "store_true",
                                     default = False,
                                     help    = _("Review LDIF before committed"))
 
-        self.conf.finalize_conf()
+        conf.finalize_conf()
 
-        # The first argument has to be a command
         try:
-            action = self.conf.args.pop(0)
+            action = conf.cli_args.pop(0)
         except IndexError, e:
             self.no_command()
-
-        self.log = logging.getLogger('pykolab.cli')
 
         action_function = action.replace('-','_')
         action_components = action.split('-')
@@ -64,7 +63,7 @@ class Cli(object):
         if hasattr(self, "action_%s" %(action)):
             exec("self.action_%s()" %(action))
         elif hasattr(self, "action_%s" %(action_function)):
-            self.conf.log.info(_("TODO: self.check_%s()") %(action_function))
+            log.info(_("TODO: self.check_%s()") %(action_function))
             exec("self.action_%s()" %(action_function))
         else:
             try:
@@ -72,7 +71,7 @@ class Cli(object):
                 action_action = action_components.pop()
                 exec("from pykolab.cli import action_%s" %(action_domain))
                 if hasattr("action_%s" %(action_domain), "%s" %(action_action)):
-                    exec("result = action_%s.%s(%r)" %(action_domain,action_action,self.conf.args))
+                    exec("result = action_%s.%s(%r)" %(action_domain,action_action,conf.cli_args))
             except ImportError, e:
                 pass
 
@@ -83,13 +82,19 @@ class Cli(object):
         sys.exit(1)
 
     def action_sync(self):
-        # Create the authentication object.
-        # TODO: Binds with superuser credentials!
-        auth = Auth(self.conf)
-        domains = auth.list_domains()
-        #print domains
+        imap = IMAP()
+        if hasattr(imap,'auth'):
+            auth = imap.auth
+        else:
+            auth = Auth()
 
-        imap = IMAP(self.conf)
+        log.debug(_("Listing domains..."), level=5)
+        start = time.time()
+        domains = auth.list_domains()
+        end = time.time()
+        log.debug(_("Found %d domains in %d seconds") %(len(domains),(end-start)), level=8)
+
+        all_folders = []
 
         for primary_domain,secondary_domains in domains:
             #print "Running for domain %s" %(primary_domain)
@@ -98,17 +103,50 @@ class Cli(object):
             users = auth.list_users(primary_domain, secondary_domains)
             #print "USERS RETURNED FROM auth.list_users():", users
             end_time = time.time()
-            self.log.info(_("Listing users for %s (including getting the" + \
+            log.info(_("Listing users for %s (including getting the" + \
                     " appropriate attributes, took %d seconds")
                     %(primary_domain, (end_time-start_time))
                 )
-            imap.synchronize(users, primary_domain, secondary_domains)
-            #print users
+            all_folders.extend(imap.synchronize(users, primary_domain, secondary_domains))
+
+        imap.expunge_user_folders(all_folders)
+
+    def action_list_deleted(self):
+        """
+            List deleted mailboxes
+        """
+        imap = IMAP()
+        imap._connect()
+        folders = imap.lm("DELETED/*")
+        print "Deleted folders:"
+        for folder in folders:
+            print folder
+
+    def action_undelete(self):
+        """
+            Undeleted mailbox
+        """
+        deleted_folder = None
+
+        undelete_folder = conf.cli_args.pop(0)
+
+        imap = IMAP()
+        imap._connect()
+        folders = imap.lm("DELETED/*")
+        for folder in folders:
+            if undelete_folder == folder:
+                deleted_folder = undelete_folder
+
+        if deleted_folder == None:
+            print >> sys.stderr, _("No deleted folder %s") %(undelete_folder)
+            sys.exit(1)
+
+        imap.undelete(deleted_folder)
 
     def action_list_domains(self):
         # Create the authentication object.
         # TODO: Binds with superuser credentials!
-        auth = Auth(self.conf)
+        auth = Auth()
         domains = auth.list_domains()
 
         # TODO: Take a hint in --quiet, and otherwise print out a nice table
@@ -117,38 +155,38 @@ class Cli(object):
             print _("Primary domain: %s - Secondary domain(s): %s") %(domain, ', '.join(domain_aliases))
 
     def action_del_domain(self):
-        domainname = self.conf.args.pop(0)
+        domainname = conf.args.pop(0)
 
-        self.conf.log.info(_("Deleting domain %s") %(domainname))
+        log.info(_("Deleting domain %s") %(domainname))
 
         dn = "associateddomain=%s,cn=kolab,cn=config" %(domainname)
 
-        ldap_con = ldap.initialize(self.conf.get('ldap', 'uri'))
-        ldap_con.bind_s(self.conf.get('ldap', 'bind_dn'), self.conf.get('ldap', 'bind_pw'))
+        ldap_con = ldap.initialize(conf.get('ldap', 'uri'))
+        ldap_con.bind_s(conf.get('ldap', 'bind_dn'), conf.get('ldap', 'bind_pw'))
 
         # The try/except should actually be in check_del_domain()
         try:
             # Do the actual synchronous add-operation to the ldapserver
             ldap_con.delete_s(dn)
         except ldap.NO_SUCH_OBJECT, e:
-            self.conf.log.error(_("No domain %s exists.") %(domainname))
+            log.error(_("No domain %s exists.") %(domainname))
 
         # Its nice to the server to disconnect and free resources when done
         ldap_con.unbind_s()
 
     def action_add_domain(self):
-        self.conf.log.info(_("TODO: Figure out where the domain should actually be added."))
+        log.info(_("TODO: Figure out where the domain should actually be added."))
 
-        domainname = self.conf.args.pop(0)
+        domainname = conf.args.pop(0)
 
-        self.conf.log.info(_("Adding domain %s") %(domainname))
+        log.info(_("Adding domain %s") %(domainname))
 
         # The dn of our new entry/object
-        self.conf.log.info(_("TODO: Make the format for a new domain configurable."))
+        log.info(_("TODO: Make the format for a new domain configurable."))
         dn = "associateddomain=%s,cn=kolab,cn=config" %(domainname)
 
         # A dict to help build the "body" of the object
-        self.conf.log.info(_("TODO: Make what a domain looks like configurable."))
+        log.info(_("TODO: Make what a domain looks like configurable."))
         attrs = {}
         attrs['objectclass'] = [
                 'top',
@@ -160,12 +198,12 @@ class Cli(object):
         domainname_components = domainname.split('.')
         attrs['inetDomainBaseDN'] = ['dc=%s,dc=%s' %(domainname_components[0],domainname_components[1])]
 
-        self.conf.log.info(_("TODO: Prompt for organization name/description. For now, use domain name."))
+        log.info(_("TODO: Prompt for organization name/description. For now, use domain name."))
         attrs['o'] = ['%s' %(domainname)]
 
         go_ahead = True
 
-        if self.conf.cli_options.review:
+        if conf.cli_options.review:
             ldif_writer = ldif.LDIFWriter(sys.stdout)
             ldif_writer.unparse(dn,attrs)
             if not utils.ask_confirmation(_("Please ACK or NACK the above LDIF:"), default="y", all_inclusive_no=True):
@@ -176,15 +214,15 @@ class Cli(object):
             _ldif = addModlist(attrs)
 
             # Now build an ldap connection and execute the motherf.
-            ldap_con = ldap.initialize(self.conf.get('ldap', 'uri'))
-            ldap_con.bind_s(self.conf.get('ldap', 'bind_dn'), self.conf.get('ldap', 'bind_pw'))
+            ldap_con = ldap.initialize(conf.get('ldap', 'uri'))
+            ldap_con.bind_s(conf.get('ldap', 'bind_dn'), conf.get('ldap', 'bind_pw'))
 
             # The try/except should actually be in check_add_domain
             try:
                 # Do the actual synchronous add-operation to the ldapserver
                 ldap_con.add_s(dn,_ldif)
             except ldap.ALREADY_EXISTS, e:
-                self.conf.log.error(_("Domain %s already exists.") %(domainname))
+                log.error(_("Domain %s already exists.") %(domainname))
 
             # Its nice to the server to disconnect and free resources when done
             ldap_con.unbind_s()
@@ -196,3 +234,4 @@ class Cli(object):
     def print_usage(self):
         print >> sys.stderr, _("Actions") + ":"
         print >> sys.stderr, "add-domain <domainname>"
+        print >> sys.stderr, "list-domains"
