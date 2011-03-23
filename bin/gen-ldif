@@ -4,6 +4,13 @@
 [ ! -z "$3" ] && rootdn=$3 || rootdn="dc=example,dc=org"
 [ ! -z "$4" ] && ou=$4 || ou="ou=People"
 
+#echo "dn: ${ou},${rootdn}"
+#echo "objectClass: top"
+#echo "objectClass: organizationalunit"
+#echo "$(echo ${ou} | cut -d'=' -f 1): $(echo ${ou} | cut -d'=' -f 2)"
+#echo 'aci: (targetattr ="userpassword || telephonenumber || facsimiletelephonenumber")(version 3.0; acl "Allow self entry modification"; allow (write)(userdn = "ldap:///self");)'
+#echo ""
+
 i=0
 while [ $i -lt 0$1 ]; do
 
@@ -24,9 +31,10 @@ while [ $i -lt 0$1 ]; do
     echo "objectClass: person"
     echo "objectClass: inetOrgPerson"
     echo "objectClass: organizationalPerson"
+    echo "objectClass: mailrecipient"
     echo "sn: $surname"
     echo "cn: $givenname $surname"
-    echo "mail: $uid@${domain}"
+    echo "mail: ${givenname}.${surname}@${domain}"
     echo "userPassword: {SSHA}zJ3oU5kqtS3MxnLWmKpnE7+eGVbmQKmj"
     echo ""
 
