@@ -20,33 +20,41 @@ import logging
 import os
 import time
 
-from pykolab.conf import Conf
+import pykolab
+
 from pykolab.translate import _
+
+conf = pykolab.getConf()
+log = pykolab.getLogger('pykolab.auth')
 
 class Auth(object):
     """
         This is the Authentication and Authorization module for PyKolab.
     """
 
-    def __init__(self, conf=None):
+    def __init__(self):
         """
             Initialize the authentication class.
-        """
-        self.conf = conf
-        self.log = logging.getLogger('pykolab')
 
+            self._auth is the placeholder for domain-specific authentication
+            backends. The keys are the primary domain names for each domain.
+        """
         self._auth = {}
 
     def authenticate(self, login):
-        # Login is a list of authentication credentials:
-        # 0: username
-        # 1: password
-        # 2: service
-        # 3: realm, optional
+        """
+            Verify login credentials supplied in login against the appropriate
+            authentication backend.
+
+            Login is a simple list of username, password, service and,
+            optionally, the realm.
+        """
 
         if len(login) == 3:
-            # Realm not set
-            use_virtual_domains = self.conf.get('imap', 'virtual_domains', quiet=True)
+            # The realm has not been specified. See if we know whether or not
+            # to use virtual_domains, as this may be a cause for the realm not
+            # having been specified seperately.
+            use_virtual_domains = conf.get('imap', 'virtual_domains')
             if use_virtual_domains == "userid":
                 print "# Derive domain from login[0]"
             elif not use_virtual_domains:
@@ -58,7 +66,7 @@ class Auth(object):
         if len(login[0].split('@')) > 1:
             domain = login[0].split('@')[1]
         else:
-            domain = self.conf.get("kolab", "primary_domain")
+            domain = conf.get("kolab", "primary_domain")
 
         # realm overrides domain
         if len(login) == 4:
@@ -78,7 +86,7 @@ class Auth(object):
 
         if domain == None:
             section = 'kolab'
-            domain = self.conf.get('kolab', 'primary_domain')
+            domain = conf.get('kolab', 'primary_domain')
         else:
             section = domain
 
@@ -87,20 +95,37 @@ class Auth(object):
 
         #print "Connecting to Authentication backend for domain %s" %(domain)
 
-        if not self.conf.has_section(section):
+        if not conf.has_section(section):
             section = 'kolab'
 
-        if self.conf.get(section, 'auth_mechanism') == 'ldap':
+        if conf.get(section, 'auth_mechanism') == 'ldap':
             from pykolab.auth import ldap
-            self._auth[domain] = ldap.LDAP(self.conf)
-        elif self.conf.get(section, 'auth_mechanism') == 'sql':
+            self._auth[domain] = ldap.LDAP()
+        elif conf.get(section, 'auth_mechanism') == 'sql':
             from pykolab.auth import sql
-            self._auth[domain] = sql.SQL(self.conf)
+            self._auth[domain] = sql.SQL()
         #else:
             ## TODO: Fail more verbose
             #print "COULD NOT FIND AUTHENTICATION MECHANISM FOR DOMAIN %s" %(domain)
 
         #print self._auth
+
+    def disconnect(self, domain=None):
+        """
+            Connect to the domain authentication backend using domain, or fall
+            back to the primary domain specified by the configuration.
+        """
+
+        if domain == None:
+            section = 'kolab'
+            domain = conf.get('kolab', 'primary_domain')
+        else:
+            section = domain
+
+        if not self._auth.has_key(section) or self._auth[section] == None:
+            return
+
+        self._auth[domain]._disconnect()
 
     def list_domains(self):
         """
@@ -118,7 +143,7 @@ class Auth(object):
         self.connect()
 
         # Find the domains in the authentication backend.
-        kolab_primary_domain = self.conf.get('kolab', 'primary_domain')
+        kolab_primary_domain = conf.get('kolab', 'primary_domain')
         domains = self._auth[kolab_primary_domain]._list_domains()
 
         # If no domains are found, the primary domain is used.
@@ -130,6 +155,7 @@ class Auth(object):
     def list_users(self, primary_domain, secondary_domains=[]):
         self.connect(domain=primary_domain)
         users = self._auth[primary_domain]._list_users(primary_domain, secondary_domains)
+        self.disconnect(domain=primary_domain)
         return users
 
     def domain_default_quota(self, domain):
