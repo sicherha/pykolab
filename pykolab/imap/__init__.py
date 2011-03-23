@@ -376,3 +376,17 @@ class IMAP(object):
         self.set_user_folder_quota(users, primary_domain, secondary_domains, folders)
 
         return folders
+
+    def getannotation(self, *args, **kw):
+        self._connect()
+        return self.imap.getannotation(*args, **kw)
+
+    def lm(self, *args, **kw):
+        return self.imap.lm(*args, **kw)
+
+    def undelete(self, *args, **kw):
+        from pykolab.imap.cyrus import Cyrus
+        imap = Cyrus()
+        result = imap.undelete(*args, **kw)
+        del imap
+        return result
