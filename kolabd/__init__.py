@@ -24,11 +24,16 @@ import shutil
 import time
 import traceback
 
+import pykolab
+
 from pykolab.auth import Auth
 from pykolab.conf import Conf
 from pykolab.imap import IMAP
 from pykolab.constants import *
 from pykolab.translate import _
+
+log = pykolab.getLogger('kolabd')
+conf = pykolab.getConf()
 
 class KolabDaemon(object):
     def __init__(self):
@@ -39,9 +44,7 @@ class KolabDaemon(object):
             self.plugins == Our Kolab Plugins
         """
 
-        self.conf = Conf()
-
-        daemon_group = self.conf.parser.add_option_group(_("Daemon Options"))
+        daemon_group = conf.add_cli_parser_option_group(_("Daemon Options"))
 
         daemon_group.add_option(  "--fork",
                                 dest    = "fork_mode",
@@ -49,9 +52,7 @@ class KolabDaemon(object):
                                 default = False,
                                 help    = _("Fork to the background."))
 
-        self.conf.finalize_conf()
-
-        self.log = self.conf.log
+        conf.finalize_conf()
 
         self.thread_count = 0
 
@@ -63,12 +64,12 @@ class KolabDaemon(object):
         # TODO: Add a nosync option
         try:
             pid = 1
-            if self.conf.fork_mode:
+            if conf.fork_mode:
                 self.thread_count += 1
                 pid = os.fork()
 
             if pid == 0:
-                self.log.remove_stdout_handler()
+                log.remove_stdout_handler()
 
             self.do_sync()
 
@@ -76,7 +77,7 @@ class KolabDaemon(object):
             exitcode = e
         except KeyboardInterrupt:
             exitcode = 1
-            self.log.info(_("Interrupted by user"))
+            log.info(_("Interrupted by user"))
         except AttributeError, e:
             exitcode = 1
             traceback.print_exc()
@@ -84,7 +85,7 @@ class KolabDaemon(object):
         except TypeError, e:
             exitcode = 1
             traceback.print_exc()
-            self.log.error(_("Type Error: %s") % e)
+            log.error(_("Type Error: %s") % e)
         except:
             exitcode = 2
             traceback.print_exc()
@@ -93,14 +94,20 @@ class KolabDaemon(object):
 
     def do_sync(self):
         while 1:
-            # TODO: Interval should be configurable
-            self.log.debug(_("Sleeping for 10 seconds..."), 5)
-            time.sleep(10)
-            auth = Auth(self.conf)
-            domains = auth.list_domains()
-            #print domains
+            imap = IMAP()
+            if hasattr(imap,'auth'):
+                auth = imap.auth
+            else:
+                auth = Auth()
 
-            imap = IMAP(self.conf)
+            # TODO: Interval should be configurable
+            log.debug(_("Sleeping for 10 seconds..."), level=5)
+            time.sleep(10)
+            log.debug(_("Listing domains..."), level=5)
+            start = time.time()
+            domains = auth.list_domains()
+            end = time.time()
+            log.debug(_("Found %d domains in %d seconds") %(len(domains),(end-start)), level=8)
 
             all_folders = []
 
@@ -111,13 +118,17 @@ class KolabDaemon(object):
                 users = auth.list_users(primary_domain, secondary_domains)
                 #print "USERS RETURNED FROM auth.list_users():", users
                 end_time = time.time()
-                self.log.info(_("Listing users for %s (including getting the" + \
+                log.info(_("Listing users for %s (including getting the" + \
                         " appropriate attributes, took %d seconds")
                         %(primary_domain, (end_time-start_time))
                     )
                 all_folders.extend(imap.synchronize(users, primary_domain, secondary_domains))
 
             imap.expunge_user_folders(all_folders)
+
+            # Give up the memory
+            del imap
+            del auth
 
     def do_saslauthd(self):
         import binascii
