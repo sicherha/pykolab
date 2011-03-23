@@ -17,13 +17,22 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-import traceback
+import logging
 import shutil
 import sys
+import traceback
 
-import pykolab
-import pykolab.plugins
+from pykolab.logger import Logger
+logging.setLoggerClass(Logger)
+
+def getLogger(name):
+    logging.setLoggerClass(Logger)
+    log = logging.getLogger(name=name)
+    return log
 
 from pykolab.conf import Conf
-from pykolab.constants import *
-from pykolab.translate import _
+
+conf = Conf()
+
+def getConf():
+    return conf
