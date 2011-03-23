@@ -18,8 +18,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-import logging
-import os
 import sys
 
 # For development purposes
@@ -28,9 +26,9 @@ sys.path.extend(['.', '..'])
 from pykolab.translate import _
 
 try:
-    import pykolab.logger
+    from pykolab.constants import *
 except ImportError, e:
-    print >> sys.stderr, _("Cannot load pykolab/logger.py:")
+    print >> sys.stderr, _("Cannot load pykolab/constants.py:")
     print >> sys.stderr, "%s" % e
     sys.exit(1)
 
