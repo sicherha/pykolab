@@ -39,9 +39,14 @@ class Logger(logging.Logger):
             debuglevel = -1
             continue
 
-    #print inspect.stack()
-    #print "debuglevel:", debuglevel
-    #print "loglevel:", loglevel
+        if '-l' == arg:
+            loglevel = -1
+            continue
+        if loglevel == -1:
+            if hasattr(logging,arg.upper()):
+                loglevel = getattr(logging,arg.upper())
+            else:
+                loglevel = logging.DEBUG
 
     def __init__(self, *args, **kw):
         if kw.has_key('name'):
