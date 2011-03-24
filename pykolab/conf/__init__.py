@@ -271,7 +271,17 @@ class Conf(object):
                                     dest    = "debuglevel",
                                     type    = 'int',
                                     default = 0,
-                                    help    = _("Set the debugging verbosity. Maximum is 99"))
+                                    help    = _("Set the debugging " + \
+                                        "verbosity. Maximum is 9, tracing " + \
+                                        "protocols like LDAP, SQL and IMAP."))
+
+        runtime_group.add_option(   "-l",
+                                    dest    = "loglevel",
+                                    type    = 'str',
+                                    default = "CRITICAL",
+                                    help    = _("Set the logging level. " + \
+                                        "One of info, warn, error, " + \
+                                        "critical or debug"))
 
         runtime_group.add_option(   "--logfile",
                                     dest    = "logfile",
