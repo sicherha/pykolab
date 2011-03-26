@@ -2,6 +2,7 @@
 
 import getpass
 import os
+import sys
 
 from pykolab import constants
 from pykolab.translate import _
@@ -71,31 +72,43 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
                 answer = False
                 print >> sys.stderr, _("Please answer 'yes' or 'no'.")
 
-def normalize(_dictionary):
-    dictionary = {}
+def normalize(_object):
+    if type(_object) == list:
+        result = []
+    elif type(_object) == dict:
+        result = {}
+    else:
+        return _object
 
-    for key in _dictionary.keys():
-        if type(_dictionary[key]) == list:
-            if len(_dictionary[key]) == 1:
-                dictionary[key.lower()] = ''.join(_dictionary[key])
+    if type(_object) == list:
+        for item in _object:
+            result.append(item.lower())
+        result = list(set(result))
+        return result
+
+    elif type(_object) == dict:
+        for key in _object.keys():
+            if type(_object[key]) == list:
+                if len(_object[key]) == 1:
+                    result[key.lower()] = ''.join(_object[key])
+                else:
+                    result[key.lower()] = _object[key]
             else:
-                dictionary[key.lower()] = _dictionary[key]
-        else:
-            # What the heck?
-            dictionary[key.lower()] = _dictionary[key]
+                # What the heck?
+                result[key.lower()] = _object[key]
 
-    if dictionary.has_key('sn'):
-        dictionary['surname'] = dictionary['sn'].replace(' ', '')
+        if result.has_key('sn'):
+            result['surname'] = result['sn'].replace(' ', '')
 
-    if dictionary.has_key('mail'):
-        if len(dictionary['mail']) > 0:
-            if len(dictionary['mail'].split('@')) > 1:
-                dictionary['domain'] = dictionary['mail'].split('@')[1]
+        if result.has_key('mail'):
+            if len(result['mail']) > 0:
+                if len(result['mail'].split('@')) > 1:
+                    result['domain'] = result['mail'].split('@')[1]
 
-    if not dictionary.has_key('domain') and dictionary.has_key('standard_domain'):
-        dictionary['domain'] = dictionary['standard_domain']
+        if not result.has_key('domain') and result.has_key('standard_domain'):
+            result['domain'] = result['standard_domain']
 
-    return dictionary
+        return result
 
 def parse_input(_input, splitchars= [ ' ' ]):
     """
