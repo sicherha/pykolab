@@ -16,6 +16,13 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+"""
+    The Kolab daemon.
+
+    TODO: Write a pid file, check the pid file has a valid pid, and
+    consider providing an option to specify the pid file path.
+"""
+
 from optparse import OptionParser
 from ConfigParser import SafeConfigParser
 
