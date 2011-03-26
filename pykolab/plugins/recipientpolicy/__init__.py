@@ -19,11 +19,11 @@
 
 import pykolab
 
-conf = pykolab.getConf()
-log = pykolab.getLogger('pykolab.plugins.recipientpolicy')
-
 from pykolab import utils
 from pykolab.translate import _
+
+conf = pykolab.getConf()
+log = pykolab.getLogger('pykolab.plugins.recipientpolicy')
 
 class KolabRecipientpolicy(object):
     """
@@ -102,5 +102,9 @@ class KolabRecipientpolicy(object):
                 except KeyError, e:
                     log.warning(_("Attribute substitution for 'alternative_mail' failed in Recipient Policy"))
                 alternative_mail.append(retval)
+
+        alternative_mail = utils.normalize(alternative_mail)
+
+        alternative_mail = list(set(alternative_mail))
 
         return alternative_mail
