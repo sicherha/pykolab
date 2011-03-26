@@ -29,9 +29,9 @@ from pykolab.translate import _
 from pykolab.tests import *
 
 try:
-    import pykolab.logger
+    import pykolab.constants
 except ImportError, e:
-    print >> sys.stderr, _("Cannot load pykolab/logger.py:")
+    print >> sys.stderr, _("Cannot load pykolab/constants.py:")
     print >> sys.stderr, "%s" % e
     sys.exit(1)
 
