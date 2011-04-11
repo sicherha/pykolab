@@ -17,6 +17,12 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+"""
+
+    pyKolab, the interface to Kolab Groupware Solution management in Python.
+
+"""
+
 import logging
 import shutil
 import sys
@@ -26,6 +32,9 @@ from pykolab.logger import Logger
 logging.setLoggerClass(Logger)
 
 def getLogger(name):
+    """
+        Return the correct logger class.
+    """
     logging.setLoggerClass(Logger)
     log = logging.getLogger(name=name)
     return log
@@ -36,3 +45,9 @@ conf = Conf()
 
 def getConf():
     return conf
+
+from pykolab.auth import Auth
+auth = Auth()
+
+from pykolab.imap import IMAP
+imap = IMAP()

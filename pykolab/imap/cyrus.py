@@ -20,16 +20,18 @@
 import cyruslib
 import time
 
-import pykolab
+from urlparse import urlparse
 
-from pykolab.imap import IMAP
+import pykolab
 
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.imap.cyrus')
 conf = pykolab.getConf()
 
-class Cyrus(object):
+imap = pykolab.imap
+
+class Cyrus(cyruslib.CYRUS):
     """
         Abstraction class for some common actions to do exclusively in Cyrus.
 
@@ -39,69 +41,109 @@ class Cyrus(object):
         - Setting quota
         - Renaming the top-level mailbox
         - Setting annotations
+
     """
-    def __init__(self, imap=None):
-        self.imap = imap
 
-        if self.imap == None:
-            self.imap = IMAP()
+    setquota = cyruslib.CYRUS.sq
 
-    def setquota(self, mailbox, quota):
+    def __init__(self, uri):
+        """
+            Initialize this class, but do not connect yet.
+        """
+        result = urlparse(uri)
+
+        # Complete the uri with the result to avoid cyruslib from bailing out.
+        if not hasattr(result,'port'):
+            if result.scheme == 'imap':
+                port = 143
+            else:
+                port = 993
+        else:
+            port = result.port
+
+        self.uri = "%s://%s:%s" %(result.scheme,result.hostname,port)
+
+        cyruslib.CYRUS.__init__(self, self.uri)
+
+        # Initialize our variables
+        self.seperator = self.SEP
+
+        # Placeholder for known mailboxes on known servers
+        self.mbox = {}
+
+    def __del__(self):
+        cyruslib.CYRUS.__del__(self)
+
+    def login(self, *args, **kw):
+        """
+            Login to the Cyrus IMAP server through cyruslib.CYRUS, but set our
+            hierarchy seperator.
+        """
+        cyruslib.CYRUS.login(self, *args, **kw)
+        self.seperator = self.SEP
+
+    def find_mailbox_server(self, mailbox):
+        annotations = {}
+        log.debug(_("Checking actual backend server for folder %s through annotations") %(mailbox), level=8)
+        if self.mbox.has_key(mailbox):
+            return self.mbox[mailbox]
+
+        max_tries = 20
+        num_try = 0
+        while 1:
+            num_try += 1
+            annotations = self.getannotation(mailbox, "/vendor/cmu/cyrus-imapd/server")
+
+            if annotations.has_key(mailbox):
+                break
+
+            if max_tries <= num_try:
+                log.error(_("Could not get the annotations after %s tries.") %(num_try))
+                break
+
+            log.warning(_("No annotations for %s: %r") %(mailbox,annotations))
+
+            time.sleep(1)
+
+        server = annotations[mailbox]['/vendor/cmu/cyrus-imapd/server']
+        self.mbox[mailbox] = server
+
+        log.debug(_("Server for INBOX folder %s is %s") %(mailbox,server), level=8)
+
+        return server
+
+    def _setquota(self, mailbox, quota):
         """
             Login to the actual backend server.
         """
-        log.debug(_("Checking actual backend server for folder %s through annotations") %(mailbox), level=8)
-        annotations = self.imap.getannotation(mailbox, "/vendor/cmu/cyrus-imapd/server")
-        server = annotations[mailbox]['/vendor/cmu/cyrus-imapd/server']
-        log.debug(_("Server for INBOX folder %s is %s") %(mailbox,server), level=8)
-
-        _imap = cyruslib.IMAP4(server, 143)
-        admin_login = conf.get('cyrus-imap', 'admin_login')
-        admin_password = conf.get('cyrus-imap', 'admin_password')
-        _imap.login(admin_login, admin_password)
+        server = self.find_mailbox_server(mailbox)
+        imap.connect('imap://%s:143' %(server))
 
         log.debug(_("Setting quota for INBOX folder %s to %s") %(mailbox,quota), level=8)
-        _imap.setquota(mailbox, quota)
+        try:
+            imap.setquota(mailbox, quota)
+        except:
+            log.error(_("Could not set quota for mailbox %s") %(mailbox))
 
-        del _imap
-
-    def rename(self, from_mailbox, to_mailbox, partition=None):
+    def _rename(self, from_mailbox, to_mailbox, partition=None):
         """
             Login to the actual backend server, then rename.
         """
-        log.debug(_("Checking actual backend server for folder %s through annotations") %(from_mailbox), level=8)
-        annotations = self.imap.getannotation(from_mailbox, "/vendor/cmu/cyrus-imapd/server")
-        server = annotations[from_mailbox]['/vendor/cmu/cyrus-imapd/server']
-        log.debug(_("Server for INBOX folder %s is %s") %(from_mailbox,server), level=8)
+        server = self.find_mailbox_server(from_mailbox)
+        imap.connect('imap://%s:143' %(server))
 
-        _imap = cyruslib.IMAP4(server, 143)
-        admin_login = conf.get('cyrus-imap', 'admin_login')
-        admin_password = conf.get('cyrus-imap', 'admin_password')
-        _imap.login(admin_login, admin_password)
+        log.debug(_("Moving INBOX folder %s to %s") %(from_mailbox,to_mailbox), level=8)
+        imap.rename(from_mailbox, to_mailbox, partition)
 
-        log.debug(_("Moving INBOX folder %s to %s") %(from_mailbox,from_mailbox), level=8)
-        _imap.rename(from_mailbox, from_mailbox, partition)
-
-        del _imap
-
-    def setannotation(self, mailbox, annotation, value):
+    def _setannotation(self, mailbox, annotation, value):
         """
             Login to the actual backend server, then set annotation.
         """
-        log.debug(_("Checking actual backend server for folder %s through annotations") %(mailbox), level=8)
-        annotations = self.imap.getannotation(mailbox, "/vendor/cmu/cyrus-imapd/server")
-        server = annotations[mailbox]['/vendor/cmu/cyrus-imapd/server']
-        log.debug(_("Server for INBOX folder %s is %s") %(mailbox,server), level=8)
-
-        _imap = cyruslib.IMAP4(server, 143)
-        admin_login = conf.get('cyrus-imap', 'admin_login')
-        admin_password = conf.get('cyrus-imap', 'admin_password')
-        _imap.login(admin_login, admin_password)
+        server = self.find_mailbox_server(mailbox)
+        imap.connect('imap://%s:143' %(server))
 
         log.debug(_("Setting annotation %s on folder %s") %(annotation,mailbox), level=8)
-        _imap.setannotation(mailbox, annotation, value)
-
-        del _imap
+        imap.setannotation(mailbox, annotation, value)
 
     def undelete(self, mailbox, to_mailbox=None, recursive=True):
         """
@@ -123,19 +165,9 @@ class Cyrus(object):
             'to_mailbox' may be the target folder to "undelete" the deleted
             folder to. If not specified, the original folder name is used.
         """
+        server = self.find_mailbox_server(mailbox)
 
-        log.debug(_("Checking actual backend server for folder %s through annotations") %(mailbox), level=8)
-        annotations = self.imap.getannotation(mailbox, "/vendor/cmu/cyrus-imapd/server")
-        server = annotations[mailbox]['/vendor/cmu/cyrus-imapd/server']
-        log.debug(_("Server for deleted folder %s is %s") %(mailbox,server), level=8)
-
-        _imap = cyruslib.IMAP4(server, 143)
-        admin_login = conf.get('cyrus-imap', 'admin_login')
-        admin_password = conf.get('cyrus-imap', 'admin_password')
-        _imap.login(admin_login, admin_password)
-
-        # Get the seperator used
-        self.seperator = _imap.getsep()
+        imap.connect('imap://%s:143' %(server))
 
         # Placeholder for folders we have recovered already.
         target_folders = []
@@ -174,7 +206,7 @@ class Cyrus(object):
                 target_folder = "%s@%s" %(target_folder,target_mbox['domain'])
 
             log.info(_("Undeleting %s to %s") %(undelete_folder,target_folder))
-            _imap.rename(undelete_folder,target_folder)
+            self.rename(undelete_folder,target_folder)
 
     def parse_mailbox(self, mailbox):
         """
@@ -250,6 +282,7 @@ class Cyrus(object):
             TODO: It finds virtdomain folders for non-virtdomain searches.
         """
         deleted_folder_search = "%(deleted_prefix)s%(seperator)s%(mailbox)s%(seperator)s*" % {
+                    # TODO: The prefix used is configurable
                     'deleted_prefix': "DELETED",
                     'mailbox': self.seperator.join(mbox['path_parts']),
                     'seperator': self.seperator,
@@ -260,16 +293,19 @@ class Cyrus(object):
 
         folders = self.imap.lm(deleted_folder_search)
 
-        #print "the deleted folders that i could find are:", folders
+        # The folders we have found at this stage include virtdomain folders.
+        #
+        # For example, having searched for user/userid, it will also find
+        # user/userid@example.org
+        #
 
+        # Here, we explicitely remove any virtdomain folders.
         if mbox['domain'] == None:
-            #print "removing the folders that are virtdomain folders"
             _folders = []
             for folder in folders:
                 if len(folder.split('@')) < 2:
                     _folders.append(folder)
 
-            #print "remaining folders:", _folders
             folders = _folders
 
         return folders

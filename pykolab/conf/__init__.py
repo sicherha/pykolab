@@ -91,6 +91,7 @@ class Conf(object):
 
         # Also set the cli options
         for option in self.cli_keywords.__dict__.keys():
+	    retval = False
             if hasattr(self, "check_setting_%s" %(option)):
                 exec("retval = self.check_setting_%s(%r)" % (option, self.cli_keywords.__dict__[option]))
 
@@ -114,15 +115,12 @@ class Conf(object):
             if section == 'testing':
                 continue
 
-            #print "section: %s" %(section)
             if not config.has_section(section):
-                #print "no section for section %s, continuing" %(section)
                 continue
 
             for key in self.defaults.__dict__[section].keys():
-                #print "key: %s" %(key)
+		retval = False
                 if not config.has_option(section, key):
-                    #print "no key for option %s in section %s, continuing" %(key,section)
                     continue
 
                 if isinstance(self.defaults.__dict__[section][key], int):
@@ -144,11 +142,11 @@ class Conf(object):
                         continue
 
                 if not self.defaults.__dict__[section][key] == value:
-                    setattr(self,"%s_%s" %(section,key),value)
                     if key.count('password') >= 1:
                         log.debug(_("Setting %s_%s to '****' (from configuration file)") %(section,key), level=8)
                     else:
                         log.debug(_("Setting %s_%s to %r (from configuration file)") %(section,key,value), level=8)
+                    setattr(self,"%s_%s" %(section,key),value)
 
     def options_set_from_config(self):
         """
@@ -179,6 +177,7 @@ class Conf(object):
             return
 
         for key in config.options('testing'):
+	    retval = False
 
             if isinstance(self.defaults.__dict__['testing'][key], int):
                 value = config.getint('testing',key)
@@ -192,7 +191,7 @@ class Conf(object):
                 value = eval(config.get('testing',key))
 
             if hasattr(self,"check_setting_%s_%s" %('testing',key)):
-                exec("retval = self.check_setting_%s(%r)" % ('testing',key,value))
+                exec("retval = self.check_setting_%s_%s(%r)" % ('testing',key,value))
                 if not retval:
                     # We just don't set it, check_setting_%s should have
                     # taken care of the error messages
@@ -457,6 +456,7 @@ class Conf(object):
 
             TODO: Include getting the value from plugins through a hook.
         """
+	retval = False
 
         if not self.cfg_parser:
             self.read_config()
@@ -533,9 +533,9 @@ class Conf(object):
         if value:
             try:
                 import imaplib
-                setattr(self,"use_imap",value)
+                self.use_imap = value
                 return True
-            except ImportError, e:
+            except ImportError:
                 log.error(_("No imaplib library found."))
                 return False
 
@@ -543,9 +543,9 @@ class Conf(object):
         if value:
             try:
                 from smtplib import LMTP
-                setattr(self,"use_lmtp",value)
+                self.use_lmtp = value
                 return True
-            except ImportError, e:
+            except ImportError:
                 log.error(_("No LMTP class found in the smtplib library."))
                 return False
 
@@ -553,9 +553,9 @@ class Conf(object):
         if value:
             try:
                 from smtplib import SMTP
-                setattr(self,"use_mail",value)
+		self.use_mail = value
                 return True
-            except ImportError, e:
+            except ImportError:
                 log.error(_("No SMTP class found in the smtplib library."))
                 return False
 
@@ -563,6 +563,9 @@ class Conf(object):
         # Attempt to load the suite,
         # Get the suite's options,
         # Set them here.
+	if not hasattr(self,'test_suites'):
+	    self.test_suites = []
+
         if "zpush" in value:
             selectively = False
             for item in [ 'calendar', 'contacts', 'mail' ]:

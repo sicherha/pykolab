@@ -21,25 +21,22 @@ import imp
 import os
 import sys
 
-import pykolab.logger
+import pykolab
 
-from pykolab.conf import Conf
 from pykolab.constants import *
 from pykolab.tests.constants import *
+from pykolab.translate import _
+
+log = pykolab.getLogger('pykolab.tests.zpush')
+conf = pykolab.getConf()
 
 class ZpushTest(object):
-    def __init__(self, conf=None):
-        if conf:
-            self.conf = conf
-        else:
-            self.conf = Conf()
-            self.conf.finalize_conf()
-
+    def __init__(self):
         self.tests = []
 
         # Make sure we parse the [testing] section of the configuration file, if
         # available.
-        self.conf.set_options_from_testing_section()
+        conf.set_options_from_testing_section()
 
         # Attempt to create a list of modules
         for x in range(0,8):
@@ -52,7 +49,7 @@ class ZpushTest(object):
                     pass
 
         for test in self.tests:
-            exec("result = %s(self.conf)" %(test))
+            exec("result = %s()" %(test))
 
         #name = "from pykolab.tests.zpush.test_%s import Test_%s" %(test_num,test_num)
         #file, pathname, description = imp.find_module(name, sys.path)

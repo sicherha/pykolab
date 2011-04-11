@@ -17,10 +17,15 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-from pykolab.conf import Conf
+import pykolab
+
+from pykolab import utils
 from pykolab.constants import *
 from pykolab.tests.constants import *
 from pykolab.translate import _
+
+log = pykolab.getLogger('pykolab.tests.zpush')
+conf = pykolab.getConf()
 
 class Test_000_001(object):
     """
@@ -33,12 +38,6 @@ class Test_000_001(object):
     def __init__(self, conf):
         self.suite_num = "000"
         self.suite_test_num = "001"
-
-        if not conf:
-            self.conf = Conf()
-            self.conf.finalize_conf()
-        else:
-            self.conf = conf
 
         # Create some test calendar items
         for item in TEST_ITEMS:

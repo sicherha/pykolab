@@ -32,13 +32,14 @@ import pykolab.plugins
 
 from pykolab import utils
 from pykolab import conf
-from pykolab.auth import Auth
-from pykolab.imap import IMAP
 from pykolab.constants import *
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
+
+auth = pykolab.auth
+imap = pykolab.imap
 
 class Cli(object):
     def __init__(self):
@@ -82,12 +83,6 @@ class Cli(object):
         sys.exit(1)
 
     def action_sync(self):
-        imap = IMAP()
-        if hasattr(imap,'auth'):
-            auth = imap.auth
-        else:
-            auth = Auth()
-
         log.debug(_("Listing domains..."), level=5)
         start = time.time()
         domains = auth.list_domains()
@@ -115,8 +110,7 @@ class Cli(object):
         """
             List deleted mailboxes
         """
-        imap = IMAP()
-        imap._connect()
+        imap.connect()
         folders = imap.lm("DELETED/*")
         print "Deleted folders:"
         for folder in folders:
@@ -130,8 +124,7 @@ class Cli(object):
 
         undelete_folder = conf.cli_args.pop(0)
 
-        imap = IMAP()
-        imap._connect()
+        imap.connect()
         folders = imap.lm("DELETED/*")
         for folder in folders:
             if undelete_folder == folder:
@@ -146,7 +139,6 @@ class Cli(object):
     def action_list_domains(self):
         # Create the authentication object.
         # TODO: Binds with superuser credentials!
-        auth = Auth()
         domains = auth.list_domains()
 
         # TODO: Take a hint in --quiet, and otherwise print out a nice table
@@ -155,7 +147,7 @@ class Cli(object):
             print _("Primary domain: %s - Secondary domain(s): %s") %(domain, ', '.join(domain_aliases))
 
     def action_del_domain(self):
-        domainname = conf.args.pop(0)
+        domainname = conf.cli_args.pop(0)
 
         log.info(_("Deleting domain %s") %(domainname))
 
@@ -177,7 +169,7 @@ class Cli(object):
     def action_add_domain(self):
         log.info(_("TODO: Figure out where the domain should actually be added."))
 
-        domainname = conf.args.pop(0)
+        domainname = conf.cli_args.pop(0)
 
         log.info(_("Adding domain %s") %(domainname))
 
@@ -203,7 +195,7 @@ class Cli(object):
 
         go_ahead = True
 
-        if conf.cli_options.review:
+        if conf.cli_keywords.review:
             ldif_writer = ldif.LDIFWriter(sys.stdout)
             ldif_writer.unparse(dn,attrs)
             if not utils.ask_confirmation(_("Please ACK or NACK the above LDIF:"), default="y", all_inclusive_no=True):

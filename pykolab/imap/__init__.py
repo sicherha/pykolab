@@ -17,52 +17,85 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+
 import logging
 import re
 import time
 
+from urlparse import urlparse
+
 import pykolab
-from pykolab.auth import Auth
 from pykolab.translate import _
 
-conf = pykolab.getConf()
 log = pykolab.getLogger('pykolab.imap')
+conf = pykolab.getConf()
+
+auth = pykolab.auth
 
 class IMAP(object):
     def __init__(self):
-        self.auth = Auth()
+        # Pool of named IMAP connections, by hostname
+        self._imap = {}
 
+        # Place holder for the current IMAP connection
         self.imap = None
 
-    def _connect(self):
-        if not self.imap:
-            if conf.get('kolab', 'imap_backend') == 'cyrus-imap':
-                import cyruslib
-                try:
-                    self.imap = cyruslib.CYRUS(conf.get('cyrus-imap', 'uri'))
-                # TODO: Actually handle the error
-                except cyruslib.CYRUSError, e:
-                    (code, error, message) = e
-                    raise cyruslib.CYRUSError, e
+    def connect(self, uri=None):
+        backend = conf.get('kolab', 'imap_backend')
 
-                if conf.debuglevel >= 9:
-                    self.imap.VERBOSE = 1
-                try:
-                    admin_login = conf.get('cyrus-imap', 'admin_login')
-                    admin_password = conf.get('cyrus-imap', 'admin_password')
-                    self.imap.login(admin_login, admin_password)
-                    self.seperator = self.imap.m.getsep()
-                except cyruslib.CYRUSError, e:
-                    (code, error, message) = e
-                    if error == 'LOGIN':
-                        log.error(_("Invalid login credentials for IMAP Administrator"))
+        if uri == None:
+            uri = conf.get(backend, 'uri')
+
+        result = urlparse(uri)
+
+        # Get the credentials
+        admin_login = conf.get(backend, 'admin_login')
+        admin_password = conf.get(backend, 'admin_password')
+
+        if not self._imap.has_key(result.hostname):
+            if backend == 'cyrus-imap':
+                import cyrus
+                self._imap[result.hostname] = cyrus.Cyrus(uri)
+                # Actually connect
+                log.debug(_("Logging on to Cyrus IMAP server %s") %(result.hostname), level=8)
+                self._imap[result.hostname].login(admin_login, admin_password)
+
+            elif backend == 'dovecot':
+                import dovecot
+                self._imap[result.hostname] = dovecot.Dovecot(uri)
+                # Actually connect
+                log.debug(_("Logging on to Dovecot IMAP server %s") %(result.hostname), level=8)
+                self._imap[result.hostname].login(admin_login, admin_password)
+
             else:
-                import dovecotlib
-                self.imap = dovecotlib.IMAP4()
+                import imap
+                self._imap[result.hostname] = imap.IMAP(uri)
+                # Actually connect
+                log.debug(_("Logging on to generic IMAP server %s") %(result.hostname), level=8)
+                self._imap[result.hostname].login(admin_login, admin_password)
+        else:
+            log.debug(_("Reusing existing IMAP server connection to %s") %(result.hostname), level=8)
 
-    def _disconnect(self):
-        del self.imap
-        self.imap = None
+        # Set the newly created technology specific IMAP library as the current
+        # IMAP connection to be used.
+        self.imap = self._imap[result.hostname]
+
+    def disconnect(self, server=None):
+        if server == None:
+            # No server specified, but make sure self.imap is None anyways
+            self.imap = None
+        else:
+            if self._imap.has_key(server):
+                del self._imap[server]
+            else:
+                log.warning(_("Called imap.disconnect() on a server that " + \
+                    "we had no connection to"))
+
+    def __getattr__(self, name):
+        if hasattr(self.imap, name):
+            return getattr(self.imap, name)
+        else:
+            raise AttributeError, _("%r has no attribute %s") %(self,name)
 
     def has_folder(self, folder):
         folders = self.imap.lm(folder)
@@ -84,10 +117,7 @@ class IMAP(object):
                         log.debug(_("Found old INBOX folder %s") %(old_inbox), level=8)
 
                         if not self.has_folder(inbox):
-                            if conf.get('kolab', 'imap_backend') == 'cyrus-imap':
-                                from pykolab.imap.cyrus import Cyrus
-                                _imap = Cyrus(self.imap)
-                                _imap.rename(old_inbox,inbox)
+                            self.imap.rename(old_inbox,inbox)
                         else:
                             log.warning(_("Moving INBOX folder %s won't succeed as target folder %s already exists") %(old_inbox,inbox))
                     else:
@@ -98,7 +128,7 @@ class IMAP(object):
     def create_user_folders(self, users, primary_domain, secondary_domains):
         inbox_folders = []
 
-        domain_section = self.auth.domain_section(primary_domain)
+        domain_section = auth.domain_section(primary_domain)
 
         folders = self.list_user_folders(primary_domain, secondary_domains)
 
@@ -108,7 +138,7 @@ class IMAP(object):
         #print domain
 
         if not users:
-            users = self.auth.list_users(primary_domain)
+            users = auth.list_users(primary_domain)
 
         for user in users:
             if type(user) == dict:
@@ -124,21 +154,26 @@ class IMAP(object):
                     continue
                 else:
                     # TODO: Perhaps this block is moot
-                    log.info(_("Creating new INBOX for user (%d): %s") %(1,folder))
-                    self.imap.cm("user/%s" %(folder))
+                    log.info(_("Creating new INBOX for user (%d): %s")
+                        %(1,folder))
+                    try:
+                        self.imap.cm("user/%s" %(folder))
+                    except:
+                        log.warning(_("Mailbox already exists: user/%s")
+                            %(folder))
+                        continue
                     if conf.get('kolab', 'imap_backend') == 'cyrus-imap':
-                        from pykolab.imap.cyrus import Cyrus
-                        _imap = Cyrus(self.imap)
-                        _imap.setquota("user/%s" %(folder),0)
+                        self.imap._setquota("user/%s" %(folder),0)
 
             except:
                 # TODO: Perhaps this block is moot
                 log.info(_("Creating new INBOX for user (%d): %s") %(2,folder))
-                self.imap.cm("user/%s" %(folder))
-                if conf.get('kolab', 'imap_backend') == 'cyrus-imap':
-                    from pykolab.imap.cyrus import Cyrus
-                    _imap = Cyrus(self.imap)
-                    _imap.setquota("user/%s" %(folder),0)
+                try:
+                    self.imap.cm("user/%s" %(folder))
+                except:
+                    log.warning(_("Mailbox already exists: user/%s") %(folder))
+                    continue
+                self.imap._setquota("user/%s" %(folder),0)
 
             if conf.has_option(domain_section, "autocreate_folders"):
                 _additional_folders = conf.get_raw(domain_section, "autocreate_folders")
@@ -162,23 +197,24 @@ class IMAP(object):
                 _add_folder['username'] = folder.split('@')[0]
                 _add_folder['domainname'] = folder.split('@')[1]
                 _add_folder['additional_folder_name'] = additional_folder
-                _add_folder['seperator'] = self.seperator
+                _add_folder['seperator'] = self.imap.seperator
                 folder_name = folder_name % _add_folder
             else:
                 folder_name = "user%(seperator)s%(username)s%(seperator)s%(additional_folder_name)s" % {
                         "username": folder,
-                        "seperator": self.seperator,
+                        "seperator": self.imap.seperator,
                         "additional_folder_name": additional_folder
                     }
 
-            self.imap.cm(folder_name)
+            try:
+                self.imap.cm(folder_name)
+            except:
+                log.warning(_("Mailbox already exists: user/%s") %(folder))
 
             if additional_folders[additional_folder].has_key("annotations"):
                 for annotation in additional_folders[additional_folder]["annotations"].keys():
                     if conf.get('kolab', 'imap_backend') == 'cyrus-imap':
-                        from pykolab.imap.cyrus import Cyrus
-                        _imap = Cyrus(self.imap)
-                        _imap.setannotation(
+                        self.imap._setannotation(
                                 folder_name,
                                 "%s" %(annotation),
                                 "%s" %(additional_folders[additional_folder]["annotations"][annotation])
@@ -193,7 +229,7 @@ class IMAP(object):
                         )
 
     def set_user_folder_quota(self, users=[], primary_domain=None, secondary_domain=[], folders=[]):
-        self._connect()
+        self.connect()
 
         if conf.has_option(primary_domain, 'quota_attribute'):
             _quota_attr = conf.get(primary_domain, 'quota_attribute')
@@ -203,13 +239,13 @@ class IMAP(object):
 
         _inbox_folder_attr = conf.get('cyrus-sasl', 'result_attribute')
 
-        default_quota = self.auth.domain_default_quota(primary_domain)
+        default_quota = auth.domain_default_quota(primary_domain)
 
         if default_quota == "":
             default_quota = 0
 
         if len(users) == 0:
-            users = self.auth.list_users(primary_domain)
+            users = auth.list_users(primary_domain)
 
         for user in users:
             quota = None
@@ -222,7 +258,7 @@ class IMAP(object):
                     elif type(user[_quota_attr]) == str:
                         quota = user[_quota_attr]
                 else:
-                    _quota = self.auth.get_user_attribute(primary_domain, user, _quota_attr)
+                    _quota = auth.get_user_attribute(primary_domain, user, _quota_attr)
                     if _quota == None:
                         quota = 0
                     else:
@@ -236,7 +272,7 @@ class IMAP(object):
                     elif type(user[_inbox_folder_attr]) == str:
                         folder = "user/%s" % user[_inbox_folder_attr]
             elif type(user) == str:
-                quota = self.auth.get_user_attribute(user, 'quota')
+                quota = auth.get_user_attribute(user, 'quota')
                 folder = "user/%s" %(user)
 
             try:
@@ -262,24 +298,11 @@ class IMAP(object):
             if not int(new_quota) == int(quota):
                 log.info(_("Adjusting authentication database quota for folder %s to %d") %(folder,int(new_quota)))
                 quota = int(new_quota)
-                self.auth.set_user_attribute(primary_domain, user, _quota_attr, new_quota)
+                auth.set_user_attribute(primary_domain, user, _quota_attr, new_quota)
 
             if not int(current_quota) == int(quota):
                 #log.info(_("Correcting quota for %s to %s (currently %s)") %(folder, quota, current_quota))
-                log.debug(_("Checking actual backend server for folder %s through annotations") %(folder), level=8)
-                annotations = self.imap.getannotation(folder, "/vendor/cmu/cyrus-imapd/server")
-                server = annotations[folder]['/vendor/cmu/cyrus-imapd/server']
-                log.debug(_("Server for INBOX folder %s is %s") %(folder,server))
-                import cyruslib
-                _imap = cyruslib.IMAP4(server, 143)
-                admin_login = conf.get('cyrus-imap', 'admin_login')
-                admin_password = conf.get('cyrus-imap', 'admin_password')
-                _imap.login(admin_login, admin_password)
-
-                log.info(_("Correcting quota for %s to %s (currently %s)") %(folder, quota, current_quota))
-                _imap.setquota(folder, quota)
-
-                del _imap
+                self.imap._setquota(folder, quota)
 
     def expunge_user_folders(self, inbox_folders=None):
         """
@@ -299,7 +322,7 @@ class IMAP(object):
 
                 primary_domain, secondary_domains
         """
-        self._connect()
+        self.connect()
 
         if inbox_folders == None:
             inbox_folders = []
@@ -316,14 +339,17 @@ class IMAP(object):
                     self.imap.dm("user/%s" %(folder))
             except:
                 log.info(_("Folder has no corresponding user (2): %s") %(folder))
-                self.imap.dm("user/%s" %(folder))
+                try:
+                    self.imap.dm("user/%s" %(folder))
+                except:
+                    pass
 
     def list_user_folders(self, primary_domain=None, secondary_domains=[]):
         """
             List the INBOX folders in the IMAP backend. Returns a list of unique
             base folder names.
         """
-        self._connect()
+        self.connect()
 
         _folders = self.imap.lm("user/%")
         # TODO: Replace the .* below with a regex representing acceptable DNS
@@ -353,9 +379,9 @@ class IMAP(object):
                 #if acceptable:
                     #folder_name = "%s@%s" %(folder.split(self.seperator)[1].split('@')[0],folder.split('@')[1])
 
-                folder_name = "%s@%s" %(folder.split(self.seperator)[1].split('@')[0],folder.split('@')[1])
+                folder_name = "%s@%s" %(folder.split(self.imap.seperator)[1].split('@')[0],folder.split('@')[1])
             else:
-                folder_name = "%s" %(folder.split(self.seperator)[1])
+                folder_name = "%s" %(folder.split(self.imap.seperator)[1])
 
             if not folder_name == None:
                 if not folder_name in folders:
@@ -366,7 +392,7 @@ class IMAP(object):
         return folders
 
     def synchronize(self, users=[], primary_domain=None, secondary_domains=[]):
-        self._connect()
+        self.connect()
         self.users = users
 
         self.move_user_folders(users)
@@ -377,16 +403,8 @@ class IMAP(object):
 
         return folders
 
-    def getannotation(self, *args, **kw):
-        self._connect()
-        return self.imap.getannotation(*args, **kw)
-
     def lm(self, *args, **kw):
         return self.imap.lm(*args, **kw)
 
     def undelete(self, *args, **kw):
-        from pykolab.imap.cyrus import Cyrus
-        imap = Cyrus()
-        result = imap.undelete(*args, **kw)
-        del imap
-        return result
+        self.imap.undelete(*args, **kw)

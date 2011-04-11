@@ -23,16 +23,19 @@ import os
 import random
 import time
 
-from pykolab.conf import Conf
+import pykolab
+
 from pykolab.constants import *
 from pykolab.tests.constants import *
 from pykolab.translate import _
 
+log = pykolab.getLogger('pykolab.tests')
+conf = pykolab.getConf()
+
 class Tests(object):
     def __init__(self):
-        self.conf = Conf()
 
-        test_group = self.conf.parser.add_option_group(_("Test Options"))
+        test_group = conf.add_cli_parser_option_group(_("Test Options"))
 
         for item in TEST_ITEMS:
             test_group.add_option(  "--%s" %(item['name']),
@@ -48,7 +51,7 @@ class Tests(object):
                                 help    = _("Run tests in suite SUITE. Implies a certain set of items being tested."),
                                 metavar = "SUITE")
 
-        delivery_group = self.conf.parser.add_option_group(_("Content Delivery Options"))
+        delivery_group = conf.add_cli_parser_option_group(_("Content Delivery Options"))
 
         delivery_group.add_option(  "--use-mail",
                                     dest    = "use_mail",
@@ -60,21 +63,21 @@ class Tests(object):
                                     dest    = "use_imap",
                                     action  = "store_true",
                                     default = False,
-                                    help    = _("Inject messages containing the items through IMAP (requires imaplib)"))
+                                    help    = _("Inject messages containing the items through IMAP"))
 
         delivery_group.add_option(  "--use-lmtp",
                                     dest    = "use_lmtp",
                                     action  = "store_true",
                                     default = False,
-                                    help    = _("Deliver messages containing the items through LMTP (requires imaplib)"))
+                                    help    = _("Deliver messages containing the items through LMTP"))
 
-        self.conf.finalize_conf()
+        conf.finalize_conf()
 
     def run(self):
         # Execute the suites first.
-        for suite in self.conf.test_suites:
+        for suite in conf.test_suites:
             try:
                 exec("from pykolab.tests.%s import %sTest" %(suite,suite.capitalize()))
-                exec("%stest = %sTest(self.conf)" %(suite,suite.capitalize()))
+                exec("%stest = %sTest()" %(suite,suite.capitalize()))
             except ImportError, e:
-                self.conf.log.error(_("Tests for suite %s failed to load. Aborting.") %(suite.capitalize()), recoverable=False)
+                conf.log.error(_("Tests for suite %s failed to load. Aborting.") %(suite.capitalize()), recoverable=False)

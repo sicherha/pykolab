@@ -17,92 +17,48 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-import cyruslib
+import pykolab
 
-from pykolab.conf import Conf
+from pykolab import utils
 from pykolab.constants import *
 from pykolab.tests.constants import *
 from pykolab.translate import _
 
-TEST_FOLDERS = {
-        'Calendar': {
-                'annotations': {
-                        "/vendor/kolab/folder-test": "true",
-                        "/vendor/kolab/folder-type": "event.default"
-                    },
-                'acls': [
-                    ],
-            },
-
-        'Contacts': {
-                'annotations': {
-                        "/vendor/kolab/folder-type": "contact.default"
-                    },
-                'acls': [
-                    ],
-            },
-
-        'Journal': {
-                'annotations': {
-                        "/vendor/kolab/folder-test": "true",
-                        "/vendor/kolab/folder-type": "journal.default"
-                    },
-                'acls': [
-                    ],
-            },
-        'Notes': {
-                'annotations': {
-                        "/vendor/kolab/folder-type": "note.default"
-                    },
-                'acls': [
-                    ],
-            },
-        'Tasks': {
-                'annotations': {
-                        "/vendor/kolab/folder-type": "task.default"
-                    },
-                'acls': [
-                    ],
-            },
-    }
+log = pykolab.getLogger('pykolab.tests.zpush')
+conf = pykolab.getConf()
 
 class Test_000_000(object):
     """
-        Preparations for the Test 000 series
+        Preparations for the Test 000 series.
     """
 
     def __init__(self, conf=None):
         self.suite_num = "000"
         self.suite_test_num = "000"
 
-        self.log.info("About to execute preperation task #000 in Test Suite #000");
-        self.log.info("We will assume the start situation has been configured");
-        self.log.info("such as is described in the documentation");
+        log.info("About to execute preperation task #000 in Test Suite #000");
+        log.info("We will assume the start situation has been configured");
+        log.info("such as is described in the documentation.");
 
-        if not conf:
-            self.conf = Conf()
-            self.conf.finalize_conf()
-        else:
-            self.conf = conf
-
-        # Remove all mailboxes
-        # FIXME: Should come from configuration file and/or prompts
-        imap = cyruslib.CYRUS("imap://%s:143" %(self.conf.testing_server))
-        imap.login(self.conf.testing_admin_login,self.conf.testing_admin_password)
+        utils.ask_confirmation("Continue?")
 
         # Delete all mailboxes
-        for user in self.conf.testing_users:
+        #imap.connect()
+        #for folder in imap.lm("user/%"):
+            #imap.dm(folder)
+
+        for user in auth.list_users(domain):
             for mailbox in imap.lm("user%s%s" %(imap.SEP,"%(givenname)s@%(domain)s" %(user))):
-                self.conf.log.debug(_("Deleting mailbox: %s") %(mailbox), level=3)
+                log.debug(_("Deleting mailbox: %s") %(mailbox), level=3)
                 try:
                     imap.dm(mailbox)
                 except cyruslib.CYRUSError, e:
                     pass
 
         # Recreate the user top-level mailboxes
-        for user in self.conf.testing_users:
+        for user in conf.testing_users:
             mailbox = "user%s%s" %(imap.SEP,"%(givenname)s@%(domain)s" %(user))
-            self.conf.log.debug(_("Creating mailbox: %s") %(mailbox), level=3)
+            log.debug(_("Creating mailbox: %s") %(mailbox), level=3)
             imap.cm(mailbox)
 
         imap.logout()
@@ -113,15 +69,15 @@ class Test_000_000(object):
         # - create the standard folders
         # - set the standard annotations
         # - subscribe
-        for user in self.conf.testing_users:
-            imap = cyruslib.CYRUS("imap://%s:143" %(self.conf.testing_server))
+        for user in conf.testing_users:
+            imap = cyruslib.CYRUS("imap://%s:143" %(conf.testing_server))
             try:
                 imap.login("%(givenname)s@%(domain)s" %(user), user['password'])
             except:
-                self.conf.log.error(_("Authentication failure for %s") %("%(givenname)s@%(domain)s" %(user)), recoverable=True)
+                log.error(_("Authentication failure for %s") %("%(givenname)s@%(domain)s" %(user)), recoverable=True)
                 continue
 
-            if self.conf.debuglevel > 3:
+            if conf.debuglevel > 3:
                 imap.VERBOSE = True
 
             imap.subscribe("INBOX")
