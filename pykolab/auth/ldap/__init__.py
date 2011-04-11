@@ -50,9 +50,14 @@ class SimplePagedResultsControl(ldap.controls.SimplePagedResultsControl):
 
     def __init__(self, page_size=0, cookie=''):
         if version.StrictVersion('2.4.0') <= version.StrictVersion(ldap.__version__):
-            ldap.controls.SimplePagedResultsControl.__init__(self, size=page_size, cookie=cookie)
+            ldap.controls.SimplePagedResultsControl.__init__(
+                    self,
+                    size=page_size,
+                    cookie=cookie
+                )
         else:
             ldap.controls.SimplePagedResultsControl.__init__(
+                    self,
                     LDAP_CONTROL_PAGED_RESULTS,
                     critical,
                     (page_size, '')
