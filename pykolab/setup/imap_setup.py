@@ -25,5 +25,8 @@ import sys
 from pykolab.translate import _
 from pykolab import utils
 
+from pykolab.setup import package
+
 def setup():
-    print "I'm in the IMAP setup"
+    pkgmgr = package.Package('cyrus-imapd')
+    #pkgmgr = package.Package('kolabd')
