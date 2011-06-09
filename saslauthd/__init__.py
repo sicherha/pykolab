@@ -81,7 +81,7 @@ class SASLAuthDaemon(object):
         except AttributeError, e:
             exitcode = 1
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a bug at http://issues.kolab.org")
+            print >> sys.stderr, _("Traceback occurred, please report a bug at http://bugzilla.kolabsys.com")
         except TypeError, e:
             exitcode = 1
             traceback.print_exc()
