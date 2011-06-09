@@ -4,12 +4,12 @@
 [ ! -z "$3" ] && rootdn=$3 || rootdn="dc=example,dc=org"
 [ ! -z "$4" ] && ou=$4 || ou="ou=People"
 
-#echo "dn: ${ou},${rootdn}"
-#echo "objectClass: top"
-#echo "objectClass: organizationalunit"
-#echo "$(echo ${ou} | cut -d'=' -f 1): $(echo ${ou} | cut -d'=' -f 2)"
-#echo 'aci: (targetattr ="userpassword || telephonenumber || facsimiletelephonenumber")(version 3.0; acl "Allow self entry modification"; allow (write)(userdn = "ldap:///self");)'
-#echo ""
+echo "dn: ${ou},${rootdn}"
+echo "objectClass: top"
+echo "objectClass: organizationalunit"
+echo "$(echo ${ou} | cut -d'=' -f 1): $(echo ${ou} | cut -d'=' -f 2)"
+echo 'aci: (targetattr ="userpassword || telephonenumber || facsimiletelephonenumber")(version 3.0; acl "Allow self entry modification"; allow (write)(userdn = "ldap:///self");)'
+echo ""
 
 i=0
 while [ $i -lt 0$1 ]; do
@@ -18,7 +18,9 @@ while [ $i -lt 0$1 ]; do
     surname=`head -c 200 /dev/urandom | tr -dc A-Za-z | head -c10`
 
     givenname="$(echo ${givenname:0:1} | tr '[:lower:]' '[:upper:]')$(echo ${givenname:1} | tr '[:upper:]' '[:lower:]')"
+    givenname_lower="$(echo ${givenname} | tr '[:upper:]' '[:lower:]')"
     surname="$(echo ${surname:0:1} | tr '[:lower:]' '[:upper:]')$(echo ${surname:1} | tr '[:upper:]' '[:lower:]')"
+    surname_lower="$(echo ${surname} | tr '[:upper:]' '[:lower:]')"
 
     uid="$(echo ${givenname:0:1}.${surname} | tr '[:upper:]' '[:lower:]')"
 
@@ -34,7 +36,7 @@ while [ $i -lt 0$1 ]; do
     echo "objectClass: mailrecipient"
     echo "sn: $surname"
     echo "cn: $givenname $surname"
-    echo "mail: ${givenname}.${surname}@${domain}"
+    echo "mail: ${givenname_lower}.${surname_lower}@${domain}"
     echo "userPassword: {SSHA}zJ3oU5kqtS3MxnLWmKpnE7+eGVbmQKmj"
     echo ""
 
