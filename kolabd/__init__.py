@@ -88,7 +88,7 @@ class KolabDaemon(object):
         except AttributeError, e:
             exitcode = 1
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a bug at http://issues.kolab.org")
+            print >> sys.stderr, _("Traceback occurred, please report a bug at http://bugzilla.kolabsys.com")
         except TypeError, e:
             exitcode = 1
             traceback.print_exc()
@@ -96,7 +96,7 @@ class KolabDaemon(object):
         except:
             exitcode = 2
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a bug at http://issues.kolab.org")
+            print >> sys.stderr, _("Traceback occurred, please report a bug at http://bugzilla.kolabsys.com")
         sys.exit(exitcode)
 
     def do_sync(self):
