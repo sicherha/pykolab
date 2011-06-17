@@ -84,10 +84,10 @@ class Cli(object):
 
     def action_sync(self):
         log.debug(_("Listing domains..."), level=5)
-        start = time.time()
+        start_time = time.time()
         domains = auth.list_domains()
-        end = time.time()
-        log.debug(_("Found %d domains in %d seconds") %(len(domains),(end-start)), level=8)
+        end_time = time.time()
+        log.debug(_("Found %d domains in %d seconds") %(len(domains),(end_time-start_time)), level=8)
 
         all_folders = []
 
@@ -95,16 +95,12 @@ class Cli(object):
             #print "Running for domain %s" %(primary_domain)
             auth.connect(primary_domain)
             start_time = time.time()
-            users = auth.list_users(primary_domain, secondary_domains)
-            #print "USERS RETURNED FROM auth.list_users():", users
+            auth.synchronize(primary_domain, secondary_domains)
             end_time = time.time()
-            log.info(_("Listing users for %s (including getting the" + \
-                    " appropriate attributes, took %d seconds")
+
+            log.info(_("Synchronizing users for %s took %d seconds")
                     %(primary_domain, (end_time-start_time))
                 )
-            all_folders.extend(imap.synchronize(users, primary_domain, secondary_domains))
-
-        imap.expunge_user_folders(all_folders)
 
     def action_list_deleted(self):
         """
@@ -120,21 +116,15 @@ class Cli(object):
         """
             Undeleted mailbox
         """
-        deleted_folder = None
+
+        target_folder = None
 
         undelete_folder = conf.cli_args.pop(0)
+        if len(conf.cli_args) > 0:
+            target_folder = conf.cli_args.pop(0)
 
         imap.connect()
-        folders = imap.lm("DELETED/*")
-        for folder in folders:
-            if undelete_folder == folder:
-                deleted_folder = undelete_folder
-
-        if deleted_folder == None:
-            print >> sys.stderr, _("No deleted folder %s") %(undelete_folder)
-            sys.exit(1)
-
-        imap.undelete(deleted_folder)
+        imap.undelete(undelete_folder, target_folder)
 
     def action_list_domains(self):
         # Create the authentication object.
