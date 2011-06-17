@@ -45,7 +45,8 @@ Commands = {
         'DUMP'         : ('AUTH',), # To check admin status
         'ID'           : ('AUTH',), # Only one ID allowed in non auth mode
         'GETANNOTATION': ('AUTH',),
-        'SETANNOTATION': ('AUTH',)
+        'SETANNOTATION': ('AUTH',),
+        'XFER'         : ('AUTH',)
     }
 
 imaplib.Commands.update(Commands)
@@ -368,6 +369,10 @@ class CYRUS:
                 error = unquote(error[1:-1], '\'')
             self.__doexception(function, error, *args)
         self.__doexception(function, msg[0], *args)
+
+    def xfer(self, mailbox, server):
+        """Xfer a mailbox to server"""
+        return self.m._simple_command('XFER', mailbox, server)
 
     def id(self):
         self.__prepare('id')
