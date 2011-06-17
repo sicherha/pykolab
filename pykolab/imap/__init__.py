@@ -21,6 +21,7 @@
 import logging
 import re
 import time
+import sys
 
 from urlparse import urlparse
 
@@ -39,6 +40,9 @@ class IMAP(object):
 
         # Place holder for the current IMAP connection
         self.imap = None
+
+        self.users = []
+        self.inbox_folders = []
 
     def connect(self, uri=None):
         backend = conf.get('kolab', 'imap_backend')
@@ -118,6 +122,7 @@ class IMAP(object):
 
                         if not self.has_folder(inbox):
                             self.imap.rename(old_inbox,inbox)
+                            self.inbox_folders.append(inbox)
                         else:
                             log.warning(_("Moving INBOX folder %s won't succeed as target folder %s already exists") %(old_inbox,inbox))
                     else:
@@ -135,17 +140,15 @@ class IMAP(object):
         # See if the folder belongs to any of the users
         _match_attr = conf.get('cyrus-sasl', 'result_attribute')
 
-        #print domain
-
         if not users:
             users = auth.list_users(primary_domain)
 
         for user in users:
             if type(user) == dict:
                 if user.has_key(_match_attr):
-                    inbox_folders.append(user[_match_attr])
+                    inbox_folders.append(user[_match_attr].lower())
             elif type(user) == str:
-                inbox_folders.append(user)
+                inbox_folders.append(user.lower())
 
         for folder in inbox_folders:
             additional_folders = None
@@ -190,6 +193,8 @@ class IMAP(object):
         return inbox_folders
 
     def create_user_additional_folders(self, folder, additional_folders):
+        self.connect()
+
         for additional_folder in additional_folders.keys():
             _add_folder = {}
             if len(folder.split('@')) > 1:
@@ -275,6 +280,8 @@ class IMAP(object):
                 quota = auth.get_user_attribute(user, 'quota')
                 folder = "user/%s" %(user)
 
+            folder = folder.lower()
+
             try:
                 (used,current_quota) = self.imap.lq(folder)
             except:
@@ -303,6 +310,62 @@ class IMAP(object):
             if not int(current_quota) == int(quota):
                 #log.info(_("Correcting quota for %s to %s (currently %s)") %(folder, quota, current_quota))
                 self.imap._setquota(folder, quota)
+
+    def set_user_mailhost(self, users=[], primary_domain=None, secondary_domain=[], folders=[]):
+        self.connect()
+
+        if conf.has_option(primary_domain, 'mailserver_attribute'):
+            _mailserver_attr = conf.get(primary_domain, 'mailserver_attribute')
+        else:
+            auth_mechanism = conf.get('kolab', 'auth_mechanism')
+            _mailserver_attr = conf.get(auth_mechanism, 'mailserver_attribute')
+
+        _inbox_folder_attr = conf.get('cyrus-sasl', 'result_attribute')
+
+        if len(users) == 0:
+            users = auth.list_users(primary_domain)
+
+        for user in users:
+            mailhost = None
+
+            if type(user) == dict:
+                if user.has_key(_mailserver_attr):
+                    #print "user has key"
+                    if type(user[_mailserver_attr]) == list:
+                        _mailserver = user[_mailserver_attr].pop(0)
+                    elif type(user[_mailserver_attr]) == str:
+                        _mailserver = user[_mailserver_attr]
+                else:
+                    _mailserver = auth.get_user_attribute(primary_domain, user, _mailserver_attr)
+
+                if not user.has_key(_inbox_folder_attr):
+                    continue
+                else:
+                    if type(user[_inbox_folder_attr]) == list:
+                        folder = "user/%s" % user[_inbox_folder_attr].pop(0)
+                    elif type(user[_inbox_folder_attr]) == str:
+                        folder = "user/%s" % user[_inbox_folder_attr]
+
+            elif type(user) == str:
+                _mailserver = auth.get_user_attribute(user, _mailserver_attr)
+                folder = "user/%s" %(user)
+
+            folder = folder.lower()
+
+            _current_mailserver = self.imap.find_mailbox_server(folder)
+
+            if not _mailserver == None:
+                # TODO:
+                if not _current_mailserver == _mailserver:
+                    self.imap._xfer(folder, _current_mailserver, _mailserver)
+
+                auth.set_user_attribute(primary_domain, user, _mailserver_attr, _mailserver)
+            else:
+                auth.set_user_attribute(primary_domain, user, _mailserver_attr, _current_mailserver)
+
+    def parse_mailbox(self, mailbox):
+        self.connect()
+        return self.imap.parse_mailbox(mailbox)
 
     def expunge_user_folders(self, inbox_folders=None):
         """
@@ -393,15 +456,15 @@ class IMAP(object):
 
     def synchronize(self, users=[], primary_domain=None, secondary_domains=[]):
         self.connect()
-        self.users = users
+        self.users.extend(users)
 
         self.move_user_folders(users)
 
-        folders = self.create_user_folders(users, primary_domain, secondary_domains)
+        self.inbox_folders.extend(self.create_user_folders(users, primary_domain, secondary_domains))
 
-        self.set_user_folder_quota(users, primary_domain, secondary_domains, folders)
+        self.set_user_folder_quota(users, primary_domain, secondary_domains, self.inbox_folders)
 
-        return folders
+        self.set_user_mailhost(users, primary_domain, secondary_domains, self.inbox_folders)
 
     def lm(self, *args, **kw):
         return self.imap.lm(*args, **kw)

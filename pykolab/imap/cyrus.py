@@ -26,8 +26,8 @@ import pykolab
 
 from pykolab.translate import _
 
-log = pykolab.getLogger('pykolab.imap.cyrus')
 conf = pykolab.getConf()
+log = pykolab.getLogger('pykolab.imap.cyrus')
 
 imap = pykolab.imap
 
@@ -61,9 +61,14 @@ class Cyrus(cyruslib.CYRUS):
         else:
             port = result.port
 
+        self.server = result.hostname
+
         self.uri = "%s://%s:%s" %(result.scheme,result.hostname,port)
 
         cyruslib.CYRUS.__init__(self, self.uri)
+
+        if conf.debuglevel > 8:
+            self.VERBOSE = True
 
         # Initialize our variables
         self.seperator = self.SEP
@@ -84,6 +89,13 @@ class Cyrus(cyruslib.CYRUS):
 
     def find_mailbox_server(self, mailbox):
         annotations = {}
+
+        _mailbox = self.parse_mailbox(mailbox)
+        prefix = _mailbox['path_parts'].pop(0)
+        mbox = _mailbox['path_parts'].pop(0)
+        if not _mailbox['domain'] == None:
+            mailbox = "%s%s%s@%s" %(prefix,self.seperator,mbox,_mailbox['domain'])
+
         log.debug(_("Checking actual backend server for folder %s through annotations") %(mailbox), level=8)
         if self.mbox.has_key(mailbox):
             return self.mbox[mailbox]
@@ -92,13 +104,14 @@ class Cyrus(cyruslib.CYRUS):
         num_try = 0
         while 1:
             num_try += 1
-            annotations = self.getannotation(mailbox, "/vendor/cmu/cyrus-imapd/server")
+            annotations = self._getannotation(mailbox, "/vendor/cmu/cyrus-imapd/server")
 
             if annotations.has_key(mailbox):
                 break
 
             if max_tries <= num_try:
                 log.error(_("Could not get the annotations after %s tries.") %(num_try))
+                annotations = { mailbox: { '/vendor/cmu/cyrus-imapd/server': self.server }}
                 break
 
             log.warning(_("No annotations for %s: %r") %(mailbox,annotations))
@@ -107,6 +120,11 @@ class Cyrus(cyruslib.CYRUS):
 
         server = annotations[mailbox]['/vendor/cmu/cyrus-imapd/server']
         self.mbox[mailbox] = server
+
+        if not server == self.server:
+            if imap._imap.has_key(server):
+                if not imap._imap[server].mbox.has_key(mailbox):
+                    imap._imap[server].mbox[mailbox] = server
 
         log.debug(_("Server for INBOX folder %s is %s") %(mailbox,server), level=8)
 
@@ -135,6 +153,10 @@ class Cyrus(cyruslib.CYRUS):
         log.debug(_("Moving INBOX folder %s to %s") %(from_mailbox,to_mailbox), level=8)
         imap.rename(from_mailbox, to_mailbox, partition)
 
+    def _getannotation(self, *args, **kw):
+        imap.connect()
+        return imap.getannotation(*args, **kw)
+
     def _setannotation(self, mailbox, annotation, value):
         """
             Login to the actual backend server, then set annotation.
@@ -144,6 +166,11 @@ class Cyrus(cyruslib.CYRUS):
 
         log.debug(_("Setting annotation %s on folder %s") %(annotation,mailbox), level=8)
         imap.setannotation(mailbox, annotation, value)
+
+    def _xfer(self, mailbox, current_server, new_server):
+        imap.connect('imap://%s:143' %(current_server))
+        log.debug(_("Transferring folder %s from %s to %s") %(mailbox, current_server, new_server), level=8)
+        imap.xfer(mailbox, new_server)
 
     def undelete(self, mailbox, to_mailbox=None, recursive=True):
         """
@@ -165,10 +192,6 @@ class Cyrus(cyruslib.CYRUS):
             'to_mailbox' may be the target folder to "undelete" the deleted
             folder to. If not specified, the original folder name is used.
         """
-        server = self.find_mailbox_server(mailbox)
-
-        imap.connect('imap://%s:143' %(server))
-
         # Placeholder for folders we have recovered already.
         target_folders = []
 
@@ -253,7 +276,7 @@ class Cyrus(cyruslib.CYRUS):
             if not mbox['domain'] == None:
                 verify_folder_search = "%s@%s" %(verify_folder_search, mbox['domain'])
 
-            folders = self.imap.imap.lm(verify_folder_search)
+            folders = self.lm(verify_folder_search)
 
             # NOTE: Case also covered is valid hexadecimal folders; won't be the
             # actual check as intended, but doesn't give you anyone else's data
@@ -291,7 +314,7 @@ class Cyrus(cyruslib.CYRUS):
         if not mbox['domain'] == None:
             deleted_folder_search = "%s@%s" %(deleted_folder_search,mbox['domain'])
 
-        folders = self.imap.lm(deleted_folder_search)
+        folders = self.lm(deleted_folder_search)
 
         # The folders we have found at this stage include virtdomain folders.
         #
