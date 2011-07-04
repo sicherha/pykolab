@@ -159,5 +159,5 @@ install-exec-local:
 	$(INSTALL) -p -m 755 kolabd.py $(DESTDIR)/$(sbindir)/kolabd
 	$(INSTALL) -p -m 644 saslauthd.py $(DESTDIR)/$(sbindir)/kolab-saslauthd
 	$(INSTALL) -p -m 755 kolabtest.py $(DESTDIR)/$(bindir)/kolab-test
-	$(INSTALL) -p -m 644 cyruslib.py $(DESTDIR)/$(datadir)/$(PACKAGE)/
+	$(INSTALL) -p -m 644 cyruslib.py $(DESTDIR)/$(pythondir)
 	$(INSTALL) -p -m 755 bin/kolab_smtp_access_policy.py $(DESTDIR)/$(libexecdir)/postfix/kolab_smtp_access_policy

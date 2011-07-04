@@ -1,2 +1,2 @@
-kolabddir = $(datadir)/$(PACKAGE)/kolabd
+kolabddir = $(pythondir)/kolabd
 kolabd_PYTHON = $(wildcard *.py)

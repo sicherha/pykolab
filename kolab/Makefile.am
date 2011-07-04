@@ -1,2 +1,2 @@
-kolabdir = $(datadir)/$(PACKAGE)/kolab
+kolabdir = $(pythondir)/kolab
 kolab_PYTHON = $(wildcard *.py)

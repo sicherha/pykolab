@@ -85,17 +85,23 @@ rm -rf %{buildroot}
 %{_sbindir}/kolab
 %{_sbindir}/kolab-conf
 %config(noreplace) %{_sysconfdir}/kolab/kolab.conf
-%{_datadir}/pykolab/
+%{python_sitelib}/pykolab/
+%{python_sitelib}/kolab/
+%{python_sitelib}/cyruslib.py
+%{python_sitelib}/cyruslib.pyc
+%{python_sitelib}/cyruslib.pyo
 
 %files -n kolab-saslauthd
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
 %{_sbindir}/kolab-saslauthd
+%{python_sitelib}/saslauthd/
 
 %files -n kolab-server
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
 %{_sbindir}/kolabd
+%{python_sitelib}/kolabd/
 
 %files -n postfix-kolab
 %defattr(-,root,root,-)
