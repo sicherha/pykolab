@@ -156,7 +156,7 @@ def is_service(services):
 
         Usage: utils.is_service(['dirsrv', 'ldap'])
     """
-    _service = ''
+    _service = None
     _other_services = []
 
     for service in services:
