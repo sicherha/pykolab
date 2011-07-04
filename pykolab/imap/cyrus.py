@@ -93,6 +93,9 @@ class Cyrus(cyruslib.CYRUS):
         if not _mailbox['domain'] == None:
             mailbox = "%s%s%s@%s" %(prefix,self.seperator,mbox,_mailbox['domain'])
 
+        if len(self.lm(mailbox)) < 1:
+            return self.server
+
         log.debug(_("Checking actual backend server for folder %s through annotations") %(mailbox), level=8)
         if self.mbox.has_key(mailbox):
             return self.mbox[mailbox]
