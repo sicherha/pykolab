@@ -39,6 +39,18 @@ Requires:       pykolab = %{version}-%{release}
 Kolab SASL Authentication Daemon for multi-domain, multi-authn database deployments
 
 ##
+## Kolab Server implemented in Python
+##
+%package -n kolab-server
+Summary:        Kolab Server implemented in Python
+Group:          Applications/System
+BuildRequires:  intltool, gettext, python
+Requires:       pykolab = %{version}-%{release}
+
+%description -n kolab-server
+Kolab Server implemented in Python
+
+##
 ## Kolab SMTP Access Policy for Postfix
 ##
 %package -n postfix-kolab
@@ -72,7 +84,6 @@ rm -rf %{buildroot}
 %{_bindir}/*
 %{_sbindir}/kolab
 %{_sbindir}/kolab-conf
-%{_sbindir}/kolabd
 %config(noreplace) %{_sysconfdir}/kolab/kolab.conf
 %{_datadir}/pykolab/
 
@@ -80,6 +91,11 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
 %{_sbindir}/kolab-saslauthd
+
+%files -n kolab-server
+%defattr(-,root,root,-)
+%doc AUTHORS ChangeLog COPYING
+%{_sbindir}/kolabd
 
 %files -n postfix-kolab
 %defattr(-,root,root,-)
