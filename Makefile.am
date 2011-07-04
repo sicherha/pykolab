@@ -9,11 +9,13 @@ INTLTOOL_FILES = \
 	intltool-update.in
 
 PYTHON_FILES = \
+	bin/kolab_smtp_access_policy.py \
 	cyruslib.py \
 	conf.py \
 	kolab.py \
 	kolabd.py \
 	kolabtest.py \
+	saslauthd.py \
 	setup-kolab.py
 
 EXTRA_DIST = \
@@ -41,6 +43,9 @@ ChangeLog:
 
 srpm: ChangeLog dist
 	@rpmbuild -ts $(PACKAGE)-$(VERSION).tar.gz
+
+rpm: srpm
+	@rpmbuild -ta $(PACKAGE)-$(VERSION).tar.gz
 
 binary:
 	python ext/python/Tools/freeze/freeze.py \
@@ -147,10 +152,12 @@ clean:
 execdir = $(sbindir)
 
 install-exec-local:
-	mkdir -p $(DESTDIR)/$(sbindir) $(DESTDIR)/$(bindir)
+	mkdir -p $(DESTDIR)/$(sbindir) $(DESTDIR)/$(bindir) \
+		$(DESTDIR)/$(libexecdir)/postfix
 	$(INSTALL) -p -m 755 conf.py $(DESTDIR)/$(sbindir)/kolab-conf
 	$(INSTALL) -p -m 755 kolab.py $(DESTDIR)/$(sbindir)/kolab
 	$(INSTALL) -p -m 755 kolabd.py $(DESTDIR)/$(sbindir)/kolabd
-	$(INSTALL) -p -m 644 saslauthd.py $(DESTDIR)/$(sbindir)/kolab-saslauthd/
+	$(INSTALL) -p -m 644 saslauthd.py $(DESTDIR)/$(sbindir)/kolab-saslauthd
 	$(INSTALL) -p -m 755 kolabtest.py $(DESTDIR)/$(bindir)/kolab-test
 	$(INSTALL) -p -m 644 cyruslib.py $(DESTDIR)/$(datadir)/$(PACKAGE)/
+	$(INSTALL) -p -m 755 bin/kolab_smtp_access_policy.py $(DESTDIR)/$(libexecdir)/postfix/kolab_smtp_access_policy

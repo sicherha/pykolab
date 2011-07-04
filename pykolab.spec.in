@@ -27,6 +27,31 @@ BuildRequires:  intltool, gettext, python
 %description -n kolab-cli
 Kolab CLI utilities
 
+##
+## Kolab SASL Authentication Daemon
+##
+%package -n kolab-saslauthd
+Summary:        Kolab SASL Authentication Daemon
+Group:          Applications/System
+BuildRequires:  intltool, gettext, python
+Requires:       pykolab = %{version}-%{release}
+
+%description -n kolab-saslauthd
+Kolab SASL Authentication Daemon for multi-domain, multi-authn database deployments
+
+##
+## Kolab SMTP Access Policy for Postfix
+##
+%package -n postfix-kolab
+Summary:        Kolab SMTP Access Policy for Postfix
+Group:          Applications/System
+BuildRequires:  intltool, gettext, python
+Requires:       postfix
+Requires:       pykolab = %{version}-%{release}
+
+%description -n postfix-kolab
+Kolab SMTP Access Policy for Postfix
+
 %prep
 %setup -q
 
@@ -46,9 +71,21 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING README README.tests
 %{_bindir}/*
-%{_sbindir}/*
+%{_sbindir}/kolab
+%{_sbindir}/kolab-conf
+%{_sbindir}/kolabd
 %config(noreplace) %{_sysconfdir}/kolab/kolab.conf
 %{_datadir}/pykolab/
+
+%files -n kolab-saslauthd
+%defattr(-,root,root,-)
+%doc AUTHORS ChangeLog COPYING
+%{_sbindir}/kolab-saslauthd
+
+%files -n postfix-kolab
+%defattr(-,root,root,-)
+%doc AUTHORS ChangeLog COPYING
+%{_libexecdir}/postfix/kolab_smtp_access_policy
 
 %changelog
 * @DATESTAMP@ Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com> @VERSION@-@RELEASE@
