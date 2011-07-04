@@ -104,7 +104,10 @@ def parse_address(email_address):
     if len(email_address.split("+")) > 1:
         # Take the first part split by recipient delimiter and the last part
         # split by '@'.
-        return "%s@%s" %(email_address.split("+")[0],email_address.split('@')[1])
+        return "%s@%s" %(
+                email_address.split("+")[0],
+                email_address.split('@')[1]
+            )
     else:
         return email_address
 
@@ -166,7 +169,8 @@ def read_request_input():
         if request_line == '':
             end_of_request = True
         else:
-            policy_request[request_line.split('=')[0]] = '='.join(request_line.split('=')[1:])
+            policy_request[request_line.split('=')[0]] = \
+                '='.join(request_line.split('=')[1:])
 
     return policy_request
 
@@ -197,7 +201,11 @@ def verify_recipient(policy_request):
     domain = policy_request['sender'].split('@')[1]
     user = {
             # TODO: Use cyrus-sasl result attribute
-            'dn': auth.find_user('mail', parse_address(policy_request['sender']), domain=domain)
+            'dn': auth.find_user(
+                    'mail',
+                    parse_address(policy_request['sender']),
+                    domain=domain
+                )
         }
 
     sender_policy = auth.get_user_attribute(
@@ -288,7 +296,13 @@ def verify_sender(policy_request):
         return False
 
     # Obtain 'kolabDelegate' from the envelope sender.
-    log.debug(_("Obtaining envelope sender dn for %s") %(policy_request['sender']), level=8)
+    log.debug(
+            _("Obtaining envelope sender dn for %s") %(
+                    policy_request['sender']
+                ),
+            level=8
+        )
+
     sender_user = {
             'dn': auth.find_user(
                     'mail',
@@ -306,7 +320,14 @@ def verify_sender(policy_request):
     sasl_user = False
 
     if sender_delegates == None:
-        log.warning(_("User %s attempted to use envelope sender address %s without authorization") %(policy_request["sasl_username"],policy_request["sender"]))
+        log.warning(
+            _("User %s attempted to use envelope sender address %s without " + \
+                "authorization") %(
+                        policy_request["sasl_username"],
+                        policy_request["sender"]
+                    )
+            )
+
         if not cache == False:
             result_set = cache.select(
                     sender=policy_request['sender'],
@@ -352,10 +373,25 @@ def verify_sender(policy_request):
 
         for sender_delegate in sender_delegates:
             if sasl_user['dn'] == sender_delegate:
-                log.debug(_("Found user %s to be a valid delegate user of %s") %(policy_request["sasl_username"], policy_request["sender"]), level=8)
+                log.debug(
+                        _("Found user %s to be a valid delegate user of %s") %(
+                                policy_request["sasl_username"],
+                                policy_request["sender"]
+                            ),
+                        level=8
+                    )
+
                 sender_is_delegate = True
+
             elif sasl_user['uid'] == sender_delegate:
-                log.debug(_("Found user %s to be a valid delegate user of %s") %(policy_request["sasl_username"], policy_request["sender"]), level=8)
+                log.debug(
+                        _("Found user %s to be a valid delegate user of %s") %(
+                                policy_request["sasl_username"],
+                                policy_request["sender"]
+                            ),
+                        level=8
+                    )
+
                 sender_is_delegate = True
 
     # If the authenticated user is using delegate functionality, apply the
