@@ -127,6 +127,10 @@ class Auth(object):
 
         self._auth[domain]._disconnect()
 
+    def find_user(self, attr, value, domain=None):
+        self.connect(domain)
+        return self._auth[domain]._find_user(attr, value, domain=domain)
+
     def list_domains(self):
         """
             List the domains using the auth_mechanism setting in the kolab
@@ -152,11 +156,18 @@ class Auth(object):
 
         return domains
 
-    def list_users(self, primary_domain, secondary_domains=[]):
+    def list_users(self, primary_domain, secondary_domains=[], callback=None):
         self.connect(domain=primary_domain)
-        users = self._auth[primary_domain]._list_users(primary_domain, secondary_domains)
+        users = self._auth[primary_domain]._list_users(
+                primary_domain,
+                secondary_domains,
+                callback
+            )
         self.disconnect(domain=primary_domain)
         return users
+
+    def synchronize(self, primary_domain, secondary_domains=[]):
+        self.list_users(primary_domain, secondary_domains, callback=self._auth[primary_domain].sync_user)
 
     def domain_default_quota(self, domain):
         self.connect(domain=domain)
@@ -167,7 +178,9 @@ class Auth(object):
         return self._auth[domain]._domain_section(domain)
 
     def get_user_attribute(self, domain, user, attribute):
+        self.connect(domain=domain)
         return self._auth[domain]._get_user_attribute(user, attribute)
 
     def set_user_attribute(self, domain, user, attribute, value):
+        self.connect(domain=domain)
         self._auth[domain]._set_user_attribute(user, attribute, value)
