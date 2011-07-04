@@ -10,7 +10,6 @@ URL:            http://kolab.org/
 Source0:        http://files.kolab.org/releases/%{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch:      noarch
-Requires:       kolab-python = %{version}-%{release}
 
 %description
 Kolab enables you to easily build a groupware server as part of a
