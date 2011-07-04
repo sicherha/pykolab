@@ -54,21 +54,10 @@ class Conf(object):
         # Create the options
         self.create_options()
 
-    def finalize_conf(self):
+    def finalize_conf(self,fatal=True):
 
         self.create_options_from_plugins()
-        self.parse_options()
-
-        # At this point, 'self' isn't much yet, so:
-        # first create a simple logger instance that won't do much,
-        # then create a configuration store with that logger,
-        # then start detecting the mode that we are in (GUI / CLI),
-        # then let the logger know about the configuration store,
-        # then /really/ set up the configuration store (now that it has a
-        #     valid logger that knows about the configuration store),
-        #
-        # Create logger
-        self.create_logger()
+        self.parse_options(fatal=fatal)
 
         # The defaults can some from;
         # - a file we ship with the packages
@@ -90,20 +79,21 @@ class Conf(object):
         self.options_set_from_config()
 
         # Also set the cli options
-        for option in self.cli_keywords.__dict__.keys():
-	    retval = False
-            if hasattr(self, "check_setting_%s" %(option)):
-                exec("retval = self.check_setting_%s(%r)" % (option, self.cli_keywords.__dict__[option]))
+        if hasattr(self,'cli_keywords') and not self.cli_keywords == None:
+            for option in self.cli_keywords.__dict__.keys():
+                retval = False
+                if hasattr(self, "check_setting_%s" %(option)):
+                    exec("retval = self.check_setting_%s(%r)" % (option, self.cli_keywords.__dict__[option]))
 
-                # The warning, error or confirmation dialog is in the check_setting_%s() function
-                if not retval:
-                    continue
+                    # The warning, error or confirmation dialog is in the check_setting_%s() function
+                    if not retval:
+                        continue
 
-                log.debug(_("Setting %s to %r (from CLI, verified)") %(option, self.cli_keywords.__dict__[option]), level=8)
-                setattr(self,option,self.cli_keywords.__dict__[option])
-            else:
-                log.debug(_("Setting %s to %r (from CLI, not checked)") %(option, self.cli_keywords.__dict__[option]), level=8)
-                setattr(self,option,self.cli_keywords.__dict__[option])
+                    log.debug(_("Setting %s to %r (from CLI, verified)") %(option, self.cli_keywords.__dict__[option]), level=8)
+                    setattr(self,option,self.cli_keywords.__dict__[option])
+                else:
+                    log.debug(_("Setting %s to %r (from CLI, not checked)") %(option, self.cli_keywords.__dict__[option]), level=8)
+                    setattr(self,option,self.cli_keywords.__dict__[option])
 
     def load_config(self, config):
         """
@@ -159,10 +149,11 @@ class Conf(object):
 
         # Check from which configuration file we should get the defaults
         # Other then default?
-        if not self.cli_keywords.config_file == self.defaults.config_file:
-            self.config_file = self.cli_keywords.config_file
-        else:
-            self.config_file = self.defaults.config_file
+        self.config_file = self.defaults.config_file
+
+        if hasattr(self,'cli_keywords') and not self.cli_keywords == None:
+            if not self.cli_keywords.config_file == self.defaults.config_file:
+                self.config_file = self.cli_keywords.config_file
 
         config = self.check_config()
         self.load_config(config)
@@ -300,12 +291,13 @@ class Conf(object):
                                     default = False,
                                     help    = _("Answer yes to all questions."))
 
-    def parse_options(self):
+    def parse_options(self, fatal=True):
         """
             Parse options passed to our call.
         """
 
-        (self.cli_keywords, self.cli_args) = self.cli_parser.parse_args()
+        if fatal:
+            (self.cli_keywords, self.cli_args) = self.cli_parser.parse_args()
 
     def run(self):
         """
@@ -363,7 +355,10 @@ class Conf(object):
         """
 
         if not value:
-            value = self.cli_keywords.config_file
+            value = self.defaults.config_file
+
+            if hasattr(self, 'cli_keywords') and not self.cli_keywords == None:
+                    value = self.cli_keywords.config_file
 
         self.cfg_parser = SafeConfigParser()
         self.cfg_parser.read(value)
@@ -437,6 +432,8 @@ class Conf(object):
             setattr(self,option,self.cli_parser.defaults[option])
 
     def has_section(self, section):
+        self.read_config()
+
         return self.cfg_parser.has_section(section)
 
     def has_option(self, section, option):
