@@ -76,9 +76,6 @@ class Cyrus(cyruslib.CYRUS):
         # Placeholder for known mailboxes on known servers
         self.mbox = {}
 
-    def __del__(self):
-        cyruslib.CYRUS.__del__(self)
-
     def login(self, *args, **kw):
         """
             Login to the Cyrus IMAP server through cyruslib.CYRUS, but set our
@@ -217,6 +214,7 @@ class Cyrus(cyruslib.CYRUS):
 
             if not to_mailbox == None:
                 target_folder = "%s%s%s" %(target_folder,self.seperator,mbox)
+
             if not len(undelete_mbox['path_parts']) == 0:
                 target_folder = "%s%s%s" %(target_folder,self.seperator,self.seperator.join(undelete_mbox['path_parts']))
 
@@ -229,6 +227,12 @@ class Cyrus(cyruslib.CYRUS):
                 target_folder = "%s@%s" %(target_folder,target_mbox['domain'])
 
             log.info(_("Undeleting %s to %s") %(undelete_folder,target_folder))
+
+            target_server = self.find_mailbox_server(target_folder)
+
+            if not target_server == self.server:
+                self.xfer(undelete_folder,target_server)
+
             self.rename(undelete_folder,target_folder)
 
     def parse_mailbox(self, mailbox):
