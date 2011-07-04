@@ -94,14 +94,28 @@ class KolabRecipientpolicy(object):
 
         alternative_mail = []
 
-        for routine in alternative_mail_routines.keys():
-            for _domain in [ kw['primary_domain'] ] + kw['secondary_domains']:
-                user_attrs['domain'] = _domain
+        #print "%r" %(alternative_mail_routines)
+        _domains = [ kw['primary_domain'] ] + kw['secondary_domains']
+
+        for number in alternative_mail_routines.keys():
+            for routine in alternative_mail_routines[number].keys():
                 try:
-                    exec("retval = '%s'.%s" % (routine,alternative_mail_routines[routine] % user_attrs))
+                    exec("retval = '%s'.%s" % (routine,alternative_mail_routines[number][routine] % user_attrs))
                 except KeyError, e:
                     log.warning(_("Attribute substitution for 'alternative_mail' failed in Recipient Policy"))
+
+                #log.debug(_("Appending additional mail address: %s") %(retval), level=8)
                 alternative_mail.append(retval)
+
+                for _domain in kw['secondary_domains']:
+                    user_attrs['domain'] = _domain
+                    try:
+                        exec("retval = '%s'.%s" % (routine,alternative_mail_routines[number][routine] % user_attrs))
+                    except KeyError, e:
+                        log.warning(_("Attribute substitution for 'alternative_mail' failed in Recipient Policy"))
+
+                    #log.debug(_("Appending additional mail address: %s") %(retval), level=8)
+                    alternative_mail.append(retval)
 
         alternative_mail = utils.normalize(alternative_mail)
 
