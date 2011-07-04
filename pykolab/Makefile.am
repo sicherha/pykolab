@@ -13,6 +13,11 @@ pykolab_clidir = $(pythondir)/$(PACKAGE)/cli
 pykolab_cli_PYTHON = \
 	cli/__init__.py
 
+pykolab_confdir = $(pythondir)/$(PACKAGE)/conf
+pykolab_conf_PYTHON = \
+	conf/defaults.py \
+	conf/__init__.py
+
 pykolab_imapdir = $(pythondir)/$(PACKAGE)/imap
 pykolab_imap_PYTHON = \
 	imap/__init__.py
