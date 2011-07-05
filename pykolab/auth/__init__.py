@@ -90,12 +90,15 @@ class Auth(object):
         else:
             section = domain
 
-        if self._auth.has_key(section) and not self._auth[section] == None:
+        if self._auth.has_key(domain) and not self._auth[domain] == None:
             return
 
-        #print "Connecting to Authentication backend for domain %s" %(domain)
+        log.debug(_("Connecting to Authentication backend for domain %s") %(domain), level=8)
 
         if not conf.has_section(section):
+            section = 'kolab'
+
+        if not conf.has_option(section, 'auth_mechanism'):
             section = 'kolab'
 
         if conf.get(section, 'auth_mechanism') == 'ldap':
@@ -104,11 +107,10 @@ class Auth(object):
         elif conf.get(section, 'auth_mechanism') == 'sql':
             from pykolab.auth import sql
             self._auth[domain] = sql.SQL()
-        #else:
-            ## TODO: Fail more verbose
-            #print "COULD NOT FIND AUTHENTICATION MECHANISM FOR DOMAIN %s" %(domain)
 
-        #print self._auth
+        else:
+            from pykolab.auth import ldap
+            self._auth[domain] = ldap.LDAP()
 
     def disconnect(self, domain=None):
         """
