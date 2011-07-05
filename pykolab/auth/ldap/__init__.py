@@ -20,7 +20,6 @@ import _ldap
 import ldap
 import ldap.async
 import ldap.controls
-import ldap.resiter
 import logging
 import time
 
@@ -65,7 +64,7 @@ class SimplePagedResultsControl(ldap.controls.SimplePagedResultsControl):
             ldap.controls.SimplePagedResultsControl.__init__(
                     self,
                     LDAP_CONTROL_PAGED_RESULTS,
-                    critical,
+                    True,
                     (page_size, '')
                 )
 
