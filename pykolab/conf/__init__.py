@@ -206,14 +206,14 @@ class Conf(object):
             config_file = self.config_file
 
         if not os.access(config_file, os.R_OK):
-            log.error(_("Configuration file %s not readable") % config_file, recoverable=False)
+            log.error(_("Configuration file %s not readable") % config_file)
 
         config = SafeConfigParser()
         log.debug(_("Reading configuration file %s") % config_file, level=8)
         try:
             config.read(config_file)
         except:
-            log.error(_("Invalid configuration file %s") % config_file, recoverable=False)
+            log.error(_("Invalid configuration file %s") % config_file)
 
         if not config.has_section("kolab"):
             log.warning(_("No master configuration section [revisor] in configuration file %s") % config_file)
@@ -396,7 +396,7 @@ class Conf(object):
             self.read_config()
 
         if not len(args) == 3:
-            log.error(_("Insufficient options. Need section, key and value -in that order."), recoverable=False)
+            log.error(_("Insufficient options. Need section, key and value -in that order."))
 
         if not self.cfg_parser.has_section(args[0]):
             log.error(_("No section '%s' exists.") %(args[0]))
@@ -453,7 +453,7 @@ class Conf(object):
 
             TODO: Include getting the value from plugins through a hook.
         """
-	retval = False
+        retval = False
 
         if not self.cfg_parser:
             self.read_config()
@@ -494,10 +494,10 @@ class Conf(object):
                 self.config_file = value
                 return True
             else:
-                log.error(_("Configuration file %s not readable.") %(value), recoverable=False)
+                log.error(_("Configuration file %s not readable.") %(value))
                 return False
         else:
-            log.error(_("Configuration file %s does not exist.") %(value), recoverable=False)
+            log.error(_("Configuration file %s does not exist.") %(value))
             return False
 
     def check_setting_debuglevel(self, value):
