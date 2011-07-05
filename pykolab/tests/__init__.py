@@ -80,4 +80,4 @@ class Tests(object):
                 exec("from pykolab.tests.%s import %sTest" %(suite,suite.capitalize()))
                 exec("%stest = %sTest()" %(suite,suite.capitalize()))
             except ImportError, e:
-                conf.log.error(_("Tests for suite %s failed to load. Aborting.") %(suite.capitalize()), recoverable=False)
+                conf.log.error(_("Tests for suite %s failed to load. Aborting.") %(suite.capitalize()))

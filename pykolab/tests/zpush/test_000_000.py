@@ -32,7 +32,7 @@ class Test_000_000(object):
         Preparations for the Test 000 series.
     """
 
-    def __init__(self, conf=None):
+    def __init__(self):
         self.suite_num = "000"
         self.suite_test_num = "000"
 
@@ -47,23 +47,23 @@ class Test_000_000(object):
         #for folder in imap.lm("user/%"):
             #imap.dm(folder)
 
-        for user in auth.list_users(domain):
-            for mailbox in imap.lm("user%s%s" %(imap.SEP,"%(givenname)s@%(domain)s" %(user))):
-                log.debug(_("Deleting mailbox: %s") %(mailbox), level=3)
-                try:
-                    imap.dm(mailbox)
-                except cyruslib.CYRUSError, e:
-                    pass
+        #for user in auth.list_users(domain):
+            #for mailbox in imap.lm("user%s%s" %(imap.SEP,"%(givenname)s@%(domain)s" %(user))):
+                #log.debug(_("Deleting mailbox: %s") %(mailbox), level=3)
+                #try:
+                    #imap.dm(mailbox)
+                #except cyruslib.CYRUSError, e:
+                    #pass
 
-        # Recreate the user top-level mailboxes
-        for user in conf.testing_users:
-            mailbox = "user%s%s" %(imap.SEP,"%(givenname)s@%(domain)s" %(user))
-            log.debug(_("Creating mailbox: %s") %(mailbox), level=3)
-            imap.cm(mailbox)
+        ## Recreate the user top-level mailboxes
+        #for user in conf.testing_users:
+            #mailbox = "user%s%s" %(imap.SEP,"%(givenname)s@%(domain)s" %(user))
+            #log.debug(_("Creating mailbox: %s") %(mailbox), level=3)
+            #imap.cm(mailbox)
 
-        imap.logout()
+        #imap.logout()
 
-        del imap
+        #del imap
 
         # Have the user themselves:
         # - create the standard folders
@@ -72,9 +72,9 @@ class Test_000_000(object):
         for user in conf.testing_users:
             imap = cyruslib.CYRUS("imap://%s:143" %(conf.testing_server))
             try:
-                imap.login("%(givenname)s@%(domain)s" %(user), user['password'])
+                imap.login("%(givenname)s.%(surname)s@%(domain)s" %(user), user['password'])
             except:
-                log.error(_("Authentication failure for %s") %("%(givenname)s@%(domain)s" %(user)), recoverable=True)
+                log.error(_("Authentication failure for %s") %("%(givenname)s.%(surname)s@%(domain)s" %(user)))
                 continue
 
             if conf.debuglevel > 3:
@@ -83,11 +83,11 @@ class Test_000_000(object):
             imap.subscribe("INBOX")
 
             for mailbox in TEST_FOLDERS.keys():
-                imap.cm("INBOX/%s" %(mailbox))
+                imap.cm("%s" %(mailbox))
                 for annotation in TEST_FOLDERS[mailbox]['annotations'].keys():
-                    imap.setannotation("INBOX/%s" %(mailbox),annotation,TEST_FOLDERS[mailbox]['annotations'][annotation])
+                    imap.setannotation("%s" %(mailbox),annotation,TEST_FOLDERS[mailbox]['annotations'][annotation])
 
-            imap.subscribe("INBOX/%s" %(mailbox))
+            imap.subscribe("%s" %(mailbox))
 
             imap.logout()
             del imap

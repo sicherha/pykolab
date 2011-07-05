@@ -19,14 +19,22 @@
 
 import calendar
 import datetime
+import imaplib
 import os
 import random
 import time
 
-from pykolab.conf import Conf
+import pykolab
+
 from pykolab.constants import *
 from pykolab.tests.constants import *
 from pykolab.translate import _
+
+log = pykolab.getLogger('pykolab.tests.contacts')
+
+conf = pykolab.getConf()
+
+imap = pykolab.imap
 
 class ContactsItem(object):
     def __init__(self, item_num=0, total_num=1, folder=None, user=None):
@@ -66,7 +74,7 @@ class ContactsItem(object):
         if folder:
             self.mailbox = folder
         else:
-            self.mailbox = "INBOX/Contacts"
+            self.mailbox = "Contacts"
 
         self.randomize_contact()
 
@@ -78,7 +86,7 @@ class ContactsItem(object):
         pass
 
     def __str__(self):
-        for tpl_file_location in [ '/usr/share/kolab/tests/kaddress-contact.tpl', './share/tests/kaddress-contact.tpl' ]:
+        for tpl_file_location in [ '/usr/share/kolab/tests/kaddress-contact.tpl', './share/tests/kaddress-contact.tpl', '../share/tests/kaddress-contact.tpl' ]:
             if os.path.isfile(tpl_file_location):
                 tpl_file = open(tpl_file_location, 'r')
                 tpl_orig = tpl_file.read()
@@ -94,23 +102,18 @@ def create_items(conf, num=None, folder=None):
     if num:
         info['number'] = int(num)
 
-    conf.log.debug(_("Creating %d Contacts") %(info['number']), level=3)
+    log.debug(_("Creating %d Contacts") %(info['number']), level=3)
 
     alloc_uids = []
 
-    imap = True
-
-    for user in conf.testing_users:
+    for user in eval(conf.get('testing','users')):
         if conf.use_mail:
             pass
         elif conf.use_lmtp:
             pass
         elif conf.use_imap:
-            import imaplib
-            if imap:
-                del imap
-            imap = imaplib.IMAP4(conf.testing_server)
-            imap.login("%(givenname)s@%(domain)s" %(user), user['password'])
+            imap.connect(login=False)
+            imap.login("%(givenname)s.%(sn)s@%(domain)s" %(user), user['password'])
         else:
             pass
 
@@ -118,7 +121,7 @@ def create_items(conf, num=None, folder=None):
         item_num = 0
 
         while item_num < int(info['number']):
-            conf.log.debug(_("Creating Contact item number %d") %(item_num+1), level=5)
+            log.debug(_("Creating Contact item number %d") %(item_num+1), level=5)
 
             item = ContactsItem(item_num=(item_num+1), total_num=num, folder=folder, user=user)
 
@@ -130,15 +133,15 @@ def create_items(conf, num=None, folder=None):
             msg = str(item)
 
             if conf.use_mail:
-                conf.log.debug(_("Sending UID message %s through SMTP targeting user %s@%s") %(item.uid,user['givenname'],user['domain']), level=9)
+                log.debug(_("Sending UID message %s through SMTP targeting user %s@%s") %(item.uid,user['givenname'],user['domain']), level=9)
 
             elif conf.use_lmtp:
-                conf.log.debug(_("Sending UID message %s through LMTP targeting user %s@%s") %(item.uid,user['givenname'],user['domain']), level=9)
+                log.debug(_("Sending UID message %s through LMTP targeting user %s@%s") %(item.uid,user['givenname'],user['domain']), level=9)
 
             elif conf.use_imap:
-                conf.log.debug(_("Saving UID message %s to IMAP (user %s, folder %s)") %(item.uid,user['givenname'],item.mailbox), level=9)
-                imap.append(item.mailbox, '', imaplib.Time2Internaldate(time.time()), msg)
+                log.debug(_("Saving UID message %s to IMAP (user %s, folder %s)") %(item.uid,user['givenname'],item.mailbox), level=9)
+                imap.imap.m.append(item.mailbox, '', imaplib.Time2Internaldate(time.time()), msg)
             else:
-                conf.log.debug(_("Somehow ended up NOT sending these messages"), level=9)
+                log.debug(_("Somehow ended up NOT sending these messages"), level=9)
 
             item_num +=1
