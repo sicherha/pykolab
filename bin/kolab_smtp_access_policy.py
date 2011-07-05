@@ -35,7 +35,7 @@ from pykolab.constants import KOLAB_LIB_PATH
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.smtp_access_policy')
-log.remove_stdout_handler()
+#log.remove_stdout_handler()
 
 conf = pykolab.getConf()
 
@@ -51,18 +51,18 @@ cache_expire = 3600
 
 try:
     from buzhug import TS_Base
-    if os.access(KOLAB_LIB_PATH, os.W_OK):
+    if os.access(os.path.join(KOLAB_LIB_PATH, 'kolab_smtp_access_policy', os.W_OK):
         cache_path = os.path.join(
                 KOLAB_LIB_PATH,
+                'kolab_smtp_access_policy',
                 'cache'
-                'kolab_smtp_access_policy'
             )
 
     elif os.access('/tmp/', os.W_OK):
         cache_path = os.path.join(
                 '/tmp/',
-                'cache',
-                'kolab_smtp_access_policy'
+                'kolab_smtp_access_policy',
+                'cache'
             )
 
     if os.path.exists(cache_path):
