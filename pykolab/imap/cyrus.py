@@ -93,6 +93,7 @@ class Cyrus(cyruslib.CYRUS):
         if not _mailbox['domain'] == None:
             mailbox = "%s%s%s@%s" %(prefix,self.seperator,mbox,_mailbox['domain'])
 
+        # TODO: Workaround for undelete
         if len(self.lm(mailbox)) < 1:
             return self.server
 
