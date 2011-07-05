@@ -1,2 +1,2 @@
-saslauthddir = $(datadir)/$(PACKAGE)/saslauthd
+saslauthddir = $(pythondir)/saslauthd
 saslauthd_PYTHON = $(wildcard *.py)
