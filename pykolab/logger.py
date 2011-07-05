@@ -67,8 +67,7 @@ class Logger(logging.Logger):
 
         if kw.has_key('logfile'):
             self.logfile = kw['logfile']
-        else:
-            return
+
         try:
             filelog_handler = logging.FileHandler(filename=self.logfile)
             filelog_handler.setFormatter(plaintextformatter)
