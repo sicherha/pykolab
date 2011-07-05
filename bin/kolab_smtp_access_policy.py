@@ -43,6 +43,9 @@ auth = Auth()
 #
 # Caching routines using buzhug.
 #
+# If creating the cache fails, we continue without any caching, significantly
+# increasing the load on LDAP.
+#
 cache_expire = 3600
 
 try:
@@ -97,6 +100,9 @@ except ImportError:
 
 def defer_if_permit(message, policy_request=None):
     print "action=DEFER_IF_PERMIT %s" %(message)
+
+def dunno(message, policy_request=None):
+    print "action=DUNNO %s" %(message)
 
 def reject(message, policy_request=None):
     print "action=REJECT %s" %(message)
