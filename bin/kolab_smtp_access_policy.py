@@ -54,14 +54,17 @@ try:
     if os.access(KOLAB_LIB_PATH, os.W_OK):
         cache_path = os.path.join(
                 KOLAB_LIB_PATH,
-                'kolab_smtp_access_policy_cache'
+                'cache'
+                'kolab_smtp_access_policy'
             )
 
     elif os.access('/tmp/', os.W_OK):
         cache_path = os.path.join(
                 '/tmp/',
-                'kolab_smtp_access_policy_cache'
+                'cache',
+                'kolab_smtp_access_policy'
             )
+
     if os.path.exists(cache_path):
         mode = "open"
     else:
@@ -307,6 +310,7 @@ def verify_recipient(policy_request):
                 cache.delete(record)
                 cache.cleanup()
             else:
+                log.info(_("From cache, %(sender)s, %(recipient)s, %(sasl_username)s") %(policy_request))
                 return record.result
 
     domain = policy_request['recipient'].split('@')[1]
@@ -398,6 +402,7 @@ def verify_sender(policy_request):
                 cache.delete(record)
                 cache.cleanup()
             else:
+                log.info(_("From cache, %(sender)s, %(recipient)s, %(sasl_username)s") %(policy_request))
                 return record.result
 
     sender_domain = policy_request['sender'].split('@')[1]
