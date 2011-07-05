@@ -99,13 +99,16 @@ except ImportError:
     cache = False
 
 def defer_if_permit(message, policy_request=None):
-    print "action=DEFER_IF_PERMIT %s" %(message)
+    print "action=DEFER_IF_PERMIT %s\n\n" %(message)
 
 def dunno(message, policy_request=None):
-    print "action=DUNNO %s" %(message)
+    print "action=DUNNO %s\n\n" %(message)
+
+def permit(message, policy_request=None):
+    print "action=PERMIT %s\n\n" %(message)
 
 def reject(message, policy_request=None):
-    print "action=REJECT %s" %(message)
+    print "action=REJECT %s\n\n" %(message)
 
 def parse_address(email_address):
     """
@@ -537,7 +540,7 @@ if __name__ == "__main__":
                     level=8
                 )
 
-            defer_if_permit(
+            permit(
                     _("Authenticated as sender %s") %(policy_request['sender'])
                 )
 
@@ -549,7 +552,7 @@ if __name__ == "__main__":
                 parse_address(
                         policy_request["sender"]
                     ):
-            defer_if_permit(
+            permit(
                     _("Authenticated as sender %s") %(
                             parse_address(policy_request["sender"])
                         )
@@ -582,4 +585,4 @@ if __name__ == "__main__":
     if not sender_allowed or not recipient_allowed:
         reject(_("Access denied"), policy_request)
     else:
-        defer_if_permit(_("No objections"), policy_request)
+        permit(_("No objections"), policy_request)
