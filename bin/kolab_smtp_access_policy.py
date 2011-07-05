@@ -40,22 +40,24 @@ conf = pykolab.getConf()
 
 auth = Auth()
 
+#
+# Caching routines using buzhug.
+#
 cache_expire = 3600
 
 try:
     from buzhug import TS_Base
-    # TODO: Attempt to detect the correct location
     if os.access(KOLAB_LIB_PATH, os.W_OK):
-        cache_path = os.path.join(KOLAB_LIB_PATH, 'kolab_smtp_policy_access')
-    else:
-        if os.environ.has_key('TMPDIR'):
-            if os.access(os.environ['TMPDIR'] or '/tmp', os.W_OK):
-                cache_path = os.path.join(TMPDIR, 'kolab_smtp_policy_access')
-            else:
-                cache_path = './kolab_smtp_access_policy_cache/'
-        else:
-            cache_path = './kolab_smtp_access_policy_cache/'
+        cache_path = os.path.join(
+                KOLAB_LIB_PATH,
+                'kolab_smtp_access_policy_cache'
+            )
 
+    elif os.access('/tmp/', os.W_OK):
+        cache_path = os.path.join(
+                '/tmp/',
+                'kolab_smtp_access_policy_cache'
+            )
     if os.path.exists(cache_path):
         mode = "open"
     else:
@@ -74,16 +76,20 @@ try:
                 mode=mode
             )
     except:
-        cache.create(
-                ('sender', str),
-                ('recipient', str),
-                ('sasl_username', str),
-                ('sasl_sender', str),
-                ('function', str),
-                ('result', int),
-                ('expire', float),
-                mode="override"
-            )
+        try:
+            cache.create(
+                    ('sender', str),
+                    ('recipient', str),
+                    ('sasl_username', str),
+                    ('sasl_sender', str),
+                    ('function', str),
+                    ('result', int),
+                    ('expire', float),
+                    mode="override"
+                )
+        except:
+            log.error(_("Kolab SMTP Access Policy Cache not writeable!"))
+            cache = False
 
 except ImportError:
     log.warning(_("Could not import caching library, caching disabled"))
@@ -176,7 +182,8 @@ def read_request_input():
 
 def verify_recipient(policy_request):
     """
-        Verify whether the sender is allowed send to this recipient.
+        Verify whether the sender is allowed send to this recipient, using the
+        recipient's kolabAllowSMTPSender.
     """
 
     recipient_verified = False
@@ -198,24 +205,24 @@ def verify_recipient(policy_request):
             else:
                 return record.result
 
-    domain = policy_request['sender'].split('@')[1]
+    domain = policy_request['recipient'].split('@')[1]
     user = {
             # TODO: Use cyrus-sasl result attribute
             'dn': auth.find_user(
                     'mail',
-                    parse_address(policy_request['sender']),
+                    parse_address(policy_request['recipient']),
                     domain=domain
                 )
         }
 
-    sender_policy = auth.get_user_attribute(
+    recipient_policy = auth.get_user_attribute(
             domain,
             user,
             'kolabAllowSMTPSender'
         )
 
     # If no such attribute has been specified, allow
-    if sender_policy == None:
+    if recipient_policy == None:
         recipient_verified = True
 
     # Otherwise, match the values in allowed_senders to the actual sender
@@ -223,7 +230,7 @@ def verify_recipient(policy_request):
         recipient_verified = parse_policy(
                 policy_request['sasl_username'],
                 policy_request['recipient'],
-                sender_policy
+                recipient_policy
             )
 
     if not cache == False:
