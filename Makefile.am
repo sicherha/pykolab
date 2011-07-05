@@ -153,7 +153,9 @@ execdir = $(sbindir)
 
 install-exec-local:
 	mkdir -p $(DESTDIR)/$(sbindir) $(DESTDIR)/$(bindir) \
-		$(DESTDIR)/$(libexecdir)/postfix
+		$(DESTDIR)/$(libexecdir)/postfix \
+		$(DESTDIR)/$(localstatedir)/lib/kolab \
+		$(DESTDIR)/$(localstatedir)/log/kolab
 	$(INSTALL) -p -m 755 conf.py $(DESTDIR)/$(sbindir)/kolab-conf
 	$(INSTALL) -p -m 755 kolab.py $(DESTDIR)/$(sbindir)/kolab
 	$(INSTALL) -p -m 755 kolabd.py $(DESTDIR)/$(sbindir)/kolabd
