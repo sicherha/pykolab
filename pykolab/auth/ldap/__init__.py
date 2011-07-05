@@ -461,6 +461,40 @@ class LDAP(object):
         ):
         pass
 
+    def _regular_search(self,
+            base_dn,
+            scope=ldap.SCOPE_SUBTREE,
+            filterstr="(objectClass=*)",
+            attrlist=None,
+            attrsonly=0,
+            timeout=-1,
+            callback=False,
+            primary_domain=None,
+            secondary_domains=[]
+        ):
+        self._connect()
+        self._bind()
+
+        _search = self.ldap.search(
+                base_dn,
+                scope=scope,
+                filterstr=filterstr,
+                attrlist=attrlist,
+                attrsonly=attrsonly
+            )
+
+        _results = []
+        _result_type = None
+
+        while not _result_type == ldap.RES_SEARCH_RESULT:
+            (_result_type, _result) = self.ldap.result(_search, False, 0)
+
+            if not _result == None:
+                for result in _result:
+                    _results.append(result)
+
+        return _results
+
     def _search(self,
             base_dn,
             scope=ldap.SCOPE_SUBTREE,
@@ -735,7 +769,7 @@ class LDAP(object):
                     domain_base_dn,
                     ldap.SCOPE_SUBTREE,
                     "(%s=%s)" %(domain_name_attribute,domain),
-                    override_search='_paged_search'
+                    override_search='_regular_search'
                 )
 
             domains = []
