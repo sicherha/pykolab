@@ -44,7 +44,7 @@ class IMAP(object):
         self.users = []
         self.inbox_folders = []
 
-    def connect(self, uri=None):
+    def connect(self, uri=None, login=True):
         backend = conf.get('kolab', 'imap_backend')
 
         if uri == None:
@@ -61,22 +61,25 @@ class IMAP(object):
                 import cyrus
                 self._imap[result.hostname] = cyrus.Cyrus(uri)
                 # Actually connect
-                log.debug(_("Logging on to Cyrus IMAP server %s") %(result.hostname), level=8)
-                self._imap[result.hostname].login(admin_login, admin_password)
+                if login:
+                    log.debug(_("Logging on to Cyrus IMAP server %s") %(result.hostname), level=8)
+                    self._imap[result.hostname].login(admin_login, admin_password)
 
             elif backend == 'dovecot':
                 import dovecot
                 self._imap[result.hostname] = dovecot.Dovecot(uri)
                 # Actually connect
-                log.debug(_("Logging on to Dovecot IMAP server %s") %(result.hostname), level=8)
-                self._imap[result.hostname].login(admin_login, admin_password)
+                if login:
+                    log.debug(_("Logging on to Dovecot IMAP server %s") %(result.hostname), level=8)
+                    self._imap[result.hostname].login(admin_login, admin_password)
 
             else:
                 import imap
                 self._imap[result.hostname] = imap.IMAP(uri)
                 # Actually connect
-                log.debug(_("Logging on to generic IMAP server %s") %(result.hostname), level=8)
-                self._imap[result.hostname].login(admin_login, admin_password)
+                if login:
+                    log.debug(_("Logging on to generic IMAP server %s") %(result.hostname), level=8)
+                    self._imap[result.hostname].login(admin_login, admin_password)
         else:
             log.debug(_("Reusing existing IMAP server connection to %s") %(result.hostname), level=8)
 
