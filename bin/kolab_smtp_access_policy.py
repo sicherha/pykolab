@@ -35,6 +35,7 @@ from pykolab.constants import KOLAB_LIB_PATH
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.smtp_access_policy')
+log.remove_stdout_handler()
 
 conf = pykolab.getConf()
 
@@ -105,7 +106,7 @@ def dunno(message, policy_request=None):
     print "action=DUNNO %s\n\n" %(message)
 
 def permit(message, policy_request=None):
-    print "action=PERMIT %s\n\n" %(message)
+    print "action=PERMIT\n\n"
 
 def reject(message, policy_request=None):
     print "action=REJECT %s\n\n" %(message)
@@ -188,6 +189,100 @@ def read_request_input():
                 '='.join(request_line.split('=')[1:])
 
     return policy_request
+
+def verify_delegate(policy_request, sender_domain, sender_user):
+    sender_is_delegate = None
+
+    sasl_domain = policy_request['sasl_username'].split('@')[1]
+
+    sender_delegates = auth.get_user_attribute(
+            sender_domain,
+            sender_user,
+            'kolabDelegate'
+        )
+
+    if sender_delegates == None:
+        log.warning(
+            _("User %s attempted to use envelope sender address %s without " + \
+                "authorization") %(
+                        policy_request["sasl_username"],
+                        policy_request["sender"]
+                    )
+            )
+
+        # Got a final answer here, do the cachking thing.
+        if not cache == False:
+            result_set = cache.select(
+                    sender=policy_request['sender'],
+                    recipient=policy_request['recipient'],
+                    sasl_username=policy_request['sasl_username'],
+                    sasl_sender=policy_request['sasl_sender'],
+                    function='verify_sender'
+                )
+
+            if len(result_set) < 1:
+                record_id = cache.insert(
+                        sender=policy_request['sender'],
+                        recipient=policy_request['recipient'],
+                        sasl_username=policy_request['sasl_username'],
+                        sasl_sender=policy_request['sasl_sender'],
+                        function='verify_sender',
+                        result=0,
+                        expire=time.time() + cache_expire
+                    )
+
+        sender_is_delegate = False
+
+    else:
+        # See if we can match the value of the envelope sender delegates to
+        # the actual sender sasl_username
+        sasl_user = {
+                'dn': auth.find_user(
+                        'mail',
+                        parse_address(policy_request['sasl_username']),
+                        domain=sasl_domain
+                    )
+            }
+
+        # Possible values for the kolabDelegate attribute are:
+        # a 'uid', a 'dn'.
+        sasl_user['uid'] = auth.get_user_attribute(
+                sasl_domain,
+                sasl_user,
+                'uid'
+            )
+
+        if not type(sender_delegates) == list:
+            sender_delegates = [ sender_delegates ]
+
+        for sender_delegate in sender_delegates:
+            if sasl_user['dn'] == sender_delegate:
+                log.debug(
+                        _("Found user %s to be a valid delegate user of %s") %(
+                                policy_request["sasl_username"],
+                                policy_request["sender"]
+                            ),
+                        level=8
+                    )
+
+                sender_is_delegate = True
+
+            elif sasl_user['uid'] == sender_delegate:
+                log.debug(
+                        _("Found user %s to be a valid delegate user of %s") %(
+                                policy_request["sasl_username"],
+                                policy_request["sender"]
+                            ),
+                        level=8
+                    )
+
+                sender_is_delegate = True
+
+        # If nothing matches sender_is_delegate is still None.
+        if not sender_is_delegate == True:
+            sender_is_delegate = False
+
+    return sender_is_delegate
 
 def verify_recipient(policy_request):
     """
@@ -284,6 +379,10 @@ def verify_sender(policy_request):
 
     sender_verified = False
 
+    sender_is_delegate = None
+
+    sasl_user = False
+
     if not cache == False:
         records = cache(
                 sender=policy_request['sender'],
@@ -301,15 +400,7 @@ def verify_sender(policy_request):
             else:
                 return record.result
 
-    sasl_domain = policy_request['sasl_username'].split('@')[1]
     sender_domain = policy_request['sender'].split('@')[1]
-
-    sender_is_delegate = False
-
-    # TODO: For now, do not allow cross-realm authorization. Find a mechanism to
-    # make sure Mandatory Access Control is applied.
-    if not sender_domain == sasl_domain:
-        return False
 
     # Obtain 'kolabDelegate' from the envelope sender.
     log.debug(
@@ -327,97 +418,23 @@ def verify_sender(policy_request):
                 )
         }
 
-    sender_delegates = auth.get_user_attribute(
-            sender_domain,
-            sender_user,
-            'kolabDelegate'
-        )
-
-    sasl_user = False
-
-    if sender_delegates == None:
-        log.warning(
-            _("User %s attempted to use envelope sender address %s without " + \
-                "authorization") %(
-                        policy_request["sasl_username"],
-                        policy_request["sender"]
-                    )
+    # Only when a user is authenticated do we have the means to check for
+    # kolabDelegate functionality.
+    if not policy_request['sasl_username'] == '':
+        sender_is_delegate = verify_delegate(
+                policy_request,
+                sender_domain,
+                sender_user
             )
-
-        if not cache == False:
-            result_set = cache.select(
-                    sender=policy_request['sender'],
-                    recipient=policy_request['recipient'],
-                    sasl_username=policy_request['sasl_username'],
-                    sasl_sender=policy_request['sasl_sender'],
-                    function='verify_sender'
-                )
-
-            if len(result_set) < 1:
-                record_id = cache.insert(
-                        sender=policy_request['sender'],
-                        recipient=policy_request['recipient'],
-                        sasl_username=policy_request['sasl_username'],
-                        sasl_sender=policy_request['sasl_sender'],
-                        function='verify_sender',
-                        result=0,
-                        expire=time.time() + cache_expire
-                    )
-        return False
-
-    else:
-        # See if we can match the value of the envelope sender delegates to
-        # the actual sender sasl_username
-        sasl_user = {
-                'dn': auth.find_user(
-                        'mail',
-                        parse_address(policy_request['sasl_username']),
-                        domain=sasl_domain
-                    )
-            }
-
-        # Possible values for the kolabDelegate attribute are:
-        # a 'uid', a 'dn'.
-        sasl_user['uid'] = auth.get_user_attribute(
-                sasl_domain,
-                sasl_user,
-                'uid'
-            )
-
-        if not type(sender_delegates) == list:
-            sender_delegates = [ sender_delegates ]
-
-        for sender_delegate in sender_delegates:
-            if sasl_user['dn'] == sender_delegate:
-                log.debug(
-                        _("Found user %s to be a valid delegate user of %s") %(
-                                policy_request["sasl_username"],
-                                policy_request["sender"]
-                            ),
-                        level=8
-                    )
-
-                sender_is_delegate = True
-
-            elif sasl_user['uid'] == sender_delegate:
-                log.debug(
-                        _("Found user %s to be a valid delegate user of %s") %(
-                                policy_request["sasl_username"],
-                                policy_request["sender"]
-                            ),
-                        level=8
-                    )
-
-                sender_is_delegate = True
 
     # If the authenticated user is using delegate functionality, apply the
     # recipient policy attribute for the envelope sender.
-
     if sender_is_delegate:
         recipient_policy_domain = sender_domain
         recipient_policy_sender = policy_request['sender']
         recipient_policy_user = sender_user
-    else:
+    elif not policy_request['sasl_username'] == '':
+        sasl_domain = policy_request['sasl_username'].split('@')[1]
         recipient_policy_domain = sasl_domain
         recipient_policy_sender = policy_request['sasl_username']
         if not sasl_user:
@@ -430,6 +447,8 @@ def verify_sender(policy_request):
                 }
 
         recipient_policy_user = sasl_user
+    else:
+        reject(_("Could not verify sender"))
 
     recipient_policy = auth.get_user_attribute(
             recipient_policy_domain,
