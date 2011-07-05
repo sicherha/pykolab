@@ -85,12 +85,14 @@ rm -rf %{buildroot}
 %{_bindir}/*
 %{_sbindir}/kolab
 %{_sbindir}/kolab-conf
-%config(noreplace) %{_sysconfdir}/kolab/kolab.conf
+%attr(0640,root,kolab) %config(noreplace) %{_sysconfdir}/kolab/kolab.conf
 %{python_sitelib}/pykolab/
 %{python_sitelib}/kolab/
 %{python_sitelib}/cyruslib.py
 %{python_sitelib}/cyruslib.pyc
 %{python_sitelib}/cyruslib.pyo
+%dir %{_localstatedir}/lib/kolab/
+%dir %{_localstatedir}/log/kolab/
 
 %files -n kolab-saslauthd
 %defattr(-,root,root,-)
@@ -108,6 +110,7 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
 %{_libexecdir}/postfix/kolab_smtp_access_policy
+%attr(0770,kolab-n,kolab-n) %dir %{_localstatedir}/lib/kolab/kolab_smtp_access_policy/
 
 %changelog
 * @DATESTAMP@ Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com> @VERSION@-@RELEASE@
