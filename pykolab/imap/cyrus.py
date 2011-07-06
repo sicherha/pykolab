@@ -50,20 +50,27 @@ class Cyrus(cyruslib.CYRUS):
         """
             Initialize this class, but do not connect yet.
         """
+        port = None
+
         result = urlparse(uri)
 
-        # Complete the uri with the result to avoid cyruslib from bailing out.
-        if not hasattr(result,'port'):
-            if result.scheme == 'imap':
+        if hasattr(result, 'hostname'):
+            scheme = result.scheme
+            hostname = result.hostname
+            port = result.port
+        else:
+            scheme = uri.split(':')[0]
+            (hostname, port) = uri.split('/')[2].split(':')
+
+        if not port:
+            if scheme == 'imap':
                 port = 143
             else:
                 port = 993
-        else:
-            port = result.port
 
-        self.server = result.hostname
+        self.server = hostname
 
-        self.uri = "%s://%s:%s" %(result.scheme,result.hostname,port)
+        self.uri = "%s://%s:%s" %(scheme,hostname,port)
 
         cyruslib.CYRUS.__init__(self, self.uri)
 

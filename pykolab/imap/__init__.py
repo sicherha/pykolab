@@ -52,40 +52,46 @@ class IMAP(object):
 
         result = urlparse(uri)
 
+        if hasattr(result, 'hostname'):
+            hostname = result.hostname
+        else:
+            scheme = uri.split(':')[0]
+            (hostname, port) = uri.split('/')[2].split(':')
+
         # Get the credentials
         admin_login = conf.get(backend, 'admin_login')
         admin_password = conf.get(backend, 'admin_password')
 
-        if not self._imap.has_key(result.hostname):
+        if not self._imap.has_key(hostname):
             if backend == 'cyrus-imap':
                 import cyrus
-                self._imap[result.hostname] = cyrus.Cyrus(uri)
+                self._imap[hostname] = cyrus.Cyrus(uri)
                 # Actually connect
                 if login:
-                    log.debug(_("Logging on to Cyrus IMAP server %s") %(result.hostname), level=8)
-                    self._imap[result.hostname].login(admin_login, admin_password)
+                    log.debug(_("Logging on to Cyrus IMAP server %s") %(hostname), level=8)
+                    self._imap[hostname].login(admin_login, admin_password)
 
             elif backend == 'dovecot':
                 import dovecot
-                self._imap[result.hostname] = dovecot.Dovecot(uri)
+                self._imap[hostname] = dovecot.Dovecot(uri)
                 # Actually connect
                 if login:
-                    log.debug(_("Logging on to Dovecot IMAP server %s") %(result.hostname), level=8)
-                    self._imap[result.hostname].login(admin_login, admin_password)
+                    log.debug(_("Logging on to Dovecot IMAP server %s") %(hostname), level=8)
+                    self._imap[hostname].login(admin_login, admin_password)
 
             else:
                 import imap
-                self._imap[result.hostname] = imap.IMAP(uri)
+                self._imap[hostname] = imap.IMAP(uri)
                 # Actually connect
                 if login:
-                    log.debug(_("Logging on to generic IMAP server %s") %(result.hostname), level=8)
-                    self._imap[result.hostname].login(admin_login, admin_password)
+                    log.debug(_("Logging on to generic IMAP server %s") %(hostname), level=8)
+                    self._imap[hostname].login(admin_login, admin_password)
         else:
-            log.debug(_("Reusing existing IMAP server connection to %s") %(result.hostname), level=8)
+            log.debug(_("Reusing existing IMAP server connection to %s") %(hostname), level=8)
 
         # Set the newly created technology specific IMAP library as the current
         # IMAP connection to be used.
-        self.imap = self._imap[result.hostname]
+        self.imap = self._imap[hostname]
 
     def disconnect(self, server=None):
         if server == None:
