@@ -67,6 +67,8 @@ class Logger(logging.Logger):
 
         if kw.has_key('logfile'):
             self.logfile = kw['logfile']
+        else:
+            self.logfile = '/var/log/kolab/pykolab.log'
 
         try:
             filelog_handler = logging.FileHandler(filename=self.logfile)
