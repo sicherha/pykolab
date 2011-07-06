@@ -136,9 +136,9 @@ class Auth(object):
 
         self._auth[domain]._disconnect()
 
-    def find_user(self, attr, value, domain=None):
+    def find_user(self, attr, value, domain=None, **kw):
         self.connect(domain)
-        return self._auth[domain]._find_user(attr, value, domain=domain)
+        return self._auth[domain]._find_user(attr, value, domain=domain, **kw)
 
     def list_domains(self):
         """

@@ -241,7 +241,7 @@ class LDAP(object):
 
         return _user_dn
 
-    def _find_user(self, attr, value, domain=None):
+    def _find_user(self, attr, value, domain=None, additional_filter=None):
         self._connect()
         self._bind()
 
@@ -260,10 +260,21 @@ class LDAP(object):
                 'user_base_dn'
             ) %({'base_dn': domain_root_dn})
 
-        search_filter = "(%s=%s)" %(
-                attr,
-                value
-            )
+        if type(attr) == str:
+            search_filter = "(%s=%s)" %(
+                    attr,
+                    value
+                )
+        elif type(attr) == list:
+            search_filter = "(|"
+            for _attr in attr:
+                search_filter = "%s(%s=%s)" %(search_filter, _attr, value)
+            search_filter = "%s)" %(search_filter)
+
+        if additional_filter:
+            search_filter = additional_filter % { 'search_filter': search_filter }
+
+        log.debug(_("Attempting to find the user with search filter: %s") %(search_filter), level=8)
 
         _results = self.ldap.search_s(
                 user_base_dn,
@@ -275,23 +286,7 @@ class LDAP(object):
         if len(_results) == 1:
             (_user_dn, _user_attrs) = _results[0]
         else:
-            # Retry to find the user_dn with just uid=%s against the root_dn,
-            # if the login is not fully qualified
-            if len(login.split('@')) < 2:
-                search_filter = "(uid=%s)" %(login)
-                _results = self.ldap.search_s(
-                        domain_root_dn,
-                        scope=ldap.SCOPE_SUBTREE,
-                        filterstr=search_filter,
-                        attrlist=[ 'dn' ]
-                    )
-                if len(_results) == 1:
-                    (_user_dn, _user_attrs) = _results[0]
-                else:
-                    # Overall fail
-                    return False
-            else:
-                return False
+            return False
 
         return _user_dn
 
