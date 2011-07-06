@@ -57,6 +57,7 @@ cache_expire = 3600
 
 try:
     from buzhug import TS_Base
+
     if os.access(
             os.path.join(KOLAB_LIB_PATH, 'kolab_smtp_access_policy'),
             os.W_OK
@@ -70,9 +71,10 @@ try:
     elif os.access('/tmp/', os.W_OK):
         cache_path = os.path.join(
                 '/tmp/',
-                'kolab_smtp_access_policy',
-                'cache'
+                'kolab_smtp_access_policy'
             )
+    else:
+        raise OSError, _("No writeable path for cache found, bailing out")
 
     if os.path.exists(cache_path):
         mode = "open"
@@ -81,6 +83,7 @@ try:
 
     cache = TS_Base(cache_path)
     try:
+        log.debug(_("Attempting to use cache in %s") %(cache_path), level=8)
         cache.create(
                 ('sender', str),
                 ('recipient', str),
@@ -91,8 +94,15 @@ try:
                 ('expire', float),
                 mode=mode
             )
+
     except:
+        log.debug(_("Using cache in %s failed") %(cache_path), level=8)
         try:
+            log.debug(
+                    _("Attempting to create cache in %s") %(cache_path),
+                    level=8
+                )
+
             cache.create(
                     ('sender', str),
                     ('recipient', str),
@@ -103,6 +113,7 @@ try:
                     ('expire', float),
                     mode="override"
                 )
+
         except:
             log.error(_("Kolab SMTP Access Policy Cache not writeable!"))
             cache = False
@@ -111,19 +122,28 @@ except ImportError:
     log.warning(_("Could not import caching library, caching disabled"))
     cache = False
 
+except OSError, e:
+    log.warning(_("%s, caching disabled") %(e))
+    cache = False
+
 def defer_if_permit(message, policy_request=None):
+    log.info(_("Returning action DEFER_IF_PERMIT: %s") %(message))
     print "action=DEFER_IF_PERMIT %s\n\n" %(message)
 
 def dunno(message, policy_request=None):
+    log.info(_("Returning action DUNNO: %s") %(message))
     print "action=DUNNO %s\n\n" %(message)
 
 def hold(message, policy_request=None):
+    log.info(_("Returning action HOLD: %s") %(message))
     print "action=HOLD %s\n\n" %(message)
 
 def permit(message, policy_request=None):
+    log.info(_("Returning action PERMIT: %s") %(message))
     print "action=PERMIT\n\n"
 
 def reject(message, policy_request=None):
+    log.info(_("Returning action REJECT: %s") %(message))
     print "action=REJECT %s\n\n" %(message)
 
 def parse_address(email_address):
@@ -323,6 +343,16 @@ def verify_recipient(policy_request):
         recipient's kolabAllowSMTPSender.
     """
 
+    if not policy_request['sasl_username'] == '':
+        log.info(_("Verifying authenticated sender '%(sender)s' with " + \
+                "sasl_username '%(sasl_username)s' for recipient " + \
+                "'%(recipient)s'") %(policy_request)
+            )
+    else:
+        log.info(_("Verifying unauthenticated sender '%(sender)s' " + \
+                "for recipient '%(recipient)s'") %(policy_request)
+            )
+
     recipient_verified = False
 
     if not cache == False:
@@ -416,6 +446,16 @@ def verify_sender(policy_request):
         kolabAllowSMTPSender, but this is done in verify_recipient().
     """
 
+    if not policy_request['sasl_username'] == '':
+        log.info(_("Verifying authenticated sender '%(sender)s' with " + \
+                "sasl_username '%(sasl_username)s'") %(policy_request)
+            )
+    else:
+        log.info(_("Verifying unauthenticated sender '%(sender)s'") %(
+                    policy_request
+                )
+            )
+
     sender_verified = False
 
     sender_is_delegate = None
@@ -464,6 +504,8 @@ def verify_sender(policy_request):
                 )
         }
 
+    log.debug(_("Found user object %(dn)s") %(sender_user), level=8)
+
     # Only when a user is authenticated do we have the means to check for
     # kolabDelegate functionality.
     if not policy_request['sasl_username'] == '':
@@ -477,7 +519,7 @@ def verify_sender(policy_request):
     # recipient policy attribute for the envelope sender.
     if sender_is_delegate:
         recipient_policy_domain = sender_domain
-        recipient_policy_sender = policy_request['sender']
+        recipient_policy_sender = parse_address(policy_request['sender'])
         recipient_policy_user = sender_user
     elif not policy_request['sasl_username'] == '':
         sasl_domain = policy_request['sasl_username'].split('@')[1]
@@ -496,7 +538,15 @@ def verify_sender(policy_request):
 
         recipient_policy_user = sasl_user
     else:
-        reject(_("Could not verify sender"))
+        if not conf.allow_unauthenticated:
+            reject(_("Could not verify sender"))
+        else:
+            recipient_policy_domain = sender_domain
+            recipient_policy_sender = parse_address(policy_request['sender'])
+            recipient_policy_user = sender_user
+
+    log.debug(_("Verifying whether sender is allowed to send to recipient " + \
+            "using sender policy"), level=8)
 
     recipient_policy = auth.get_user_attribute(
             recipient_policy_domain,
@@ -504,16 +554,33 @@ def verify_sender(policy_request):
             'kolabAllowSMTPRecipient'
         )
 
+    log.debug(_("Result is '%r'") %(recipient_policy), level=8)
+
     # If no such attribute has been specified, allow
     if recipient_policy == None:
+        log.debug(
+                _("No recipient policy restrictions exist for this sender"),
+                level=8
+            )
+
         sender_verified = True
 
     # Otherwise, match the values in allowed_recipients to the actual recipients
     else:
+        log.debug(
+                _("Found a recipient policy to apply for this sender."),
+                level=8
+            )
+
         sender_verified = parse_policy(
                 recipient_policy_sender,
                 policy_request['recipient'],
                 recipient_policy
+            )
+
+        log.debug(
+                _("Recipient policy evaluated to '%r'.") %(sender_verified),
+                level=8
             )
 
     if not cache == False:
@@ -592,7 +659,7 @@ if __name__ == "__main__":
             log.debug(_("No SASL username in request."), level=8)
             if not conf.allow_unauthenticated:
                 log.debug(_("Not allowing unauthenticated senders."), level=8)
-                reject(_("Access denied"))
+                reject(_("Access denied for unauthenticated senders"))
             else:
                 log.debug(_("Allowing unauthenticated senders."), level=8)
                 sender_allowed = verify_sender(policy_request)
@@ -641,7 +708,7 @@ if __name__ == "__main__":
 
             if not conf.allow_unauthenticated:
                 log.debug(_("Not allowing unauthenticated senders."), level=8)
-                reject(_("Access denied"))
+                reject(_("Access denied for unauthenticated senders"))
             else:
                 recipient_allowed = verify_recipient(policy_request)
 
