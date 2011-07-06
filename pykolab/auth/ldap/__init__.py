@@ -728,7 +728,7 @@ class LDAP(object):
                 kolab_domain_filter,
                 # TODO: Where we use associateddomain is actually configurable
                 [ 'associateddomain' ],
-                override_search='_paged_search'
+                override_search='_regular_search'
             )
 
         domains = []
