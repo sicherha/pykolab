@@ -41,6 +41,9 @@ class Auth(object):
         """
         self._auth = {}
 
+        # Placeholder mapping back to the primary domain name space
+        self.secondary_domains = {}
+
     def authenticate(self, login):
         """
             Verify login credentials supplied in login against the appropriate
@@ -89,6 +92,10 @@ class Auth(object):
             domain = conf.get('kolab', 'primary_domain')
         else:
             section = domain
+
+        if self.secondary_domains.has_key(domain):
+            section = self.secondary_domains[domain]
+            domain = self.secondary_domains[domain]
 
         if self._auth.has_key(domain) and not self._auth[domain] == None:
             return
@@ -155,6 +162,10 @@ class Auth(object):
         # If no domains are found, the primary domain is used.
         if len(domains) < 1:
             domains = [(kolab_primary_domain, [])]
+        else:
+            for primary, secondaries in domains:
+                for secondary in secondaries:
+                    self.secondary_domains[secondary] = primary
 
         return domains
 
