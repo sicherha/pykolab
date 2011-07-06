@@ -34,7 +34,11 @@ from pykolab.auth import Auth
 from pykolab.constants import KOLAB_LIB_PATH
 from pykolab.translate import _
 
+# TODO: Figure out how to make our logger do some syslogging as well.
 log = pykolab.getLogger('pykolab.smtp_access_policy')
+
+# TODO: Removing the stdout handler would mean one can no longer test by
+# means of manual execution in debug mode.
 #log.remove_stdout_handler()
 
 conf = pykolab.getConf()
@@ -47,11 +51,16 @@ auth = Auth()
 # If creating the cache fails, we continue without any caching, significantly
 # increasing the load on LDAP.
 #
+
+# TODO: This should be a configuration item.
 cache_expire = 3600
 
 try:
     from buzhug import TS_Base
-    if os.access(os.path.join(KOLAB_LIB_PATH, 'kolab_smtp_access_policy', os.W_OK):
+    if os.access(
+            os.path.join(KOLAB_LIB_PATH, 'kolab_smtp_access_policy'),
+            os.W_OK
+        ):
         cache_path = os.path.join(
                 KOLAB_LIB_PATH,
                 'kolab_smtp_access_policy',
@@ -108,6 +117,9 @@ def defer_if_permit(message, policy_request=None):
 def dunno(message, policy_request=None):
     print "action=DUNNO %s\n\n" %(message)
 
+def hold(message, policy_request=None):
+    print "action=HOLD %s\n\n" %(message)
+
 def permit(message, policy_request=None):
     print "action=PERMIT\n\n"
 
@@ -125,6 +137,8 @@ def parse_address(email_address):
         # split by '@'.
         return "%s@%s" %(
                 email_address.split("+")[0],
+                # TODO: Under some conditions, the recipient may not be fully
+                # qualified. We'll cross that bridge when we get there, though.
                 email_address.split('@')[1]
             )
     else:
@@ -194,8 +208,21 @@ def read_request_input():
     return policy_request
 
 def verify_delegate(policy_request, sender_domain, sender_user):
+    """
+        Use the information passed along to determine whether the authenticated
+        user can send on behalf of the envelope sender, using the kolabDelegate
+        attribute value on the envelope sender's LDAP object.
+
+        Returns True in case the user is a delegate of the sender, and False in
+        case the user is NOT a delegate of the sender.
+    """
+
     sender_is_delegate = None
 
+    # TODO: Whether or not a domain name is in the sasl_username depends on
+    # whether or not a default realm is specified elsewhere. In other words,
+    # only attempt to do this and fall back to the primary_domain configured
+    # for Kolab.
     sasl_domain = policy_request['sasl_username'].split('@')[1]
 
     sender_delegates = auth.get_user_attribute(
@@ -205,6 +232,8 @@ def verify_delegate(policy_request, sender_domain, sender_user):
         )
 
     if sender_delegates == None:
+        # No delegates for this sender could be found. The user is definitely
+        # NOT a delegate of the sender.
         log.warning(
             _("User %s attempted to use envelope sender address %s without " + \
                 "authorization") %(
@@ -241,6 +270,7 @@ def verify_delegate(policy_request, sender_domain, sender_user):
         # the actual sender sasl_username
         sasl_user = {
                 'dn': auth.find_user(
+                        # TODO: Use the configured cyrus-sasl result attribute.
                         'mail',
                         parse_address(policy_request['sasl_username']),
                         domain=sasl_domain
@@ -310,13 +340,20 @@ def verify_recipient(policy_request):
                 cache.delete(record)
                 cache.cleanup()
             else:
-                log.info(_("From cache, %(sender)s, %(recipient)s, %(sasl_username)s") %(policy_request))
+                log.info(_("Reproducing verify_recipient(%r) from cache, " + \
+                        "saving you queries, time and thus money.") %(
+                                policy_request
+                            )
+                    )
+
                 return record.result
 
+    # TODO: Under some conditions, the recipient may not be fully qualified.
+    # We'll cross that bridge when we get there, though.
     domain = policy_request['recipient'].split('@')[1]
     user = {
-            # TODO: Use cyrus-sasl result attribute
             'dn': auth.find_user(
+                    # TODO: Use the configured cyrus-sasl result attribute
                     'mail',
                     parse_address(policy_request['recipient']),
                     domain=domain
@@ -377,8 +414,6 @@ def verify_sender(policy_request):
         A third potential action could be to check the recipient object to see
         if the sender is allowed to send to the recipient by the recipient's
         kolabAllowSMTPSender, but this is done in verify_recipient().
-
-        TODO: Not all SASL authentication is fully qualified.
     """
 
     sender_verified = False
@@ -402,7 +437,12 @@ def verify_sender(policy_request):
                 cache.delete(record)
                 cache.cleanup()
             else:
-                log.info(_("From cache, %(sender)s, %(recipient)s, %(sasl_username)s") %(policy_request))
+                log.info(_("Reproducing verify_sender(%r) from cache, " + \
+                        "saving you queries, time and thus money.") %(
+                                policy_request
+                            )
+                    )
+
                 return record.result
 
     sender_domain = policy_request['sender'].split('@')[1]
@@ -417,6 +457,7 @@ def verify_sender(policy_request):
 
     sender_user = {
             'dn': auth.find_user(
+                    # TODO: Use the configured cyrus-sasl result attribute
                     'mail',
                     parse_address(policy_request['sender']),
                     domain=sender_domain
@@ -445,6 +486,8 @@ def verify_sender(policy_request):
         if not sasl_user:
             sasl_user = {
                     'dn': auth.find_user(
+                            # TODO: Use the configured cyrus-sasl result
+                            # attribute
                             'mail',
                             parse_address(policy_request['sasl_username']),
                             domain=sasl_domain
