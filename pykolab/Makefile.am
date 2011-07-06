@@ -20,7 +20,8 @@ pykolab_conf_PYTHON = \
 
 pykolab_imapdir = $(pythondir)/$(PACKAGE)/imap
 pykolab_imap_PYTHON = \
-	imap/__init__.py
+	imap/__init__.py \
+	imap/cyrus.py
 
 pykolab_pluginsdir = $(pythondir)/$(PACKAGE)/plugins
 pykolab_plugins_PYTHON = \
