@@ -227,6 +227,26 @@ def read_request_input():
 
     return policy_request
 
+def verify_domain(domain):
+    """
+        Verify whether the domain is internal (mine) or external.
+    """
+
+    domain_verified = False
+
+    _mydomains = auth.list_domains()
+
+    for primary, secondaries in _mydomains:
+        if primary == domain:
+            domain_verified = True
+        elif domain in secondaries:
+            domain_verified = True
+
+    if domain_verified == None:
+        domain_verified = False
+
+    return domain_verified
+
 def verify_delegate(policy_request, sender_domain, sender_user):
     """
         Use the information passed along to determine whether the authenticated
@@ -381,12 +401,25 @@ def verify_recipient(policy_request):
     # TODO: Under some conditions, the recipient may not be fully qualified.
     # We'll cross that bridge when we get there, though.
     domain = policy_request['recipient'].split('@')[1]
+
+    if verify_domain(domain):
+        if auth.secondary_domains.has_key(domain):
+            log.debug(_("Using authentication domain %s instead of %s") %(auth.secondary_domains[domain],domain), level=8)
+            domain = auth.secondary_domains[domain]
+        else:
+            log.debug(_("Why does auth not have anything on domain %s?") %(domain), level=8)
+    else:
+        log.debug(_("How did we end up checking the recipient for a domain that is not ours?"), level=8)
+
+    # Attr search list
+    # TODO: Use the configured filter
+    attr_search = [ 'mail', 'alias', 'mailalternateaddress' ]
     user = {
             'dn': auth.find_user(
-                    # TODO: Use the configured cyrus-sasl result attribute
-                    'mail',
+                    attr_search,
                     parse_address(policy_request['recipient']),
-                    domain=domain
+                    domain=domain,
+                    additional_filter="(&(objectclass=kolabinetorgperson)%(search_filter)s)"
                 )
         }
 
@@ -517,7 +550,10 @@ def verify_sender(policy_request):
 
     # If the authenticated user is using delegate functionality, apply the
     # recipient policy attribute for the envelope sender.
-    if sender_is_delegate:
+    if sender_is_delegate == False:
+        return False
+
+    elif sender_is_delegate:
         recipient_policy_domain = sender_domain
         recipient_policy_sender = parse_address(policy_request['sender'])
         recipient_policy_user = sender_user
@@ -662,7 +698,10 @@ if __name__ == "__main__":
                 reject(_("Access denied for unauthenticated senders"))
             else:
                 log.debug(_("Allowing unauthenticated senders."), level=8)
-                sender_allowed = verify_sender(policy_request)
+                if not verify_domain(policy_request['sender'].split('@')[1]):
+                    permit(_("External sender"))
+                else:
+                    sender_allowed = verify_sender(policy_request)
 
         # If the authenticated username is the sender...
         elif policy_request["sasl_username"] == policy_request["sender"]:
