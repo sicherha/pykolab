@@ -699,6 +699,7 @@ if __name__ == "__main__":
             else:
                 log.debug(_("Allowing unauthenticated senders."), level=8)
                 if not verify_domain(policy_request['sender'].split('@')[1]):
+                    sender_allowed = True
                     permit(_("External sender"))
                 else:
                     sender_allowed = verify_sender(policy_request)
@@ -713,6 +714,8 @@ if __name__ == "__main__":
                     level=8
                 )
 
+            sender_allowed = True
+
             permit(
                     _("Authenticated as sender %s") %(policy_request['sender'])
                 )
@@ -725,6 +728,9 @@ if __name__ == "__main__":
                 parse_address(
                         policy_request["sender"]
                     ):
+
+            sender_allowed = True
+
             permit(
                     _("Authenticated as sender %s") %(
                             parse_address(policy_request["sender"])
@@ -757,5 +763,3 @@ if __name__ == "__main__":
     # TODO: Insert whitelists.
     if not sender_allowed or not recipient_allowed:
         reject(_("Access denied"), policy_request)
-    else:
-        permit(_("No objections"), policy_request)
