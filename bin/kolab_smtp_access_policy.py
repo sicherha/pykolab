@@ -679,6 +679,7 @@ if __name__ == "__main__":
     # When either is configured or specified to be verified, negate
     # that policy to be false by default.
     #
+    policy_done = False
     sender_allowed = True
     recipient_allowed = True
 
@@ -691,6 +692,7 @@ if __name__ == "__main__":
         if policy_request['sender'] == "":
             log.debug(_("No sender specified."), level=8)
             reject(_("Invalid sender"))
+            policy_done = True
 
         # If no sasl username exists, ...
         if policy_request['sasl_username'] == "":
@@ -703,6 +705,7 @@ if __name__ == "__main__":
                     )
 
                 reject(_("Access denied for unauthenticated senders"))
+                policy_done = True
 
             else:
                 log.debug(_("Allowing unauthenticated senders."), level=8)
@@ -710,6 +713,7 @@ if __name__ == "__main__":
                 if not verify_domain(policy_request['sender'].split('@')[1]):
                     sender_allowed = True
                     permit(_("External sender"))
+                    policy_done = True
 
                 else:
                     sender_allowed = verify_sender(policy_request)
@@ -732,6 +736,8 @@ if __name__ == "__main__":
                         )
                 )
 
+            policy_done = True
+
         # Or if the authenticated username is the sender but the sender address
         # lists an address with a recipient delimiter...
         #
@@ -749,6 +755,8 @@ if __name__ == "__main__":
                         )
                 )
 
+            policy_done = True
+
         else:
             sender_allowed = verify_sender(policy_request)
 
@@ -759,6 +767,7 @@ if __name__ == "__main__":
 
         if policy_request['recipient'] == "":
             reject(_("Invalid recipient"))
+            policy_done = True
 
         if policy_request['sasl_username'] == "":
             log.debug(_("No SASL username in request."), level=8)
@@ -766,18 +775,20 @@ if __name__ == "__main__":
             if not conf.allow_unauthenticated:
                 log.debug(_("Not allowing unauthenticated senders."), level=8)
                 reject(_("Access denied for unauthenticated senders"))
+                policy_done = True
 
             else:
                 recipient_allowed = verify_recipient(policy_request)
         else:
             recipient_allowed = verify_recipient(policy_request)
 
-    # TODO: Insert whitelists.
-    if conf.verify_sender and not sender_allowed:
-        reject(_("Sender access denied"), policy_request)
+    if not policy_done:
+        # TODO: Insert whitelists.
+        if conf.verify_sender and not sender_allowed:
+            reject(_("Sender access denied"), policy_request)
 
-    elif conf.verify_recipient and not recipient_allowed:
-        reject(_("Recipient access denied"), policy_request)
+        elif conf.verify_recipient and not recipient_allowed:
+            reject(_("Recipient access denied"), policy_request)
 
-    else:
-        permit(_("No objections"))
+        else:
+            permit(_("No objections"))
