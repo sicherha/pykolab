@@ -118,6 +118,9 @@ try:
             log.error(_("Kolab SMTP Access Policy Cache not writeable!"))
             cache = False
 
+    log.info(_("Kolab SMTP Access Policy Cache not enabled"))
+    cache = False
+
 except ImportError:
     log.warning(_("Could not import caching library, caching disabled"))
     cache = False
