@@ -184,8 +184,8 @@ class LDAP(object):
 
         domain_root_dn = self._kolab_domain_root_dn(domain)
 
-        if conf.has_option(domain_root_dn, 'user_base_dn'):
-            section = domain_root_dn
+        if conf.has_option(domain, 'user_base_dn'):
+            section = domain
         else:
             section = 'ldap'
 
@@ -194,8 +194,8 @@ class LDAP(object):
                 'user_base_dn'
             ) %({'base_dn': domain_root_dn})
 
-        if conf.has_option(domain_root_dn, 'kolab_user_filter'):
-            section = domain_root_dn
+        if conf.has_option(domain, 'kolab_user_filter'):
+            section = domain
         else:
             section = 'ldap'
 
@@ -227,7 +227,7 @@ class LDAP(object):
             if len(login.split('@')) < 2:
                 search_filter = "(uid=%s)" %(login)
                 _results = self._search(
-                        domain_root_dn,
+                        domain,
                         filterstr=search_filter,
                         attrlist=[ 'dn' ]
                     )
@@ -250,8 +250,8 @@ class LDAP(object):
 
         domain_root_dn = self._kolab_domain_root_dn(domain)
 
-        if conf.has_option(domain_root_dn, 'user_base_dn'):
-            section = domain_root_dn
+        if conf.has_option(domain, 'user_base_dn'):
+            section = domain
         else:
             section = 'ldap'
 
@@ -562,20 +562,16 @@ class LDAP(object):
         return self.ldap.result(msgid, all, timeout)
 
     def _domain_default_quota(self, domain):
-        domain_root_dn = self._kolab_domain_root_dn(domain)
-
-        if conf.has_option(domain_root_dn, 'default_quota'):
-            return conf.get(domain_root_dn, 'default_quota', quiet=True)
+        if conf.has_option(domain, 'default_quota'):
+            return conf.get(domain, 'default_quota', quiet=True)
         elif conf.has_option('ldap', 'default_quota'):
             return conf.get('ldap', 'default_quota', quiet=True)
         elif conf.has_option('kolab', 'default_quota'):
             return conf.get('kolab', 'default_quota', quiet=True)
 
     def _domain_section(self, domain):
-        domain_root_dn = self._kolab_domain_root_dn(domain)
-
-        if conf.has_section(domain_root_dn):
-            return domain_root_dn
+        if conf.has_section(domain):
+            return domain
         else:
             return 'ldap'
 
@@ -790,7 +786,7 @@ class LDAP(object):
         self._initial_sync_done = False
 
         log.info(_("Listing users for domain %s (and %s)")
-            %(primary_domain, ' '.join(secondary_domains)))
+            %(primary_domain, ', '.join(secondary_domains)))
 
         self._bind()
 
@@ -800,27 +796,27 @@ class LDAP(object):
         bind_pw = conf.get('ldap', 'bind_pw')
         #bind_pw = conf.get('ldap', 'ro_bind_pw')
 
-        domain_root_dn = self._kolab_domain_root_dn(primary_domain)
-
-        if conf.has_option(domain_root_dn, 'user_base_dn'):
-            section = domain_root_dn
+        if conf.has_option(primary_domain, 'user_base_dn'):
+            section = primary_domain
         else:
             section = 'ldap'
+
+        domain_root_dn = self._kolab_domain_root_dn(primary_domain)
 
         user_base_dn = conf.get_raw(
                 section,
                 'user_base_dn'
             ) %({'base_dn': domain_root_dn})
 
-        if conf.has_option(domain_root_dn, 'kolab_user_filter'):
-            section = domain_root_dn
+        if conf.has_option(primary_domain, 'kolab_user_filter'):
+            section = primary_domain
         else:
             section = 'ldap'
 
         kolab_user_filter = conf.get(section, 'kolab_user_filter', quiet=True)
 
-        if conf.has_option(domain_root_dn, 'kolab_user_scope'):
-            section = domain_root_dn
+        if conf.has_option(primary_domain, 'kolab_user_scope'):
+            section = primary_domain
         else:
             section = 'ldap'
 
@@ -927,16 +923,14 @@ class LDAP(object):
         else:
             return False
 
-        domain_root_dn = self._kolab_domain_root_dn(primary_domain)
-
         # Check to see if we want to apply a primary mail recipient policy
-        if conf.has_option(domain_root_dn, 'primary_mail'):
+        if conf.has_option(primary_domain, 'primary_mail'):
             primary_mail = conf.plugins.exec_hook(
                     "set_primary_mail",
                     kw={
                             'primary_mail':
                                 conf.get_raw(
-                                        domain_root_dn,
+                                        primary_domain,
                                         'primary_mail'
                                     ),
                             'user_attrs': user,
@@ -959,8 +953,8 @@ class LDAP(object):
             # policy.
             section = None
 
-            if conf.has_option(domain_root_dn, 'secondary_mail'):
-                section = domain_root_dn
+            if conf.has_option(primary_domain, 'secondary_mail'):
+                section = primary_domain
             elif conf.has_option('kolab', 'secondary_mail'):
                 section = 'kolab'
 
@@ -971,7 +965,7 @@ class LDAP(object):
                         kw={
                                 'secondary_mail':
                                     conf.get_raw(
-                                            domain_root_dn,
+                                            primary_domain,
                                             'secondary_mail'
                                         ),
                                 'user_attrs': user,
