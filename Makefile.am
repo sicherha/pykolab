@@ -155,6 +155,7 @@ install-exec-local:
 	mkdir -p $(DESTDIR)/$(sbindir) $(DESTDIR)/$(bindir) \
 		$(DESTDIR)/$(libexecdir)/postfix \
 		$(DESTDIR)/$(localstatedir)/lib/kolab \
+		$(DESTDIR)/$(localstatedir)/lib/kolab/kolab_smtp_access_policy \
 		$(DESTDIR)/$(localstatedir)/log/kolab
 	$(INSTALL) -p -m 755 conf.py $(DESTDIR)/$(sbindir)/kolab-conf
 	$(INSTALL) -p -m 755 kolab.py $(DESTDIR)/$(sbindir)/kolab
