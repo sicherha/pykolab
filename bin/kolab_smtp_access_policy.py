@@ -27,24 +27,24 @@ from ConfigParser import SafeConfigParser
 
 cache = None
 
-try:
-    import sqlalchemy
-    from sqlalchemy import Boolean
-    from sqlalchemy import Column
-    from sqlalchemy import DateTime
-    from sqlalchemy import Integer
-    from sqlalchemy import MetaData
-    from sqlalchemy import String
-    from sqlalchemy import Table
+import sqlalchemy
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import Integer
+from sqlalchemy import MetaData
+from sqlalchemy import String
+from sqlalchemy import Table
 
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import mapper
+from sqlalchemy import create_engine
+from sqlalchemy.orm import mapper
+try:
     from sqlalchemy.orm import sessionmaker
-    from sqlalchemy.schema import Index
-    from sqlalchemy.schema import UniqueConstraint
-    cache = True
 except:
-    cache = False
+    from sqlalchemy.orm import create_session
+
+from sqlalchemy.schema import Index
+from sqlalchemy.schema import UniqueConstraint
 
 sys.path.append('..')
 sys.path.append('../..')
@@ -78,25 +78,24 @@ try:
 except:
     cache = False
 
-if cache:
-    session = None
-    policy_result_table = Table(
-                'policy_result', metadata,
-                Column('id', Integer, primary_key=True),
-                Column('key', String(16), nullable=False),
-                Column('value', Boolean, nullable=False),
-                Column('sender', String(64), nullable=False),
-                Column('recipient', String(64), nullable=False),
-                Column('sasl_username', String(64)),
-                Column('sasl_sender', String(64)),
-                Column('created', Integer, nullable=False),
-                #Index('key', 'sender', 'recipient',
-                        #'sasl_username', 'sasl_sender', unique=True)
-                #UniqueConstraint('key','sender','recipient','sasl_username','sasl_sender', name='fsrss')
-            )
+session = None
+policy_result_table = Table(
+            'policy_result', metadata,
+            Column('id', Integer, primary_key=True),
+            Column('key', String(16), nullable=False),
+            Column('value', Boolean, nullable=False),
+            Column('sender', String(64), nullable=False),
+            Column('recipient', String(64), nullable=False),
+            Column('sasl_username', String(64)),
+            Column('sasl_sender', String(64)),
+            Column('created', Integer, nullable=False),
+            #Index('key', 'sender', 'recipient',
+                    #'sasl_username', 'sasl_sender', unique=True)
+            #UniqueConstraint('key','sender','recipient','sasl_username','sasl_sender', name='fsrss')
+        )
 
-    Index('fsrss', policy_result_table.c.key, policy_result_table.c.sender, policy_result_table.c.recipient,
-            policy_result_table.c.sasl_username, policy_result_table.c.sasl_sender, unique=True)
+Index('fsrss', policy_result_table.c.key, policy_result_table.c.sender, policy_result_table.c.recipient,
+        policy_result_table.c.sasl_username, policy_result_table.c.sasl_sender, unique=True)
 
 class PolicyResult(object):
     def __init__(self, key=None, value=None, sender=None, recipient=None, sasl_username=None, sasl_sender=None):
@@ -108,8 +107,7 @@ class PolicyResult(object):
         self.recipient = recipient
         self.created = (int)(time.time())
 
-if cache:
-    mapper(PolicyResult, policy_result_table)
+mapper(PolicyResult, policy_result_table)
 
 def cache_cleanup():
     if not cache == True:
@@ -125,9 +123,6 @@ def cache_cleanup():
 def cache_init():
     global cache, cache_expire, session
 
-    if not cache == True:
-        return
-
     if conf.has_section('kolab_smtp_access_policy'):
         if conf.has_option('kolab_smtp_access_policy', 'uri'):
             cache_uri = conf.get('kolab_smtp_access_policy', 'uri')
@@ -139,17 +134,16 @@ def cache_init():
     else:
         return False
 
-    if cache:
-        engine = create_engine(cache_uri, echo=True)
+    engine = create_engine(cache_uri, echo=True)
 
-        try:
-            metadata.create_all(engine)
-        except sqlalchemy.exc.OperationalError, e:
-            log.error(_("Operational Error in caching: %s" %(e)))
-            return False
+    try:
+        metadata.create_all(engine)
+    except sqlalchemy.exc.OperationalError, e:
+        log.error(_("Operational Error in caching: %s" %(e)))
+        return False
 
-        Session = sessionmaker(bind=engine)
-        session = Session()
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
     return cache
 
