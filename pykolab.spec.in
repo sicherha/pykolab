@@ -60,6 +60,7 @@ Group:          Applications/System
 BuildRequires:  intltool, gettext, python
 Requires:       postfix
 Requires:       pykolab = %{version}-%{release}
+Requires:       python-sqlalchemy
 
 %description -n postfix-kolab
 Kolab SMTP Access Policy for Postfix
