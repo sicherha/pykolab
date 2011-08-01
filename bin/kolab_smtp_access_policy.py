@@ -507,7 +507,7 @@ def verify_recipient(policy_request):
             )
 
     if not cache == False:
-        result_set = cache_select(
+        result = cache_select(
                 sender=policy_request['sender'],
                 recipient=policy_request['recipient'],
                 sasl_username=policy_request['sasl_username'],
@@ -515,7 +515,7 @@ def verify_recipient(policy_request):
                 function='verify_recipient'
             )
 
-        if len(result_set) < 1:
+        if result == None:
             record_id = cache_insert(
                     sender=policy_request['sender'],
                     recipient=policy_request['recipient'],
