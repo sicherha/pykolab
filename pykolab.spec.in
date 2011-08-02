@@ -96,7 +96,7 @@ make install DESTDIR=%{buildroot}
 
 %find_lang pykolab
 
-%pre common
+%pre
 # Add the kolab user and group accounts
 getent group %{kolab_group} &>/dev/null || groupadd -r %{kolab_group} -g %{kolab_group_id} &>/dev/null
 getent passwd %{kolab_user} &>/dev/null || \
