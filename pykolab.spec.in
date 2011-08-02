@@ -1,16 +1,34 @@
 %{!?python_sitelib: %define python_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
-Summary:        Kolab Groupware Solution
-Name:           pykolab
-Version:        @VERSION@
-Release:        @RELEASE@%{?dist}
-License:        GPLv3+
-Group:          Applications/System
-URL:            http://kolab.org/
-Source0:        http://files.kolab.org/releases/%{name}-%{version}.tar.gz
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
-BuildArch:      noarch
-Requires:       python-ldap
+%global kolab_user kolab
+%global kolab_user_id 412
+%global kolab_group kolab
+%global kolab_group_id 412
+
+%global kolabn_user kolab-n
+%global kolabn_user_id 413
+%global kolabn_group kolab-n
+%global kolabn_group_id 413
+
+%global kolabr_user kolab-r
+%global kolabr_user_id 414
+%global kolabr_group kolab-r
+%global kolabr_group_id 414
+
+Summary:            Kolab Groupware Solution
+Name:               pykolab
+Version:            @VERSION@
+Release:            @RELEASE@%{?dist}
+License:            GPLv3+
+Group:              Applications/System
+URL:                http://kolab.org/
+Source0:            http://files.kolab.org/releases/%{name}-%{version}.tar.gz
+BuildRoot:          %{_tmppath}/%{name}-%{version}-%{release}-root
+BuildArch:          noarch
+Requires:           python-ldap
+Requires(pre):      /usr/sbin/useradd
+Requires(pre):      /usr/sbin/usermod
+Requires(pre):      /usr/sbin/groupadd
 
 %description
 Kolab enables you to easily build a groupware server as part of a
@@ -20,9 +38,9 @@ collaborative environment.
 ## Kolab CLI
 ##
 %package -n kolab-cli
-Summary:        Kolab CLI components
-Group:          Applications/System
-BuildRequires:  intltool, gettext, python
+Summary:            Kolab CLI components
+Group:              Applications/System
+BuildRequires:      intltool, gettext, python
 
 %description -n kolab-cli
 Kolab CLI utilities
@@ -31,10 +49,10 @@ Kolab CLI utilities
 ## Kolab SASL Authentication Daemon
 ##
 %package -n kolab-saslauthd
-Summary:        Kolab SASL Authentication Daemon
-Group:          Applications/System
-BuildRequires:  intltool, gettext, python
-Requires:       pykolab = %{version}-%{release}
+Summary:            Kolab SASL Authentication Daemon
+Group:              Applications/System
+BuildRequires:      intltool, gettext, python
+Requires:           pykolab = %{version}-%{release}
 
 %description -n kolab-saslauthd
 Kolab SASL Authentication Daemon for multi-domain, multi-authn database deployments
@@ -43,10 +61,10 @@ Kolab SASL Authentication Daemon for multi-domain, multi-authn database deployme
 ## Kolab Server implemented in Python
 ##
 %package -n kolab-server
-Summary:        Kolab Server implemented in Python
-Group:          Applications/System
-BuildRequires:  intltool, gettext, python
-Requires:       pykolab = %{version}-%{release}
+Summary:            Kolab Server implemented in Python
+Group:              Applications/System
+BuildRequires:      intltool, gettext, python
+Requires:           pykolab = %{version}-%{release}
 
 %description -n kolab-server
 Kolab Server implemented in Python
@@ -55,12 +73,13 @@ Kolab Server implemented in Python
 ## Kolab SMTP Access Policy for Postfix
 ##
 %package -n postfix-kolab
-Summary:        Kolab SMTP Access Policy for Postfix
-Group:          Applications/System
-BuildRequires:  intltool, gettext, python
-Requires:       postfix
-Requires:       pykolab = %{version}-%{release}
-Requires:       python-sqlalchemy
+Summary:            Kolab SMTP Access Policy for Postfix
+Group:              Applications/System
+BuildRequires:      intltool, gettext, python
+Requires:           postfix
+Requires:           pykolab = %{version}-%{release}
+Requires:           python-sqlalchemy
+Requires:           MySQL-python
 
 %description -n postfix-kolab
 Kolab SMTP Access Policy for Postfix
@@ -76,6 +95,36 @@ rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
 
 %find_lang pykolab
+
+%pre common
+# Add the kolab user and group accounts
+getent group %{kolab_group} &>/dev/null || groupadd -r %{kolab_group} -g %{kolab_group_id} &>/dev/null
+getent passwd %{kolab_user} &>/dev/null || \
+    useradd -r -u %{kolab_user_id} -g %{kolab_group} -d %{_localstatedir}/lib/%{kolab_user} -s /sbin/nologin \
+        -c "Kolab System Account" %{kolab_user} &>/dev/null || :
+
+getent group %{kolabn_group} &>/dev/null || groupadd -r %{kolabn_group} -g %{kolabn_group_id} &>/dev/null
+getent passwd %{kolabn_user} &>/dev/null || \
+    useradd -r -u %{kolabn_user_id} -g %{kolabn_group} -d %{_localstatedir}/lib/%{kolabn_user} -s /sbin/nologin \
+        -c "Kolab System Account (N)" %{kolabn_user} &>/dev/null || :
+    gpasswd -a %{kolabn_user} %{kolab_group} &>/dev/null || :
+
+getent group %{kolabr_group} &>/dev/null || groupadd -r %{kolabr_group} -g %{kolabr_group_id} &>/dev/null
+getent passwd %{kolabr_user} &>/dev/null || \
+    useradd -r -u %{kolabr_user_id} -g %{kolabr_group} -d %{_localstatedir}/lib/%{kolabr_user} -s /sbin/nologin \
+        -c "Kolab System Account (R)" %{kolabr_user} &>/dev/null || :
+
+# Make sure the kolab user and group is added
+getent passwd %{cyrus_admin} &>/dev/null || \
+    useradd -r -d %{_localstatedir}/lib/%{cyrus_admin} -s /sbin/nologin \
+        -c "Kolab Cyrus Administrator Account" %{cyrus_admin} &>/dev/null || :
+
+# Make sure our user has the correct home directory
+if [ $1 -gt 1 ] ; then
+    usermod -d %{_localstatedir}/lib/%{kolab_user} %{kolab_user} &>/dev/null || :
+    usermod -d %{_localstatedir}/lib/%{kolab_user} %{kolabn_user} &>/dev/null || :
+    usermod -d %{_localstatedir}/lib/%{kolab_user} %{kolabr_user} &>/dev/null || :
+fi
 
 %clean
 rm -rf %{buildroot}
