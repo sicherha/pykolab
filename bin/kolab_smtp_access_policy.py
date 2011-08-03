@@ -357,12 +357,12 @@ def verify_delegate(policy_request, sender_domain, sender_user):
 
             if result == None:
                 record_id = cache_insert(
-                        sender=policy_request['sender'],
-                        recipient=policy_request['recipient'],
-                        result=False,
+                        policy_request['sender'],
+                        policy_request['recipient'],
+                        'verify_sender',
+                        (int)(False),
                         sasl_username=policy_request['sasl_username'],
-                        sasl_sender=policy_request['sasl_sender'],
-                        function='verify_sender'
+                        sasl_sender=policy_request['sasl_sender']
                     )
 
         sender_is_delegate = False
@@ -517,13 +517,12 @@ def verify_recipient(policy_request):
 
         if result == None:
             record_id = cache_insert(
-                    sender=policy_request['sender'],
-                    recipient=policy_request['recipient'],
+                    policy_request['sender'],
+                    policy_request['recipient'],
+                    'verify_recipient',
+                    (int)(recipient_verified),
                     sasl_username=policy_request['sasl_username'],
-                    sasl_sender=policy_request['sasl_sender'],
-                    function='verify_recipient',
-                    result=(int)(recipient_verified),
-                    expire=time.time() + cache_expire
+                    sasl_sender=policy_request['sasl_sender']
                 )
 
     return recipient_verified
@@ -690,12 +689,12 @@ def verify_sender(policy_request):
 
         if result == None:
             record_id = cache_insert(
-                    sender=policy_request['sender'],
-                    recipient=policy_request['recipient'],
+                    policy_request['sender'],
+                    policy_request['recipient'],
+                    'verify_sender',
+                    (int)(sender_verified),
                     sasl_username=policy_request['sasl_username'],
-                    sasl_sender=policy_request['sasl_sender'],
-                    function='verify_sender',
-                    result=sender_verified
+                    sasl_sender=policy_request['sasl_sender']
                 )
 
     return sender_verified
@@ -742,104 +741,110 @@ if __name__ == "__main__":
     sender_allowed = True
     recipient_allowed = True
 
-    if conf.verify_sender:
-        sender_allowed = False
-
-        log.debug(_("Verifying sender."), level=8)
-
-        # If no sender is specified, we bail out.
-        if policy_request['sender'] == "":
-            log.debug(_("No sender specified."), level=8)
-            reject(_("Invalid sender"))
+    if conf.has_option('kolab_smtp_access_policy', 'allow_helo_names'):
+        if policy_request['helo_name'] in conf.get('kolab_smtp_access_policy', 'allow_helo_names'):
+            permit(_("Trusted HELO sender"))
             policy_done = True
 
-        # If no sasl username exists, ...
-        if policy_request['sasl_username'] == "":
-            log.debug(_("No SASL username in request."), level=8)
+    if not policy_done:
+        if conf.verify_sender:
+            sender_allowed = False
 
-            if not conf.allow_unauthenticated:
-                log.debug(
-                        _("Not allowing unauthenticated senders."),
-                        level=8
-                    )
+            log.debug(_("Verifying sender."), level=8)
 
-                reject(_("Access denied for unauthenticated senders"))
+            # If no sender is specified, we bail out.
+            if policy_request['sender'] == "":
+                log.debug(_("No sender specified."), level=8)
+                reject(_("Invalid sender"))
                 policy_done = True
 
-            else:
-                log.debug(_("Allowing unauthenticated senders."), level=8)
+            # If no sasl username exists, ...
+            if policy_request['sasl_username'] == "":
+                log.debug(_("No SASL username in request."), level=8)
 
-                if not verify_domain(policy_request['sender'].split('@')[1]):
-                    sender_allowed = True
-                    permit(_("External sender"))
+                if not conf.allow_unauthenticated:
+                    log.debug(
+                            _("Not allowing unauthenticated senders."),
+                            level=8
+                        )
+
+                    reject(_("Access denied for unauthenticated senders"))
                     policy_done = True
 
                 else:
-                    sender_allowed = verify_sender(policy_request)
+                    log.debug(_("Allowing unauthenticated senders."), level=8)
 
-        # If the authenticated username is the sender...
-        elif policy_request["sasl_username"] == policy_request["sender"]:
-            log.debug(
-                    _("Allowing authenticated sender %s to send as %s.") %(
-                            policy_request["sasl_username"],
+                    if not verify_domain(policy_request['sender'].split('@')[1]):
+                        sender_allowed = True
+                        permit(_("External sender"))
+                        policy_done = True
+
+                    else:
+                        sender_allowed = verify_sender(policy_request)
+
+            # If the authenticated username is the sender...
+            elif policy_request["sasl_username"] == policy_request["sender"]:
+                log.debug(
+                        _("Allowing authenticated sender %s to send as %s.") %(
+                                policy_request["sasl_username"],
+                                policy_request["sender"]
+                            ),
+                        level=8
+                    )
+
+                sender_allowed = True
+
+                permit(
+                        _("Authenticated as sender %s") %(
+                                policy_request['sender']
+                            )
+                    )
+
+                policy_done = True
+
+            # Or if the authenticated username is the sender but the sender address
+            # lists an address with a recipient delimiter...
+            #
+            # TODO: The recipient delimiter is configurable!
+            elif policy_request["sasl_username"] == \
+                    parse_address(
                             policy_request["sender"]
-                        ),
-                    level=8
-                )
+                        ):
 
-            sender_allowed = True
+                sender_allowed = True
 
-            permit(
-                    _("Authenticated as sender %s") %(
-                            policy_request['sender']
-                        )
-                )
+                permit(
+                        _("Authenticated as sender %s") %(
+                                parse_address(policy_request["sender"])
+                            )
+                    )
 
-            policy_done = True
-
-        # Or if the authenticated username is the sender but the sender address
-        # lists an address with a recipient delimiter...
-        #
-        # TODO: The recipient delimiter is configurable!
-        elif policy_request["sasl_username"] == \
-                parse_address(
-                        policy_request["sender"]
-                    ):
-
-            sender_allowed = True
-
-            permit(
-                    _("Authenticated as sender %s") %(
-                            parse_address(policy_request["sender"])
-                        )
-                )
-
-            policy_done = True
-
-        else:
-            sender_allowed = verify_sender(policy_request)
-
-    if conf.verify_recipient:
-        recipient_allowed = False
-
-        log.debug(_("Verifying recipient."), level=8)
-
-        if policy_request['recipient'] == "":
-            reject(_("Invalid recipient"))
-            policy_done = True
-
-        if policy_request['sasl_username'] == "":
-            log.debug(_("No SASL username in request."), level=8)
-
-            if not conf.allow_unauthenticated:
-                log.debug(_("Not allowing unauthenticated senders."), level=8)
-                reject(_("Access denied for unauthenticated senders"))
                 policy_done = True
 
             else:
+                sender_allowed = verify_sender(policy_request)
+
+        if conf.verify_recipient:
+            recipient_allowed = False
+
+            log.debug(_("Verifying recipient."), level=8)
+
+            if policy_request['recipient'] == "":
+                reject(_("Invalid recipient"))
+                policy_done = True
+
+            if policy_request['sasl_username'] == "":
+                log.debug(_("No SASL username in request."), level=8)
+
+                if not conf.allow_unauthenticated:
+                    log.debug(_("Not allowing unauthenticated senders."), level=8)
+                    reject(_("Access denied for unauthenticated senders"))
+                    policy_done = True
+
+                else:
+                    recipient_allowed = verify_recipient(policy_request)
+            else:
                 recipient_allowed = verify_recipient(policy_request)
-        else:
-            recipient_allowed = verify_recipient(policy_request)
 
     if not policy_done:
         # TODO: Insert whitelists.
