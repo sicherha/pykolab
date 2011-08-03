@@ -24,8 +24,8 @@ from pykolab.translate import _
 
 __license__   = "GPLv2+"
 __copyright__ = "Kolab Systems AG"
-__version__   = @VERSION@
-__release__   = @RELEASE@
+__version__   = '@VERSION@'
+__release__   = '@RELEASE@'
 
 if @RELEASE@ < 1:
     __status__    = 'snapshot'
