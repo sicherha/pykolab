@@ -168,6 +168,9 @@ def cache_insert(sender, recipient, function, result, sasl_username='',sasl_send
         return []
 
     log.debug(_("Caching the policy result with timestamp %d") %((int)(time.time())), level=8)
+
+    cache_cleanup()
+
     session.add(PolicyResult(key=function,value=result,sender=sender,recipient=recipient,sasl_username=sasl_username,sasl_sender=sasl_sender))
     session.commit()
 
