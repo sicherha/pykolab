@@ -825,7 +825,7 @@ class LDAP(object):
         if LDAP_SCOPE.has_key(_kolab_user_scope):
             kolab_user_scope = LDAP_SCOPE[_kolab_user_scope]
         else:
-            log.warning(_("LDAP Search scope %s not found, using 'sub'") %(_ldap_user_scope))
+            log.warning(_("LDAP Search scope %s not found, using 'sub'") %(_kolab_user_scope))
             kolab_user_scope = ldap.SCOPE_SUBTREE
 
         # TODO: Is, perhaps, a domain specific setting
