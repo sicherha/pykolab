@@ -488,8 +488,12 @@ def verify_recipient(policy_request):
     # testing can input invalid recipients, and so can faulty applications, or
     # misconfigured servers.
     if not user['dn']:
-        reject(_("Invalid recipient"))
-        return False
+        if not conf.allow_unauthenticated:
+            reject(_("Invalid recipient"))
+            return False
+        else:
+            log.debug(_("Could not find this user, accepting"), level=8)
+            return True
 
     recipient_policy = auth.get_user_attribute(
             domain,
