@@ -428,6 +428,8 @@ def verify_recipient(policy_request):
         recipient's kolabAllowSMTPSender.
     """
 
+    global policy_done
+
     if not policy_request['sasl_username'] == '':
         log.info(_("Verifying authenticated sender '%(sender)s' with " + \
                 "sasl_username '%(sasl_username)s' for recipient " + \
@@ -490,6 +492,7 @@ def verify_recipient(policy_request):
     if not user['dn']:
         if not conf.allow_unauthenticated:
             reject(_("Invalid recipient"))
+            policy_done = True
             return False
         else:
             log.debug(_("Could not find this user, accepting"), level=8)
