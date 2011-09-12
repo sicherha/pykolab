@@ -138,6 +138,10 @@ class Auth(object):
 
     def find_user(self, attr, value, domain=None, **kw):
         self.connect(domain)
+
+        if self.secondary_domains.has_key(domain):
+            domain = self.secondary_domains[domain]
+
         return self._auth[domain]._find_user(attr, value, domain=domain, **kw)
 
     def list_domains(self):
@@ -184,16 +188,32 @@ class Auth(object):
 
     def domain_default_quota(self, domain):
         self.connect(domain=domain)
+
+        if self.secondary_domains.has_key(domain):
+            domain = self.secondary_domains[domain]
+
         return self._auth[domain]._domain_default_quota(domain)
 
     def domain_section(self, domain):
         self.connect(domain=domain)
+
+        if self.secondary_domains.has_key(domain):
+            domain = self.secondary_domains[domain]
+
         return self._auth[domain]._domain_section(domain)
 
     def get_user_attribute(self, domain, user, attribute):
         self.connect(domain=domain)
+
+        if self.secondary_domains.has_key(domain):
+            domain = self.secondary_domains[domain]
+
         return self._auth[domain]._get_user_attribute(user, attribute)
 
     def set_user_attribute(self, domain, user, attribute, value):
         self.connect(domain=domain)
+
+        if self.secondary_domains.has_key(domain):
+            domain = self.secondary_domains[domain]
+
         self._auth[domain]._set_user_attribute(user, attribute, value)
