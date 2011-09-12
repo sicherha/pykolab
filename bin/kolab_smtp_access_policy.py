@@ -606,6 +606,14 @@ def verify_sender(policy_request):
                 )
         }
 
+    if not sender_user['dn']:
+        if conf.allow_unauthenticated:
+            return True
+        else:
+            policy_done = True
+            reject(_("Not allowing unauthenticated users, but sender not found"))
+            return False
+
     log.debug(_("Found user object %(dn)s") %(sender_user), level=8)
 
     # Only when a user is authenticated do we have the means to check for
