@@ -112,9 +112,21 @@ class Cli(object):
         for folder in folders:
             print folder
 
+    def action_delete(self):
+        """
+            Delete mailbox
+        """
+
+        target_folder = None
+
+        delete_folder = conf.cli_args.pop(0)
+
+        imap.connect()
+        imap.delete(delete_folder)
+
     def action_undelete(self):
         """
-            Undeleted mailbox
+            Undelete mailbox
         """
 
         target_folder = None
@@ -125,36 +137,6 @@ class Cli(object):
 
         imap.connect()
         imap.undelete(undelete_folder, target_folder)
-
-    def action_list_domains(self):
-        # Create the authentication object.
-        # TODO: Binds with superuser credentials!
-        domains = auth.list_domains()
-
-        # TODO: Take a hint in --quiet, and otherwise print out a nice table
-        # with headers and such.
-        for domain,domain_aliases in domains:
-            print _("Primary domain: %s - Secondary domain(s): %s") %(domain, ', '.join(domain_aliases))
-
-    def action_del_domain(self):
-        domainname = conf.cli_args.pop(0)
-
-        log.info(_("Deleting domain %s") %(domainname))
-
-        dn = "associateddomain=%s,cn=kolab,cn=config" %(domainname)
-
-        ldap_con = ldap.initialize(conf.get('ldap', 'uri'))
-        ldap_con.bind_s(conf.get('ldap', 'bind_dn'), conf.get('ldap', 'bind_pw'))
-
-        # The try/except should actually be in check_del_domain()
-        try:
-            # Do the actual synchronous add-operation to the ldapserver
-            ldap_con.delete_s(dn)
-        except ldap.NO_SUCH_OBJECT, e:
-            log.error(_("No domain %s exists.") %(domainname))
-
-        # Its nice to the server to disconnect and free resources when done
-        ldap_con.unbind_s()
 
     def action_add_domain(self):
         log.info(_("TODO: Figure out where the domain should actually be added."))
@@ -208,7 +190,79 @@ class Cli(object):
 
             # Its nice to the server to disconnect and free resources when done
             ldap_con.unbind_s()
-#
+
+    def action_del_domain(self):
+        domainname = conf.cli_args.pop(0)
+
+        log.info(_("Deleting domain %s") %(domainname))
+
+        dn = "associateddomain=%s,cn=kolab,cn=config" %(domainname)
+
+        ldap_con = ldap.initialize(conf.get('ldap', 'uri'))
+        ldap_con.bind_s(conf.get('ldap', 'bind_dn'), conf.get('ldap', 'bind_pw'))
+
+        # The try/except should actually be in check_del_domain()
+        try:
+            # Do the actual synchronous add-operation to the ldapserver
+            ldap_con.delete_s(dn)
+        except ldap.NO_SUCH_OBJECT, e:
+            log.error(_("No domain %s exists.") %(domainname))
+
+        # Its nice to the server to disconnect and free resources when done
+        ldap_con.unbind_s()
+
+    def action_export(self):
+        import os
+        import subprocess
+
+        user = conf.cli_args.pop(0)
+
+        # TODO: /etc/imapd.conf is not the definitive location for the
+        # imapd.conf configuration file.
+        partition_proc = subprocess.Popen(['grep', '^partition', '/etc/imapd.conf'], stdout=subprocess.PIPE)
+
+        partitions = [x.split(':')[1].strip() for x in partition_proc.communicate()[0].split('\n') if len(x.split(':')) > 1]
+
+        # TODO: ctl_mboxlist is not necessarily in this location.
+        ctl_mboxlist_args = [ '/usr/lib/cyrus-imapd/ctl_mboxlist', '-d' ]
+        ctl_mboxlist = subprocess.Popen(ctl_mboxlist_args, stdout=subprocess.PIPE)
+
+        mboxlist_proc = subprocess.Popen(['grep', '-E', '\s*%s\s*.*i.*p.*' %(user)], stdin=ctl_mboxlist.stdout, stdout=subprocess.PIPE)
+        ctl_mboxlist.stdout.close()
+
+        mboxlist_output = mboxlist_proc.communicate()[0]
+
+        directories = []
+
+        for mbox_internal in mboxlist_output.split('\n'):
+            if len(mbox_internal.split('\t')[0].split('!')) > 1:
+                domain = mbox_internal.split('\t')[0].split('!')[0]
+                mailbox = '/'.join(mbox_internal.split('\t')[0].split('!')[1].split('.')[1:])
+
+                zipper_args = [
+                        'zip',
+                        '-r',
+                        '%s.zip' %(user)
+                    ]
+
+                for partition in partitions:
+                    if os.path.isdir('%s/domain/%s/%s/%s/user/%s/' %(partition,domain[0],domain,user[0],mailbox)):
+                        directories.append('%s/domain/%s/%s/%s/user/%s/' %(partition,domain[0],domain,user[0],mailbox))
+                    else:
+                        log.debug(_('%s/domain/%s/%s/%s/user/%s/ is not a directory') %(partition,domain[0],domain,user[0],mailbox), level=5)
+
+        zipper_output = subprocess.Popen(zipper_args + directories, stdout=subprocess.PIPE).communicate()[0]
+        print >> sys.stderr, _("ZIP file at %s.zip") %(user)
+
+    def action_list_domains(self):
+        # Create the authentication object.
+        # TODO: Binds with superuser credentials!
+        domains = auth.list_domains()
+
+        # TODO: Take a hint in --quiet, and otherwise print out a nice table
+        # with headers and such.
+        for domain,domain_aliases in domains:
+            print _("Primary domain: %s - Secondary domain(s): %s") %(domain, ', '.join(domain_aliases))
 
     def run(self):
         pass
