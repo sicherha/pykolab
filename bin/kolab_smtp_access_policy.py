@@ -296,16 +296,17 @@ def read_request_input():
 def verify_alias(policy_request, sender_domain, sender_user):
     sender_uses_alias = None
 
-    # TODO: Whether or not a domain name is in the sasl_username depends on
-    # whether or not a default realm is specified elsewhere. In other words,
-    # only attempt to do this and fall back to the primary_domain configured
-    # for Kolab.
-    sasl_domain = policy_request['sasl_username'].split('@')[1]
+    search_attrs = conf.get_list(
+            'kolab_smtp_access_policy',
+            'address_search_attrs'
+        )
+
+    print search_attrs
 
     sender_aliases = auth.get_user_attributes(
             sender_domain,
             sender_user,
-            [ 'mail', 'mailalternateaddress' ]
+            search_attrs
         )
 
     # We get back a normalized dictionary
@@ -493,16 +494,23 @@ def verify_quota(policy_request):
         else:
             log.debug(_("Domain %s is a primary domain") %(domain), level=8)
     else:
-        log.warning(_("Checking the recipient for domain %s that is not ours") %(domain))
+        log.warning(
+                _("Checking the recipient for domain %s that is not " + \
+                "ours. This is probably a configuration error.") %(domain)
+            )
+
+        return True
 
     # Attr search list
-    # TODO: Use the configured filter
-    attr_search = [ 'mail', 'alias', 'mailalternateaddress' ]
+    search_attrs = conf.get_list(
+            'kolab_smtp_access_policy',
+            'address_search_attrs'
+        )
 
     # Find the user,
     user = {
             'dn': auth.find_user(
-                    attr_search,
+                    search_attrs,
                     parse_address(policy_request['sasl_username']),
                     domain=domain,
                     # TODO: Get the filter from the configuration.
@@ -573,14 +581,21 @@ def verify_recipient(policy_request):
         else:
             log.debug(_("Domain %s is a primary domain") %(domain), level=8)
     else:
-        log.warning(_("Checking the recipient for domain %s that is not ours") %(domain))
+        log.warning(
+                _("Checking the recipient for domain %s that is not " + \
+                "ours. This is probably a configuration error.") %(domain)
+            )
 
-    # Attr search list
-    # TODO: Use the configured filter
-    attr_search = [ 'mail', 'alias', 'mailalternateaddress' ]
+        return True
+
+    search_attrs = conf.get_list(
+            'kolab_smtp_access_policy',
+            'address_search_attrs'
+        )
+
     user = {
             'dn': auth.find_user(
-                    attr_search,
+                    search_attrs,
                     parse_address(policy_request['recipient']),
                     domain=domain,
                     # TODO: Get the filter from the configuration.
@@ -700,10 +715,14 @@ def verify_sender(policy_request):
             level=8
         )
 
+    search_attrs = conf.get_list(
+            'kolab_smtp_access_policy',
+            'address_search_attrs'
+        )
+
     sender_user = {
             'dn': auth.find_user(
-                    # TODO: Use the configured cyrus-sasl result attribute
-                    [ 'mail', 'mailAlternateAddress' ],
+                    search_attrs,
                     parse_address(policy_request['sender']),
                     domain=sender_domain
                 )
