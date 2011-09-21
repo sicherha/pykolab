@@ -408,13 +408,85 @@ class IMAP(object):
                     continue
                 else:
                     log.info(_("Folder has no corresponding user (1): %s") %(folder))
-                    self.imap.dm("user/%s" %(folder))
+                    self.delete("user/%s" %(folder))
             except:
                 log.info(_("Folder has no corresponding user (2): %s") %(folder))
                 try:
-                    self.imap.dm("user/%s" %(folder))
+                    self.delete("user/%s" %(folder))
                 except:
                     pass
+
+    def delete(self, mailbox_path):
+        mbox_parts = self.parse_mailbox(mailbox_path)
+
+        if mbox_parts == None:
+            # We got user identifier only
+            log.error(_("Please don't give us just a user identifier"))
+            return
+
+        #self.imap.dm(mailbox_path)
+
+        clean_acls = False
+
+        section = False
+        if mbox_parts['domain']:
+            if conf.has_option(mbox_parts['domain'], 'delete_clean_acls'):
+                section = mbox_parts['domain']
+            elif conf.has_option('kolab', 'delete_clean_acls'):
+                section = 'kolab'
+        elif conf.has_option('kolab', 'delete_clean_acls'):
+            section = 'kolab'
+
+        if not section == False:
+            clean_acls = conf.get(section, 'delete_clean_acls')
+
+        if not clean_acls == False and not clean_acls == 0:
+            log.info(_("Cleaning up ACL entries across all folders"))
+
+            if mbox_parts['domain']:
+                # List the shared and user folders
+                shared_folders = self.imap.lm(
+                        "shared/*@%s" %(mbox_parts['domain'])
+                    )
+
+                user_folders = self.imap.lm(
+                        "user/*@%s" %(mbox_parts['domain'])
+                    )
+
+                aci_identifier = "%s@%s" %(
+                        mbox_parts['path_parts'][1],
+                        mbox_parts['domain']
+                    )
+
+            else:
+                shared_folders = self.imap.lm("shared/*")
+                user_folders = self.imap.lm("user/*")
+                aci_identifier = "%s" %(mbox_parts['path_parts'][1])
+
+            log.debug(
+                    _("Cleaning up ACL entries referring to identifier %s") %(
+                            aci_identifier
+                        ),
+                    level=5
+                )
+
+            # For all folders (shared and user), ...
+            folders = user_folders + shared_folders
+
+            log.debug(_("Iterating over %d folders") %(len(folders)), level=5)
+
+            # ... loop through them and ...
+            for folder in folders:
+                # ... list the ACL entries
+                acls = self.imap.lam(folder)
+
+                # For each ACL entry, see if we think it is a current, valid entry
+                for acl_entry in acls.keys():
+                    # If the key 'acl_entry' does not exist in the dictionary of valid
+                    # ACL entries, this ACL entry has got to go.
+                    if acl_entry == aci_identifier:
+                        # Set the ACL to '' (effectively deleting the ACL entry)
+                        self.imap.sam(folder, acl_entry, '')
 
     def list_user_folders(self, primary_domain=None, secondary_domains=[]):
         """
