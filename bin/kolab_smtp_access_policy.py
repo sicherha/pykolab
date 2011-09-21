@@ -293,6 +293,34 @@ def read_request_input():
 
     return policy_request
 
+def verify_alias(policy_request, sender_domain, sender_user):
+    sender_uses_alias = None
+
+    # TODO: Whether or not a domain name is in the sasl_username depends on
+    # whether or not a default realm is specified elsewhere. In other words,
+    # only attempt to do this and fall back to the primary_domain configured
+    # for Kolab.
+    sasl_domain = policy_request['sasl_username'].split('@')[1]
+
+    sender_aliases = auth.get_user_attributes(
+            sender_domain,
+            sender_user,
+            [ 'mail', 'mailalternateaddress' ]
+        )
+
+    # We get back a normalized dictionary
+    for key in sender_aliases.keys():
+        if type(sender_aliases[key]) == list:
+            if policy_request['sender'] in sender_aliases[key]:
+                sender_uses_alias = True
+                break
+        else:
+            if policy_request['sender'] == sender_aliases[key]:
+                sender_uses_alias = True
+                break
+
+    return sender_uses_alias
+
 def verify_delegate(policy_request, sender_domain, sender_user):
     """
         Use the information passed along to determine whether the authenticated
@@ -640,6 +668,7 @@ def verify_sender(policy_request):
     sender_verified = False
 
     sender_is_delegate = None
+    sender_uses_alias = None
 
     sasl_user = False
 
@@ -674,7 +703,7 @@ def verify_sender(policy_request):
     sender_user = {
             'dn': auth.find_user(
                     # TODO: Use the configured cyrus-sasl result attribute
-                    'mail',
+                    [ 'mail', 'mailAlternateAddress' ],
                     parse_address(policy_request['sender']),
                     domain=sender_domain
                 )
@@ -699,9 +728,15 @@ def verify_sender(policy_request):
                 sender_user
             )
 
+        sender_uses_alias = verify_alias(
+                policy_request,
+                sender_domain,
+                sender_user
+            )
+
     # If the authenticated user is using delegate functionality, apply the
     # recipient policy attribute for the envelope sender.
-    if sender_is_delegate == False:
+    if sender_is_delegate == False and sender_uses_alias == False:
         return False
 
     elif sender_is_delegate:
