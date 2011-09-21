@@ -293,26 +293,6 @@ def read_request_input():
 
     return policy_request
 
-def verify_domain(domain):
-    """
-        Verify whether the domain is internal (mine) or external.
-    """
-
-    domain_verified = False
-
-    _mydomains = auth.list_domains()
-
-    for primary, secondaries in _mydomains:
-        if primary == domain:
-            domain_verified = True
-        elif domain in secondaries:
-            domain_verified = True
-
-    if domain_verified == None:
-        domain_verified = False
-
-    return domain_verified
-
 def verify_delegate(policy_request, sender_domain, sender_user):
     """
         Use the information passed along to determine whether the authenticated
@@ -421,6 +401,100 @@ def verify_delegate(policy_request, sender_domain, sender_user):
             sender_is_delegate = False
 
     return sender_is_delegate
+
+def verify_domain(domain):
+    """
+        Verify whether the domain is internal (mine) or external.
+    """
+
+    domain_verified = False
+
+    _mydomains = auth.list_domains()
+
+    for primary, secondaries in _mydomains:
+        if primary == domain:
+            domain_verified = True
+        elif domain in secondaries:
+            domain_verified = True
+
+    if domain_verified == None:
+        domain_verified = False
+
+    return domain_verified
+
+def verify_quota(policy_request):
+    """
+        Verify the quota usage for this user.
+
+        Attempt to find a folder annotated with Kolab mail.sentitems
+        Attempt to find a folder with \Sent SPECIAL-USE flag
+        Use INBOX quota
+
+        If above $x percent, bail out. Get $x from the configuration.
+        If spare space below $y, bail out. Get $y from the policy request.
+
+        Typically only used when sending through submission, or when receiving.
+    """
+
+    global policy_done
+
+    if policy_request['sasl_username'] == '':
+        return True
+
+    # TODO: Under some conditions, the recipient may not be fully qualified.
+    # We'll cross that bridge when we get there, though.
+    domain = policy_request['sasl_username'].split('@')[1]
+
+    # Get the quota setting,
+    if conf.has_section('kolab_smtp_access_policy'):
+        if conf.has_option('kolab_smtp_access_policy', 'max_quota_percentage'):
+            max_quota_percentage = conf.get(
+                    'kolab_smtp_access_policy',
+                    'max_quota_percentage'
+                )
+        else:
+            max_quota_percentage = 101
+
+    else:
+        max_quota_percentage = 101
+
+    if verify_domain(domain):
+        if auth.secondary_domains.has_key(domain):
+            log.debug(_("Using authentication domain %s instead of %s") %(auth.secondary_domains[domain],domain), level=8)
+            domain = auth.secondary_domains[domain]
+        else:
+            log.debug(_("Domain %s is a primary domain") %(domain), level=8)
+    else:
+        log.warning(_("Checking the recipient for domain %s that is not ours") %(domain))
+
+    # Attr search list
+    # TODO: Use the configured filter
+    attr_search = [ 'mail', 'alias', 'mailalternateaddress' ]
+
+    # Find the user,
+    user = {
+            'dn': auth.find_user(
+                    attr_search,
+                    parse_address(policy_request['sasl_username']),
+                    domain=domain,
+                    # TODO: Get the filter from the configuration.
+                    additional_filter="(&(objectclass=kolabinetorgperson)%(search_filter)s)"
+                )
+        }
+
+    # Find the mailbox,
+    mailbox = auth.get_user_attribute(conf.get('cyrus-sasl', 'result_attribute'))
+
+    # Get the quota,
+    (used,current_quota) = self.imap.lq('user/%s' %(folder))
+
+    # Compare, and smile or shoot.
+    if (current_quota - used) <= policy_request['size']:
+        policy_done = True
+        reject(_("Not enough storage"))
+        return False
+
+    return True
 
 def verify_recipient(policy_request):
     """
