@@ -38,6 +38,10 @@ SUBDIRS = \
 	pykolab \
 	saslauthd
 
+tarball:
+	git stash
+	make dist
+
 ChangeLog:
 	(GIT_DIR=.git git log > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || (touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
 
