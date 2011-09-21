@@ -224,6 +224,7 @@ class KolabPlugins(object):
 
             if hasattr(getattr(self,plugin),hook):
                 try:
+                    log.debug(_("Executing hook %s for plugin %s") %(hook,plugin), level=9)
                     exec("retval = self.%s.%s(*args, **kw)" %(plugin,hook))
                 except TypeError, e:
                     log.error(_("Cannot execute hook %s for plugin %s: %s") %(hook,plugin,e))
@@ -231,7 +232,6 @@ class KolabPlugins(object):
                     log.error(_("Cannot execute hook %s for plugin %s: %s") %(hook,plugin,e))
 
                 return retval
-
 
     def return_true_boolean_from_plugins(self, bool, plugins=[]):
         """Given the name of a boolean, walks all specified plugins, or all available plugins, and returns True if a plugin has it set to true"""
