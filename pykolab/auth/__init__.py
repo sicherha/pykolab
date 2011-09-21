@@ -91,6 +91,7 @@ class Auth(object):
             section = 'kolab'
             domain = conf.get('kolab', 'primary_domain')
         else:
+            self.list_domains()
             section = domain
 
         if self.secondary_domains.has_key(domain):
@@ -140,6 +141,15 @@ class Auth(object):
         self.connect(domain)
 
         if self.secondary_domains.has_key(domain):
+            log.debug(
+                    _("Using primary domain %s instead of secondary domain %s")
+                    %(
+                            self.secondary_domains[domain],
+                            domain
+                        ),
+                    level=9
+                )
+
             domain = self.secondary_domains[domain]
 
         return self._auth[domain]._find_user(attr, value, domain=domain, **kw)
@@ -209,6 +219,14 @@ class Auth(object):
             domain = self.secondary_domains[domain]
 
         return self._auth[domain]._get_user_attribute(user, attribute)
+
+    def get_user_attributes(self, domain, user, attributes):
+        self.connect(domain=domain)
+
+        if self.secondary_domains.has_key(domain):
+            domain = self.secondary_domains[domain]
+
+        return self._auth[domain]._get_user_attributes(user, attributes)
 
     def set_user_attribute(self, domain, user, attribute, value):
         self.connect(domain=domain)
