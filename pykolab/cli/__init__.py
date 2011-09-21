@@ -73,6 +73,8 @@ class Cli(object):
                 exec("from pykolab.cli import action_%s" %(action_domain))
                 if hasattr("action_%s" %(action_domain), "%s" %(action_action)):
                     exec("result = action_%s.%s(%r)" %(action_domain,action_action,conf.cli_args))
+            except IndexError, e:
+                self.no_command()
             except ImportError, e:
                 pass
 
@@ -82,61 +84,34 @@ class Cli(object):
         print >> sys.stderr, _("No command given, see --help for details")
         sys.exit(1)
 
-    def action_sync(self):
-        log.debug(_("Listing domains..."), level=5)
-        start_time = time.time()
-        domains = auth.list_domains()
-        end_time = time.time()
-        log.debug(_("Found %d domains in %d seconds") %(len(domains),(end_time-start_time)), level=8)
+    ##
+    ## Alias (shorthand) commands
+    ##
 
-        all_folders = []
-
-        for primary_domain,secondary_domains in domains:
-            #print "Running for domain %s" %(primary_domain)
-            auth.connect(primary_domain)
-            start_time = time.time()
-            auth.synchronize(primary_domain, secondary_domains)
-            end_time = time.time()
-
-            log.info(_("Synchronizing users for %s took %d seconds")
-                    %(primary_domain, (end_time-start_time))
-                )
-
-    def action_list_deleted(self):
+    def action_cm(self):
         """
-            List deleted mailboxes
-        """
-        imap.connect()
-        folders = imap.lm("DELETED/*")
-        print "Deleted folders:"
-        for folder in folders:
-            print folder
-
-    def action_delete(self):
-        """
-            Delete mailbox
+            Alias for action_create_mailbox
         """
 
-        target_folder = None
+        self.action_create_mailbox()
 
-        delete_folder = conf.cli_args.pop(0)
-
-        imap.connect()
-        imap.delete(delete_folder)
-
-    def action_undelete(self):
+    def action_dm(self):
         """
-            Undelete mailbox
+            Alias for action_delete_mailbox
         """
 
-        target_folder = None
+        self.action_delete_mailbox()
 
-        undelete_folder = conf.cli_args.pop(0)
-        if len(conf.cli_args) > 0:
-            target_folder = conf.cli_args.pop(0)
+    def action_lm(self):
+        """
+            Alias for action_list_mailbox
+        """
 
-        imap.connect()
-        imap.undelete(undelete_folder, target_folder)
+        self.action_list_mailbox()
+
+    ##
+    ## Actual commands
+    ##
 
     def action_add_domain(self):
         log.info(_("TODO: Figure out where the domain should actually be added."))
@@ -191,7 +166,21 @@ class Cli(object):
             # Its nice to the server to disconnect and free resources when done
             ldap_con.unbind_s()
 
-    def action_del_domain(self):
+    def action_add_group(self):
+        print >> sys.stderr, _("Not yet implemented.")
+        sys.exit(1)
+
+    def action_add_user(self):
+        print >> sys.stderr, _("Not yet implemented.")
+        sys.exit(1)
+
+    def action_create_mailbox(self):
+        mailbox = conf.cli_args.pop(0)
+
+        imap.connect()
+        imap.cm(mailbox)
+
+    def action_delete_domain(self):
         domainname = conf.cli_args.pop(0)
 
         log.info(_("Deleting domain %s") %(domainname))
@@ -211,7 +200,31 @@ class Cli(object):
         # Its nice to the server to disconnect and free resources when done
         ldap_con.unbind_s()
 
-    def action_export(self):
+    def action_delete_group(self):
+        print >> sys.stderr, _("Not yet implemented.")
+        sys.exit(1)
+
+    def action_delete_mailbox(self):
+        """
+            Delete mailbox
+        """
+
+        target_folder = None
+
+        try:
+            delete_folder = conf.cli_args.pop(0)
+        except IndexError, e:
+            print >> sys.stderr, _("No mailbox specified")
+            sys.exit(1)
+
+        imap.connect()
+        imap.dm(delete_folder)
+
+    def action_delete_user(self):
+        print >> sys.stderr, _("Not yet implemented.")
+        sys.exit(1)
+
+    def action_export_mailbox(self):
         import os
         import subprocess
 
@@ -254,7 +267,19 @@ class Cli(object):
         zipper_output = subprocess.Popen(zipper_args + directories, stdout=subprocess.PIPE).communicate()[0]
         print >> sys.stderr, _("ZIP file at %s.zip") %(user)
 
+    def action_list_deleted(self):
+        """
+            List deleted mailboxes
+        """
+        imap.connect()
+        folders = imap.lm("DELETED/*")
+        print "Deleted folders:"
+        for folder in folders:
+            print folder
+
     def action_list_domains(self):
+        auth.connect()
+
         # Create the authentication object.
         # TODO: Binds with superuser credentials!
         domains = auth.list_domains()
@@ -263,6 +288,60 @@ class Cli(object):
         # with headers and such.
         for domain,domain_aliases in domains:
             print _("Primary domain: %s - Secondary domain(s): %s") %(domain, ', '.join(domain_aliases))
+
+    def action_list_mailbox(self):
+        """
+            List a mailbox
+        """
+        try:
+            searches = [ conf.cli_args.pop(0) ]
+        except IndexError, e:
+            #searches = [ 'DELETED/*', 'shared/*', 'user/*' ]
+            searches = [ '' ]
+
+        imap.connect()
+
+        folders = []
+
+        for search in searches:
+            folders.extend(imap.lm(search))
+
+        for folder in folders:
+            print folder
+
+    def action_sync(self):
+        log.debug(_("Listing domains..."), level=5)
+        start_time = time.time()
+        domains = auth.list_domains()
+        end_time = time.time()
+        log.debug(_("Found %d domains in %d seconds") %(len(domains),(end_time-start_time)), level=8)
+
+        all_folders = []
+
+        for primary_domain,secondary_domains in domains:
+            #print "Running for domain %s" %(primary_domain)
+            auth.connect(primary_domain)
+            start_time = time.time()
+            auth.synchronize(primary_domain, secondary_domains)
+            end_time = time.time()
+
+            log.info(_("Synchronizing users for %s took %d seconds")
+                    %(primary_domain, (end_time-start_time))
+                )
+
+    def action_undelete_mailbox(self):
+        """
+            Undelete mailbox
+        """
+
+        target_folder = None
+
+        undelete_folder = conf.cli_args.pop(0)
+        if len(conf.cli_args) > 0:
+            target_folder = conf.cli_args.pop(0)
+
+        imap.connect()
+        imap.undelete(undelete_folder, target_folder)
 
     def run(self):
         pass
