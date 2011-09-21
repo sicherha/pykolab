@@ -83,6 +83,9 @@ class Cyrus(cyruslib.CYRUS):
         # Placeholder for known mailboxes on known servers
         self.mbox = {}
 
+    def __del__(self):
+        pass
+
     def login(self, *args, **kw):
         """
             Login to the Cyrus IMAP server through cyruslib.CYRUS, but set our
@@ -90,6 +93,16 @@ class Cyrus(cyruslib.CYRUS):
         """
         cyruslib.CYRUS.login(self, *args, **kw)
         self.seperator = self.SEP
+
+        self.murder = False
+
+        for capability in self.m.capabilities:
+            if capability.startswith("MUPDATE="):
+                log.debug(_("Detected we are running in a Murder topology"), level=8)
+                self.murder = True
+
+        if not self.murder:
+            log.debug(_("This system is not part of a murder topology"), level=8)
 
     def find_mailbox_server(self, mailbox):
         annotations = {}
@@ -102,6 +115,9 @@ class Cyrus(cyruslib.CYRUS):
 
         # TODO: Workaround for undelete
         if len(self.lm(mailbox)) < 1:
+            return self.server
+
+        if not self.murder:
             return self.server
 
         log.debug(_("Checking actual backend server for folder %s through annotations") %(mailbox), level=8)
