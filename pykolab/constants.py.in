@@ -30,7 +30,7 @@ __release__   = '@RELEASE@'
 
 if @RELEASE@ < 1:
     __status__    = 'snapshot'
-elif math.round(@RELEASE@,0) < @RELEASE@:
+elif math.floor((float)@RELEASE@) < (float)@RELEASE@:
     __status__    = 'prerelease'
 else:
     __status__    = 'stable'
