@@ -107,9 +107,6 @@ class KolabDaemon(object):
             else:
                 auth = Auth()
 
-            # TODO: Interval should be configurable
-            log.debug(_("Sleeping for 10 seconds..."), level=5)
-            time.sleep(10)
             log.debug(_("Listing domains..."), level=5)
             start = time.time()
             domains = auth.list_domains()
@@ -119,20 +116,13 @@ class KolabDaemon(object):
             all_folders = []
 
             for primary_domain,secondary_domains in domains:
-                #print "Running for domain %s" %(primary_domain)
+                log.debug(_("Running for domain %s") %(primary_domain), level=5)
                 auth.connect(primary_domain)
                 start_time = time.time()
-                users = auth.list_users(primary_domain, secondary_domains)
-                #print "USERS RETURNED FROM auth.list_users():", users
+                auth.synchronize(primary_domain, secondary_domains)
                 end_time = time.time()
-                log.info(_("Listing users for %s (including getting the" + \
-                        " appropriate attributes, took %d seconds")
+
+                log.info(_("Synchronizing users for %s took %d seconds")
                         %(primary_domain, (end_time-start_time))
                     )
-                all_folders.extend(imap.synchronize(users, primary_domain, secondary_domains))
 
-            imap.expunge_user_folders(all_folders)
-
-            # Give up the memory
-            del imap
-            del auth
