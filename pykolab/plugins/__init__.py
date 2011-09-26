@@ -25,11 +25,6 @@ import traceback
 
 import pykolab
 
-if False:
-    import pykolab.plugins.defaultfolders
-    import pykolab.plugins.dynamicquota
-    import pykolab.plugins.recipientpolicy
-
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.plugins')
