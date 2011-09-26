@@ -89,11 +89,15 @@ def normalize(_object):
     elif type(_object) == dict:
         for key in _object.keys():
             if type(_object[key]) == list:
+                if _object[key] == None:
+                    continue
                 if len(_object[key]) == 1:
                     result[key.lower()] = ''.join(_object[key])
                 else:
                     result[key.lower()] = _object[key]
             else:
+                if _object[key] == None:
+                    continue
                 # What the heck?
                 result[key.lower()] = _object[key]
 
