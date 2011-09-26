@@ -18,6 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import datetime
 import os
 import sys
 import time
@@ -30,6 +31,7 @@ cache = None
 import sqlalchemy
 from sqlalchemy import Boolean
 from sqlalchemy import Column
+from sqlalchemy import Date
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import MetaData
@@ -80,25 +82,38 @@ except:
 
 session = None
 policy_result_table = Table(
-            'policy_result', metadata,
-            Column('id', Integer, primary_key=True),
-            Column('key', String(16), nullable=False),
-            Column('value', Boolean, nullable=False),
-            Column('sender', String(64), nullable=False),
-            Column('recipient', String(64), nullable=False),
-            Column('sasl_username', String(64)),
-            Column('sasl_sender', String(64)),
-            Column('created', Integer, nullable=False),
-            #Index('key', 'sender', 'recipient',
-                    #'sasl_username', 'sasl_sender', unique=True)
-            #UniqueConstraint('key','sender','recipient','sasl_username','sasl_sender', name='fsrss')
-        )
+        'policy_result', metadata,
+        Column('id', Integer, primary_key=True),
+        Column('key', String(16), nullable=False),
+        Column('value', Boolean, nullable=False),
+        Column('sender', String(64), nullable=False),
+        Column('recipient', String(64), nullable=False),
+        Column('sasl_username', String(64)),
+        Column('sasl_sender', String(64)),
+        Column('created', Integer, nullable=False),
+    )
 
-Index('fsrss', policy_result_table.c.key, policy_result_table.c.sender, policy_result_table.c.recipient,
-        policy_result_table.c.sasl_username, policy_result_table.c.sasl_sender, unique=True)
+Index(
+        'fsrss',
+        policy_result_table.c.key,
+        policy_result_table.c.sender,
+        policy_result_table.c.recipient,
+        policy_result_table.c.sasl_username,
+        policy_result_table.c.sasl_sender,
+        unique=True
+    )
 
 class PolicyResult(object):
-    def __init__(self, key=None, value=None, sender=None, recipient=None, sasl_username=None, sasl_sender=None):
+    def __init__(
+            self,
+            key=None,
+            value=None,
+            sender=None,
+            recipient=None,
+            sasl_username=None,
+            sasl_sender=None
+        ):
+
         self.key = key
         self.value = value
         self.sender = sender
@@ -108,6 +123,32 @@ class PolicyResult(object):
         self.created = (int)(time.time())
 
 mapper(PolicyResult, policy_result_table)
+
+statistic_table = Table(
+        'statistic', metadata,
+        Column('id', Integer, primary_key=True),
+        Column('sender', String(64), nullable=False),
+        Column('recipient', String(64), nullable=False),
+        Column('date', Date, nullable=False),
+        Column('count', Integer, nullable=False),
+    )
+
+Index(
+        'srd',
+        statistic_table.c.sender,
+        statistic_table.c.recipient,
+        statistic_table.c.date,
+        unique=True
+    )
+
+class Statistic(object):
+    def __init__(self, sender, recipient, date=datetime.date.today(), count=0):
+        self.sender = sender
+        self.recipient = recipient
+        self.date = date
+        self.count = count
+
+mapper(Statistic, statistic_table)
 
 def cache_cleanup():
     if not cache == True:
@@ -171,7 +212,49 @@ def cache_insert(sender, recipient, function, result, sasl_username='',sasl_send
 
     cache_cleanup()
 
-    session.add(PolicyResult(key=function,value=result,sender=sender,recipient=recipient,sasl_username=sasl_username,sasl_sender=sasl_sender))
+    session.add(
+            PolicyResult(
+                    key=function,
+                    value=result,
+                    sender=sender,
+                    recipient=recipient,
+                    sasl_username=sasl_username,
+                    sasl_sender=sasl_sender
+                )
+        )
+
+    if result == 1:
+        if not sasl_username == "":
+            stat_update(sasl_username, recipient)
+        else:
+            stat_update(sender, recipient)
+
+    session.commit()
+
+def stat_update(sender, recipient):
+    if not cache == True:
+        return
+
+    statistic = session.query(
+            Statistic
+        ).filter_by(
+                sender=parse_address(sender),
+                recipient=parse_address(recipient),
+                date=datetime.date.today()
+            ).first()
+
+    if not statistic == None:
+        statistic.count += 1
+    else:
+        session.add(
+                Statistic(
+                        sender=parse_address(sender),
+                        recipient=parse_address(recipient),
+                        date=datetime.date.today(),
+                        count=1
+                    )
+            )
+
     session.commit()
 
 def defer_if_permit(message, policy_request=None):
