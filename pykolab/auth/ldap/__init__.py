@@ -54,7 +54,12 @@ class SimplePagedResultsControl(ldap.controls.SimplePagedResultsControl):
     """
 
     def __init__(self, page_size=0, cookie=''):
-        if version.StrictVersion('2.4.0') <= version.StrictVersion(ldap.__version__):
+        if version.StrictVersion(
+                '2.4.0'
+            ) <= version.StrictVersion(
+                    ldap.__version__
+                ):
+
             ldap.controls.SimplePagedResultsControl.__init__(
                     self,
                     size=page_size,
@@ -69,13 +74,23 @@ class SimplePagedResultsControl(ldap.controls.SimplePagedResultsControl):
                 )
 
     def cookie(self):
-        if version.StrictVersion('2.4.0') <= version.StrictVersion(ldap.__version__):
+        if version.StrictVersion(
+                '2.4.0'
+            ) <= version.StrictVersion(
+                    ldap.__version__
+                ):
+
             return self.cookie
         else:
             return self.controlValue[1]
 
     def size(self):
-        if version.StrictVersion('2.4.0') <= version.StrictVersion(ldap.__version__):
+        if version.StrictVersion(
+                '2.4.0'
+            ) <= version.StrictVersion(
+                    ldap.__version__
+                ):
+
             return self.size
         else:
             return self.controlValue[0]
@@ -231,6 +246,7 @@ class LDAP(object):
                         filterstr=search_filter,
                         attrlist=[ 'dn' ]
                     )
+
                 if len(_results) == 1:
                     (_user_dn, _user_attrs) = _results[0]
                 else:
@@ -272,9 +288,16 @@ class LDAP(object):
             search_filter = "%s)" %(search_filter)
 
         if additional_filter:
-            search_filter = additional_filter % { 'search_filter': search_filter }
+            search_filter = additional_filter % {
+                    'search_filter': search_filter
+                }
 
-        log.debug(_("Attempting to find the user with search filter: %s") %(search_filter), level=8)
+        log.debug(
+                _("Attempting to find the user with search filter: %s") %(
+                        search_filter
+                    ),
+                level=8
+            )
 
         _results = self.ldap.search_s(
                 user_base_dn,
@@ -323,13 +346,15 @@ class LDAP(object):
                 serverctrls=psearch_server_controls
             )
 
+        ecnc = psearch.EntryChangeNotificationControl
+
         while True:
-            res_type,res_data,res_msgid,_,_,_ = self.ldap.result4(
+            res_type,res_data,res_msgid,_None,_None,_None = self.ldap.result4(
                     _search,
                     all=0,
                     add_ctrls=1,
                     add_intermediates=1,
-                    resp_ctrl_classes={psearch.EntryChangeNotificationControl.controlType:psearch.EntryChangeNotificationControl}
+                    resp_ctrl_classes={ecnc.controlType:ecnc}
                 )
 
             change_type = None
@@ -337,9 +362,13 @@ class LDAP(object):
             change_number = None
 
             for dn,entry,srv_ctrls in res_data:
+                log.debug(_("LDAP Search Result Data Entry:"), level=8)
+                log.debug("    DN: %r" %(dn), level=8)
+                log.debug("    Entry: %r" %(entry), level=8)
+
                 ecn_ctrls = [
                         c for c in srv_ctrls
-                        if c.controlType == psearch.EntryChangeNotificationControl.controlType
+                        if c.controlType == ecnc.controlType
                     ]
 
                 if ecn_ctrls:
@@ -347,14 +376,29 @@ class LDAP(object):
                     previous_dn = ecn_ctrls[0].previousDN
                     change_number = ecn_ctrls[0].changeNumber
                     change_type_desc = psearch.CHANGE_TYPES_STR[change_type]
-                    #if change_type == 'modDN':
-                        #log.info(_("Object relocated from %r to %r") %(previous_dn,dn))
-                    #else:
-                        #log.info(_("Object %r modified (%r)") %(dn,change_type_desc))
+
+                    log.debug(
+                            _("Entry Change Notification attributes:"),
+                            level=8
+                        )
+
+                    log.debug(
+                            "    " + _("Change Type: %r (%r)") %(
+                                    change_type,
+                                    change_type_desc
+                                ),
+                            level=8
+                        )
+
+                    log.debug(
+                            "    " + _("Previous DN: %r") %(previous_dn),
+                            level=8
+                        )
 
                 if callback:
                     callback(
                             dn=dn,
+                            entry=entry,
                             previous_dn=previous_dn,
                             change_type=change_type,
                             change_number=change_number,
@@ -511,7 +555,12 @@ class LDAP(object):
 
         if len(self.ldap.supported_controls) < 1:
             for control_num in SUPPORTED_LDAP_CONTROLS.keys():
-                log.debug(_("Checking for support for %s") %(SUPPORTED_LDAP_CONTROLS[control_num]['desc']), level=8)
+                log.debug(
+                        _("Checking for support for %s") %(
+                                SUPPORTED_LDAP_CONTROLS[control_num]['desc']
+                            ),
+                        level=8
+                    )
 
             _search = self.ldap.search_s(
                     '',
@@ -522,8 +571,12 @@ class LDAP(object):
             for (_result,_supported_controls) in _search:
                 supported_controls = _supported_controls.values()[0]
                 for control_num in SUPPORTED_LDAP_CONTROLS.keys():
-                    if SUPPORTED_LDAP_CONTROLS[control_num]['oid'] in supported_controls:
-                        self.ldap.supported_controls.append(SUPPORTED_LDAP_CONTROLS[control_num]['func'])
+                    if SUPPORTED_LDAP_CONTROLS[control_num]['oid'] in \
+                            supported_controls:
+
+                        self.ldap.supported_controls.append(
+                                SUPPORTED_LDAP_CONTROLS[control_num]['func']
+                            )
 
         _results = []
 
@@ -580,13 +633,18 @@ class LDAP(object):
 
         attribute = attribute.lower()
 
+        log.debug(
+                _("Getting attribute %s for user %s") %(attribute,user),
+                level=8
+            )
+
         _result_type = None
 
         _search = self.ldap.search_ext(
                 user['dn'],
                 ldap.SCOPE_BASE,
                 '(objectclass=*)',
-                [ attribute ]
+                [ 'dn', attribute ]
             )
 
         (
@@ -599,7 +657,7 @@ class LDAP(object):
         if len(_result_data) >= 1:
             (user_dn, user_attrs) = _result_data[0]
         else:
-            log.warning(_("Could not get user attribute %s for %s")
+            log.warning(_("Could not get attribute %s for user %s")
                 %(attribute,user['dn']))
 
             return None
@@ -607,7 +665,15 @@ class LDAP(object):
         user_attrs = utils.normalize(user_attrs)
 
         if not user_attrs.has_key(attribute):
-            log.debug(_("Attribute wanted does not exist"), level=8)
+            log.debug(
+                    _("Wanted attribute %s, which does not exist for user " + \
+                    "%r") %(
+                            attribute,
+                            user_dn
+                        ),
+                    level=8
+                )
+
             user_attrs[attribute] = None
 
         return user_attrs[attribute]
@@ -615,47 +681,34 @@ class LDAP(object):
     def _get_user_attributes(self, user, attributes):
         _user_attrs = {}
 
-        self._bind()
-
-        _search = self.ldap.search_ext(
-                user['dn'],
-                ldap.SCOPE_BASE,
-                '(objectclass=*)',
-                attributes
-            )
-
-        try:
-            (
-                    _result_type,
-                    _result_data,
-                    _result_msgid,
-                    _result_controls
-                ) = self.ldap.result3(_search)
-
-            if len(_result_data) >= 1:
-                (user_dn, user_attrs) = _result_data[0]
-            else:
-                log.warning(_("Could not get user attributes for %s") %(user['dn']))
-                return None
-
-            user_attrs = utils.normalize(user_attrs)
-
-            # Only return the attributes requested in the function call.
-            _user_attrs = {}
-            for _attr in attributes:
-                _user_attrs[_attr] = user_attrs[_attr]
-
-        except ldap.NO_SUCH_OBJECT, e:
-            log.warning(_("Object %s has changed") %(user['dn']))
+        for attribute in attributes:
+            _user_attrs[attribute] = self._get_user_attribute(user, attribute)
 
         return _user_attrs
+
+    def _search_mail_address(self, domain, mail_address):
+        self._bind()
+
+        domain_root_dn = self._kolab_domain_root_dn(domain)
+
+        return self._search(
+                domain_root_dn,
+                ldap.SCOPE_SUBTREE,
+                # TODO: Configurable
+                '(|(mail=%s)(mailalternateaddress=%s))' %(
+                        mail_address,
+                        mail_address
+                    ),
+                [ 'mail', 'mailalternateaddress' ],
+                override_search='_regular_search'
+            )
 
     def _set_user_attribute(self, user, attribute, value):
         self._bind()
 
-        #print "user:", user
-
         attribute = attribute.lower()
+
+        mode = None
 
         # TODO: This should be a schema check!
         if attribute in [ 'mailquota', 'mailalternateaddress' ]:
@@ -667,6 +720,7 @@ class LDAP(object):
 
                 if user['objectclass'] == None:
                     return
+
             if not 'mailrecipient' in user['objectclass']:
                 user['objectclass'].append('mailrecipient')
                 self._set_user_attribute(
@@ -675,11 +729,19 @@ class LDAP(object):
                         user['objectclass']
                     )
 
+            if not user.has_key(attribute):
+                mode = ldap.MOD_ADD
+
+        if mode == None:
+            mode = ldap.MOD_REPLACE
+
         try:
-            self.ldap.modify(user['dn'], [(ldap.MOD_REPLACE, attribute, value)])
+            self.ldap.modify(user['dn'], [(mode, attribute, value)])
         except:
-            log.warning(_("LDAP modification of attribute %s" + \
-                " for %s to value %s failed") %(attribute,user_dn,value))
+            log.warning(
+                    _("LDAP modification of attribute %s for %s to value " + \
+                    "%s failed") %(attribute,user_dn,value)
+                )
 
     def _list_domains(self):
         """
@@ -690,7 +752,7 @@ class LDAP(object):
             name and a list of secondary domain names.
         """
 
-        log.info(_("Listing domains..."))
+        log.debug(_("Listing domains..."), level=8)
 
         self._connect()
 
@@ -825,7 +887,12 @@ class LDAP(object):
         if LDAP_SCOPE.has_key(_kolab_user_scope):
             kolab_user_scope = LDAP_SCOPE[_kolab_user_scope]
         else:
-            log.warning(_("LDAP Search scope %s not found, using 'sub'") %(_kolab_user_scope))
+            log.warning(
+                    _("LDAP Search scope %s not found, using 'sub'") %(
+                            _kolab_user_scope
+                        )
+                )
+
             kolab_user_scope = ldap.SCOPE_SUBTREE
 
         # TODO: Is, perhaps, a domain specific setting
@@ -875,7 +942,11 @@ class LDAP(object):
                 user = user_attrs
                 user['dn'] = user_dn
 
-                user = self._get_user_details(user, primary_domain, secondary_domains)
+                user = self._get_user_details(
+                        user,
+                        primary_domain,
+                        secondary_domains
+                    )
 
                 if user:
                     users.append(user)
@@ -920,8 +991,6 @@ class LDAP(object):
             _user_attrs = self._get_user_attributes(user, _get_attrs)
             for key in _user_attrs.keys():
                 user[key] = _user_attrs[key]
-        else:
-            return False
 
         # Check to see if we want to apply a primary mail recipient policy
         if conf.has_option(primary_domain, 'primary_mail'):
@@ -939,6 +1008,65 @@ class LDAP(object):
                         }
                 )
 
+            i = 0
+            _primary_mail = primary_mail
+
+            done = False
+            while not done:
+                results = self._search_mail_address(
+                        primary_domain,
+                        _primary_mail
+                    )
+
+                # Length of results should be 0 (no entry found)
+                # or 1 (which should be the entry we're looking at here)
+                if len(results) == 0:
+                    log.debug(
+                            _("No results for mail address %s found") %(
+                                    _primary_mail
+                                ),
+                            level=8
+                        )
+
+                    done = True
+                    continue
+
+                if len(results) == 1:
+                    log.debug(
+                            _("1 result for address %s found, verifying") %(
+                                    _primary_mail
+                                ),
+                            level=8
+                        )
+
+                    almost_done = True
+                    for result in results:
+                        if not result[0] == user['dn']:
+                            log.debug(
+                                    _("Too bad, primary email address %s " + \
+                                    "already in use for %s (we are %s)") %(
+                                            _primary_mail,
+                                            result[0],
+                                            user['dn']
+                                        ),
+                                    level=8
+                                )
+
+                            almost_done = False
+
+                    if almost_done:
+                        done = True
+                        continue
+
+                i += 1
+                _primary_mail = "%s%d@%s" %(
+                        primary_mail.split('@')[0],
+                        i,
+                        primary_mail.split('@')[1]
+                    )
+
+            primary_mail = _primary_mail
+
             if not primary_mail == None:
                 if not user.has_key('mail'):
                     self._set_user_attribute(user, 'mail', primary_mail)
@@ -946,7 +1074,10 @@ class LDAP(object):
                 else:
                     if not primary_mail == user['mail']:
                         self._set_user_attribute(user, 'mail', primary_mail)
-                        user['old_mail'] = user['mail']
+
+                        if not user['mail'] == None:
+                            user['old_mail'] = user['mail']
+
                         user['mail'] = primary_mail
 
             # Check to see if we want to apply a secondary mail recipient
@@ -960,7 +1091,7 @@ class LDAP(object):
 
             if not section == None:
                 # Execute the plugin hook
-                secondary_mail = conf.plugins.exec_hook(
+                suggested_secondary_mail = conf.plugins.exec_hook(
                         "set_secondary_mail",
                         kw={
                                 'secondary_mail':
@@ -973,6 +1104,70 @@ class LDAP(object):
                                 'secondary_domains': secondary_domains
                             }
                     ) # end of conf.plugins.exec_hook() call
+
+                secondary_mail = []
+
+                for _secondary_mail in suggested_secondary_mail:
+                    i = 0
+                    __secondary_mail = _secondary_mail
+
+                    done = False
+                    while not done:
+                        results = self._search_mail_address(
+                                primary_domain,
+                                __secondary_mail
+                            )
+
+                        # Length of results should be 0 (no entry found)
+                        # or 1 (which should be the entry we're looking at here)
+                        if len(results) == 0:
+                            log.debug(
+                                    _("No results for address %s found") %(
+                                            __secondary_mail
+                                        ),
+                                    level=8
+                                )
+
+                            done = True
+                            continue
+
+                        if len(results) == 1:
+                            log.debug(
+                                    _("1 result for address %s found, " + \
+                                    "verifying...") %(
+                                            __secondary_mail
+                                        ),
+                                    level=8
+                                )
+
+                            almost_done = True
+                            for result in results:
+                                if not result[0] == user['dn']:
+                                    log.debug(
+                                            _("Too bad, secondary email " + \
+                                            "address %s already in use for " + \
+                                            "%s (we are %s)") %(
+                                                    __secondary_mail,
+                                                    result[0],
+                                                    user['dn']
+                                                ),
+                                            level=8
+                                        )
+
+                                    almost_done = False
+
+                            if almost_done:
+                                done = True
+                                continue
+
+                        i += 1
+                        __secondary_mail = "%s%d@%s" %(
+                                _secondary_mail.split('@')[0],
+                                i,
+                                _secondary_mail.split('@')[1]
+                            )
+
+                    secondary_mail.append(__secondary_mail)
 
                 if not secondary_mail == None:
                     secondary_mail = list(set(secondary_mail))
@@ -1003,6 +1198,7 @@ class LDAP(object):
 
     def sync_user(self, *args, **kw):
         # See if kw['dn'] has been set.
+
         if kw.has_key('dn'):
             self.sync_ldap_user(*args, **kw)
         elif kw.has_key('user'):
@@ -1018,21 +1214,89 @@ class LDAP(object):
     def sync_ldap_user(self, *args, **kw):
         user = None
 
+        done = False
+
         if kw.has_key('change_type'):
             # This is a EntryChangeControl notification
-            user = {'dn': kw['dn']}
+            user = utils.normalize(kw['entry'])
+            user['dn'] = kw['dn']
+
             if kw['change_type'] == None:
                 # This user has not been changed, but existed already.
-                user =  self._get_user_details(user, kw['primary_domain'], kw['secondary_domains'])
-            else:
-                self._initial_sync_done = True
+                user = self._get_user_details(
+                        user,
+                        primary_domain=kw['primary_domain'],
+                        secondary_domains=kw['secondary_domains']
+                    )
+
+                pykolab.imap.synchronize(
+                        users=[user],
+                        primary_domain=kw['primary_domain'],
+                        secondary_domains=kw['secondary_domains']
+                    )
+
+                done = True
+
+            elif kw['change_type'] == 1:
+                user = self._get_user_details(
+                        user,
+                        primary_domain=kw['primary_domain'],
+                        secondary_domains=kw['secondary_domains']
+                    )
+
+                pykolab.imap.synchronize(
+                        users=[user],
+                        primary_domain=kw['primary_domain'],
+                        secondary_domains=kw['secondary_domains']
+                    )
+
+                done = True
+
+            elif kw['change_type'] == 4:
+                # TODO: How do we know what has changed?
+                user = self._get_user_details(
+                        user,
+                        primary_domain=kw['primary_domain'],
+                        secondary_domains=kw['secondary_domains']
+                    )
+
+                pykolab.imap.synchronize(
+                        users=[user],
+                        primary_domain=kw['primary_domain'],
+                        secondary_domains=kw['secondary_domains']
+                    )
+
+                done = True
+
+            elif kw['change_type'] == 2:
+                # TODO: Use Cyrus SASL authorization ID
+                folder = 'user/%s' %(user['mail'].lower())
+                # TODO: Verify if folder exists
+                pykolab.imap.delete_mailfolder(folder)
+                done = True
+
+            elif kw['change_type'] == 8:
+                # Object has had its rdn changed
+                user = self._get_user_details(
+                        user,
+                        primary_domain=kw['primary_domain'],
+                        secondary_domains=kw['secondary_domains']
+                    )
+
+                pykolab.imap.synchronize(
+                        users=[user],
+                        primary_domain=kw['primary_domain'],
+                        secondary_domains=kw['secondary_domains']
+                    )
+
+                done = True
 
         if kw.has_key('user'):
             user = kw['user']
 
-        if user:
-            pykolab.imap.synchronize(users=[user], primary_domain=kw['primary_domain'], secondary_domains=kw['secondary_domains'])
-
-        if self._initial_sync_done:
-            log.debug(_("Initial synchronization is done, now purging old mailboxes"), level=8)
-            pykolab.imap.expunge_user_folders(inbox_folders=pykolab.imap.inbox_folders)
+        if user and not done:
+            pykolab.imap.synchronize(
+                    users=[user],
+                    primary_domain=kw['primary_domain'],
+                    secondary_domains=kw['secondary_domains']
+                )

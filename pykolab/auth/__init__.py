@@ -101,7 +101,12 @@ class Auth(object):
         if self._auth.has_key(domain) and not self._auth[domain] == None:
             return
 
-        log.debug(_("Connecting to Authentication backend for domain %s") %(domain), level=8)
+        log.debug(
+                _("Connecting to Authentication backend for domain %s") %(
+                        domain
+                    ),
+                level=8
+            )
 
         if not conf.has_section(section):
             section = 'kolab'
@@ -194,7 +199,11 @@ class Auth(object):
         return users
 
     def synchronize(self, primary_domain, secondary_domains=[]):
-        self.list_users(primary_domain, secondary_domains, callback=self._auth[primary_domain].sync_user)
+        self.list_users(
+                primary_domain,
+                secondary_domains,
+                callback=self._auth[primary_domain].sync_user
+            )
 
     def domain_default_quota(self, domain):
         self.connect(domain=domain)
@@ -227,6 +236,14 @@ class Auth(object):
             domain = self.secondary_domains[domain]
 
         return self._auth[domain]._get_user_attributes(user, attributes)
+
+    def search_mail_address(self, domain, mail_address):
+        self.connect(domain=domain)
+
+        if self.secondary_domains.has_key(domain):
+            domain = self.secondary_domains[domain]
+
+        return self._auth[domain]._search_mail_address(domain, mail_address)
 
     def set_user_attribute(self, domain, user, attribute, value):
         self.connect(domain=domain)
