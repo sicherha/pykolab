@@ -130,6 +130,7 @@ class IMAP(object):
                         log.debug(_("Found old INBOX folder %s") %(old_inbox), level=8)
 
                         if not self.has_folder(inbox):
+                            log.info(_("Renaming INBOX from %s to %s") %(old_inbox,inbox))
                             self.imap.rename(old_inbox,inbox)
                             self.inbox_folders.append(inbox)
                         else:
@@ -156,6 +157,12 @@ class IMAP(object):
             if type(user) == dict:
                 if user.has_key(_match_attr):
                     inbox_folders.append(user[_match_attr].lower())
+                else:
+                    # If the user passed on to this function does not have
+                    # a key for _match_attr, then we have to bail out and
+                    # continue
+                    continue
+
             elif type(user) == str:
                 inbox_folders.append(user.lower())
 
@@ -243,6 +250,12 @@ class IMAP(object):
                         )
 
     def set_user_folder_quota(self, users=[], primary_domain=None, secondary_domain=[], folders=[]):
+        """
+
+            Sets the quota in IMAP using the authentication and authorization
+            database 'quota' attribute for the users listed in parameter 'users'
+        """
+
         self.connect()
 
         if conf.has_option(primary_domain, 'quota_attribute'):
@@ -255,7 +268,7 @@ class IMAP(object):
 
         default_quota = auth.domain_default_quota(primary_domain)
 
-        if default_quota == "":
+        if default_quota == "" or default_quota == None:
             default_quota = 0
 
         if len(users) == 0:
@@ -266,7 +279,6 @@ class IMAP(object):
 
             if type(user) == dict:
                 if user.has_key(_quota_attr):
-                    #print "user has key"
                     if type(user[_quota_attr]) == list:
                         quota = user[_quota_attr].pop(0)
                     elif type(user[_quota_attr]) == str:
@@ -296,13 +308,14 @@ class IMAP(object):
             except:
                 # TODO: Go in fact correct the quota.
                 log.warning(_("Cannot get current IMAP quota for folder %s") %(folder))
-                continue
+                used = 0
+                current_quota = 0
 
             new_quota = conf.plugins.exec_hook("set_user_folder_quota", kw={
                         'used': used,
                         'current_quota': current_quota,
-                        'new_quota': int(quota),
-                        'default_quota': default_quota
+                        'new_quota': (int)(quota),
+                        'default_quota': (int)(default_quota)
                     }
                 )
 
@@ -317,7 +330,7 @@ class IMAP(object):
                 auth.set_user_attribute(primary_domain, user, _quota_attr, new_quota)
 
             if not int(current_quota) == int(quota):
-                #log.info(_("Correcting quota for %s to %s (currently %s)") %(folder, quota, current_quota))
+                log.info(_("Correcting quota for %s to %s (currently %s)") %(folder, quota, current_quota))
                 self.imap._setquota(folder, quota)
 
     def set_user_mailhost(self, users=[], primary_domain=None, secondary_domain=[], folders=[]):
@@ -339,7 +352,6 @@ class IMAP(object):
 
             if type(user) == dict:
                 if user.has_key(_mailserver_attr):
-                    #print "user has key"
                     if type(user[_mailserver_attr]) == list:
                         _mailserver = user[_mailserver_attr].pop(0)
                     elif type(user[_mailserver_attr]) == str:
@@ -361,20 +373,18 @@ class IMAP(object):
 
             folder = folder.lower()
 
-            _current_mailserver = self.imap.find_mailbox_server(folder)
+            _current_mailserver = self.imap.find_mailfolder_server(folder)
 
             if not _mailserver == None:
                 # TODO:
                 if not _current_mailserver == _mailserver:
                     self.imap._xfer(folder, _current_mailserver, _mailserver)
-
-                auth.set_user_attribute(primary_domain, user, _mailserver_attr, _mailserver)
             else:
                 auth.set_user_attribute(primary_domain, user, _mailserver_attr, _current_mailserver)
 
-    def parse_mailbox(self, mailbox):
+    def parse_mailfolder(self, mailfolder):
         self.connect()
-        return self.imap.parse_mailbox(mailbox)
+        return self.imap.parse_mailfolder(mailfolder)
 
     def expunge_user_folders(self, inbox_folders=None):
         """
@@ -408,27 +418,32 @@ class IMAP(object):
                     continue
                 else:
                     log.info(_("Folder has no corresponding user (1): %s") %(folder))
-                    self.delete("user/%s" %(folder))
+                    self.delete_mailfolder("user/%s" %(folder))
             except:
                 log.info(_("Folder has no corresponding user (2): %s") %(folder))
                 try:
-                    self.delete("user/%s" %(folder))
+                    self.delete_mailfolder("user/%s" %(folder))
                 except:
                     pass
 
-    def delete(self, mailbox_path):
-        mbox_parts = self.parse_mailbox(mailbox_path)
+    def delete_mailfolder(self, mailfolder_path):
+        """
+            Deletes a mail folder described by mailfolder_path.
+        """
+
+        mbox_parts = self.parse_mailfolder(mailfolder_path)
 
         if mbox_parts == None:
             # We got user identifier only
             log.error(_("Please don't give us just a user identifier"))
             return
 
-        #self.imap.dm(mailbox_path)
+        self.imap.dm(mailfolder_path)
 
         clean_acls = False
 
         section = False
+
         if mbox_parts['domain']:
             if conf.has_option(mbox_parts['domain'], 'delete_clean_acls'):
                 section = mbox_parts['domain']
@@ -511,6 +526,7 @@ class IMAP(object):
         for folder in _folders:
             folder_name = None
             if len(folder.split('@')) > 1:
+                # TODO: acceptable domain name spaces
                 #acceptable = False
                 #for domain_name_re in acceptable_domain_name_res:
                     #prog = re.compile(domain_name_re)
@@ -531,8 +547,6 @@ class IMAP(object):
                 if not folder_name in folders:
                     folders.append(folder_name)
 
-        #print folders
-
         return folders
 
     def synchronize(self, users=[], primary_domain=None, secondary_domains=[]):
@@ -550,5 +564,5 @@ class IMAP(object):
     def lm(self, *args, **kw):
         return self.imap.lm(*args, **kw)
 
-    def undelete(self, *args, **kw):
-        self.imap.undelete(*args, **kw)
+    def undelete_mailfolder(self, *args, **kw):
+        self.imap.undelete_mailfolder(*args, **kw)

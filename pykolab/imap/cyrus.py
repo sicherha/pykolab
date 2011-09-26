@@ -26,8 +26,8 @@ import pykolab
 
 from pykolab.translate import _
 
+log = pykolab.getLogger('pykolab.imap')
 conf = pykolab.getConf()
-log = pykolab.getLogger('pykolab.imap.cyrus')
 
 imap = pykolab.imap
 
@@ -104,103 +104,103 @@ class Cyrus(cyruslib.CYRUS):
         if not self.murder:
             log.debug(_("This system is not part of a murder topology"), level=8)
 
-    def find_mailbox_server(self, mailbox):
+    def find_mailfolder_server(self, mailfolder):
         annotations = {}
 
-        _mailbox = self.parse_mailbox(mailbox)
-        prefix = _mailbox['path_parts'].pop(0)
-        mbox = _mailbox['path_parts'].pop(0)
-        if not _mailbox['domain'] == None:
-            mailbox = "%s%s%s@%s" %(prefix,self.seperator,mbox,_mailbox['domain'])
+        _mailfolder = self.parse_mailfolder(mailfolder)
+        prefix = _mailfolder['path_parts'].pop(0)
+        mbox = _mailfolder['path_parts'].pop(0)
+        if not _mailfolder['domain'] == None:
+            mailfolder = "%s%s%s@%s" %(prefix,self.seperator,mbox,_mailfolder['domain'])
 
         # TODO: Workaround for undelete
-        if len(self.lm(mailbox)) < 1:
+        if len(self.lm(mailfolder)) < 1:
             return self.server
 
         if not self.murder:
             return self.server
 
-        log.debug(_("Checking actual backend server for folder %s through annotations") %(mailbox), level=8)
-        if self.mbox.has_key(mailbox):
-            return self.mbox[mailbox]
+        log.debug(_("Checking actual backend server for folder %s through annotations") %(mailfolder), level=8)
+        if self.mbox.has_key(mailfolder):
+            return self.mbox[mailfolder]
 
         max_tries = 20
         num_try = 0
         while 1:
             num_try += 1
-            annotations = self._getannotation(mailbox, "/vendor/cmu/cyrus-imapd/server")
+            annotations = self._getannotation(mailfolder, "/vendor/cmu/cyrus-imapd/server")
 
-            if annotations.has_key(mailbox):
+            if annotations.has_key(mailfolder):
                 break
 
             if max_tries <= num_try:
                 log.error(_("Could not get the annotations after %s tries.") %(num_try))
-                annotations = { mailbox: { '/vendor/cmu/cyrus-imapd/server': self.server }}
+                annotations = { mailfolder: { '/vendor/cmu/cyrus-imapd/server': self.server }}
                 break
 
-            log.warning(_("No annotations for %s: %r") %(mailbox,annotations))
+            log.warning(_("No annotations for %s: %r") %(mailfolder,annotations))
 
             time.sleep(1)
 
-        server = annotations[mailbox]['/vendor/cmu/cyrus-imapd/server']
-        self.mbox[mailbox] = server
+        server = annotations[mailfolder]['/vendor/cmu/cyrus-imapd/server']
+        self.mbox[mailfolder] = server
 
         if not server == self.server:
             if imap._imap.has_key(server):
-                if not imap._imap[server].mbox.has_key(mailbox):
-                    imap._imap[server].mbox[mailbox] = server
+                if not imap._imap[server].mbox.has_key(mailfolder):
+                    imap._imap[server].mbox[mailfolder] = server
 
-        log.debug(_("Server for INBOX folder %s is %s") %(mailbox,server), level=8)
+        log.debug(_("Server for INBOX folder %s is %s") %(mailfolder,server), level=8)
 
         return server
 
-    def _setquota(self, mailbox, quota):
+    def _setquota(self, mailfolder, quota):
         """
             Login to the actual backend server.
         """
-        server = self.find_mailbox_server(mailbox)
+        server = self.find_mailfolder_server(mailfolder)
         imap.connect('imap://%s:143' %(server))
 
-        log.debug(_("Setting quota for INBOX folder %s to %s") %(mailbox,quota), level=8)
+        log.debug(_("Setting quota for INBOX folder %s to %s") %(mailfolder,quota), level=8)
         try:
-            imap.setquota(mailbox, quota)
+            imap.setquota(mailfolder, quota)
         except:
-            log.error(_("Could not set quota for mailbox %s") %(mailbox))
+            log.error(_("Could not set quota for mailfolder %s") %(mailfolder))
 
-    def _rename(self, from_mailbox, to_mailbox, partition=None):
+    def _rename(self, from_mailfolder, to_mailfolder, partition=None):
         """
             Login to the actual backend server, then rename.
         """
-        server = self.find_mailbox_server(from_mailbox)
+        server = self.find_mailfolder_server(from_mailfolder)
         imap.connect('imap://%s:143' %(server))
 
-        log.debug(_("Moving INBOX folder %s to %s") %(from_mailbox,to_mailbox), level=8)
-        imap.rename(from_mailbox, to_mailbox, partition)
+        log.debug(_("Moving INBOX folder %s to %s") %(from_mailfolder,to_mailfolder), level=8)
+        imap.rename(from_mailfolder, to_mailfolder, partition)
 
     def _getannotation(self, *args, **kw):
         imap.connect()
         return imap.getannotation(*args, **kw)
 
-    def _setannotation(self, mailbox, annotation, value):
+    def _setannotation(self, mailfolder, annotation, value):
         """
             Login to the actual backend server, then set annotation.
         """
-        server = self.find_mailbox_server(mailbox)
+        server = self.find_mailfolder_server(mailfolder)
         imap.connect('imap://%s:143' %(server))
 
-        log.debug(_("Setting annotation %s on folder %s") %(annotation,mailbox), level=8)
-        imap.setannotation(mailbox, annotation, value)
+        log.debug(_("Setting annotation %s on folder %s") %(annotation,mailfolder), level=8)
+        imap.setannotation(mailfolder, annotation, value)
 
-    def _xfer(self, mailbox, current_server, new_server):
+    def _xfer(self, mailfolder, current_server, new_server):
         imap.connect('imap://%s:143' %(current_server))
-        log.debug(_("Transferring folder %s from %s to %s") %(mailbox, current_server, new_server), level=8)
-        imap.xfer(mailbox, new_server)
+        log.debug(_("Transferring folder %s from %s to %s") %(mailfolder, current_server, new_server), level=8)
+        imap.xfer(mailfolder, new_server)
 
-    def undelete(self, mailbox, to_mailbox=None, recursive=True):
+    def undelete_mailfolder(self, mailfolder, to_mailfolder=None, recursive=True):
         """
-            Login to the actual backend server, then "undelete" the mailbox.
+            Login to the actual backend server, then "undelete" the mailfolder.
 
-            'mailbox' may be a string representing either of the following two
+            'mailfolder' may be a string representing either of the following two
             options;
 
             - the fully qualified pathof the deleted folder in its current
@@ -213,33 +213,33 @@ class Cyrus(cyruslib.CYRUS):
 
                 "user/userid[@domain]"
 
-            'to_mailbox' may be the target folder to "undelete" the deleted
+            'to_mailfolder' may be the target folder to "undelete" the deleted
             folder to. If not specified, the original folder name is used.
         """
         # Placeholder for folders we have recovered already.
         target_folders = []
 
-        mailbox = self.parse_mailbox(mailbox)
+        mailfolder = self.parse_mailfolder(mailfolder)
 
-        undelete_folders = self._find_deleted_folder(mailbox)
+        undelete_folders = self._find_deleted_folder(mailfolder)
 
-        if not to_mailbox == None:
-            target_mbox = self.parse_mailbox(to_mailbox)
+        if not to_mailfolder == None:
+            target_mbox = self.parse_mailfolder(to_mailfolder)
         else:
-            target_mbox = mailbox
+            target_mbox = mailfolder
 
         for undelete_folder in undelete_folders:
-            undelete_mbox = self.parse_mailbox(undelete_folder)
+            undelete_mbox = self.parse_mailfolder(undelete_folder)
 
             prefix = undelete_mbox['path_parts'].pop(0)
             mbox = undelete_mbox['path_parts'].pop(0)
 
-            if to_mailbox == None:
+            if to_mailfolder == None:
                 target_folder = self.seperator.join([prefix,mbox])
             else:
                 target_folder = self.seperator.join(target_mbox['path_parts'])
 
-            if not to_mailbox == None:
+            if not to_mailfolder == None:
                 target_folder = "%s%s%s" %(target_folder,self.seperator,mbox)
 
             if not len(undelete_mbox['path_parts']) == 0:
@@ -255,29 +255,29 @@ class Cyrus(cyruslib.CYRUS):
 
             log.info(_("Undeleting %s to %s") %(undelete_folder,target_folder))
 
-            target_server = self.find_mailbox_server(target_folder)
+            target_server = self.find_mailfolder_server(target_folder)
 
             if not target_server == self.server:
                 self.xfer(undelete_folder,target_server)
 
             self.rename(undelete_folder,target_folder)
 
-    def parse_mailbox(self, mailbox):
+    def parse_mailfolder(self, mailfolder):
         """
-            Parse a mailbox name to it's parts.
+            Parse a mailfolder name to it's parts.
 
-            Takes a fully qualified mailbox or mailbox sub-folder.
+            Takes a fully qualified mailfolder or mailfolder sub-folder.
         """
         mbox = {
                 'domain': None
             }
 
         # Split off the virtual domain identifier, if any
-        if len(mailbox.split('@')) > 1:
-            mbox['domain'] = mailbox.split('@')[1]
-            mbox['path_parts'] = mailbox.split('@')[0].split(self.seperator)
+        if len(mailfolder.split('@')) > 1:
+            mbox['domain'] = mailfolder.split('@')[1]
+            mbox['path_parts'] = mailfolder.split('@')[0].split(self.seperator)
         else:
-            mbox['path_parts'] = mailbox.split(self.seperator)
+            mbox['path_parts'] = mailfolder.split(self.seperator)
 
         # See if the path that has been specified is the current location for
         # the deleted folder, or the original location, we have to find the deleted
@@ -298,10 +298,10 @@ class Cyrus(cyruslib.CYRUS):
 
             # Verify that the input for the deleted folder is actually a
             # deleted folder.
-            verify_folder_search = "%(dp)s%(sep)s%(mailbox)s" % {
+            verify_folder_search = "%(dp)s%(sep)s%(mailfolder)s" % {
                     'dp': deleted_prefix,
                     'sep': self.seperator,
-                    'mailbox': self.seperator.join(mbox['path_parts'])
+                    'mailfolder': self.seperator.join(mbox['path_parts'])
                 }
 
             if not mbox['domain'] == None:
@@ -330,15 +330,15 @@ class Cyrus(cyruslib.CYRUS):
 
     def _find_deleted_folder(self, mbox):
         """
-            Give me the parts that are in an original mailbox name and I'll find
+            Give me the parts that are in an original mailfolder name and I'll find
             the deleted folder name.
 
             TODO: It finds virtdomain folders for non-virtdomain searches.
         """
-        deleted_folder_search = "%(deleted_prefix)s%(seperator)s%(mailbox)s%(seperator)s*" % {
+        deleted_folder_search = "%(deleted_prefix)s%(seperator)s%(mailfolder)s%(seperator)s*" % {
                     # TODO: The prefix used is configurable
                     'deleted_prefix': "DELETED",
-                    'mailbox': self.seperator.join(mbox['path_parts']),
+                    'mailfolder': self.seperator.join(mbox['path_parts']),
                     'seperator': self.seperator,
                 }
 
