@@ -87,6 +87,10 @@ class Logger(logging.Logger):
 
     def debug(self, msg, level=1):
         self.setLevel(self.loglevel)
+        # Work around other applications not using various levels of debugging
+        if not self.name.startswith('pykolab') and not self.debuglevel == 9:
+            return
+
         if level <= self.debuglevel:
             # TODO: Not the way it's supposed to work!
             self.log(logging.DEBUG, msg)
