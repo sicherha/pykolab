@@ -417,6 +417,8 @@ class Conf(object):
             loglevel = logging.INFO
             self.cli_keywords.debuglevel = 0
 
+        self.debuglevel = self.cli_keywords.debuglevel
+
         # Initialize logger
         log = pykolab.logger.Logger(loglevel=loglevel, debuglevel=self.cli_keywords.debuglevel, logfile=self.cli_keywords.logfile)
 
