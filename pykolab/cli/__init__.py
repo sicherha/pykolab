@@ -562,7 +562,7 @@ class Cli(object):
                 ).filter_by(
                         user_id=user.id
                     ).order_by(
-                            telemetry.TelemetrySession.start
+                            telemetry.telemetry_session_table.c.start
                         )
 
             for session in sessions:
