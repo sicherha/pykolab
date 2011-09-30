@@ -65,7 +65,7 @@ class KolabRecipientpolicy(object):
             mail = kw['primary_mail'] % user_attrs
             return mail.lower()
         except KeyError, e:
-            self.conf.log.warning(_("Attribute substitution for 'mail' failed in Recipient Policy"))
+            log.warning(_("Attribute substitution for 'mail' failed in Recipient Policy"))
             return user_attrs['mail'].lower()
 
     def set_secondary_mail(self, *args, **kw):
