@@ -35,6 +35,17 @@ Kolab enables you to easily build a groupware server as part of a
 collaborative environment.
 
 ##
+## Kolab Telemetry Logging
+##
+%package telemetry
+Summary:            Kolab Telemetry Logging Capabilities
+Group:              Applications/System
+Requires:           kolab-cli = %{version}-%{release}
+
+%description telemetry
+Cyrus IMAP Telemetry logging handling capabilities for Kolab Groupware
+
+##
 ## Kolab CLI
 ##
 %package -n kolab-cli
@@ -136,13 +147,37 @@ rm -rf %{buildroot}
 %{_sbindir}/kolab
 %{_sbindir}/kolab-conf
 %attr(0640,root,kolab) %config(noreplace) %{_sysconfdir}/kolab/kolab.conf
-%{python_sitelib}/pykolab/
+%dir %{python_sitelib}/pykolab/
+%exclude %{python_sitelib}/pykolab/telemetry.*
+%{python_sitelib}/pykolab/*.py
+%{python_sitelib}/pykolab/*.pyc
+%{python_sitelib}/pykolab/*.pyo
+%{python_sitelib}/pykolab/auth/
+%{python_sitelib}/pykolab/cli/
+%{python_sitelib}/pykolab/conf/
+%{python_sitelib}/pykolab/imap/
+%dir %{python_sitelib}/pykolab/plugins/
+%{python_sitelib}/pykolab/plugins/*.py
+%{python_sitelib}/pykolab/plugins/*.pyc
+%{python_sitelib}/pykolab/plugins/*.pyo
+%{python_sitelib}/pykolab/plugins/defaultfolders
+%{python_sitelib}/pykolab/plugins/dynamicquota
+%{python_sitelib}/pykolab/plugins/recipientpolicy
+%exclude %{python_sitelib}/pykolab/setup/
+%exclude %{python_sitelib}/pykolab/tests/
 %{python_sitelib}/kolab/
 %{python_sitelib}/cyruslib.py
 %{python_sitelib}/cyruslib.pyc
 %{python_sitelib}/cyruslib.pyo
 %dir %{_localstatedir}/lib/kolab/
 %dir %{_localstatedir}/log/kolab/
+
+%files telemetry
+%defattr(-,root,root,-)
+%doc AUTHORS ChangeLog COPYING
+%{_sbindir}/kolab_parse_telemetry
+#%{python_sitelib}/pykolab/cli/commandgroups/telemetry.py
+%{python_sitelib}/pykolab/telemetry.*
 
 %files -n kolab-saslauthd
 %defattr(-,root,root,-)
@@ -160,7 +195,6 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
 %{_libexecdir}/postfix/kolab_smtp_access_policy
-%attr(0770,kolab-n,kolab-n) %dir %{_localstatedir}/lib/kolab/kolab_smtp_access_policy/
 
 %changelog
 * @DATESTAMP@ Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com> @VERSION@-@RELEASE@
