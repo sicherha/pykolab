@@ -9,6 +9,7 @@ INTLTOOL_FILES = \
 	intltool-update.in
 
 PYTHON_FILES = \
+	bin/kolab_parse_telemetry.py \
 	bin/kolab_smtp_access_policy.py \
 	cyruslib.py \
 	conf.py \
@@ -159,7 +160,6 @@ install-exec-local:
 	mkdir -p $(DESTDIR)/$(sbindir) $(DESTDIR)/$(bindir) \
 		$(DESTDIR)/$(libexecdir)/postfix \
 		$(DESTDIR)/$(localstatedir)/lib/kolab \
-		$(DESTDIR)/$(localstatedir)/lib/kolab/kolab_smtp_access_policy \
 		$(DESTDIR)/$(localstatedir)/log/kolab
 	$(INSTALL) -p -m 755 conf.py $(DESTDIR)/$(sbindir)/kolab-conf
 	$(INSTALL) -p -m 755 kolab.py $(DESTDIR)/$(sbindir)/kolab
@@ -167,4 +167,5 @@ install-exec-local:
 	$(INSTALL) -p -m 644 saslauthd.py $(DESTDIR)/$(sbindir)/kolab-saslauthd
 	$(INSTALL) -p -m 755 kolabtest.py $(DESTDIR)/$(bindir)/kolab-test
 	$(INSTALL) -p -m 644 cyruslib.py $(DESTDIR)/$(pythondir)
+	$(INSTALL) -p -m 755 bin/kolab_parse_telemetry.py $(DESTDIR)/$(sbindir)/kolab_parse_telemetry
 	$(INSTALL) -p -m 755 bin/kolab_smtp_access_policy.py $(DESTDIR)/$(libexecdir)/postfix/kolab_smtp_access_policy
