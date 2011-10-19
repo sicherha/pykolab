@@ -20,6 +20,7 @@
 import inspect
 import logging
 import logging.handlers
+import os
 import sys
 import time
 
@@ -93,6 +94,6 @@ class Logger(logging.Logger):
 
         if level <= self.debuglevel:
             # TODO: Not the way it's supposed to work!
-            self.log(logging.DEBUG, msg)
+            self.log(logging.DEBUG, '[%d]: %s' %(os.getpid(),msg))
 
 logging.setLoggerClass(Logger)
