@@ -47,6 +47,9 @@ class IMAP(object):
     def connect(self, uri=None, login=True):
         backend = conf.get('kolab', 'imap_backend')
 
+        hostname = None
+        port = None
+
         if uri == None:
             uri = conf.get(backend, 'uri')
 
@@ -57,6 +60,9 @@ class IMAP(object):
         else:
             scheme = uri.split(':')[0]
             (hostname, port) = uri.split('/')[2].split(':')
+
+        if port == None:
+            port = 993
 
         # Get the credentials
         admin_login = conf.get(backend, 'admin_login')
@@ -80,8 +86,8 @@ class IMAP(object):
                     self._imap[hostname].login(admin_login, admin_password)
 
             else:
-                import imap
-                self._imap[hostname] = imap.IMAP(uri)
+                import imaplib
+                self._imap[hostname] = imaplib.IMAP4(hostname, port)
                 # Actually connect
                 if login:
                     log.debug(_("Logging on to generic IMAP server %s") %(hostname), level=8)
