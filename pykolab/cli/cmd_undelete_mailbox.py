@@ -17,22 +17,10 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-import ldap
-import ldif
-import logging
-import traceback
-import shutil
-import sys
-import time
-
-from ldap.modlist import addModlist
+import commands
 
 import pykolab
-import pykolab.plugins
 
-from pykolab import utils
-from pykolab import conf
-from pykolab.constants import *
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.cli')
@@ -41,21 +29,20 @@ conf = pykolab.getConf()
 auth = pykolab.auth
 imap = pykolab.imap
 
-class Cli(object):
-    def __init__(self):
-        import commands
-        commands.__init__()
+def __init__():
+    commands.register('undelete_mailbox', execute, description="Recover mailboxes previously deleted.")
 
-        to_execute = []
+def execute(*args, **kw):
+    """
+        Undelete mailbox
+    """
 
-        arg_num = 1
-        for arg in sys.argv[1:]:
-            arg_num += 1
-            if not arg.startswith('-') and len(sys.argv) > arg_num:
-                if commands.commands.has_key(sys.argv[arg_num].replace('-','_')):
-                    to_execute.append(sys.argv[arg_num].replace('-','_'))
+    target_folder = None
 
-        commands.execute('_'.join(to_execute))
+    undelete_folder = conf.cli_args.pop(0)
+    if len(conf.cli_args) > 0:
+        target_folder = conf.cli_args.pop(0)
 
-    def run(self):
-        pass
+    imap.connect()
+    imap.undelete_mailfolder(undelete_folder, target_folder)
+

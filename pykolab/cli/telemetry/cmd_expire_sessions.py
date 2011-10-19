@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 # Copyright 2010-2011 Kolab Systems AG (http://www.kolabsys.com)
 #
@@ -17,22 +18,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-import ldap
-import ldif
-import logging
-import traceback
-import shutil
-import sys
-import time
-
-from ldap.modlist import addModlist
-
 import pykolab
-import pykolab.plugins
 
-from pykolab import utils
-from pykolab import conf
-from pykolab.constants import *
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.cli')
@@ -41,21 +28,12 @@ conf = pykolab.getConf()
 auth = pykolab.auth
 imap = pykolab.imap
 
-class Cli(object):
-    def __init__(self):
-        import commands
-        commands.__init__()
+from pykolab import telemetry
+from pykolab.cli import commands
 
-        to_execute = []
+def __init__():
+    commands.register('expire_sessions', execute, group='telemetry', description="Expire Telemetry sessions.")
 
-        arg_num = 1
-        for arg in sys.argv[1:]:
-            arg_num += 1
-            if not arg.startswith('-') and len(sys.argv) > arg_num:
-                if commands.commands.has_key(sys.argv[arg_num].replace('-','_')):
-                    to_execute.append(sys.argv[arg_num].replace('-','_'))
+def execute(*args, **kw):
+    telemetry.expire_sessions()
 
-        commands.execute('_'.join(to_execute))
-
-    def run(self):
-        pass

@@ -17,22 +17,10 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-import ldap
-import ldif
-import logging
-import traceback
-import shutil
-import sys
-import time
-
-from ldap.modlist import addModlist
+import commands
 
 import pykolab
-import pykolab.plugins
 
-from pykolab import utils
-from pykolab import conf
-from pykolab.constants import *
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.cli')
@@ -41,21 +29,35 @@ conf = pykolab.getConf()
 auth = pykolab.auth
 imap = pykolab.imap
 
-class Cli(object):
-    def __init__(self):
-        import commands
-        commands.__init__()
+def __init__():
+    commands.register('list_mailboxes', execute, description="List mailboxes.\n" + \
+        "%-28s" %('') + \
+        "Use wildcards '*' and '%' for more control.\n")
 
-        to_execute = []
+def cli_options():
+    my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
+    my_option_group.add_option( '--raw',
+                                dest    = "raw",
+                                action  = "store_true",
+                                default = False,
+                                help    = _("Display raw UTF-7 folder names"))
 
-        arg_num = 1
-        for arg in sys.argv[1:]:
-            arg_num += 1
-            if not arg.startswith('-') and len(sys.argv) > arg_num:
-                if commands.commands.has_key(sys.argv[arg_num].replace('-','_')):
-                    to_execute.append(sys.argv[arg_num].replace('-','_'))
+def execute(*args, **kw):
+    """
+        List mailboxes
+    """
+    try:
+        searches = [ conf.cli_args.pop(1) ]
+    except IndexError, e:
+        #searches = [ 'DELETED/*', 'shared/*', 'user/*' ]
+        searches = [ '' ]
 
-        commands.execute('_'.join(to_execute))
+    imap.connect()
 
-    def run(self):
-        pass
+    folders = []
+
+    for search in searches:
+        folders.extend(imap.lm(search))
+
+    for folder in folders:
+        print folder

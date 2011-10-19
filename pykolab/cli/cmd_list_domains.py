@@ -17,22 +17,10 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-import ldap
-import ldif
-import logging
-import traceback
-import shutil
-import sys
-import time
-
-from ldap.modlist import addModlist
+import commands
 
 import pykolab
-import pykolab.plugins
 
-from pykolab import utils
-from pykolab import conf
-from pykolab.constants import *
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.cli')
@@ -41,21 +29,26 @@ conf = pykolab.getConf()
 auth = pykolab.auth
 imap = pykolab.imap
 
-class Cli(object):
-    def __init__(self):
-        import commands
-        commands.__init__()
+def __init__():
+    commands.register('list_domains', execute, description="List Kolab domains.")
 
-        to_execute = []
+def execute(*args, **kw):
+    auth.connect()
 
-        arg_num = 1
-        for arg in sys.argv[1:]:
-            arg_num += 1
-            if not arg.startswith('-') and len(sys.argv) > arg_num:
-                if commands.commands.has_key(sys.argv[arg_num].replace('-','_')):
-                    to_execute.append(sys.argv[arg_num].replace('-','_'))
+    # Create the authentication object.
+    # TODO: Binds with superuser credentials!
+    domains = auth.list_domains()
 
-        commands.execute('_'.join(to_execute))
+    print "%-39s %-40s" %("Primary Domain Name Space","Secondary Domain Name Space(s)")
 
-    def run(self):
-        pass
+    # TODO: Take a hint in --quiet, and otherwise print out a nice table
+    # with headers and such.
+    for domain,domain_aliases in domains:
+        if len(domain_aliases) > 0:
+            print _("%-39s %-40s") %(
+                    domain,
+                    ', '.join(domain_aliases)
+                )
+        else:
+            print _("%-39s") %(domain)
+

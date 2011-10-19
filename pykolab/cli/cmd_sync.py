@@ -17,22 +17,10 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-import ldap
-import ldif
-import logging
-import traceback
-import shutil
-import sys
-import time
-
-from ldap.modlist import addModlist
+import commands
 
 import pykolab
-import pykolab.plugins
 
-from pykolab import utils
-from pykolab import conf
-from pykolab.constants import *
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.cli')
@@ -41,21 +29,32 @@ conf = pykolab.getConf()
 auth = pykolab.auth
 imap = pykolab.imap
 
-class Cli(object):
-    def __init__(self):
-        import commands
-        commands.__init__()
+def __init__():
+    commands.register('sync', execute, description="Synchronize Kolab Users with IMAP.")
 
-        to_execute = []
+def execute(*args, **kw):
+    log.debug(_("Listing domains..."), level=5)
+    start_time = time.time()
+    domains = auth.list_domains()
+    end_time = time.time()
+    log.debug(
+            _("Found %d domains in %d seconds") %(
+                    len(domains),
+                    (end_time-start_time)
+                ),
+            level=8
+        )
 
-        arg_num = 1
-        for arg in sys.argv[1:]:
-            arg_num += 1
-            if not arg.startswith('-') and len(sys.argv) > arg_num:
-                if commands.commands.has_key(sys.argv[arg_num].replace('-','_')):
-                    to_execute.append(sys.argv[arg_num].replace('-','_'))
+    all_folders = []
 
-        commands.execute('_'.join(to_execute))
+    for primary_domain,secondary_domains in domains:
+        log.debug(_("Running for domain %s") %(primary_domain), level=8)
+        auth.connect(primary_domain)
+        start_time = time.time()
+        auth.synchronize(primary_domain, secondary_domains)
+        end_time = time.time()
 
-    def run(self):
-        pass
+        log.info(_("Synchronizing users for %s took %d seconds")
+                %(primary_domain, (end_time-start_time))
+            )
+
