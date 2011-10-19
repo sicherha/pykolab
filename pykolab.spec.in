@@ -153,7 +153,10 @@ rm -rf %{buildroot}
 %{python_sitelib}/pykolab/*.pyc
 %{python_sitelib}/pykolab/*.pyo
 %{python_sitelib}/pykolab/auth/
-%{python_sitelib}/pykolab/cli/
+%dir %{python_sitelib}/pykolab/cli/
+%{python_sitelib}/pykolab/cli/*.py
+%{python_sitelib}/pykolab/cli/*.pyc
+%{python_sitelib}/pykolab/cli/*.pyo
 %{python_sitelib}/pykolab/conf/
 %{python_sitelib}/pykolab/imap/
 %dir %{python_sitelib}/pykolab/plugins/
@@ -178,6 +181,7 @@ rm -rf %{buildroot}
 %{_sbindir}/kolab_parse_telemetry
 #%{python_sitelib}/pykolab/cli/commandgroups/telemetry.py
 %{python_sitelib}/pykolab/telemetry.*
+%{python_sitelib}/pykolab/cli/telemetry/
 
 %files -n kolab-saslauthd
 %defattr(-,root,root,-)
