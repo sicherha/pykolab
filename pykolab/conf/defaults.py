@@ -26,3 +26,5 @@ class Defaults(object):
         # An integer or float to indicate the interval at which the Cyrus IMAP
         # library should try to retrieve annotations
         self.cyrus_annotations_retry_interval = 1
+
+        self.address_search_attrs = "mail, alias"
