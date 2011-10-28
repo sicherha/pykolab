@@ -100,29 +100,37 @@ class KolabDaemon(object):
         sys.exit(exitcode)
 
     def do_sync(self):
+        domain_auth = {}
+
+        pid = os.getpid()
+
         while 1:
-            imap = IMAP()
-            if hasattr(imap,'auth'):
-                auth = imap.auth
-            else:
-                auth = Auth()
+            primary_auth = Auth()
 
             log.debug(_("Listing domains..."), level=5)
-            start = time.time()
-            domains = auth.list_domains()
-            end = time.time()
-            log.debug(_("Found %d domains in %d seconds") %(len(domains),(end-start)), level=8)
 
-            all_folders = []
+            start = time.time()
+            domains = primary_auth.list_domains()
+            if len(domains) == len(domain_auth.keys()):
+                time.sleep(600)
+            end = time.time()
+
+            log.debug(_("Found %d domains in %d seconds") %(len(domains),(end-start)), level=8)
 
             for primary_domain,secondary_domains in domains:
                 log.debug(_("Running for domain %s") %(primary_domain), level=5)
-                auth.connect(primary_domain)
-                start_time = time.time()
-                auth.synchronize(primary_domain, secondary_domains)
-                end_time = time.time()
 
-                log.info(_("Synchronizing users for %s took %d seconds")
-                        %(primary_domain, (end_time-start_time))
-                    )
+                if not pid == 0 and not domain_auth.has_key(primary_domain):
+                    log.debug(_("Domain %s did not have a key yet") %(primary_domain), level=5)
+                    domain_auth[primary_domain] = Auth()
+                    pid = os.fork()
+                    if pid == 0:
+                        domain_auth[primary_domain].connect(primary_domain)
+                        start_time = time.time()
+                        domain_auth[primary_domain].synchronize(primary_domain, secondary_domains)
+                        end_time = time.time()
 
+                        log.info(_("Synchronizing users for %s took %d seconds")
+                                %(primary_domain, (end_time-start_time))
+                            )
+                        domain_auth[primary_domain].synchronize(primary_domain, secondary_domains)
