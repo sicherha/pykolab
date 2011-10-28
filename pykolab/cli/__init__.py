@@ -48,10 +48,10 @@ class Cli(object):
 
         to_execute = []
 
-        arg_num = 1
+        arg_num = 0
         for arg in sys.argv[1:]:
             arg_num += 1
-            if not arg.startswith('-') and len(sys.argv) > arg_num:
+            if not arg.startswith('-') and len(sys.argv) >= arg_num:
                 if commands.commands.has_key(sys.argv[arg_num].replace('-','_')):
                     to_execute.append(sys.argv[arg_num].replace('-','_'))
 
