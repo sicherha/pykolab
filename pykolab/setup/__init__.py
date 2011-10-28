@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # Copyright 2010-2011 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
@@ -18,14 +17,28 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-from pykolab import constants
+import sys
 
-__all__ = [
-    ]
+import pykolab
 
-for component in constants.COMPONENTS:
-    try:
-        exec("from %s_setup import setup as %s_setup" % (component,component))
-        __all__.append("%s_setup" % component)
-    except:
+log = pykolab.getLogger('pykolab.setup')
+conf = pykolab.getConf()
+
+class Setup(object):
+    def __init__(self):
+        import components
+        components.__init__()
+
+        to_execute = []
+
+        arg_num = 0
+        for arg in sys.argv[1:]:
+            arg_num += 1
+            if not arg.startswith('-') and len(sys.argv) >= arg_num:
+                if components.components.has_key(sys.argv[arg_num].replace('-','_')):
+                    to_execute.append(sys.argv[arg_num].replace('-','_'))
+
+        components.execute('_'.join(to_execute))
+
+    def run(self):
         pass

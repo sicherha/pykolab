@@ -26,49 +26,17 @@ import sys
 # For development purposes
 sys.path.extend(['.', '..'])
 
-from pykolab.translate import _
-from pykolab import constants
-from pykolab import utils
+import pykolab
+
+from pykolab.setup import Setup
 
 try:
-    import pykolab.logger
+    from pykolab.constants import *
 except ImportError, e:
-    print >> sys.stderr, _("Cannot load pykolab/logger.py:")
+    print >> sys.stderr, _("Cannot load pykolab/constants.py:")
     print >> sys.stderr, "%s" % e
     sys.exit(1)
 
-def load_setup(component):
-    """
-        Load a setup component.
-
-        Accepts one of the components listed in constants.COMPONENTS.
-    """
-
-    try:
-        exec("from pykolab.setup import %s_setup" % component)
-        try:
-            exec("%s_setup()" % component)
-        except NameError, e:
-            print >> sys.stderr, _("Cannot find %s_setup().") % component
-    except ImportError, e:
-        print >> sys.stderr, _("Cannot load setup for %s.") % component
-
 if __name__ == "__main__":
-    # Means we get to ask some questions.
-    print _("Please select the components to set up:")
-
-    component_index = 1
-    for component in constants.COMPONENTS:
-        print "%d) %s" %(component_index,component)
-        component_index += 1
-
-    _input_selected_components = raw_input(_("Selection") + ": ")
-    selected_components = utils.parse_input(_input_selected_components, [ ' ', ',' ])
-
-    # Using the components in the selection dialog, we now go ahead with the real
-    # work:
-    component_index = 1
-    for component in constants.COMPONENTS:
-        if selected_components.count("%s" %(component_index)):
-            load_setup(component)
-        component_index += 1
+    kolab = Setup()
+    kolab.run()
