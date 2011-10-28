@@ -39,7 +39,7 @@ class Auth(object):
             self._auth is the placeholder for domain-specific authentication
             backends. The keys are the primary domain names for each domain.
         """
-        self._auth = {}
+        self._auth = None
 
         # Placeholder mapping back to the primary domain name space
         self.secondary_domains = {}
@@ -77,7 +77,7 @@ class Auth(object):
 
         self.connect(domain)
 
-        retval = self._auth[domain]._authenticate(login, domain)
+        retval = self._auth._authenticate(login, domain)
 
         return retval
 
@@ -86,6 +86,9 @@ class Auth(object):
             Connect to the domain authentication backend using domain, or fall
             back to the primary domain specified by the configuration.
         """
+
+        if not self._auth == None:
+            return
 
         if domain == None:
             section = 'kolab'
@@ -97,9 +100,6 @@ class Auth(object):
         if self.secondary_domains.has_key(domain):
             section = self.secondary_domains[domain]
             domain = self.secondary_domains[domain]
-
-        if self._auth.has_key(domain) and not self._auth[domain] == None:
-            return
 
         log.debug(
                 _("Connecting to Authentication backend for domain %s") %(
@@ -116,14 +116,14 @@ class Auth(object):
 
         if conf.get(section, 'auth_mechanism') == 'ldap':
             from pykolab.auth import ldap
-            self._auth[domain] = ldap.LDAP()
+            self._auth = ldap.LDAP()
         elif conf.get(section, 'auth_mechanism') == 'sql':
             from pykolab.auth import sql
-            self._auth[domain] = sql.SQL()
+            self._auth = sql.SQL()
 
         else:
             from pykolab.auth import ldap
-            self._auth[domain] = ldap.LDAP()
+            self._auth = ldap.LDAP()
 
     def disconnect(self, domain=None):
         """
@@ -137,10 +137,10 @@ class Auth(object):
         else:
             section = domain
 
-        if not self._auth.has_key(section) or self._auth[section] == None:
+        if not self._auth.has_key(section) or self._auth == None:
             return
 
-        self._auth[domain]._disconnect()
+        self._auth._disconnect()
 
     def find_user(self, attr, value, domain=None, **kw):
         self.connect(domain)
@@ -157,7 +157,7 @@ class Auth(object):
 
             domain = self.secondary_domains[domain]
 
-        return self._auth[domain]._find_user(attr, value, domain=domain, **kw)
+        return self._auth._find_user(attr, value, domain=domain, **kw)
 
     def list_domains(self):
         """
@@ -176,7 +176,8 @@ class Auth(object):
 
         # Find the domains in the authentication backend.
         kolab_primary_domain = conf.get('kolab', 'primary_domain')
-        domains = self._auth[kolab_primary_domain]._list_domains()
+
+        domains = self._auth._list_domains()
 
         # If no domains are found, the primary domain is used.
         if len(domains) < 1:
@@ -190,7 +191,7 @@ class Auth(object):
 
     def list_users(self, primary_domain, secondary_domains=[], callback=None):
         self.connect(domain=primary_domain)
-        users = self._auth[primary_domain]._list_users(
+        users = self._auth._list_users(
                 primary_domain,
                 secondary_domains,
                 callback
@@ -199,10 +200,11 @@ class Auth(object):
         return users
 
     def synchronize(self, primary_domain, secondary_domains=[]):
+        self.connect(domain=primary_domain)
         self.list_users(
                 primary_domain,
                 secondary_domains,
-                callback=self._auth[primary_domain].sync_user
+                callback=self._auth.sync_user
             )
 
     def domain_default_quota(self, domain):
@@ -211,7 +213,7 @@ class Auth(object):
         if self.secondary_domains.has_key(domain):
             domain = self.secondary_domains[domain]
 
-        return self._auth[domain]._domain_default_quota(domain)
+        return self._auth._domain_default_quota(domain)
 
     def domain_section(self, domain):
         self.connect(domain=domain)
@@ -219,7 +221,7 @@ class Auth(object):
         if self.secondary_domains.has_key(domain):
             domain = self.secondary_domains[domain]
 
-        return self._auth[domain]._domain_section(domain)
+        return self._auth._domain_section(domain)
 
     def get_user_attribute(self, domain, user, attribute):
         self.connect(domain=domain)
@@ -227,7 +229,7 @@ class Auth(object):
         if self.secondary_domains.has_key(domain):
             domain = self.secondary_domains[domain]
 
-        return self._auth[domain]._get_user_attribute(user, attribute)
+        return self._auth._get_user_attribute(user, attribute)
 
     def get_user_attributes(self, domain, user, attributes):
         self.connect(domain=domain)
@@ -235,7 +237,7 @@ class Auth(object):
         if self.secondary_domains.has_key(domain):
             domain = self.secondary_domains[domain]
 
-        return self._auth[domain]._get_user_attributes(user, attributes)
+        return self._auth._get_user_attributes(user, attributes)
 
     def search_mail_address(self, domain, mail_address):
         self.connect(domain=domain)
@@ -243,7 +245,7 @@ class Auth(object):
         if self.secondary_domains.has_key(domain):
             domain = self.secondary_domains[domain]
 
-        return self._auth[domain]._search_mail_address(domain, mail_address)
+        return self._auth._search_mail_address(domain, mail_address)
 
     def set_user_attribute(self, domain, user, attribute, value):
         self.connect(domain=domain)
@@ -251,4 +253,4 @@ class Auth(object):
         if self.secondary_domains.has_key(domain):
             domain = self.secondary_domains[domain]
 
-        self._auth[domain]._set_user_attribute(user, attribute, value)
+        self._auth._set_user_attribute(user, attribute, value)
