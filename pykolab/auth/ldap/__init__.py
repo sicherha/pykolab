@@ -706,6 +706,9 @@ class LDAP(object):
     def _set_user_attribute(self, user, attribute, value):
         self._bind()
 
+        if isinstance(user, basestring):
+            user = { "dn": user }
+
         attribute = attribute.lower()
 
         mode = None
