@@ -36,7 +36,6 @@ import traceback
 import pykolab
 
 from pykolab.auth import Auth
-from pykolab.conf import Conf
 from pykolab.constants import *
 from pykolab.translate import _
 
@@ -89,7 +88,7 @@ class SASLAuthDaemon(object):
         except:
             exitcode = 2
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a bug at http://issues.kolab.org")
+            print >> sys.stderr, _("Traceback occurred, please report a bug at http://bugzilla.kolabsys.com")
         sys.exit(exitcode)
 
     def do_saslauthd(self):
