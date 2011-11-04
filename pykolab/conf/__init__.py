@@ -216,7 +216,7 @@ class Conf(object):
             log.error(_("Invalid configuration file %s") % config_file)
 
         if not config.has_section("kolab"):
-            log.warning(_("No master configuration section [revisor] in configuration file %s") % config_file)
+            log.warning(_("No master configuration section [kolab] in configuration file %s") % config_file)
 
         return config
 
