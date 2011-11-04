@@ -490,7 +490,7 @@ class CYRUS:
         if pattern == '%':
             res, ml = self.__docommand('list', '', '%')
         else:
-            res, ml = self.__docommand('list', '*', self.decode(pattern))
+            res, ml = self.__docommand('list', '""', self.decode(pattern))
 
         if not ok(res):
             self.__verbose( '[LIST] %s: %s' % (res, ml) )

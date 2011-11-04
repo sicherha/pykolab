@@ -44,6 +44,7 @@ class KolabDefaultfolders(object):
         """
 
         if not kw.has_key('additional_folders'):
+            log.error(_("Plugin %s called without required keyword %s.") %("defaultfolders", "additional_folders"))
             return {}
 
         try:

@@ -117,6 +117,8 @@ class Cyrus(cyruslib.CYRUS):
         if len(self.lm(mailfolder)) < 1:
             return self.server
 
+        # TODO: Murder capabilities may have been suppressed using Cyrus IMAP
+        # configuration.
         if not self.murder:
             return self.server
 
