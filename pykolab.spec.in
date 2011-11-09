@@ -105,6 +105,9 @@ Kolab SMTP Access Policy for Postfix
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
 
+%{__install} -p -m 755 saslauthd/kolab-saslauthd.sysvinit %{buildroot}/%{_initddir}/kolab-saslauthd
+%{__install} -p -m 755 saslauthd/kolabd.sysvinit %{buildroot}/%{_initddir}/kolabd
+
 %find_lang pykolab
 
 %pre
@@ -135,6 +138,32 @@ if [ $1 -gt 1 ] ; then
     usermod -d %{_localstatedir}/lib/%{kolab_user} %{kolab_user} &>/dev/null || :
     usermod -d %{_localstatedir}/lib/%{kolab_user} %{kolabn_user} &>/dev/null || :
     usermod -d %{_localstatedir}/lib/%{kolab_user} %{kolabr_user} &>/dev/null || :
+fi
+
+%post -n kolab-saslauthd
+if [ $1 -eq  1 ] ; then
+    chkconfig --add kolab-saslauthd
+else
+    /sbin/service kolab-saslauthd condrestart
+fi
+
+%preun -n kolab-saslauthd
+if [ $1 = 0 ]; then
+    /sbin/service kolab-saslauthd stop > /dev/null 2>&1
+    /sbin/chkconfig --del kolab-saslauthd
+fi
+
+%post -n kolab-server
+if [ $1 -eq  1 ] ; then
+    chkconfig --add kolabd
+else
+    /sbin/service kolabd condrestart
+fi
+
+%preun -n kolab-server
+if [ $1 = 0 ]; then
+    /sbin/service kolabd stop > /dev/null 2>&1
+    /sbin/chkconfig --del kolabd
 fi
 
 %clean
@@ -186,8 +215,8 @@ rm -rf %{buildroot}
 %files -n kolab-saslauthd
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
-%attr(0755,root,root) %{_initddir}/kolab-saslauthd
-%attr(0750,root,root) %{_sbindir}/kolab-saslauthd
+%{_initddir}/kolab-saslauthd
+%{_sbindir}/kolab-saslauthd
 %{python_sitelib}/saslauthd/
 %dir %{_localstatedir}/run/kolab-saslauthd
 %dir %{_localstatedir}/run/saslauthd
@@ -195,6 +224,7 @@ rm -rf %{buildroot}
 %files -n kolab-server
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
+%{_initddir}/kolabd
 %{_sbindir}/kolabd
 %{python_sitelib}/kolabd/
 

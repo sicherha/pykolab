@@ -163,7 +163,6 @@ install-exec-local:
 		$(DESTDIR)/$(localstatedir)/log/kolab
 	$(INSTALL) -p -m 755 conf.py $(DESTDIR)/$(sbindir)/kolab-conf
 	$(INSTALL) -p -m 755 kolab.py $(DESTDIR)/$(sbindir)/kolab
-	$(INSTALL) -p -m 755 kolabd.py $(DESTDIR)/$(sbindir)/kolabd
 	$(INSTALL) -p -m 755 kolabtest.py $(DESTDIR)/$(bindir)/kolab-test
 	$(INSTALL) -p -m 644 cyruslib.py $(DESTDIR)/$(pythondir)
 	$(INSTALL) -p -m 755 bin/kolab_parse_telemetry.py $(DESTDIR)/$(sbindir)/kolab_parse_telemetry
