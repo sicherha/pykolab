@@ -1,2 +1,12 @@
+EXTRA_DIST = kolab-saslauthd.sysvinit
+
 saslauthddir = $(pythondir)/saslauthd
 saslauthd_PYTHON = $(wildcard *.py)
+
+install-exec-local:
+	mkdir -p $(DESTDIR)/$(localstatedir)/run/kolab-saslauthd \
+		$(DESTDIR)/$(localstatedir)/run/saslauthd \
+		$(DESTDIR)/$(localstatedir)/lib/kolab-saslauthd
+	$(INSTALL) -p -m 755 saslauthd.py $(DESTDIR)/$(sbindir)/kolab-saslauthd
+
+
