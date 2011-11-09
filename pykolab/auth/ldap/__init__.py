@@ -231,7 +231,8 @@ class LDAP(object):
         _results = self._search(
                 user_base_dn,
                 filterstr=search_filter,
-                attrlist=[ 'dn' ]
+                attrlist=[ 'dn' ],
+                override_search='_regular_search'
             )
 
         if len(_results) == 1:
