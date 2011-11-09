@@ -68,8 +68,9 @@ class SASLAuthDaemon(object):
 
             if pid == 0:
                 log.remove_stdout_handler()
-
-            self.do_saslauthd()
+                self.do_saslauthd()
+            elif not conf.fork_mode:
+                self.do_saslauthd()
 
         except SystemExit, e:
             exitcode = e
