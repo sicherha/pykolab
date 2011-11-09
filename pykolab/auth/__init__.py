@@ -58,13 +58,15 @@ class Auth(object):
             # to use virtual_domains, as this may be a cause for the realm not
             # having been specified seperately.
             use_virtual_domains = conf.get('imap', 'virtual_domains')
-            if use_virtual_domains == "userid":
-                print "# Derive domain from login[0]"
-            elif not use_virtual_domains:
-                print "# Explicitly do not user virtual domains??"
-            else:
-                # Do use virtual domains, derive domain from login[0]
-                print "# Derive domain from login[0]"
+
+            # TODO: Insert debug statements
+            #if use_virtual_domains == "userid":
+                #print "# Derive domain from login[0]"
+            #elif not use_virtual_domains:
+                #print "# Explicitly do not user virtual domains??"
+            #else:
+                ## Do use virtual domains, derive domain from login[0]
+                #print "# Derive domain from login[0]"
 
         if len(login[0].split('@')) > 1:
             domain = login[0].split('@')[1]
