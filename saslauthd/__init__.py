@@ -55,7 +55,7 @@ class SASLAuthDaemon(object):
         daemon_group.add_option( "-p", "--pid-file",
                                 dest    = "pidfile",
                                 action  = "store",
-                                default = "/var/run/kolabd/kolabd.pid",
+                                default = "/var/run/kolab-saslauthd/kolab-saslauthd.pid",
                                 help    = _("Path to the PID file to use."))
 
         conf.finalize_conf()

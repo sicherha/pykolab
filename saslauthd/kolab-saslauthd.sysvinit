@@ -39,7 +39,7 @@ pidfile=/var/run/kolab-saslauthd/kolab-saslauthd.pid
 start() {
     [ -x $path ] || exit 5
     echo -n $"Starting $prog: "
-    daemon $DAEMONOPTS $path $FLAGS
+    daemon $DAEMONOPTS $path -p $pidfile $FLAGS
     RETVAL=$?
     echo
     [ $RETVAL -eq 0 ] && touch $lockfile
