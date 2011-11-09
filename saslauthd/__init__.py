@@ -64,7 +64,6 @@ class SASLAuthDaemon(object):
         try:
             pid = 1
             if conf.fork_mode:
-                self.thread_count += 1
                 pid = os.fork()
 
             if pid == 0:
