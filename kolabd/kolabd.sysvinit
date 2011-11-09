@@ -40,7 +40,7 @@ pidfile=/var/run/kolabd/kolabd.pid
 start() {
     [ -x $path ] || exit 5
     echo -n $"Starting $prog: "
-    daemon $DAEMONOPTS $path -m $SOCKETDIR -a $MECH $FLAGS
+    daemon $DAEMONOPTS $path $FLAGS
     RETVAL=$?
     echo
     [ $RETVAL -eq 0 ] && touch $lockfile
