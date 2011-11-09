@@ -105,9 +105,14 @@ Kolab SMTP Access Policy for Postfix
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
 
-mkdir -p %{buildroot}/%{_initddir}
+mkdir -p \
+    %{buildroot}/%{_initddir} \
+    %{buildroot}/%{_sysconfdir}/sysconfig
 
+%{__install} -p -m 644 saslauthd/kolab-saslauthd.sysconfig %{buildroot}/%{_sysconfdir}/sysconfig/kolab-saslauthd
 %{__install} -p -m 755 saslauthd/kolab-saslauthd.sysvinit %{buildroot}/%{_initddir}/kolab-saslauthd
+
+%{__install} -p -m 644 kolabd/kolabd.sysconfig %{buildroot}/%{_sysconfdir}/sysconfig/kolabd
 %{__install} -p -m 755 kolabd/kolabd.sysvinit %{buildroot}/%{_initddir}/kolabd
 
 %find_lang pykolab
@@ -218,6 +223,7 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
 %{_initddir}/kolab-saslauthd
+%config(noreplace) %{_sysconfdir}/sysconfig/kolab-saslauthd
 %{_sbindir}/kolab-saslauthd
 %{python_sitelib}/saslauthd/
 %dir %{_localstatedir}/run/kolab-saslauthd
@@ -227,6 +233,7 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
 %{_initddir}/kolabd
+%config(noreplace) %{_sysconfdir}/sysconfig/kolabd
 %{_sbindir}/kolabd
 %{python_sitelib}/kolabd/
 

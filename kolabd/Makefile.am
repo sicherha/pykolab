@@ -1,4 +1,6 @@
-EXTRA_DIST = kolabd.sysvinit
+EXTRA_DIST = \
+	kolabd.sysconfig \
+	kolabd.sysvinit
 
 kolabddir = $(pythondir)/kolabd
 kolabd_PYTHON = $(wildcard *.py)

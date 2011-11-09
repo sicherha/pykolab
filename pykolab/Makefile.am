@@ -11,7 +11,11 @@ pykolab_auth_ldap_PYTHON = \
 
 pykolab_clidir = $(pythondir)/$(PACKAGE)/cli
 pykolab_cli_PYTHON = \
-	cli/__init__.py
+	$(wildcard cli/*.py)
+
+pykolab_clitelemetrydir = $(pythondir)/$(PACKAGE)/cli/telemetry
+pykolab_clitelemetry_PYTHON = \
+	$(wildcard cli/telemetry/*.py)
 
 pykolab_confdir = $(pythondir)/$(PACKAGE)/conf
 pykolab_conf_PYTHON = \

@@ -1,4 +1,6 @@
-EXTRA_DIST = kolab-saslauthd.sysvinit
+EXTRA_DIST = \
+	kolab-saslauthd.sysconfig \
+	kolab-saslauthd.sysvinit
 
 saslauthddir = $(pythondir)/saslauthd
 saslauthd_PYTHON = $(wildcard *.py)
