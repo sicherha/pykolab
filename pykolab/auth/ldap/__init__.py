@@ -120,7 +120,13 @@ class LDAP(object):
             self.ldap.simple_bind_s(user_dn, login[1])
             retval = True
         except:
+            log.debug(
+                    _("Failed to authenticate as user %s") %(user_dn),
+                    level=8
+                )
+
             retval = False
+
         return retval
 
     def _connect(self, domain=None):
@@ -191,6 +197,10 @@ class LDAP(object):
         self.bind = False
 
     def _find_dn(self, login, domain=None):
+        """
+            Find the distinguished name (DN) for an entry in LDAP.
+
+        """
         self._connect()
         self._bind()
 
@@ -199,33 +209,57 @@ class LDAP(object):
 
         domain_root_dn = self._kolab_domain_root_dn(domain)
 
-        if conf.has_option(domain, 'user_base_dn'):
+        if conf.has_option(domain, 'base_dn'):
             section = domain
         else:
             section = 'ldap'
 
-        user_base_dn = conf.get_raw(
-                section,
-                'user_base_dn'
-            ) %({'base_dn': domain_root_dn})
+        user_base_dn = conf.get_raw(section, 'base_dn')
 
-        if conf.has_option(domain, 'kolab_user_filter'):
+        if conf.has_option(domain, 'user_filter'):
             section = domain
         else:
             section = 'ldap'
 
-        kolab_user_filter = conf.get(section, 'kolab_user_filter', quiet=True)
+        user_filter = conf.get(section, 'user_filter', quiet=True)
 
-        if kolab_user_filter == "":
-            kolab_user_filter = conf.get('ldap', 'kolab_user_filter')
+        if user_filter == "":
+            user_filter = conf.get('ldap', 'user_filter')
 
-        search_filter = "(&(%s=%s)%s)" %(
-                conf.get(
-                        'cyrus-sasl',
-                        'result_attribute'
-                    ),
-                login,
-                kolab_user_filter
+        if conf.has_option(section, 'auth_attrs'):
+            auth_search_attrs = conf.get_list(section, 'auth_attrs')
+        elif conf.has_section('kolab_smtp_access_policy'):
+            if conf.has_option('kolab_smtp_access_policy', 'address_search_attrs'):
+                log.warning(
+                        _("Deprecation warning: The setting " + \
+                            "kolab_smtp_access_policy.address_search_attrs " + \
+                            "is to be replaced with the 'auth_attrs' key in " + \
+                            "the 'ldap' or '%s' domain section.") %(domain)
+                    )
+
+                auth_search_attrs = conf.get_list(
+                        'kolab_smtp_access_policy',
+                        'address_search_attrs'
+                    )
+
+            else:
+                auth_search_attrs = [ 'uid', 'mail' ]
+        else:
+            auth_search_attrs = [ 'uid', 'mail' ]
+
+        auth_search_filter = [ '(|' ]
+
+        for auth_search_attr in auth_search_attrs:
+            auth_search_filter.append('(%s=%s)' %(auth_search_attr,login))
+            auth_search_filter.append('(%s=%s@%s)' %(auth_search_attr,login,domain))
+
+        auth_search_filter.append(')')
+
+        auth_search_filter = ''.join(auth_search_filter)
+
+        search_filter = "(&%s%s)" %(
+                auth_search_filter,
+                user_filter
             )
 
         _results = self._search(
