@@ -105,6 +105,8 @@ Kolab SMTP Access Policy for Postfix
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
 
+mkdir -p %{buildroot}/%{_initddir}
+
 %{__install} -p -m 755 saslauthd/kolab-saslauthd.sysvinit %{buildroot}/%{_initddir}/kolab-saslauthd
 %{__install} -p -m 755 saslauthd/kolabd.sysvinit %{buildroot}/%{_initddir}/kolabd
 
