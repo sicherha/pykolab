@@ -34,8 +34,6 @@ import traceback
 import pykolab
 
 from pykolab.auth import Auth
-from pykolab.conf import Conf
-from pykolab.imap import IMAP
 from pykolab.constants import *
 from pykolab.translate import _
 
@@ -59,6 +57,12 @@ class KolabDaemon(object):
                                 default = False,
                                 help    = _("Fork to the background."))
 
+        daemon_group.add_option( "-p", "--pid-file",
+                                dest    = "pidfile",
+                                action  = "store",
+                                default = "/var/run/kolabd/kolabd.pid",
+                                help    = _("Path to the PID file to use."))
+
         conf.finalize_conf()
 
         self.thread_count = 0
@@ -77,8 +81,11 @@ class KolabDaemon(object):
 
             if pid == 0:
                 log.remove_stdout_handler()
-
-            self.do_sync()
+                self.write_pid()
+                self.set_signal_handlers()
+                self.do_sync()
+            elif not conf.fork_mode:
+                self.do_sync()
 
         except SystemExit, e:
             exitcode = e
@@ -134,3 +141,22 @@ class KolabDaemon(object):
                                 %(primary_domain, (end_time-start_time))
                             )
                         domain_auth[primary_domain].synchronize(primary_domain, secondary_domains)
+
+    def reload_config(self):
+        pass
+
+    def remove_pid(self):
+        if os.access(conf.pidfile, os.R_OK):
+            os.remove(conf.pidfile)
+        raise SystemExit
+
+    def set_signal_handlers(self):
+        import signal
+        signal.signal(signal.SIGHUP, self.reload_config)
+        signal.signal(signal.SIGTERM, self.remove_pid)
+
+    def write_pid(self):
+        pid = os.getpid()
+        fp = open(conf.pidfile,'w')
+        fp.write("%d\n" %(pid))
+        fp.close()

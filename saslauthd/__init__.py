@@ -52,7 +52,15 @@ class SASLAuthDaemon(object):
                                 default = False,
                                 help    = _("Fork to the background."))
 
+        daemon_group.add_option( "-p", "--pid-file",
+                                dest    = "pidfile",
+                                action  = "store",
+                                default = "/var/run/kolabd/kolabd.pid",
+                                help    = _("Path to the PID file to use."))
+
         conf.finalize_conf()
+
+        self.thread_count = 0
 
     def run(self):
         """
@@ -67,7 +75,10 @@ class SASLAuthDaemon(object):
                 pid = os.fork()
 
             if pid == 0:
+                self.thread_count += 1
                 log.remove_stdout_handler()
+                self.set_signal_handlers()
+                self.write_pid()
                 self.do_saslauthd()
             elif not conf.fork_mode:
                 self.do_saslauthd()
@@ -89,6 +100,7 @@ class SASLAuthDaemon(object):
             exitcode = 2
             traceback.print_exc()
             print >> sys.stderr, _("Traceback occurred, please report a bug at http://bugzilla.kolabsys.com")
+
         sys.exit(exitcode)
 
     def do_saslauthd(self):
@@ -108,7 +120,7 @@ class SASLAuthDaemon(object):
         try:
             os.remove('/var/run/saslauthd/mux')
         except:
-            # TODO: Do the "could not remove, could not start dance"
+            # TODO: Do the "could not remove, could not start" dance
             pass
 
         s.bind('/var/run/saslauthd/mux')
@@ -141,3 +153,22 @@ class SASLAuthDaemon(object):
                 clientsocket.send(struct.pack("!H2s", 2, "NO"))
 
             clientsocket.close()
+
+    def reload_config(self):
+        pass
+
+    def remove_pid(self):
+        if os.access(conf.pidfile, os.R_OK):
+            os.remove(conf.pidfile)
+        raise SystemExit
+
+    def set_signal_handlers(self):
+        import signal
+        signal.signal(signal.SIGHUP, self.reload_config)
+        signal.signal(signal.SIGTERM, self.remove_pid)
+
+    def write_pid(self):
+        pid = os.getpid()
+        fp = open(conf.pidfile,'w')
+        fp.write("%d\n" %(pid))
+        fp.close()
