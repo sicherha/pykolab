@@ -236,6 +236,7 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/sysconfig/kolabd
 %{_sbindir}/kolabd
 %{python_sitelib}/kolabd/
+%dir %{_localstatedir}/run/kolabd
 
 %files -n postfix-kolab
 %defattr(-,root,root,-)
