@@ -186,8 +186,11 @@ rm -rf %{buildroot}
 %files -n kolab-saslauthd
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
-%{_sbindir}/kolab-saslauthd
+%attr(0755,root,root) %{_initddir}/kolab-saslauthd
+%attr(0750,root,root) %{_sbindir}/kolab-saslauthd
 %{python_sitelib}/saslauthd/
+%dir %{_localstatedir}/run/kolab-saslauthd
+%dir %{_localstatedir}/run/saslauthd
 
 %files -n kolab-server
 %defattr(-,root,root,-)
