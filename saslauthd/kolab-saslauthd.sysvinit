@@ -21,7 +21,8 @@
 
 # Source our configuration file for these variables.
 SOCKETDIR=/var/run/saslauthd
-FLAGS=
+FLAGS="--fork -l warning"
+
 if [ -f /etc/sysconfig/kolab-saslauthd ] ; then
     . /etc/sysconfig/kolab-saslauthd
 fi
