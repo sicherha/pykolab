@@ -42,7 +42,12 @@ class KolabPlugins(object):
         """
         self.plugins = {}
 
-        for plugin_path in [ '/usr/share/pykolab/plugins', './pykolab/plugins' ]:
+        for plugin_path in [
+                os.path.dirname(__file__),
+                '/usr/share/pykolab/plugins',
+                './pykolab/plugins'
+            ]:
+
             if os.path.isdir(plugin_path):
                 for plugin in os.listdir(plugin_path):
                     if os.path.isdir('%s/%s/' %(plugin_path,plugin,)):
