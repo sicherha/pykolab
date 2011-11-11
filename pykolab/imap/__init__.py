@@ -220,16 +220,16 @@ class IMAP(object):
         for additional_folder in additional_folders.keys():
             _add_folder = {}
             if len(folder.split('@')) > 1:
-                folder_name = "user%(seperator)s%(username)s%(seperator)s%(additional_folder_name)s@%(domainname)s"
+                folder_name = "user%(separator)s%(username)s%(separator)s%(additional_folder_name)s@%(domainname)s"
                 _add_folder['username'] = folder.split('@')[0]
                 _add_folder['domainname'] = folder.split('@')[1]
                 _add_folder['additional_folder_name'] = additional_folder
-                _add_folder['seperator'] = self.imap.seperator
+                _add_folder['separator'] = self.imap.separator
                 folder_name = folder_name % _add_folder
             else:
-                folder_name = "user%(seperator)s%(username)s%(seperator)s%(additional_folder_name)s" % {
+                folder_name = "user%(separator)s%(username)s%(separator)s%(additional_folder_name)s" % {
                         "username": folder,
-                        "seperator": self.imap.seperator,
+                        "separator": self.imap.separator,
                         "additional_folder_name": additional_folder
                     }
 
@@ -543,11 +543,11 @@ class IMAP(object):
                         #print "%s is not acceptable against %s yet using %s" %(folder.split('@')[1],folder,domain_name_re)
 
                 #if acceptable:
-                    #folder_name = "%s@%s" %(folder.split(self.seperator)[1].split('@')[0],folder.split('@')[1])
+                    #folder_name = "%s@%s" %(folder.split(self.separator)[1].split('@')[0],folder.split('@')[1])
 
-                folder_name = "%s@%s" %(folder.split(self.imap.seperator)[1].split('@')[0],folder.split('@')[1])
+                folder_name = "%s@%s" %(folder.split(self.imap.separator)[1].split('@')[0],folder.split('@')[1])
             else:
-                folder_name = "%s" %(folder.split(self.imap.seperator)[1])
+                folder_name = "%s" %(folder.split(self.imap.separator)[1])
 
             if not folder_name == None:
                 if not folder_name in folders:

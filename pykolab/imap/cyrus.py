@@ -78,7 +78,7 @@ class Cyrus(cyruslib.CYRUS):
             self.VERBOSE = True
 
         # Initialize our variables
-        self.seperator = self.SEP
+        self.separator = self.SEP
 
         # Placeholder for known mailboxes on known servers
         self.mbox = {}
@@ -89,10 +89,10 @@ class Cyrus(cyruslib.CYRUS):
     def login(self, *args, **kw):
         """
             Login to the Cyrus IMAP server through cyruslib.CYRUS, but set our
-            hierarchy seperator.
+            hierarchy separator.
         """
         cyruslib.CYRUS.login(self, *args, **kw)
-        self.seperator = self.SEP
+        self.separator = self.SEP
 
         self.murder = False
 
@@ -111,7 +111,7 @@ class Cyrus(cyruslib.CYRUS):
         prefix = _mailfolder['path_parts'].pop(0)
         mbox = _mailfolder['path_parts'].pop(0)
         if not _mailfolder['domain'] == None:
-            mailfolder = "%s%s%s@%s" %(prefix,self.seperator,mbox,_mailfolder['domain'])
+            mailfolder = "%s%s%s@%s" %(prefix,self.separator,mbox,_mailfolder['domain'])
 
         # TODO: Workaround for undelete
         if len(self.lm(mailfolder)) < 1:
@@ -237,18 +237,18 @@ class Cyrus(cyruslib.CYRUS):
             mbox = undelete_mbox['path_parts'].pop(0)
 
             if to_mailfolder == None:
-                target_folder = self.seperator.join([prefix,mbox])
+                target_folder = self.separator.join([prefix,mbox])
             else:
-                target_folder = self.seperator.join(target_mbox['path_parts'])
+                target_folder = self.separator.join(target_mbox['path_parts'])
 
             if not to_mailfolder == None:
-                target_folder = "%s%s%s" %(target_folder,self.seperator,mbox)
+                target_folder = "%s%s%s" %(target_folder,self.separator,mbox)
 
             if not len(undelete_mbox['path_parts']) == 0:
-                target_folder = "%s%s%s" %(target_folder,self.seperator,self.seperator.join(undelete_mbox['path_parts']))
+                target_folder = "%s%s%s" %(target_folder,self.separator,self.separator.join(undelete_mbox['path_parts']))
 
             if target_folder in target_folders:
-                target_folder = "%s%s%s" %(target_folder,self.seperator,undelete_mbox['hex_timestamp'])
+                target_folder = "%s%s%s" %(target_folder,self.separator,undelete_mbox['hex_timestamp'])
 
             target_folders.append(target_folder)
 
@@ -277,9 +277,9 @@ class Cyrus(cyruslib.CYRUS):
         # Split off the virtual domain identifier, if any
         if len(mailfolder.split('@')) > 1:
             mbox['domain'] = mailfolder.split('@')[1]
-            mbox['path_parts'] = mailfolder.split('@')[0].split(self.seperator)
+            mbox['path_parts'] = mailfolder.split('@')[0].split(self.separator)
         else:
-            mbox['path_parts'] = mailfolder.split(self.seperator)
+            mbox['path_parts'] = mailfolder.split(self.separator)
 
         # See if the path that has been specified is the current location for
         # the deleted folder, or the original location, we have to find the deleted
@@ -302,8 +302,8 @@ class Cyrus(cyruslib.CYRUS):
             # deleted folder.
             verify_folder_search = "%(dp)s%(sep)s%(mailfolder)s" % {
                     'dp': deleted_prefix,
-                    'sep': self.seperator,
-                    'mailfolder': self.seperator.join(mbox['path_parts'])
+                    'sep': self.separator,
+                    'mailfolder': self.separator.join(mbox['path_parts'])
                 }
 
             if not mbox['domain'] == None:
@@ -337,11 +337,11 @@ class Cyrus(cyruslib.CYRUS):
 
             TODO: It finds virtdomain folders for non-virtdomain searches.
         """
-        deleted_folder_search = "%(deleted_prefix)s%(seperator)s%(mailfolder)s%(seperator)s*" % {
+        deleted_folder_search = "%(deleted_prefix)s%(separator)s%(mailfolder)s%(separator)s*" % {
                     # TODO: The prefix used is configurable
                     'deleted_prefix': "DELETED",
-                    'mailfolder': self.seperator.join(mbox['path_parts']),
-                    'seperator': self.seperator,
+                    'mailfolder': self.separator.join(mbox['path_parts']),
+                    'separator': self.separator,
                 }
 
         if not mbox['domain'] == None:
