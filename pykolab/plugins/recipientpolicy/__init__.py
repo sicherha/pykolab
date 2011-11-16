@@ -63,7 +63,7 @@ class KolabRecipientpolicy(object):
 
         try:
             mail = kw['primary_mail'] % user_attrs
-            return mail.lower()
+            return utils.translate(mail.lower())
         except KeyError, e:
             log.warning(_("Attribute substitution for 'mail' failed in Recipient Policy"))
             return user_attrs['mail'].lower()
@@ -105,7 +105,7 @@ class KolabRecipientpolicy(object):
                     log.warning(_("Attribute substitution for 'alternative_mail' failed in Recipient Policy"))
 
                 #log.debug(_("Appending additional mail address: %s") %(retval), level=8)
-                alternative_mail.append(retval)
+                alternative_mail.append(utils.translate(retval))
 
                 for _domain in kw['secondary_domains']:
                     user_attrs['domain'] = _domain
@@ -115,7 +115,7 @@ class KolabRecipientpolicy(object):
                         log.warning(_("Attribute substitution for 'alternative_mail' failed in Recipient Policy"))
 
                     #log.debug(_("Appending additional mail address: %s") %(retval), level=8)
-                    alternative_mail.append(retval)
+                    alternative_mail.append(utils.translate(retval))
 
         alternative_mail = utils.normalize(alternative_mail)
 

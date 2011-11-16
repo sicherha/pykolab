@@ -207,6 +207,14 @@ def pop_empty_from_list(_input_list):
 def standard_root_dn(domain):
     return 'dc=%s' %(',dc='.join(domain.split('.')))
 
+def translate(mystring):
+    chars = ['Ä', 'Ü', 'Ö', 'ä', 'ü', 'ö', 'ß']
+    simple = ['Ae', 'Ue', 'Oe', 'ae', 'ue', 'oe', 'ss']
+
+    for num in range(0, len(chars)):
+        mystring = mystring.replace(chars[num], simple[num])
+    return mystring
+
 def is_service(services):
     """
         Checks each item in list services to see if it has a RC script in
