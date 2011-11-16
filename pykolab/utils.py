@@ -157,6 +157,46 @@ def parse_input(_input, splitchars= [ ' ' ]):
 
     return _output_list
 
+def parse_ldap_uri(uri):
+    """
+        Parse an LDAP URI and return it's components.
+
+        Returns a tuple containing;
+
+         - protocol (ldap, ldaps),
+         - server (address or None),
+         - base_dn,
+         - attrs (list of attributes length 1, or empty),
+         - scope,
+         - filter
+
+        or None on failure
+    """
+
+    try:
+        _protocol = uri.split(':')[0]
+        _ldap_uri, _attr, _scope, _filter = uri.split('?')
+        _server = _ldap_uri.split('//')[1].split('/')[0]
+        _base_dn = _ldap_uri.split('//')[1].split('/')[1]
+
+        if _server == '':
+            _server = None
+        if _attr == '':
+            _attrs = []
+        else:
+            _attrs = [ _attr ]
+
+        if _scope == '':
+            _scope = 'sub'
+
+        if _filter == '':
+            _filter = "(objectclass=*)"
+
+        return (_protocol, _server, _base_dn, _attr, _scope, _filter)
+
+    except:
+        return None
+
 def pop_empty_from_list(_input_list):
     _output_list = []
 
