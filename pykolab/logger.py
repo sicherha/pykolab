@@ -17,7 +17,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-import inspect
 import logging
 import logging.handlers
 import os
@@ -27,13 +26,18 @@ import time
 from pykolab.translate import _
 
 class Logger(logging.Logger):
+    """
+        The PyKolab version of a logger.
+
+        This class wraps the Python native logging library, adding to the
+        loglevel capabilities, a debuglevel capability.
+    """
     debuglevel = 0
     loglevel = logging.CRITICAL
 
     for arg in sys.argv:
         if debuglevel == -1:
             debuglevel = int(arg)
-            #print debuglevel
             loglevel = logging.DEBUG
             break
         if '-d' == arg:
@@ -84,6 +88,7 @@ class Logger(logging.Logger):
                 pass
 
     def remove_stdout_handler(self):
+        self.console_stdout.close()
         self.removeHandler(self.console_stdout)
 
     def debug(self, msg, level=1):
