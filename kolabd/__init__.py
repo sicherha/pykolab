@@ -142,10 +142,10 @@ class KolabDaemon(object):
                             )
                         domain_auth[primary_domain].synchronize(primary_domain, secondary_domains)
 
-    def reload_config(self):
+    def reload_config(self, *args, **kw):
         pass
 
-    def remove_pid(self):
+    def remove_pid(self, *args, **kw):
         if os.access(conf.pidfile, os.R_OK):
             os.remove(conf.pidfile)
         raise SystemExit
