@@ -174,43 +174,43 @@ class IMAP(object):
 
         for folder in inbox_folders:
             additional_folders = None
-            try:
-                if folders.index(folder) > -1:
-                    continue
-                else:
-                    # TODO: Perhaps this block is moot
-                    log.info(_("Creating new INBOX for user (%d): %s")
-                        %(1,folder))
-                    try:
-                        self.imap.cm("user/%s" %(folder))
-                    except:
-                        log.warning(_("Mailbox already exists: user/%s")
-                            %(folder))
-                        continue
-                    if conf.get('kolab', 'imap_backend') == 'cyrus-imap':
-                        self.imap._setquota("user/%s" %(folder),0)
-
-            except:
+            if not self.has_folder("user%s%s" %(self.imap.separator, folder)):
                 # TODO: Perhaps this block is moot
-                log.info(_("Creating new INBOX for user (%d): %s") %(2,folder))
+                log.info(_("Creating new INBOX for user (%d): %s")
+                    %(1,folder))
                 try:
-                    self.imap.cm("user/%s" %(folder))
+                    self.imap.cm("user%s%s" %(self.imap.separator, folder))
                 except:
-                    log.warning(_("Mailbox already exists: user/%s") %(folder))
+                    log.warning(
+                            _("Mailbox already exists: user%s%s") %(
+                                    self.imap.separator,folder
+                                )
+                        )
+
                     continue
-                self.imap._setquota("user/%s" %(folder),0)
 
-            if conf.has_option(domain_section, "autocreate_folders"):
-                _additional_folders = conf.get_raw(domain_section, "autocreate_folders")
-                additional_folders = conf.plugins.exec_hook("create_user_folders",
-                        kw={
-                                'folder': folder,
-                                'additional_folders': _additional_folders
-                            }
-                    )
+                if conf.get('kolab', 'imap_backend') == 'cyrus-imap':
+                    self.imap._setquota(
+                            "user%s%s" %(self.imap.separator, folder),
+                            0
+                        )
 
-            if not additional_folders == None:
-                self.create_user_additional_folders(folder, additional_folders)
+                if conf.has_option(domain_section, "autocreate_folders"):
+                    _additional_folders = conf.get_raw(
+                            domain_section,
+                            "autocreate_folders"
+                        )
+
+                    additional_folders = conf.plugins.exec_hook(
+                            "create_user_folders",
+                            kw={
+                                    'folder': folder,
+                                    'additional_folders': _additional_folders
+                                }
+                        )
+
+                if not additional_folders == None:
+                    self.create_user_additional_folders(folder, additional_folders)
 
         return inbox_folders
 
@@ -246,6 +246,12 @@ class IMAP(object):
                                 "%s" %(annotation),
                                 "%s" %(additional_folders[additional_folder]["annotations"][annotation])
                             )
+
+            if additional_folders[additional_folder].has_key("quota"):
+                self.imap.sq(
+                        folder_name,
+                        additional_folders[additional_folder]['quota']
+                    )
 
             if additional_folders[additional_folder].has_key("acls"):
                 for acl in additional_folders[additional_folder]["acls"].keys():
@@ -443,6 +449,8 @@ class IMAP(object):
             # We got user identifier only
             log.error(_("Please don't give us just a user identifier"))
             return
+
+        log.info(_("Deleting folder %s") %(mailfolder_path))
 
         self.imap.dm(mailfolder_path)
 
