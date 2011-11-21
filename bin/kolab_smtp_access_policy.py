@@ -55,6 +55,7 @@ import pykolab
 
 from pykolab import utils
 from pykolab.auth import Auth
+from pykolab.constants import *
 from pykolab.translate import _
 
 # TODO: Figure out how to make our logger do some syslogging as well.
@@ -62,7 +63,7 @@ log = pykolab.getLogger('pykolab.smtp_access_policy')
 
 # TODO: Removing the stdout handler would mean one can no longer test by
 # means of manual execution in debug mode.
-#log.remove_stdout_handler()
+log.remove_stdout_handler()
 
 conf = pykolab.getConf()
 
@@ -214,6 +215,87 @@ class PolicyRequest(object):
 
             self.recipients.append(policy_request['recipient'])
 
+    def parse_ldap_dn(self, dn):
+        """
+            See if parameter 'dn' is a basestring LDAP dn, and if so, return
+            the results we can obtain from said DN. Return a list of relevant
+            attribute values.
+
+            If not a DN, return None.
+        """
+        values = []
+
+        try:
+            import ldap.dn
+
+            ldap_dn = ldap.dn.explode_dn(dn)
+
+        except ldap.DECODING_ERROR:
+            # This is not a DN.
+            return None
+
+        if len(ldap_dn) > 0:
+            search_attrs = conf.get_list(
+                    'kolab_smtp_access_policy',
+                    'address_search_attrs'
+                )
+
+            rule_subject = auth.get_user_attributes(
+                    self.sasl_domain,
+                    { 'dn': dn },
+                    search_attrs + [ 'objectclass' ]
+                )
+
+            for search_attr in search_attrs:
+                if rule_subject.has_key(search_attr):
+                    if isinstance(rule_subject[search_attr], basestring):
+                        values.append(rule_subject[search_attr])
+                    else:
+                        values.extend(rule_subject[search_attr])
+
+            return values
+
+        else:
+            # ldap.dn.explode_dn didn't error out, but it also didn't split
+            # the DN properly.
+            return None
+
+    def parse_ldap_uri(self, uri):
+        values = []
+
+        parsed_uri = utils.parse_ldap_uri(uri)
+
+        if parsed_uri == None:
+            return None
+
+        (_protocol, _server, _base_dn, _attrs, _scope, _filter) = \
+                parsed_uri
+
+        if len(_attrs) == 0:
+            search_attrs = conf.get_list(
+                    'kolab_smtp_access_policy',
+                    'address_search_attrs'
+                )
+        else:
+            search_attrs = [ _attrs ]
+
+        users = []
+
+        auth._auth._bind()
+        _users = auth._auth._search(
+                _base_dn,
+                scope=LDAP_SCOPE[_scope],
+                filterstr=_filter,
+                attrlist=search_attrs + [ 'objectclass' ],
+                override_search="_regular_search"
+            )
+
+        for _user in _users:
+            for search_attr in search_attrs:
+                values.extend(_user[1][search_attr])
+
+        return values
+
     def parse_policy(self, _subject, _object, policy):
         """
             Parse policy to apply on _subject, for object _object.
@@ -237,6 +319,10 @@ class PolicyRequest(object):
             policy = [policy]
 
         for rule in policy:
+            # Find rules that are actually special values, simply by
+            # mapping the rule onto a key in "special_rule_values", a
+            # dictionary with the corresponding value set to a function to
+            # execute.
             if rule in special_rule_values.keys():
                 special_rules = special_rule_values[rule]()
                 if rule.startswith("-"):
@@ -246,54 +332,38 @@ class PolicyRequest(object):
 
                 continue
 
-            try:
-                # See if the value is an LDAP DN
-                ldap_dn = []
-                if rule.startswith("-"):
-                    _prefix = '-'
-                    _rule = rule[1:]
-                else:
-                    _prefix = ''
-                    _rule = rule
-
-                import ldap.dn
-
-                ldap_dn = ldap.dn.explode_dn(_rule)
-
-            except ldap.DECODING_ERROR:
-                pass
-
-            if len(ldap_dn) > 0:
-                search_attrs = conf.get_list(
-                        'kolab_smtp_access_policy',
-                        'address_search_attrs'
-                    )
-
-                rule_subject = auth.get_user_attributes(
-                        self.sasl_domain,
-                        { 'dn': rule },
-                        search_attrs + [ 'objectclass' ]
-                    )
-
-                for search_attr in search_attrs:
-                    if rule_subject.has_key(search_attr):
-                        if isinstance(rule_subject[search_attr], basestring):
-                            if _prefix == '-':
-                                rules['deny'].append(rule_subject[search_attr])
-                            else:
-                                rules['allow'].append(rule_subject[search_attr])
-                        else:
-                            for value in rule_subject[search_attr]:
-                                if _prefix == '-':
-                                    rules['deny'].append(value)
-                                else:
-                                    rules['allow'].append(value)
-
+            # Also note the '-' cannot be passed on to the functions that
+            # follow, so store the rule separately from the prefix that is
+            # prepended to deny rules.
+            if rule.startswith("-"):
+                _prefix = '-'
+                _rule = rule[1:]
             else:
-                if rule.startswith("-"):
-                    rules['deny'].append(rule[1:])
+                _prefix = ''
+                _rule = rule
+
+            # See if the value is an LDAP DN
+            ldap_dn = self.parse_ldap_dn(_rule)
+
+            if not ldap_dn == None and len(ldap_dn) > 0:
+                if _prefix == '-':
+                    rules['deny'].extend(ldap_dn)
                 else:
-                    rules['allow'].append(rule)
+                    rules['allow'].extend(ldap_dn)
+            else:
+                ldap_uri = self.parse_ldap_uri(_rule)
+
+                if not ldap_uri == None and len(ldap_uri) > 0:
+                    if _prefix == '-':
+                        rules['deny'].extend(ldap_uri)
+                    else:
+                        rules['allow'].extend(ldap_uri)
+
+                else:
+                    if rule.startswith("-"):
+                        rules['deny'].append(rule[1:])
+                    else:
+                        rules['allow'].append(rule)
 
         allowed = False
         for rule in rules['allow']:
@@ -940,6 +1010,8 @@ def cache_cleanup():
 def cache_init():
     global cache, cache_expire, session
 
+    return False
+
     if conf.has_section('kolab_smtp_access_policy'):
         if conf.has_option('kolab_smtp_access_policy', 'uri'):
             cache_uri = conf.get('kolab_smtp_access_policy', 'uri')
@@ -1156,6 +1228,8 @@ def read_request_input():
         containing the request.
     """
 
+    log.debug(_("Reading request"))
+
     policy_request = {}
 
     end_of_request = False
@@ -1163,11 +1237,14 @@ def read_request_input():
         request_line = sys.stdin.readline()
         if request_line.strip() == '':
             if policy_request.has_key('request'):
+                log.debug(_("End of request"))
                 end_of_request = True
         else:
             request_line = request_line.strip()
             policy_request[request_line.split('=')[0]] = \
                 '='.join(request_line.split('=')[1:]).lower()
+
+    log.debug(_("Returning request"))
 
     return policy_request
 
@@ -1224,33 +1301,41 @@ if __name__ == "__main__":
     while True:
         policy_request = read_request_input()
         instance = policy_request['instance']
+        log.debug(_("Got request instance %s") %(instance))
         if policy_requests.has_key(instance):
             policy_requests[instance].add_request(policy_request)
         else:
             policy_requests[instance] = PolicyRequest(policy_request)
 
+        protocol_state = policy_request['protocol_state'].strip().lower()
+
+        log.debug(_("Request instance %s is in state %s") %(instance,protocol_state))
+
+        if not protocol_state == 'data':
+            log.debug(_("Request instance %s is not yet in DATA state") %(instance))
+            print "action=DUNNO\n\n"
+            sys.stdout.flush()
+
         # We can recognize being in the DATA part by the recipient_count being
-        # set to a non-zero value. Note that the input we're getting is a
-        # string, not an integer.
+        # set to a non-zero value and the protocol_state being set to 'data'.
+        # Note that the input we're getting is a string, not an integer.
+        else:
+            sender_allowed = False
+            recipient_allowed = False
 
-        if policy_request.has_key('recipient_count'):
-            if (int)(policy_request['recipient_count']) > 0:
-                sender_allowed = False
-                recipient_allowed = False
+            if conf.verify_sender:
+                sender_allowed = policy_requests[instance].verify_sender()
+            else:
+                sender_allowed = True
 
-                if conf.verify_sender:
-                    sender_allowed = policy_requests[instance].verify_sender()
-                else:
-                    sender_allowed = True
+            if conf.verify_recipient:
+                recipient_allowed = policy_requests[instance].verify_recipients()
+            else:
+                recipient_allowed = True
 
-                if conf.verify_recipient:
-                    recipient_allowed = policy_requests[instance].verify_recipients()
-                else:
-                    recipient_allowed = True
-
-                if not sender_allowed:
-                    reject(_("Sender access denied"))
-                elif not recipient_allowed:
-                    reject(_("Recipient access denied"))
-                else:
-                    permit(_("No objections"))
+            if not sender_allowed:
+                reject(_("Sender access denied"))
+            elif not recipient_allowed:
+                reject(_("Recipient access denied"))
+            else:
+                permit(_("No objections"))
