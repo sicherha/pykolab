@@ -154,10 +154,10 @@ class SASLAuthDaemon(object):
 
             clientsocket.close()
 
-    def reload_config(self):
+    def reload_config(self, *args, **kw):
         pass
 
-    def remove_pid(self):
+    def remove_pid(self, *args, **kw):
         if os.access(conf.pidfile, os.R_OK):
             os.remove(conf.pidfile)
         raise SystemExit
