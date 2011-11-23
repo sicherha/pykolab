@@ -332,6 +332,9 @@ class PolicyRequest(object):
 
                 continue
 
+            # Lower-case the rule
+            rule = rule.lower()
+
             # Also note the '-' cannot be passed on to the functions that
             # follow, so store the rule separately from the prefix that is
             # prepended to deny rules.
