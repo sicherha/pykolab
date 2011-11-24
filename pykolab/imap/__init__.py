@@ -44,8 +44,16 @@ class IMAP(object):
         self.users = []
         self.inbox_folders = []
 
-    def connect(self, uri=None, login=True):
+    def connect(self, uri=None, domain=None, login=True):
         backend = conf.get('kolab', 'imap_backend')
+
+        if not domain == None:
+            if conf.has_section(domain) and conf.has_option(domain, 'imap_backend'):
+                backend = conf.get(domain, 'imap_backend')
+
+            if uri == None:
+                if conf.has_section(domain) and conf.has_option(domain, 'imap_uri'):
+                    uri = conf.get(domain, 'imap_uri')
 
         hostname = None
         port = None
@@ -125,7 +133,9 @@ class IMAP(object):
         else:
             return False
 
-    def move_user_folders(self, users=[]):
+    def move_user_folders(self, users=[], domain=None):
+        self.connect(domain=domain)
+
         for user in users:
             if type(user) == dict:
                 if user.has_key('old_mail'):
@@ -147,6 +157,8 @@ class IMAP(object):
                 log.debug(_("Value for user is not a dictionary"), level=8)
 
     def create_user_folders(self, users, primary_domain, secondary_domains):
+        self.connect(domain=primary_domain)
+
         inbox_folders = []
 
         domain_section = auth.domain_section(primary_domain)
@@ -215,8 +227,6 @@ class IMAP(object):
         return inbox_folders
 
     def create_user_additional_folders(self, folder, additional_folders):
-        self.connect()
-
         for additional_folder in additional_folders.keys():
             _add_folder = {}
             if len(folder.split('@')) > 1:
@@ -268,7 +278,7 @@ class IMAP(object):
             database 'quota' attribute for the users listed in parameter 'users'
         """
 
-        self.connect()
+        self.connect(domain=primary_domain)
 
         if conf.has_option(primary_domain, 'quota_attribute'):
             _quota_attr = conf.get(primary_domain, 'quota_attribute')
@@ -346,7 +356,7 @@ class IMAP(object):
                 self.imap._setquota(folder, quota)
 
     def set_user_mailhost(self, users=[], primary_domain=None, secondary_domain=[], folders=[]):
-        self.connect()
+        self.connect(domain=primary_domain)
 
         if conf.has_option(primary_domain, 'mailserver_attribute'):
             _mailserver_attr = conf.get(primary_domain, 'mailserver_attribute')
@@ -522,7 +532,7 @@ class IMAP(object):
             List the INBOX folders in the IMAP backend. Returns a list of unique
             base folder names.
         """
-        self.connect()
+        self.connect(domain=primary_domain)
 
         _folders = self.imap.lm("user/%")
         # TODO: Replace the .* below with a regex representing acceptable DNS
@@ -564,10 +574,10 @@ class IMAP(object):
         return folders
 
     def synchronize(self, users=[], primary_domain=None, secondary_domains=[]):
-        self.connect()
+        self.connect(domain=primary_domain)
         self.users.extend(users)
 
-        self.move_user_folders(users)
+        self.move_user_folders(users, domain=primary_domain)
 
         self.inbox_folders.extend(self.create_user_folders(users, primary_domain, secondary_domains))
 
