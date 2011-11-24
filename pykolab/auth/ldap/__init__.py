@@ -141,12 +141,19 @@ class LDAP(object):
 
         if domain == None:
             section = 'ldap'
-        elif not conf.has_option(domain, 'uri'):
-            section = 'ldap'
+            key = 'uri'
+
+        if conf.has_option(domain, 'uri'):
+            log.warning(_("Deprecation: Setting 'uri' for LDAP in section %s needs to be updated to 'ldap_uri'") %(domain))
+            section = domain
+            key = 'uri'
+        elif conf.has_option(domain, 'ldap_uri'):
+            section = domain
+            key = 'ldap_uri'
 
         log.debug(_("Connecting to LDAP..."), level=8)
 
-        uri = conf.get(section, 'uri')
+        uri = conf.get(section, key)
 
         log.debug(_("Attempting to use LDAP URI %s") %(uri), level=8)
 
