@@ -191,6 +191,9 @@ class Cyrus(cyruslib.CYRUS):
         imap.connect('imap://%s:143' %(server))
 
         log.debug(_("Setting annotation %s on folder %s") %(annotation,mailfolder), level=8)
+
+        #if annotation.startswith('/private'):
+
         imap.setannotation(mailfolder, annotation, value)
 
     def _xfer(self, mailfolder, current_server, new_server):

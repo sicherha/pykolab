@@ -45,6 +45,22 @@ class IMAP(object):
         self.inbox_folders = []
 
     def connect(self, uri=None, domain=None, login=True):
+        """
+            Connect to the appropriate IMAP backend.
+
+            Supply a domain (name space) configured in the configuration file
+            as a section, with a setting 'imap_uri' to connect to a domain
+            specific IMAP server, or specify an URI to connect to that
+            particular IMAP server (in that order).
+
+            Routines sitting behind this will take into account Cyrus IMAP
+            Murder capabilities, brokering actions to take place against the
+            correct server (such as a 'xfer' which needs to happen against the
+            source backend).
+        """
+
+        # TODO: We are currently compatible with one IMAP backend technology per
+        # deployment.
         backend = conf.get('kolab', 'imap_backend')
 
         if not domain == None:
@@ -84,6 +100,7 @@ class IMAP(object):
                 if login:
                     log.debug(_("Logging on to Cyrus IMAP server %s") %(hostname), level=8)
                     self._imap[hostname].login(admin_login, admin_password)
+                    self._imap[hostname].logged_in = True
 
             elif backend == 'dovecot':
                 import dovecot
@@ -92,6 +109,7 @@ class IMAP(object):
                 if login:
                     log.debug(_("Logging on to Dovecot IMAP server %s") %(hostname), level=8)
                     self._imap[hostname].login(admin_login, admin_password)
+                    self._imap[hostname].logged_in = True
 
             else:
                 import imaplib
@@ -100,8 +118,17 @@ class IMAP(object):
                 if login:
                     log.debug(_("Logging on to generic IMAP server %s") %(hostname), level=8)
                     self._imap[hostname].login(admin_login, admin_password)
+                    self._imap[hostname].logged_in = True
+
         else:
-            log.debug(_("Reusing existing IMAP server connection to %s") %(hostname), level=8)
+            if not login and self._imap[hostname].logged_in == True:
+                self.disconnect(hostname)
+                self.connect(uri=uri,login=False)
+            elif login and not hasattr(self._imap[hostname],'logged_in'):
+                self.disconnect(hostname)
+                self.connect(uri=uri)
+            else:
+                log.debug(_("Reusing existing IMAP server connection to %s") %(hostname), level=8)
 
         # Set the newly created technology specific IMAP library as the current
         # IMAP connection to be used.
@@ -110,7 +137,7 @@ class IMAP(object):
     def disconnect(self, server=None):
         if server == None:
             # No server specified, but make sure self.imap is None anyways
-            self.imap = None
+            del self.imap
         else:
             if self._imap.has_key(server):
                 del self._imap[server]
@@ -270,6 +297,34 @@ class IMAP(object):
                             "%s" %(acl),
                             "%s" %(additional_folders[additional_folder]["acls"][acl])
                         )
+
+        backend = conf.get('kolab', 'imap_backend')
+
+        if len(folder.split('@')) > 1:
+            domain = folder.split('@')[1]
+        else:
+            domain = None
+
+        if not domain == None:
+            if conf.has_section(domain) and conf.has_option(domain, 'imap_backend'):
+                backend = conf.get(domain, 'imap_backend')
+
+            if conf.has_section(domain) and conf.has_option(domain, 'imap_uri'):
+                uri = conf.get(domain, 'imap_uri')
+            else:
+                uri = None
+
+        # Get the credentials
+        admin_login = conf.get(backend, 'admin_login')
+        admin_password = conf.get(backend, 'admin_password')
+
+        self.connect(login=False)
+        self.login_plain(admin_login, admin_password, folder)
+
+        for _folder in self.lm():
+            self.subscribe(_folder)
+
+        self.logout()
 
     def set_user_folder_quota(self, users=[], primary_domain=None, secondary_domain=[], folders=[]):
         """
