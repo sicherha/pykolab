@@ -21,8 +21,8 @@ import pykolab
 
 from pykolab.translate import _
 
-conf = pykolab.getConf()
 log = pykolab.getLogger('pykolab.plugins.defaultfolders')
+conf = pykolab.getConf()
 
 class KolabDefaultfolders(object):
     """
