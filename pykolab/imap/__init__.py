@@ -128,7 +128,13 @@ class IMAP(object):
                 self.disconnect(hostname)
                 self.connect(uri=uri)
             else:
-                log.debug(_("Reusing existing IMAP server connection to %s") %(hostname), level=8)
+                try:
+                    self._imap[hostname].noop()
+                    log.debug(_("Reusing existing IMAP server connection to %s") %(hostname), level=8)
+                except:
+                    log.debug(_("Reconnecting to IMAP server %s") %(hostname), level=8)
+                    self.disconnect(hostname)
+                    self.connect()
 
         # Set the newly created technology specific IMAP library as the current
         # IMAP connection to be used.
