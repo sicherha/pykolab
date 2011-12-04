@@ -208,8 +208,8 @@ def standard_root_dn(domain):
     return 'dc=%s' %(',dc='.join(domain.split('.')))
 
 def translate(mystring):
-    chars = ['Ä', 'Ü', 'Ö', 'ä', 'ü', 'ö', 'ß']
-    simple = ['Ae', 'Ue', 'Oe', 'ae', 'ue', 'oe', 'ss']
+    chars = ['Ä', 'Ü', 'Ö', 'ä', 'ü', 'ö', 'ß', 'ó']
+    simple = ['Ae', 'Ue', 'Oe', 'ae', 'ue', 'oe', 'ss', 'o']
 
     for num in range(0, len(chars)):
         mystring = mystring.replace(chars[num], simple[num])
