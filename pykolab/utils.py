@@ -207,13 +207,26 @@ def pop_empty_from_list(_input_list):
 def standard_root_dn(domain):
     return 'dc=%s' %(',dc='.join(domain.split('.')))
 
-def translate(mystring):
-    chars = ['Ä', 'Ü', 'Ö', 'ä', 'ü', 'ö', 'ß', 'ó']
-    simple = ['Ae', 'Ue', 'Oe', 'ae', 'ue', 'oe', 'ss', 'o']
+def translate(mystring, locale_name='en_US'):
+    import locale
+    import subprocess
 
-    for num in range(0, len(chars)):
-        mystring = mystring.replace(chars[num], simple[num])
-    return mystring
+    (locale_name,locale_charset) = locale.normalize(locale_name).split('.')
+
+    locale.setlocale(locale.LC_ALL, (locale_name,locale_charset))
+
+    command = [ '/usr/bin/iconv',
+                '-f', 'UTF-8',
+                '-t', 'ASCII//TRANSLIT',
+                '-s' ]
+
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE, env={'LANG': locale.normalize(locale_name)})
+
+    print >> process.stdin, mystring
+
+    result = process.communicate()[0].strip()
+
+    return result
 
 def is_service(services):
     """
