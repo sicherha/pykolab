@@ -30,3 +30,5 @@ class Defaults(object):
         self.cyrus_annotations_retry_interval = 1
 
         self.address_search_attrs = "mail, alias"
+
+        self.default_locale = 'en_US'

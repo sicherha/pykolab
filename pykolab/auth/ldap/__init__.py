@@ -1026,7 +1026,8 @@ class LDAP(object):
                 'sn',
                 'givenname',
                 'cn',
-                'uid'
+                'uid',
+                'preferredLanguage'
             ]:
             if not user.has_key(attribute):
                 _get_attrs.append(attribute)
@@ -1036,6 +1037,9 @@ class LDAP(object):
             _user_attrs = self._get_user_attributes(user, _get_attrs)
             for key in _user_attrs.keys():
                 user[key] = _user_attrs[key]
+
+        if user['preferredLanguage'] == None:
+            self._set_user_attribute(user, 'preferredLanguage', conf.get('ldap', 'default_locale'))
 
         # Check to see if we want to apply a primary mail recipient policy
         if conf.has_option(primary_domain, 'primary_mail'):
