@@ -31,4 +31,4 @@ class Defaults(object):
 
         self.address_search_attrs = "mail, alias"
 
-        self.default_locale = 'en_US'
+        self.kolab_default_locale = 'en_US'

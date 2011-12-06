@@ -1039,7 +1039,12 @@ class LDAP(object):
                 user[key] = _user_attrs[key]
 
         if user['preferredLanguage'] == None:
-            self._set_user_attribute(user, 'preferredLanguage', conf.get('ldap', 'default_locale'))
+            if conf.has_option(primary_domain, 'default_locale'):
+                default_locale = conf.get(primary_domain, 'default_locale')
+            else:
+                default_locale = conf.get('kolab','default_locale')
+
+            self._set_user_attribute(user, 'preferredLanguage', default_locale)
 
         # Check to see if we want to apply a primary mail recipient policy
         if conf.has_option(primary_domain, 'primary_mail'):
