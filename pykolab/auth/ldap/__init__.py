@@ -1031,7 +1031,7 @@ class LDAP(object):
                 'preferredLanguage'
             ]
 
-        for attribute in_wanted_attributes:
+        for attribute in _wanted_attributes:
             if not user.has_key(attribute):
                 _get_attrs.append(attribute)
                 #user[attribute] = self._get_user_attribute(user, attribute)
