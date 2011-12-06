@@ -1020,15 +1020,18 @@ class LDAP(object):
         user = utils.normalize(user)
 
         _get_attrs = []
-
-        for attribute in [
+        _wanted_attributes = [
                 result_attribute,
+                'mail',
+                'mailalternateaddress',
                 'sn',
                 'givenname',
                 'cn',
                 'uid',
                 'preferredLanguage'
-            ]:
+            ]
+
+        for attribute in_wanted_attributes:
             if not user.has_key(attribute):
                 _get_attrs.append(attribute)
                 #user[attribute] = self._get_user_attribute(user, attribute)
@@ -1038,13 +1041,16 @@ class LDAP(object):
             for key in _user_attrs.keys():
                 user[key] = _user_attrs[key]
 
-        if user['preferredLanguage'] == None:
+        user = utils.normalize(user)
+
+        if not user.has_key('preferredlanguage') or user['preferredlanguage'] == None:
             if conf.has_option(primary_domain, 'default_locale'):
                 default_locale = conf.get(primary_domain, 'default_locale')
             else:
                 default_locale = conf.get('kolab','default_locale')
 
-            self._set_user_attribute(user, 'preferredLanguage', default_locale)
+            self._set_user_attribute(user, 'preferredlanguage', default_locale)
+            user['preferredlanguage'] = default_locale
 
         # Check to see if we want to apply a primary mail recipient policy
         if conf.has_option(primary_domain, 'primary_mail'):
