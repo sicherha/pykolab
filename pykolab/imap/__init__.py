@@ -129,7 +129,11 @@ class IMAP(object):
                 self.connect(uri=uri)
             else:
                 try:
-                    self._imap[hostname].noop()
+                    if hasattr(self._imap[hostname], 'm'):
+                        self._imap[hostname].m.noop()
+                    elif hasattr(self._imap[hostname], 'noop') and callable(self._imap[hostname].noop):
+                        self._imap[hostname].noop()
+
                     log.debug(_("Reusing existing IMAP server connection to %s") %(hostname), level=8)
                 except:
                     log.debug(_("Reconnecting to IMAP server %s") %(hostname), level=8)
