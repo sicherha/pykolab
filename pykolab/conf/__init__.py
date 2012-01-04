@@ -48,14 +48,15 @@ class Conf(object):
 
         self.entitlement = None
 
-        from pykolab.conf.entitlement import Entitlement
-        self.entitlement = Entitlement().get()
+        try:
+            from pykolab.conf.entitlement import Entitlement
+            entitlements = True
+        except:
+            entitlements = False
+            pass
 
-        #try:
-            #from pykolab.conf.entitlement import Entitlement
-            #self.entitlement = Entitlement().get()
-        #except:
-            #pass
+        if entitlements:
+            self.entitlement = Entitlement().get()
 
         self.plugins = None
 
