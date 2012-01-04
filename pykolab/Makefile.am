@@ -22,6 +22,10 @@ pykolab_conf_PYTHON = \
 	conf/defaults.py \
 	conf/__init__.py
 
+if ENTERPRISE
+pykolab_conf_PYTHON += conf/entitlement.py
+endif
+
 pykolab_imapdir = $(pythondir)/$(PACKAGE)/imap
 pykolab_imap_PYTHON = \
 	imap/__init__.py \
@@ -50,7 +54,7 @@ pykolab_setup_PYTHON = \
 	setup/ldap_setup.py
 
 pykolab_testsdir = $(pythondir)/$(PACKAGE)/tests
-pykolab_setup_PYTHON = \
+pykolab_tests_PYTHON = \
 	tests/calendar.py \
 	tests/constants.py \
 	tests/contacts.py \

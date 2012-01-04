@@ -15,6 +15,16 @@ AM_GLIB_GNU_GETTEXT
 AC_PROG_INTLTOOL
 AC_PROG_LN_S
 
+AC_ARG_ENABLE([enterprise],
+    [  --enable-enterprise     Turn on entitlements, compile binary blob],
+    [case "${enableval}" in
+        yes)    enterprise=true ;;
+        no)     enterprise=false ;;
+        *)      AC_MSG_ERROR([bad value ${enableval} for --enterprise]) ;;
+    esac], [enterprise=false])
+
+AM_CONDITIONAL([ENTERPRISE], [test "${enterprise}" = "true"])
+
 AC_SUBST(DATESTAMP,`date +"%a %b %d %Y"`)
 
 AC_CONFIG_FILES([

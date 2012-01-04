@@ -46,6 +46,17 @@ class Conf(object):
         self.cli_args = None
         self.cli_keywords = None
 
+        self.entitlement = None
+
+        from pykolab.conf.entitlement import Entitlement
+        self.entitlement = Entitlement().get()
+
+        #try:
+            #from pykolab.conf.entitlement import Entitlement
+            #self.entitlement = Entitlement().get()
+        #except:
+            #pass
+
         self.plugins = None
 
         # The location where our configuration parser is going to end up
