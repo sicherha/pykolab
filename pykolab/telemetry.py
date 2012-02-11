@@ -41,7 +41,12 @@ from sqlalchemy.interfaces import PoolListener
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import mapper
-from sqlalchemy.orm import relationship
+
+try:
+    from sqlalchemy.orm import relationship
+except:
+    from sqlalchemy.orm import relation as relationship
+
 try:
     from sqlalchemy.orm import sessionmaker
 except:
