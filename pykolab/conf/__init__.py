@@ -463,12 +463,12 @@ class Conf(object):
 
         setting = self.get_raw(section, key)
         if setting == None:
-            return self.defaults.address_search_attrs
+            return None
 
         raw_values = setting.split(',')
 
         if raw_values == None:
-            return self.defaults.address_search_attrs
+            return None
 
         for raw_value in raw_values:
             untrimmed_values.extend(raw_value.split(' '))
