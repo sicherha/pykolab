@@ -42,6 +42,7 @@ class KolabDynamicquota(object):
             - used (integer, in KB)
             - current quota (integer, in KB)
             - quota (integer, in KB)
+            - user
         """
 
         for keyword in [ 'used', 'current_quota', 'new_quota', 'default_quota' ]:
