@@ -139,7 +139,7 @@ class Auth(object):
         else:
             section = domain
 
-        if not self._auth.has_key(section) or self._auth == None:
+        if not self._auth or self._auth == None:
             return
 
         self._auth._disconnect()
