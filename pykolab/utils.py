@@ -88,6 +88,7 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
             else:
                 answer = False
                 print >> sys.stderr, _("Please answer 'yes' or 'no'.")
+                sys.stderr.flush()
 
 def normalize(_object):
     if type(_object) == list:
