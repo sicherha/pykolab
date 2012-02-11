@@ -359,9 +359,9 @@ class TelemetryLog(object):
 
                                 continue
 
-                    self.server_response[self.command_issue].append(
-                            server_response_line
-                        )
+                        self.server_response[self.command_issue].append(
+                                server_response_line
+                            )
 
                     continue
 
