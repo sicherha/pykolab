@@ -25,7 +25,8 @@ URL:                http://kolab.org/
 Source0:            http://files.kolab.org/releases/%{name}-%{version}.tar.gz
 BuildRoot:          %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch:          noarch
-Requires:           python-ldap
+Requires:           kolab-cli = %{version}-%{release}
+Requires:           python-ldap >= 2.4
 Requires(pre):      /usr/sbin/useradd
 Requires(pre):      /usr/sbin/usermod
 Requires(pre):      /usr/sbin/groupadd
@@ -179,9 +180,6 @@ rm -rf %{buildroot}
 %files -f pykolab.lang
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING README README.tests
-%{_bindir}/*
-%{_sbindir}/kolab
-%{_sbindir}/kolab-conf
 %attr(0640,root,kolab) %config(noreplace) %{_sysconfdir}/kolab/kolab.conf
 %dir %{python_sitelib}/pykolab/
 %exclude %{python_sitelib}/pykolab/telemetry.*
@@ -218,6 +216,12 @@ rm -rf %{buildroot}
 #%{python_sitelib}/pykolab/cli/commandgroups/telemetry.py
 %{python_sitelib}/pykolab/telemetry.*
 %{python_sitelib}/pykolab/cli/telemetry/
+
+%files -n kolab-cli
+%defattr(-,root,root,-)
+%{_bindir}/*
+%{_sbindir}/kolab
+%{_sbindir}/kolab-conf
 
 %files -n kolab-saslauthd
 %defattr(-,root,root,-)
