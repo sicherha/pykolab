@@ -402,7 +402,8 @@ class IMAP(object):
                         'used': used,
                         'current_quota': current_quota,
                         'new_quota': (int)(quota),
-                        'default_quota': (int)(default_quota)
+                        'default_quota': (int)(default_quota),
+                        'user': user
                     }
                 )
 
