@@ -254,6 +254,9 @@ class LDAP(object):
         else:
             auth_search_attrs = [ 'uid', 'mail' ]
 
+        if not 'uid' in auth_search_attrs:
+            auth_search_attrs.append('uid')
+
         auth_search_filter = [ '(|' ]
 
         for auth_search_attr in auth_search_attrs:
@@ -541,6 +544,41 @@ class LDAP(object):
             secondary_domains=[]
         ):
         pass
+
+    def _sync_repl(self,
+            base_dn,
+            scope=ldap.SCOPE_SUBTREE,
+            filterstr="(objectClass=*)",
+            attrlist=None,
+            attrsonly=0,
+            timeout=-1,
+            callback=False,
+            primary_domain=None,
+            secondary_domains=[]
+        ):
+
+        import syncrepl
+
+        ldap_sync_conn = syncrepl.DNSync(
+                '/var/lib/pykolab/syncrepl.db',
+                ldap_url.initializeUrl(),
+                trace_level=ldapmodule_trace_level,
+                trace_file=ldapmodule_trace_file
+            )
+
+        msgid = ldap_sync_conn.syncrepl_search(
+                base_dn,
+                scope,
+                mode='refreshAndPersist',
+                filterstr=filterstr
+            )
+
+        try:
+            # Here's where returns need to be taken into account...
+            while ldap_sync_conn.syncrepl_poll(all=1, msgid=msgid):
+                pass
+        except KeyboardInterrupt:
+            pass
 
     def _regular_search(self,
             base_dn,
@@ -947,7 +985,13 @@ class LDAP(object):
                 quiet=True
             )
 
-        self.ldap.simple_bind_s(bind_dn, bind_pw)
+        try:
+            self.ldap.simple_bind_s(bind_dn, bind_pw)
+        except ldap.SERVER_DOWN, e:
+            error = eval("%s" %(e))
+            log.error(_("Error binding to LDAP: %s") %(error['desc']))
+            # TODO: Exit the fork (if fork!)
+            return
 
         # TODO: The quota and alternative address attributes are actually
         # supposed to be settings.
