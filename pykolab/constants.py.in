@@ -106,5 +106,18 @@ SUPPORTED_LDAP_CONTROLS = {
                 'desc': 'Virtual List View Control',
                 'oid': '2.16.840.1.113730.3.4.9',
                 'func': '_vlv_search'
+            },
+        3: {
+                'desc': 'OpenLDAP Syncrepl (RFC4533)',
+                'oid': '1.3.6.1.4.1.4203.1.9.1.1',
+                'func': '_sync_repl'
             }
     }
+
+#SUPPORTED_LDAP_CONTROLS = {
+#        0: {
+#                'desc': 'OpenLDAP Syncrepl (RFC4533)',
+#                'oid': '1.3.6.1.4.1.4203.1.9.1.1',
+#                'func': '_sync_repl'
+#            }
+#    }
