@@ -222,8 +222,6 @@ class KolabPlugins(object):
             if not hasattr(self,plugin):
                 continue
 
-            retval = None
-
             if hasattr(getattr(self,plugin),hook):
                 try:
                     log.debug(_("Executing hook %s for plugin %s") %(hook,plugin), level=8)
