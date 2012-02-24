@@ -107,7 +107,11 @@ class Cyrus(cyruslib.CYRUS):
     def find_mailfolder_server(self, mailfolder):
         annotations = {}
 
+        #print "mailfolder:", mailfolder
+
         _mailfolder = self.parse_mailfolder(mailfolder)
+        #print "_mailfolder:", _mailfolder
+
         prefix = _mailfolder['path_parts'].pop(0)
         mbox = _mailfolder['path_parts'].pop(0)
         if not _mailfolder['domain'] == None:
@@ -161,6 +165,7 @@ class Cyrus(cyruslib.CYRUS):
             Login to the actual backend server.
         """
         server = self.find_mailfolder_server(mailfolder)
+        #print "server:", server
         imap.connect('imap://%s:143' %(server))
 
         log.debug(_("Setting quota for INBOX folder %s to %s") %(mailfolder,quota), level=8)
