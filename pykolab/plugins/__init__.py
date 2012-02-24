@@ -227,7 +227,7 @@ class KolabPlugins(object):
             if hasattr(getattr(self,plugin),hook):
                 try:
                     log.debug(_("Executing hook %s for plugin %s") %(hook,plugin), level=8)
-                    print "retval = self.%s.%s(%r, %r)" %(plugin,hook, args, kw)
+                    #print "retval = self.%s.%s(%r, %r)" %(plugin,hook, args, kw)
                     exec("retval = self.%s.%s(*args, **kw)" %(plugin,hook))
                 except TypeError, e:
                     log.error(_("Cannot execute hook %s for plugin %s: %s") %(hook,plugin,e))
