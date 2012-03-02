@@ -23,7 +23,7 @@ import os
 import sys
 
 # For development purposes
-sys.path.extend(['.', '..'])
+sys.path.append('.')
 
 from pykolab.translate import _
 from pykolab.tests import *
