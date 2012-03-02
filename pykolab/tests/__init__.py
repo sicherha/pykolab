@@ -26,7 +26,6 @@ import time
 import pykolab
 
 from pykolab.constants import *
-from pykolab.tests.constants import *
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.tests')
@@ -34,15 +33,10 @@ conf = pykolab.getConf()
 
 class Tests(object):
     def __init__(self):
+        import tests
+        tests.__init__()
 
         test_group = conf.add_cli_parser_option_group(_("Test Options"))
-
-        for item in TEST_ITEMS:
-            test_group.add_option(  "--%s" %(item['name']),
-                                    dest    = "%s" %(item['name']),
-                                    action  = "store_true",
-                                    default = False,
-                                    help    = _("Submit a number of items to the %s") %(item['mailbox']))
 
         test_group.add_option(  "--suite",
                                 dest    = "test_suites",
@@ -51,33 +45,28 @@ class Tests(object):
                                 help    = _("Run tests in suite SUITE. Implies a certain set of items being tested."),
                                 metavar = "SUITE")
 
-        delivery_group = conf.add_cli_parser_option_group(_("Content Delivery Options"))
-
-        delivery_group.add_option(  "--use-mail",
-                                    dest    = "use_mail",
-                                    action  = "store_true",
-                                    default = False,
-                                    help    = _("Send messages containing the items through mail (requires proper infrastructure)"))
-
-        delivery_group.add_option(  "--use-imap",
-                                    dest    = "use_imap",
-                                    action  = "store_true",
-                                    default = False,
-                                    help    = _("Inject messages containing the items through IMAP"))
-
-        delivery_group.add_option(  "--use-lmtp",
-                                    dest    = "use_lmtp",
-                                    action  = "store_true",
-                                    default = False,
-                                    help    = _("Deliver messages containing the items through LMTP"))
-
         conf.finalize_conf()
 
     def run(self):
-        # Execute the suites first.
-        for suite in conf.test_suites:
-            try:
-                exec("from pykolab.tests.%s import %sTest" %(suite,suite.capitalize()))
-                exec("%stest = %sTest()" %(suite,suite.capitalize()))
-            except ImportError, e:
-                conf.log.error(_("Tests for suite %s failed to load. Aborting.") %(suite.capitalize()))
+        if len(conf.test_suites) > 0:
+            for test_suite in conf.test_suites:
+                print test_suite
+        else:
+            to_execute = []
+
+            arg_num = 0
+            for arg in sys.argv[1:]:
+                print "arg", arg
+                arg_num += 1
+                if not arg.startswith('-') and len(sys.argv) >= arg_num:
+                    if tests.tests.has_key(sys.argv[arg_num].replace('-','_')):
+                        print "tests.tests.has_key", sys.argv[arg_num].replace('-','_')
+                        to_execute.append(sys.argv[arg_num].replace('-','_'))
+
+            print "to_execute", to_execute
+            if len(to_execute) > 0:
+                print "'_'.join(to_execute)", '_'.join(to_execute)
+                tests.execute('_'.join(to_execute))
+            else:
+                tests.execute('help')
+
