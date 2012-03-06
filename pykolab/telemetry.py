@@ -77,7 +77,7 @@ class TelemetryCommandArg(object):
 
     command = relationship(
             'TelemetryCommand',
-            order_by='telemetry_command,id',
+            order_by='telemetry_command.id',
             backref='command_args'
         )
 
