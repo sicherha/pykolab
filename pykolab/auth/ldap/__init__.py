@@ -1275,7 +1275,7 @@ class LDAP(object):
                 secondary_mail = []
 
                 for _secondary_mail in suggested_secondary_mail:
-                    i = 0
+                    i = 1
                     __secondary_mail = _secondary_mail
 
                     done = False
