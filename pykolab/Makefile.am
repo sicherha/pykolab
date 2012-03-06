@@ -57,9 +57,3 @@ pykolab_testsdir = $(pythondir)/$(PACKAGE)/tests
 pykolab_tests_PYTHON = \
 	$(wildcard tests/*.py)
 
-pykolab_tests_zpushdir = $(pythondir)/$(PACKAGE)/tests/zpush
-pykolab_tests_zpush_PYTHON = \
-	tests/zpush/test_000_000.py \
-	tests/zpush/test_000_001.py \
-	tests/zpush/__init__.py
-
