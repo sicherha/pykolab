@@ -302,7 +302,7 @@ class LDAP(object):
 
         return _user_dn
 
-    def _find_user(self, attr, value, domain=None, additional_filter=None):
+    def _find_user(self, attr, value, domain=None, additional_filter=None, base_dn=None):
         self._connect()
         self._bind()
 
@@ -316,10 +316,13 @@ class LDAP(object):
         else:
             section = 'ldap'
 
-        user_base_dn = conf.get_raw(
-                section,
-                'user_base_dn'
-            ) %({'base_dn': domain_root_dn})
+        if base_dn == None:
+            user_base_dn = conf.get_raw(
+                    section,
+                    'user_base_dn'
+                ) %({'base_dn': domain_root_dn})
+        else:
+            user_base_dn = base_dn
 
         if type(attr) == str:
             search_filter = "(%s=%s)" %(
@@ -357,6 +360,66 @@ class LDAP(object):
             return False
 
         return _user_dn
+
+    def _search_users(self, attr, value, domain=None, additional_filter=None, base_dn=None):
+        self._connect()
+        self._bind()
+
+        if domain == None:
+            domain = conf.get('kolab', 'primary_domain')
+
+        domain_root_dn = self._kolab_domain_root_dn(domain)
+
+        if conf.has_option(domain, 'user_base_dn'):
+            section = domain
+        else:
+            section = 'ldap'
+
+        if base_dn == None:
+            user_base_dn = conf.get_raw(
+                    section,
+                    'user_base_dn'
+                ) %({'base_dn': domain_root_dn})
+        else:
+            user_base_dn = base_dn
+
+        if type(attr) == str:
+            search_filter = "(%s=%s)" %(
+                    attr,
+                    value
+                )
+        elif type(attr) == list:
+            search_filter = "(|"
+            for _attr in attr:
+                search_filter = "%s(%s=%s)" %(search_filter, _attr, value)
+            search_filter = "%s)" %(search_filter)
+
+        if additional_filter:
+            search_filter = additional_filter % {
+                    'search_filter': search_filter
+                }
+
+        log.debug(
+                _("Attempting to find entries with search filter: %s") %(
+                        search_filter
+                    ),
+                level=8
+            )
+
+        _results = self.ldap.search_s(
+                user_base_dn,
+                scope=ldap.SCOPE_SUBTREE,
+                filterstr=search_filter,
+                attrlist=[ 'dn' ]
+            )
+
+        _user_dns = []
+
+        for _result in _results:
+            (_user_dn, _user_attrs) = _result
+            _user_dns.append(_user_dn)
+
+        return _user_dns
 
     def _persistent_search(self,
             base_dn,
