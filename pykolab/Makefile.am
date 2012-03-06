@@ -55,12 +55,7 @@ pykolab_setup_PYTHON = \
 
 pykolab_testsdir = $(pythondir)/$(PACKAGE)/tests
 pykolab_tests_PYTHON = \
-	tests/calendar.py \
-	tests/constants.py \
-	tests/contacts.py \
-	tests/create-contacts.py \
-	tests/__init__.py \
-	tests/mail.py
+	$(wildcard tests/*.py)
 
 pykolab_tests_zpushdir = $(pythondir)/$(PACKAGE)/tests/zpush
 pykolab_tests_zpush_PYTHON = \
