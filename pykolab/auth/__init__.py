@@ -161,6 +161,23 @@ class Auth(object):
 
         return self._auth._find_user(attr, value, domain=domain, **kw)
 
+    def search_users(self, attr, value, domain=None, **kw):
+        self.connect(domain)
+
+        if self.secondary_domains.has_key(domain):
+            log.debug(
+                    _("Using primary domain %s instead of secondary domain %s")
+                    %(
+                            self.secondary_domains[domain],
+                            domain
+                        ),
+                    level=9
+                )
+
+            domain = self.secondary_domains[domain]
+
+        return self._auth._search_users(attr, value, domain=domain, **kw)
+
     def list_domains(self):
         """
             List the domains using the auth_mechanism setting in the kolab
