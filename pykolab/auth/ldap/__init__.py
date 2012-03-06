@@ -1175,7 +1175,7 @@ class LDAP(object):
                         }
                 )
 
-            i = 0
+            i = 1
             _primary_mail = primary_mail
 
             done = False
