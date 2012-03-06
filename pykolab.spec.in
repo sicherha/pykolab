@@ -96,6 +96,19 @@ Requires:           MySQL-python
 %description -n postfix-kolab
 Kolab SMTP Access Policy for Postfix
 
+##
+## Wallace
+##
+%package -n wallace
+Summary:            Kolab Content-Filter
+Group:              Applications/System
+Requires:           pykolab = %{version}-%{release}
+Requires:           python-sqlalchemy
+Requires:           MySQL-python
+
+%description -n wallace
+This is the Kolab Content Filter, with plugins
+
 %prep
 %setup -q
 
@@ -174,6 +187,19 @@ if [ $1 = 0 ]; then
     /sbin/chkconfig --del kolabd
 fi
 
+%post -n wallace
+if [ $1 -eq  1 ] ; then
+    chkconfig --add wallace
+else
+    /sbin/service wallace condrestart
+fi
+
+%preun -n wallace
+if [ $1 = 0 ]; then
+    /sbin/service wallace stop > /dev/null 2>&1
+    /sbin/chkconfig --del wallace
+fi
+
 %clean
 rm -rf %{buildroot}
 
@@ -246,6 +272,12 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
 %{_libexecdir}/postfix/kolab_smtp_access_policy
+
+%files -n wallace
+%defattr(-,root,root,-)
+%doc AUTHORS ChangeLog COPYING
+%{_sbindir}/wallaced
+%{python_sitelib}/wallace
 
 %changelog
 * @DATESTAMP@ Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com> @VERSION@-@RELEASE@

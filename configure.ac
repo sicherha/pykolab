@@ -37,6 +37,7 @@ po/Makefile.in
 pykolab/constants.py
 pykolab/Makefile
 saslauthd/Makefile
+wallace/Makefile
 ])
 
 AC_OUTPUT

@@ -57,3 +57,11 @@ pykolab_testsdir = $(pythondir)/$(PACKAGE)/tests
 pykolab_tests_PYTHON = \
 	$(wildcard tests/*.py)
 
+pykolab_tests_imapdir = $(pythondir)/$(PACKAGE)/tests/imap
+pykolab_tests_imap_PYTHON = \
+	$(wildcard tests/imap/*.py)
+
+pykolab_tests_wapdir = $(pythondir)/$(PACKAGE)/tests/wap
+pykolab_tests_wap_PYTHON = \
+	$(wildcard tests/wap/*.py)
+
