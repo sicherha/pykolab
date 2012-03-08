@@ -183,7 +183,8 @@ class PolicyRequest(object):
                     setattr(self, key, policy_request[key])
 
             else:
-                self.recipients.append(policy_request['recipient'])
+                if not policy_request['recipient'].strip() == '':
+                    self.recipients.append(policy_request['recipient'])
 
     def add_request(self, policy_request={}):
         """
@@ -213,7 +214,8 @@ class PolicyRequest(object):
                     policy_request['recipient']
                 )
 
-            self.recipients.append(policy_request['recipient'])
+            if not policy_request['recipient'].strip() == '':
+                self.recipients.append(policy_request['recipient'])
 
     def parse_ldap_dn(self, dn):
         """
@@ -1231,7 +1233,7 @@ def read_request_input():
         containing the request.
     """
 
-    log.debug(_("Reading request"))
+    log.debug(_("Starting to loop for new request"))
 
     policy_request = {}
 
@@ -1240,10 +1242,11 @@ def read_request_input():
         request_line = sys.stdin.readline()
         if request_line.strip() == '':
             if policy_request.has_key('request'):
-                log.debug(_("End of request"))
+                log.debug(_("End of current request"), level=8)
                 end_of_request = True
         else:
             request_line = request_line.strip()
+            log.debug(_("Getting line: %s") %(request_line), level=8)
             policy_request[request_line.split('=')[0]] = \
                 '='.join(request_line.split('=')[1:]).lower()
 
@@ -1323,6 +1326,8 @@ if __name__ == "__main__":
         # set to a non-zero value and the protocol_state being set to 'data'.
         # Note that the input we're getting is a string, not an integer.
         else:
+            log.debug(_("Request instance %s reached DATA state") %(instance))
+
             sender_allowed = False
             recipient_allowed = False
 
