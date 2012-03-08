@@ -44,6 +44,22 @@ class WallaceDaemon(object):
                 help    = _("Fork to the background.")
             )
 
+        daemon_group.add_option(
+                "-b", "--bind",
+                dest    = "wallace_bind_address",
+                action  = "store",
+                default = "localhost",
+                help    = _("Bind address for Wallace.")
+            )
+
+        daemon_group.add_option(
+                "-p", "--port",
+                dest    = "wallace_port",
+                action  = "store",
+                default = 10027,
+                help    = _("Port that Wallace is supposed to use.")
+            )
+
         conf.finalize_conf()
 
         import modules
@@ -228,10 +244,17 @@ class WallaceDaemon(object):
         bound = False
         while not bound:
             try:
-                s.bind(('localhost', 8025))
+                s.bind((conf.wallace_bind_address, conf.wallace_port))
                 bound = True
             except Exception, e:
-                log.warning(_("Could not bind to socket on port 8025"))
+                log.warning(
+                        _("Could not bind to socket on port %d on bind " + \
+                            "address %s") %(
+                                conf.wallace_port,
+                                conf.wallace_bind_address
+                            )
+                    )
+
                 try:
                     s.shutdown(1)
                 except Exception, e:
