@@ -17,10 +17,13 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import json
 import os
 import random
 import tempfile
 import time
+from urlparse import urlparse
+import urllib
 
 import modules
 
@@ -57,7 +60,6 @@ def execute(*args, **kw):
 
     log.debug(_("Consulting opt-out service for %r, %r") %(args, kw), level=8)
 
-
     import email
     message = email.message_from_file(open(filepath, 'r'))
     envelope_sender = email.utils.getaddresses(message.get_all('From', []))
@@ -93,9 +95,13 @@ def execute(*args, **kw):
                     level=8
                 )
 
-            optout_answer = answers[random.randint(0,(len(answers)-1))]
-            # Let's pretend it takes two seconds to get an answer, shall we?
-            time.sleep(2)
+            optout_answer = request(
+                    {
+                            'unique-message-id': 'bogus',
+                            'envelope_sender': envelope_sender[0][1],
+                            'recipient': recipient[1]
+                        }
+                )
 
             _recipients[optout_answer][recipient_type].append(recipient)
 
@@ -109,6 +115,7 @@ def execute(*args, **kw):
     ##
 
     for answer in answers:
+        # Create the directory for the answer
         if not os.path.isdir(os.path.join(mybasepath, answer)):
             os.makedirs(os.path.join(mybasepath, answer))
 
@@ -124,19 +131,25 @@ def execute(*args, **kw):
         for recipient_type in _recipients[answer].keys():
             _message.__delitem__(recipient_type)
             if not len(_recipients[answer][recipient_type]) == 0:
-                _message.__setitem__(recipient_type, ',\n'.join([email.utils.formataddr(x) for x in _recipients[answer][recipient_type]]))
+                _message.__setitem__(
+                        recipient_type,
+                        ',\n  '.join(
+                                [email.utils.formataddr(x) for x in _recipients[answer][recipient_type]]
+                            )
+                    )
 
                 use_this = True
 
         if use_this:
             # TODO: Do not set items with an empty list.
+
             (fp, filename) = tempfile.mkstemp(dir="/var/spool/pykolab/wallace/optout/%s" %(answer))
             os.write(fp, _message.__str__())
             os.close(fp)
 
             # Callback with new filename
             if hasattr(modules, 'cb_action_%s' %(answer)):
-                log.debug(_("Attempting to execute cb_action_%s()") %(answer), level=8)
+                log.debug(_("Attempting to execute cb_action_%s(%r, %r)") %(answer, 'optout', filename), level=8)
                 exec('modules.cb_action_%s(%r, %r)' %(answer,'optout', filename))
 
     os.unlink(filepath)
@@ -148,3 +161,24 @@ def execute(*args, **kw):
         #log.debug(_("Attempting to execute cb_action_%s()") %(optout_answer), level=8)
         #exec('modules.cb_action_%s(%r, %r)' %(optout_answer,'optout', new_filepath))
         #return
+
+def request(params=None):
+    params = json.dumps(params)
+
+    optout_url = conf.get('wallace_optout', 'optout_url')
+
+    try:
+        f = urllib.urlopen(optout_url, params)
+    except Exception, e:
+        log.error(_("Could not send request to optout_url %s") %(optout_url))
+        return "DEFER"
+
+    response = f.read()
+
+    try:
+        response_data = json.loads(response)
+    except ValueError, e:
+        # Some data is not JSON
+        print "Response data is not JSON"
+
+    return response_data['result']
