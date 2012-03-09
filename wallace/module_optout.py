@@ -25,6 +25,10 @@ import time
 from urlparse import urlparse
 import urllib
 
+from email import message_from_file
+from email.utils import formataddr
+from email.utils import getaddresses
+
 import modules
 
 import pykolab
@@ -46,6 +50,7 @@ def description():
     return """Consult the opt-out service."""
 
 def execute(*args, **kw):
+    # TODO: Test for correct call.
     filepath = args[0]
 
     if kw.has_key('stage'):
@@ -60,13 +65,12 @@ def execute(*args, **kw):
 
     log.debug(_("Consulting opt-out service for %r, %r") % (args, kw), level=8)
 
-    import email
-    message = email.message_from_file(open(filepath, 'r'))
-    envelope_sender = email.utils.getaddresses(message.get_all('From', []))
+    message = message_from_file(open(filepath, 'r'))
+    envelope_sender = getaddresses(message.get_all('From', []))
 
     recipients = {
-            "To": email.utils.getaddresses(message.get_all('To', [])),
-            "Cc": email.utils.getaddresses(message.get_all('Cc', []))
+            "To": getaddresses(message.get_all('To', [])),
+            "Cc": getaddresses(message.get_all('Cc', []))
             # TODO: Are those all recipient addresses?
         }
 
@@ -123,8 +127,8 @@ def execute(*args, **kw):
         new_filepath = os.path.join(mybasepath, answer, os.path.basename(filepath))
 
         # Write out a message file representing the new contents for the message
-        # use email.formataddr(recipient)
-        _message = email.message_from_file(open(filepath, 'r'))
+        # use formataddr(recipient)
+        _message = message_from_file(open(filepath, 'r'))
 
         use_this = False
 
@@ -134,7 +138,7 @@ def execute(*args, **kw):
                 _message.__setitem__(
                         recipient_type,
                         ',\n  '.join(
-                                [email.utils.formataddr(x) for x in _recipients[answer][recipient_type]]
+                                [formataddr(x) for x in _recipients[answer][recipient_type]]
                             )
                     )
 
