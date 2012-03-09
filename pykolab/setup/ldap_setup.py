@@ -49,10 +49,10 @@ def setup():
 
     for item in other_services:
         log.warning(_("Warning: LDAP Service '%s' is available on " + \
-                            "this system as well.") %(item))
+                            "this system as well.") % (item))
 
     if not service == None:
-        log.info(_("Found system service %s.") %(service))
+        log.info(_("Found system service %s.") % (service))
     else:
         package.Package('openldap-servers')
 

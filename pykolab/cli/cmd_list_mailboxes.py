@@ -31,7 +31,7 @@ imap = pykolab.imap
 
 def __init__():
     commands.register('list_mailboxes', execute, description="List mailboxes.\n" + \
-        "%-28s" %('') + \
+        "%-28s" % ('') + \
         "Use wildcards '*' and '%' for more control.\n")
 
 def cli_options():

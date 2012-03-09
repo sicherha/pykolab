@@ -98,7 +98,7 @@ class IMAP(object):
                 self._imap[hostname] = cyrus.Cyrus(uri)
                 # Actually connect
                 if login:
-                    log.debug(_("Logging on to Cyrus IMAP server %s") %(hostname), level=8)
+                    log.debug(_("Logging on to Cyrus IMAP server %s") % (hostname), level=8)
                     self._imap[hostname].login(admin_login, admin_password)
                     self._imap[hostname].logged_in = True
 
@@ -107,7 +107,7 @@ class IMAP(object):
                 self._imap[hostname] = dovecot.Dovecot(uri)
                 # Actually connect
                 if login:
-                    log.debug(_("Logging on to Dovecot IMAP server %s") %(hostname), level=8)
+                    log.debug(_("Logging on to Dovecot IMAP server %s") % (hostname), level=8)
                     self._imap[hostname].login(admin_login, admin_password)
                     self._imap[hostname].logged_in = True
 
@@ -116,7 +116,7 @@ class IMAP(object):
                 self._imap[hostname] = imaplib.IMAP4(hostname, port)
                 # Actually connect
                 if login:
-                    log.debug(_("Logging on to generic IMAP server %s") %(hostname), level=8)
+                    log.debug(_("Logging on to generic IMAP server %s") % (hostname), level=8)
                     self._imap[hostname].login(admin_login, admin_password)
                     self._imap[hostname].logged_in = True
 
@@ -134,9 +134,9 @@ class IMAP(object):
                     elif hasattr(self._imap[hostname], 'noop') and callable(self._imap[hostname].noop):
                         self._imap[hostname].noop()
 
-                    log.debug(_("Reusing existing IMAP server connection to %s") %(hostname), level=8)
+                    log.debug(_("Reusing existing IMAP server connection to %s") % (hostname), level=8)
                 except:
-                    log.debug(_("Reconnecting to IMAP server %s") %(hostname), level=8)
+                    log.debug(_("Reconnecting to IMAP server %s") % (hostname), level=8)
                     self.disconnect(hostname)
                     self.connect()
 
@@ -159,11 +159,11 @@ class IMAP(object):
         if hasattr(self.imap, name):
             return getattr(self.imap, name)
         else:
-            raise AttributeError, _("%r has no attribute %s") %(self,name)
+            raise AttributeError, _("%r has no attribute %s") % (self,name)
 
     def has_folder(self, folder):
         folders = self.imap.lm(folder)
-        log.debug(_("Looking for folder '%s', we found folders: %r") %(folder,folders), level=8)
+        log.debug(_("Looking for folder '%s', we found folders: %r") % (folder,folders), level=8)
         # Greater then one, this folder may have subfolders.
         if len(folders) > 0:
             return True
@@ -176,20 +176,20 @@ class IMAP(object):
         for user in users:
             if type(user) == dict:
                 if user.has_key('old_mail'):
-                    inbox = "user/%s" %(user['mail'])
-                    old_inbox = "user/%s" %(user['old_mail'])
+                    inbox = "user/%s" % (user['mail'])
+                    old_inbox = "user/%s" % (user['old_mail'])
 
                     if self.has_folder(old_inbox):
-                        log.debug(_("Found old INBOX folder %s") %(old_inbox), level=8)
+                        log.debug(_("Found old INBOX folder %s") % (old_inbox), level=8)
 
                         if not self.has_folder(inbox):
-                            log.info(_("Renaming INBOX from %s to %s") %(old_inbox,inbox))
+                            log.info(_("Renaming INBOX from %s to %s") % (old_inbox,inbox))
                             self.imap.rename(old_inbox,inbox)
                             self.inbox_folders.append(inbox)
                         else:
-                            log.warning(_("Moving INBOX folder %s won't succeed as target folder %s already exists") %(old_inbox,inbox))
+                            log.warning(_("Moving INBOX folder %s won't succeed as target folder %s already exists") % (old_inbox,inbox))
                     else:
-                        log.debug(_("Did not find old folder user/%s to rename") %(user['old_mail']), level=8)
+                        log.debug(_("Did not find old folder user/%s to rename") % (user['old_mail']), level=8)
             else:
                 log.debug(_("Value for user is not a dictionary"), level=8)
 
@@ -223,15 +223,15 @@ class IMAP(object):
 
         for folder in inbox_folders:
             additional_folders = None
-            if not self.has_folder("user%s%s" %(self.imap.separator, folder)):
+            if not self.has_folder("user%s%s" % (self.imap.separator, folder)):
                 # TODO: Perhaps this block is moot
                 log.info(_("Creating new INBOX for user (%d): %s")
-                    %(1,folder))
+                    % (1,folder))
                 try:
-                    self.imap.cm("user%s%s" %(self.imap.separator, folder))
+                    self.imap.cm("user%s%s" % (self.imap.separator, folder))
                 except:
                     log.warning(
-                            _("Mailbox already exists: user%s%s") %(
+                            _("Mailbox already exists: user%s%s") % (
                                     self.imap.separator,folder
                                 )
                         )
@@ -240,7 +240,7 @@ class IMAP(object):
 
                 if conf.get('kolab', 'imap_backend') == 'cyrus-imap':
                     self.imap._setquota(
-                            "user%s%s" %(self.imap.separator, folder),
+                            "user%s%s" % (self.imap.separator, folder),
                             0
                         )
 
@@ -283,15 +283,15 @@ class IMAP(object):
             try:
                 self.imap.cm(folder_name)
             except:
-                log.warning(_("Mailbox already exists: user/%s") %(folder))
+                log.warning(_("Mailbox already exists: user/%s") % (folder))
 
             if additional_folders[additional_folder].has_key("annotations"):
                 for annotation in additional_folders[additional_folder]["annotations"].keys():
                     if conf.get('kolab', 'imap_backend') == 'cyrus-imap':
                         self.imap._setannotation(
                                 folder_name,
-                                "%s" %(annotation),
-                                "%s" %(additional_folders[additional_folder]["annotations"][annotation])
+                                "%s" % (annotation),
+                                "%s" % (additional_folders[additional_folder]["annotations"][annotation])
                             )
 
             if additional_folders[additional_folder].has_key("quota"):
@@ -304,8 +304,8 @@ class IMAP(object):
                 for acl in additional_folders[additional_folder]["acls"].keys():
                     self.imap.sam(
                             folder_name,
-                            "%s" %(acl),
-                            "%s" %(additional_folders[additional_folder]["acls"][acl])
+                            "%s" % (acl),
+                            "%s" % (additional_folders[additional_folder]["acls"][acl])
                         )
 
         backend = conf.get('kolab', 'imap_backend')
@@ -386,7 +386,7 @@ class IMAP(object):
                         folder = "user/%s" % user[_inbox_folder_attr]
             elif type(user) == str:
                 quota = auth.get_user_attribute(user, 'quota')
-                folder = "user/%s" %(user)
+                folder = "user/%s" % (user)
 
             folder = folder.lower()
 
@@ -394,7 +394,7 @@ class IMAP(object):
                 (used,current_quota) = self.imap.lq(folder)
             except:
                 # TODO: Go in fact correct the quota.
-                log.warning(_("Cannot get current IMAP quota for folder %s") %(folder))
+                log.warning(_("Cannot get current IMAP quota for folder %s") % (folder))
                 used = 0
                 current_quota = 0
 
@@ -407,18 +407,18 @@ class IMAP(object):
                     }
                 )
 
-            log.debug(_("Quota for %s currently is %s") %(folder, current_quota), level=7)
+            log.debug(_("Quota for %s currently is %s") % (folder, current_quota), level=7)
 
             if new_quota == None:
                 continue
 
             if not int(new_quota) == int(quota):
-                log.info(_("Adjusting authentication database quota for folder %s to %d") %(folder,int(new_quota)))
+                log.info(_("Adjusting authentication database quota for folder %s to %d") % (folder,int(new_quota)))
                 quota = int(new_quota)
                 auth.set_user_attribute(primary_domain, user, _quota_attr, new_quota)
 
             if not int(current_quota) == int(quota):
-                log.info(_("Correcting quota for %s to %s (currently %s)") %(folder, quota, current_quota))
+                log.info(_("Correcting quota for %s to %s (currently %s)") % (folder, quota, current_quota))
                 self.imap._setquota(folder, quota)
 
     def set_user_mailhost(self, users=[], primary_domain=None, secondary_domain=[], folders=[]):
@@ -457,7 +457,7 @@ class IMAP(object):
 
             elif type(user) == str:
                 _mailserver = auth.get_user_attribute(user, _mailserver_attr)
-                folder = "user/%s" %(user)
+                folder = "user/%s" % (user)
 
             folder = folder.lower()
 
@@ -500,17 +500,17 @@ class IMAP(object):
         folders = self.list_user_folders()
 
         for folder in folders:
-            log.debug(_("Checking folder: %s") %(folder), level=1)
+            log.debug(_("Checking folder: %s") % (folder), level=1)
             try:
                 if inbox_folders.index(folder) > -1:
                     continue
                 else:
-                    log.info(_("Folder has no corresponding user (1): %s") %(folder))
-                    self.delete_mailfolder("user/%s" %(folder))
+                    log.info(_("Folder has no corresponding user (1): %s") % (folder))
+                    self.delete_mailfolder("user/%s" % (folder))
             except:
-                log.info(_("Folder has no corresponding user (2): %s") %(folder))
+                log.info(_("Folder has no corresponding user (2): %s") % (folder))
                 try:
-                    self.delete_mailfolder("user/%s" %(folder))
+                    self.delete_mailfolder("user/%s" % (folder))
                 except:
                     pass
 
@@ -526,7 +526,7 @@ class IMAP(object):
             log.error(_("Please don't give us just a user identifier"))
             return
 
-        log.info(_("Deleting folder %s") %(mailfolder_path))
+        log.info(_("Deleting folder %s") % (mailfolder_path))
 
         self.imap.dm(mailfolder_path)
 
@@ -551,14 +551,14 @@ class IMAP(object):
             if mbox_parts['domain']:
                 # List the shared and user folders
                 shared_folders = self.imap.lm(
-                        "shared/*@%s" %(mbox_parts['domain'])
+                        "shared/*@%s" % (mbox_parts['domain'])
                     )
 
                 user_folders = self.imap.lm(
-                        "user/*@%s" %(mbox_parts['domain'])
+                        "user/*@%s" % (mbox_parts['domain'])
                     )
 
-                aci_identifier = "%s@%s" %(
+                aci_identifier = "%s@%s" % (
                         mbox_parts['path_parts'][1],
                         mbox_parts['domain']
                     )
@@ -566,10 +566,10 @@ class IMAP(object):
             else:
                 shared_folders = self.imap.lm("shared/*")
                 user_folders = self.imap.lm("user/*")
-                aci_identifier = "%s" %(mbox_parts['path_parts'][1])
+                aci_identifier = "%s" % (mbox_parts['path_parts'][1])
 
             log.debug(
-                    _("Cleaning up ACL entries referring to identifier %s") %(
+                    _("Cleaning up ACL entries referring to identifier %s") % (
                             aci_identifier
                         ),
                     level=5
@@ -578,7 +578,7 @@ class IMAP(object):
             # For all folders (shared and user), ...
             folders = user_folders + shared_folders
 
-            log.debug(_("Iterating over %d folders") %(len(folders)), level=5)
+            log.debug(_("Iterating over %d folders") % (len(folders)), level=5)
 
             # ... loop through them and ...
             for folder in folders:
@@ -609,7 +609,7 @@ class IMAP(object):
 
         if not primary_domain == None:
             for domain in [ primary_domain ] + secondary_domains:
-                acceptable_domain_name_res.append(domain_re %(domain))
+                acceptable_domain_name_res.append(domain_re % (domain))
 
         folders = []
 
@@ -624,14 +624,14 @@ class IMAP(object):
                         #print "Acceptable indeed"
                         #acceptable = True
                     #if not acceptable:
-                        #print "%s is not acceptable against %s yet using %s" %(folder.split('@')[1],folder,domain_name_re)
+                        #print "%s is not acceptable against %s yet using %s" % (folder.split('@')[1],folder,domain_name_re)
 
                 #if acceptable:
-                    #folder_name = "%s@%s" %(folder.split(self.separator)[1].split('@')[0],folder.split('@')[1])
+                    #folder_name = "%s@%s" % (folder.split(self.separator)[1].split('@')[0],folder.split('@')[1])
 
-                folder_name = "%s@%s" %(folder.split(self.imap.separator)[1].split('@')[0],folder.split('@')[1])
+                folder_name = "%s@%s" % (folder.split(self.imap.separator)[1].split('@')[0],folder.split('@')[1])
             else:
-                folder_name = "%s" %(folder.split(self.imap.separator)[1])
+                folder_name = "%s" % (folder.split(self.imap.separator)[1])
 
             if not folder_name == None:
                 if not folder_name in folders:

@@ -38,7 +38,7 @@ def execute(*args, **kw):
 
     #print "domains:", domains['list']
 
-    print "%-39s %-40s" %("Primary Domain Name Space","Secondary Domain Name Space(s)")
+    print "%-39s %-40s" % ("Primary Domain Name Space","Secondary Domain Name Space(s)")
 
     # TODO: Take a hint in --quiet, and otherwise print out a nice table
     # with headers and such.
@@ -46,6 +46,6 @@ def execute(*args, **kw):
         if isinstance(domains['list'][domain_dn]['associateddomain'], list):
             print domains['list'][domain_dn]['associateddomain'][0]
             for domain_alias in domains['list'][domain_dn]['associateddomain'][1:]:
-                print "%-39s %-40s" %('', domain_alias)
+                print "%-39s %-40s" % ('', domain_alias)
         else:
             print domains['list'][domain_dn]['associateddomain']

@@ -189,7 +189,7 @@ class TelemetryLog(object):
 
                 line_num += 1
 
-                log.debug("%s (%d): %s" %(self.log_file,line_num,line), level=8)
+                log.debug("%s (%d): %s" % (self.log_file,line_num,line), level=8)
 
                 if line.startswith('---------- '):
                     # This is the actual start of a session
@@ -585,7 +585,7 @@ def expire_sessions(retention=7):
     """
     start_max = ((int)(time.time()) - (retention * 24 * 60 * 60))
     #start_max = (int)(time.time())
-    log.info(_("Expiring sessions that started before or on %d") %(start_max))
+    log.info(_("Expiring sessions that started before or on %d") % (start_max))
 
     db = init_db()
 
@@ -598,7 +598,7 @@ def expire_sessions(retention=7):
                 )
 
     for session in sessions:
-        log.debug(_("Expiring session ID: %d") %(session.id), level=8)
+        log.debug(_("Expiring session ID: %d") % (session.id), level=8)
 
         # Expire related information
         command_issue_ids = db.query(
@@ -617,7 +617,7 @@ def expire_sessions(retention=7):
             db.commit()
 
         log.debug(
-                _("Session with ID %d expired from database") %(session.id),
+                _("Session with ID %d expired from database") % (session.id),
                 level=8
             )
 
@@ -643,7 +643,7 @@ def init_db():
         try:
             metadata.create_all(engine)
         except sqlalchemy.exc.OperationalError, e:
-            log.error(_("Operational Error in telemetry database: %s" %(e)))
+            log.error(_("Operational Error in telemetry database: %s" % (e)))
 
         Session = sessionmaker(bind=engine)
         db = Session()

@@ -58,7 +58,7 @@ def get_group_input():
     if len(group_types.keys()) > 1:
         for key in group_types.keys():
             if not key == "status":
-                print "%s) %s" %(key,group_types[key]['name'])
+                print "%s) %s" % (key,group_types[key]['name'])
 
         group_type_id = utils.ask_question("Please select the group type")
 
@@ -84,7 +84,7 @@ def get_group_input():
         params[attribute] = utils.ask_question(attribute)
 
     for attribute in group_type_info['auto_form_fields'].keys():
-        exec("retval = group_form_value_generate_%s(params)" %(attribute))
+        exec("retval = group_form_value_generate_%s(params)" % (attribute))
         params[attribute] = retval[attribute]
 
     return params
@@ -95,7 +95,7 @@ def get_user_input():
     if len(user_types.keys()) > 1:
         for key in user_types.keys():
             if not key == "status":
-                print "%s) %s" %(key,user_types[key]['name'])
+                print "%s) %s" % (key,user_types[key]['name'])
 
         user_type_id = utils.ask_question("Please select the user type")
 
@@ -121,7 +121,7 @@ def get_user_input():
         params[attribute] = utils.ask_question(attribute)
 
     for attribute in user_type_info['auto_form_fields'].keys():
-        exec("retval = form_value_generate_%s(params)" %(attribute))
+        exec("retval = form_value_generate_%s(params)" % (attribute))
         params[attribute] = retval[attribute]
 
     return params
@@ -144,13 +144,13 @@ def group_form_value_generate_mail(params=None):
 
 def group_info():
     group = utils.ask_question("Group email address")
-    group = request('GET', 'group.info?group=%s' %(group))
+    group = request('GET', 'group.info?group=%s' % (group))
     return group
 
 def group_members_list(group=None):
     if group == None:
         group = utils.ask_question("Group email address")
-    group = request('GET', 'group.members_list?group=%s' %(group))
+    group = request('GET', 'group.members_list?group=%s' % (group))
     return group
 
 def group_types_list():
@@ -166,7 +166,7 @@ def request(method, api_uri, params=None, headers={}):
         headers["X-Session-Token"] = session_id
 
     conn = connect()
-    conn.request(method.upper(), "%s/%s" %(API_BASE,api_uri), params, headers)
+    conn.request(method.upper(), "%s/%s" % (API_BASE,api_uri), params, headers)
     response = conn.getresponse()
     data = response.read()
 
@@ -197,7 +197,7 @@ def system_get_domain():
 def system_select_domain(domain=None):
     if domain == None:
         domain = utils.ask_question("Domain name")
-    return request('GET', 'system.select_domain?domain=%s' %(domain))
+    return request('GET', 'system.select_domain?domain=%s' % (domain))
 
 def user_add(params=None):
     if params == None:
@@ -270,7 +270,7 @@ def user_form_value_generate_userpassword(*args, **kw):
 
 def user_info():
     user = utils.ask_question("User email address")
-    user = request('GET', 'user.info?user=%s' %(user))
+    user = request('GET', 'user.info?user=%s' % (user))
     return user
 
 def user_types_list():

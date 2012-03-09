@@ -38,7 +38,7 @@ def execute(*args, **kw):
     domains = auth.list_domains()
     end_time = time.time()
     log.debug(
-            _("Found %d domains in %d seconds") %(
+            _("Found %d domains in %d seconds") % (
                     len(domains),
                     (end_time-start_time)
                 ),
@@ -48,13 +48,13 @@ def execute(*args, **kw):
     all_folders = []
 
     for primary_domain,secondary_domains in domains:
-        log.debug(_("Running for domain %s") %(primary_domain), level=8)
+        log.debug(_("Running for domain %s") % (primary_domain), level=8)
         auth.connect(primary_domain)
         start_time = time.time()
         auth.synchronize(primary_domain, secondary_domains)
         end_time = time.time()
 
         log.info(_("Synchronizing users for %s took %d seconds")
-                %(primary_domain, (end_time-start_time))
+                % (primary_domain, (end_time-start_time))
             )
 

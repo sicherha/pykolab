@@ -47,13 +47,13 @@ class KolabDynamicquota(object):
 
         for keyword in [ 'used', 'current_quota', 'new_quota', 'default_quota' ]:
             if not kw.has_key(keyword):
-                log.warning(_("No keyword %s passed to set_user_folder_quota") %(keyword))
+                log.warning(_("No keyword %s passed to set_user_folder_quota") % (keyword))
                 return 0
             else:
                 try:
                     kw[keyword] = (int)(kw[keyword])
                 except:
-                    log.error(_("Quota '%s' not an integer!") %(keyword))
+                    log.error(_("Quota '%s' not an integer!") % (keyword))
                     return 0
 
         # Escape the user without quota

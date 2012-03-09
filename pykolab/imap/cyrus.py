@@ -70,7 +70,7 @@ class Cyrus(cyruslib.CYRUS):
 
         self.server = hostname
 
-        self.uri = "%s://%s:%s" %(scheme,hostname,port)
+        self.uri = "%s://%s:%s" % (scheme,hostname,port)
 
         cyruslib.CYRUS.__init__(self, self.uri)
 
@@ -115,7 +115,7 @@ class Cyrus(cyruslib.CYRUS):
         prefix = _mailfolder['path_parts'].pop(0)
         mbox = _mailfolder['path_parts'].pop(0)
         if not _mailfolder['domain'] == None:
-            mailfolder = "%s%s%s@%s" %(prefix,self.separator,mbox,_mailfolder['domain'])
+            mailfolder = "%s%s%s@%s" % (prefix,self.separator,mbox,_mailfolder['domain'])
 
         # TODO: Workaround for undelete
         if len(self.lm(mailfolder)) < 1:
@@ -126,7 +126,7 @@ class Cyrus(cyruslib.CYRUS):
         if not self.murder:
             return self.server
 
-        log.debug(_("Checking actual backend server for folder %s through annotations") %(mailfolder), level=8)
+        log.debug(_("Checking actual backend server for folder %s through annotations") % (mailfolder), level=8)
         if self.mbox.has_key(mailfolder):
             return self.mbox[mailfolder]
 
@@ -140,11 +140,11 @@ class Cyrus(cyruslib.CYRUS):
                 break
 
             if max_tries <= num_try:
-                log.error(_("Could not get the annotations after %s tries.") %(num_try))
+                log.error(_("Could not get the annotations after %s tries.") % (num_try))
                 annotations = { mailfolder: { '/vendor/cmu/cyrus-imapd/server': self.server }}
                 break
 
-            log.warning(_("No annotations for %s: %r") %(mailfolder,annotations))
+            log.warning(_("No annotations for %s: %r") % (mailfolder,annotations))
 
             time.sleep(1)
 
@@ -156,7 +156,7 @@ class Cyrus(cyruslib.CYRUS):
                 if not imap._imap[server].mbox.has_key(mailfolder):
                     imap._imap[server].mbox[mailfolder] = server
 
-        log.debug(_("Server for INBOX folder %s is %s") %(mailfolder,server), level=8)
+        log.debug(_("Server for INBOX folder %s is %s") % (mailfolder,server), level=8)
 
         return server
 
@@ -166,22 +166,22 @@ class Cyrus(cyruslib.CYRUS):
         """
         server = self.find_mailfolder_server(mailfolder)
         #print "server:", server
-        imap.connect('imap://%s:143' %(server))
+        imap.connect('imap://%s:143' % (server))
 
-        log.debug(_("Setting quota for INBOX folder %s to %s") %(mailfolder,quota), level=8)
+        log.debug(_("Setting quota for INBOX folder %s to %s") % (mailfolder,quota), level=8)
         try:
             imap.setquota(mailfolder, quota)
         except:
-            log.error(_("Could not set quota for mailfolder %s") %(mailfolder))
+            log.error(_("Could not set quota for mailfolder %s") % (mailfolder))
 
     def _rename(self, from_mailfolder, to_mailfolder, partition=None):
         """
             Login to the actual backend server, then rename.
         """
         server = self.find_mailfolder_server(from_mailfolder)
-        imap.connect('imap://%s:143' %(server))
+        imap.connect('imap://%s:143' % (server))
 
-        log.debug(_("Moving INBOX folder %s to %s") %(from_mailfolder,to_mailfolder), level=8)
+        log.debug(_("Moving INBOX folder %s to %s") % (from_mailfolder,to_mailfolder), level=8)
         imap.rename(from_mailfolder, to_mailfolder, partition)
 
     def _getannotation(self, *args, **kw):
@@ -193,17 +193,17 @@ class Cyrus(cyruslib.CYRUS):
             Login to the actual backend server, then set annotation.
         """
         server = self.find_mailfolder_server(mailfolder)
-        imap.connect('imap://%s:143' %(server))
+        imap.connect('imap://%s:143' % (server))
 
-        log.debug(_("Setting annotation %s on folder %s") %(annotation,mailfolder), level=8)
+        log.debug(_("Setting annotation %s on folder %s") % (annotation,mailfolder), level=8)
 
         #if annotation.startswith('/private'):
 
         imap.setannotation(mailfolder, annotation, value)
 
     def _xfer(self, mailfolder, current_server, new_server):
-        imap.connect('imap://%s:143' %(current_server))
-        log.debug(_("Transferring folder %s from %s to %s") %(mailfolder, current_server, new_server), level=8)
+        imap.connect('imap://%s:143' % (current_server))
+        log.debug(_("Transferring folder %s from %s to %s") % (mailfolder, current_server, new_server), level=8)
         imap.xfer(mailfolder, new_server)
 
     def undelete_mailfolder(self, mailfolder, to_mailfolder=None, recursive=True):
@@ -250,20 +250,20 @@ class Cyrus(cyruslib.CYRUS):
                 target_folder = self.separator.join(target_mbox['path_parts'])
 
             if not to_mailfolder == None:
-                target_folder = "%s%s%s" %(target_folder,self.separator,mbox)
+                target_folder = "%s%s%s" % (target_folder,self.separator,mbox)
 
             if not len(undelete_mbox['path_parts']) == 0:
-                target_folder = "%s%s%s" %(target_folder,self.separator,self.separator.join(undelete_mbox['path_parts']))
+                target_folder = "%s%s%s" % (target_folder,self.separator,self.separator.join(undelete_mbox['path_parts']))
 
             if target_folder in target_folders:
-                target_folder = "%s%s%s" %(target_folder,self.separator,undelete_mbox['hex_timestamp'])
+                target_folder = "%s%s%s" % (target_folder,self.separator,undelete_mbox['hex_timestamp'])
 
             target_folders.append(target_folder)
 
             if not target_mbox['domain'] == None:
-                target_folder = "%s@%s" %(target_folder,target_mbox['domain'])
+                target_folder = "%s@%s" % (target_folder,target_mbox['domain'])
 
-            log.info(_("Undeleting %s to %s") %(undelete_folder,target_folder))
+            log.info(_("Undeleting %s to %s") % (undelete_folder,target_folder))
 
             target_server = self.find_mailfolder_server(target_folder)
 
@@ -315,7 +315,7 @@ class Cyrus(cyruslib.CYRUS):
                 }
 
             if not mbox['domain'] == None:
-                verify_folder_search = "%s@%s" %(verify_folder_search, mbox['domain'])
+                verify_folder_search = "%s@%s" % (verify_folder_search, mbox['domain'])
 
             folders = self.lm(verify_folder_search)
 
@@ -353,7 +353,7 @@ class Cyrus(cyruslib.CYRUS):
                 }
 
         if not mbox['domain'] == None:
-            deleted_folder_search = "%s@%s" %(deleted_folder_search,mbox['domain'])
+            deleted_folder_search = "%s@%s" % (deleted_folder_search,mbox['domain'])
 
         folders = self.lm(deleted_folder_search)
 

@@ -43,9 +43,9 @@ def __init__():
             if filename.startswith('setup_') and filename.endswith('.py'):
                 module_name = filename.replace('.py','')
                 component_name = module_name.replace('setup_', '')
-                #print "exec(\"from %s import __init__ as %s_register\"" %(module_name,component_name)
-                exec("from %s import __init__ as %s_register" %(module_name,component_name))
-                exec("%s_register()" %(component_name))
+                #print "exec(\"from %s import __init__ as %s_register\"" % (module_name,component_name)
+                exec("from %s import __init__ as %s_register" % (module_name,component_name))
+                exec("%s_register()" % (component_name))
 
         for dirname in dirnames:
             register_group(components_path, dirname)
@@ -75,21 +75,21 @@ def list_setup(*args, **kw):
         if __components[_component].has_key('function'):
             # This is a top-level component
             if not __components[_component]['description'] == None:
-                print "%-25s - %s" %(_component.replace('_','-'),__components[_component]['description'])
+                print "%-25s - %s" % (_component.replace('_','-'),__components[_component]['description'])
             else:
-                print "%-25s" %(_component.replace('_','-'))
+                print "%-25s" % (_component.replace('_','-'))
 
     for _component in _components:
         if not __components[_component].has_key('function'):
             # This is a nested component
-            print "\n" + _("Command Group: %s") %(_component) + "\n"
+            print "\n" + _("Command Group: %s") % (_component) + "\n"
             ___components = __components[_component].keys()
             ___components.sort()
             for __component in ___components:
                 if not __components[_component][__component]['description'] == None:
-                    print "%-4s%-21s - %s" %('',__component.replace('_','-'),__components[_component][__component]['description'])
+                    print "%-4s%-21s - %s" % ('',__component.replace('_','-'),__components[_component][__component]['description'])
                 else:
-                    print "%-4s%-21s" %('',__component.replace('_','-'))
+                    print "%-4s%-21s" % ('',__component.replace('_','-'))
 
 def execute(component_name, *args, **kw):
     if not components.has_key(component_name):
@@ -105,15 +105,15 @@ def execute(component_name, *args, **kw):
         group = components[component_name]['group']
         component_name = components[component_name]['component_name']
         try:
-            exec("from %s.cmd_%s import cli_options as %s_%s_cli_options" %(group,component_name,group,component_name))
-            exec("%s_%s_cli_options()" %(group,component_name))
+            exec("from %s.cmd_%s import cli_options as %s_%s_cli_options" % (group,component_name,group,component_name))
+            exec("%s_%s_cli_options()" % (group,component_name))
         except ImportError, e:
             pass
 
     else:
         try:
-            exec("from cmd_%s import cli_options as %s_cli_options" %(component_name,component_name))
-            exec("%s_cli_options()" %(component_name))
+            exec("from cmd_%s import cli_options as %s_cli_options" % (component_name,component_name))
+            exec("%s_cli_options()" % (component_name))
         except ImportError, e:
             pass
 
@@ -134,13 +134,13 @@ def register_group(dirname, module):
             if filename.startswith('cmd_') and filename.endswith('.py'):
                 module_name = filename.replace('.py','')
                 component_name = module_name.replace('cmd_', '')
-                #print "exec(\"from %s.%s import __init__ as %s_%s_register\"" %(module,module_name,module,component_name)
-                exec("from %s.%s import __init__ as %s_%s_register" %(module,module_name,module,component_name))
-                exec("%s_%s_register()" %(module,component_name))
+                #print "exec(\"from %s.%s import __init__ as %s_%s_register\"" % (module,module_name,module,component_name)
+                exec("from %s.%s import __init__ as %s_%s_register" % (module,module_name,module,component_name))
+                exec("%s_%s_register()" % (module,component_name))
 
 def register(component_name, func, group=None, description=None, aliases=[]):
     if not group == None:
-        component = "%s_%s" %(group,component_name)
+        component = "%s_%s" % (group,component_name)
     else:
         component = component_name
 
@@ -148,7 +148,7 @@ def register(component_name, func, group=None, description=None, aliases=[]):
         aliases = [aliases]
 
     if components.has_key(component):
-        log.fatal(_("Command '%s' already registered") %(component))
+        log.fatal(_("Command '%s' already registered") % (component))
         sys.exit(1)
 
     if callable(func):
@@ -170,7 +170,7 @@ def register(component_name, func, group=None, description=None, aliases=[]):
         for alias in aliases:
             components[alias] = {
                     'function': func,
-                    'description': _("Alias for %s") %(component_name)
+                    'description': _("Alias for %s") % (component_name)
                 }
 
 ##

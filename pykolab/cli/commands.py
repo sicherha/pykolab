@@ -42,9 +42,9 @@ def __init__():
             if filename.startswith('cmd_') and filename.endswith('.py'):
                 module_name = filename.replace('.py','')
                 cmd_name = module_name.replace('cmd_', '')
-                #print "exec(\"from %s import __init__ as %s_register\"" %(module_name,cmd_name)
-                exec("from %s import __init__ as %s_register" %(module_name,cmd_name))
-                exec("%s_register()" %(cmd_name))
+                #print "exec(\"from %s import __init__ as %s_register\"" % (module_name,cmd_name)
+                exec("from %s import __init__ as %s_register" % (module_name,cmd_name))
+                exec("%s_register()" % (cmd_name))
 
         for dirname in dirnames:
             register_group(commands_path, dirname)
@@ -85,21 +85,21 @@ def list_commands(*args, **kw):
         if __commands[_command].has_key('function'):
             # This is a top-level command
             if not __commands[_command]['description'] == None:
-                print "%-25s - %s" %(_command.replace('_','-'),__commands[_command]['description'])
+                print "%-25s - %s" % (_command.replace('_','-'),__commands[_command]['description'])
             else:
-                print "%-25s" %(_command.replace('_','-'))
+                print "%-25s" % (_command.replace('_','-'))
 
     for _command in _commands:
         if not __commands[_command].has_key('function'):
             # This is a nested command
-            print "\n" + _("Command Group: %s") %(_command) + "\n"
+            print "\n" + _("Command Group: %s") % (_command) + "\n"
             ___commands = __commands[_command].keys()
             ___commands.sort()
             for __command in ___commands:
                 if not __commands[_command][__command]['description'] == None:
-                    print "%-4s%-21s - %s" %('',__command.replace('_','-'),__commands[_command][__command]['description'])
+                    print "%-4s%-21s - %s" % ('',__command.replace('_','-'),__commands[_command][__command]['description'])
                 else:
-                    print "%-4s%-21s" %('',__command.replace('_','-'))
+                    print "%-4s%-21s" % ('',__command.replace('_','-'))
 
 def execute(cmd_name, *args, **kw):
     if not commands.has_key(cmd_name):
@@ -115,15 +115,15 @@ def execute(cmd_name, *args, **kw):
         group = commands[cmd_name]['group']
         command_name = commands[cmd_name]['cmd_name']
         try:
-            exec("from %s.cmd_%s import cli_options as %s_%s_cli_options" %(group,command_name,group,command_name))
-            exec("%s_%s_cli_options()" %(group,command_name))
+            exec("from %s.cmd_%s import cli_options as %s_%s_cli_options" % (group,command_name,group,command_name))
+            exec("%s_%s_cli_options()" % (group,command_name))
         except ImportError, e:
             pass
 
     else:
         try:
-            exec("from cmd_%s import cli_options as %s_cli_options" %(cmd_name,cmd_name))
-            exec("%s_cli_options()" %(cmd_name))
+            exec("from cmd_%s import cli_options as %s_cli_options" % (cmd_name,cmd_name))
+            exec("%s_cli_options()" % (cmd_name))
         except ImportError, e:
             pass
 
@@ -144,13 +144,13 @@ def register_group(dirname, module):
             if filename.startswith('cmd_') and filename.endswith('.py'):
                 module_name = filename.replace('.py','')
                 cmd_name = module_name.replace('cmd_', '')
-                #print "exec(\"from %s.%s import __init__ as %s_%s_register\"" %(module,module_name,module,cmd_name)
-                exec("from %s.%s import __init__ as %s_%s_register" %(module,module_name,module,cmd_name))
-                exec("%s_%s_register()" %(module,cmd_name))
+                #print "exec(\"from %s.%s import __init__ as %s_%s_register\"" % (module,module_name,module,cmd_name)
+                exec("from %s.%s import __init__ as %s_%s_register" % (module,module_name,module,cmd_name))
+                exec("%s_%s_register()" % (module,cmd_name))
 
 def register(cmd_name, func, group=None, description=None, aliases=[]):
     if not group == None:
-        command = "%s_%s" %(group,cmd_name)
+        command = "%s_%s" % (group,cmd_name)
     else:
         command = cmd_name
 
@@ -158,7 +158,7 @@ def register(cmd_name, func, group=None, description=None, aliases=[]):
         aliases = [aliases]
 
     if commands.has_key(command):
-        log.fatal(_("Command '%s' already registered") %(command))
+        log.fatal(_("Command '%s' already registered") % (command))
         sys.exit(1)
 
     if callable(func):
@@ -180,7 +180,7 @@ def register(cmd_name, func, group=None, description=None, aliases=[]):
         for alias in aliases:
             commands[alias] = {
                     'function': func,
-                    'description': _("Alias for %s") %(cmd_name)
+                    'description': _("Alias for %s") % (cmd_name)
                 }
 
 ##

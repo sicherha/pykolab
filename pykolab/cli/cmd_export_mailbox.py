@@ -68,7 +68,7 @@ def execute(*args, **kw):
         )
 
     mboxlist_proc = subprocess.Popen(
-            ['grep', '-E', '\s*%s\s*.*i.*p.*' %(user)],
+            ['grep', '-E', '\s*%s\s*.*i.*p.*' % (user)],
             stdin=ctl_mboxlist.stdout,
             stdout=subprocess.PIPE
         )
@@ -78,7 +78,7 @@ def execute(*args, **kw):
     # TODO: Handle errors from ctl_mboxlist process (stderr)
     mboxlist_output = mboxlist_proc.communicate()[0]
 
-    zipper_args = [ 'zip', '-r', '%s.zip' %(user) ]
+    zipper_args = [ 'zip', '-r', '%s.zip' % (user) ]
     directories = []
 
     for mbox_internal in mboxlist_output.split('\n'):
@@ -95,7 +95,7 @@ def execute(*args, **kw):
                 )
 
             for partition in partitions:
-                mbox_dir = '%s/domain/%s/%s/%s/user/%s/' %(
+                mbox_dir = '%s/domain/%s/%s/%s/user/%s/' % (
                         partition,
                         domain[0],
                         domain,
@@ -108,7 +108,7 @@ def execute(*args, **kw):
 
                 else:
                     log.debug(
-                            _('%s is not a directory') %(mbox_dir),
+                            _('%s is not a directory') % (mbox_dir),
                             level=5
                         )
 
@@ -118,8 +118,8 @@ def execute(*args, **kw):
                 stdout=subprocess.PIPE
             ).communicate()[0]
 
-        print >> sys.stderr, _("ZIP file at %s.zip") %(user)
+        print >> sys.stderr, _("ZIP file at %s.zip") % (user)
     else:
-        print >> sys.stderr, _("No directories found for user %s") %(user)
+        print >> sys.stderr, _("No directories found for user %s") % (user)
         sys.exit(1)
 

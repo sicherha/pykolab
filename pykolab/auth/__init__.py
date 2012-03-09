@@ -104,7 +104,7 @@ class Auth(object):
             domain = self.secondary_domains[domain]
 
         log.debug(
-                _("Connecting to Authentication backend for domain %s") %(
+                _("Connecting to Authentication backend for domain %s") % (
                         domain
                     ),
                 level=8
@@ -150,7 +150,7 @@ class Auth(object):
         if self.secondary_domains.has_key(domain):
             log.debug(
                     _("Using primary domain %s instead of secondary domain %s")
-                    %(
+                    % (
                             self.secondary_domains[domain],
                             domain
                         ),
@@ -167,7 +167,7 @@ class Auth(object):
         if self.secondary_domains.has_key(domain):
             log.debug(
                     _("Using primary domain %s instead of secondary domain %s")
-                    %(
+                    % (
                             self.secondary_domains[domain],
                             domain
                         ),

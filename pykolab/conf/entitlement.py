@@ -55,7 +55,7 @@ class Entitlement(object):
 
             if (bool)(ca_cert.has_expired()):
                 raise Exception, _("Invalid entitlement verification " + \
-                        "certificate at %s" %(ca_cert_file))
+                        "certificate at %s" % (ca_cert_file))
 
             # TODO: Check validity and warn ~1-2 months in advance.
 
@@ -78,7 +78,7 @@ class Entitlement(object):
 
             if not ca_cert_issuer_hash_digest in self.entitlement_verification:
                 raise Exception, _("Invalid entitlement verification " + \
-                        "certificate at %s") %(ca_cert_file)
+                        "certificate at %s") % (ca_cert_file)
 
             ca_cert_subject_hash = subprocess.Popen(
                     [
@@ -96,7 +96,7 @@ class Entitlement(object):
 
             if not ca_cert_subject_hash_digest in self.entitlement_verification:
                 raise Exception, _("Invalid entitlement verification " + \
-                        "certificate at %s") %(ca_cert_file)
+                        "certificate at %s") % (ca_cert_file)
 
             customer_cert_issuer_hash = subprocess.Popen(
                     [
@@ -114,7 +114,7 @@ class Entitlement(object):
 
             if not customer_cert_issuer_hash_digest in self.entitlement_verification:
                 raise Exception, _("Invalid entitlement verification " + \
-                        "certificate at %s") %(customer_cert_file)
+                        "certificate at %s") % (customer_cert_file)
 
             if not ca_cert_issuer.countryName == ca_cert_subject.countryName:
                 raise Exception, _("Invalid entitlement certificate")
@@ -129,7 +129,7 @@ class Entitlement(object):
                     if not root == '/etc/kolab/entitlement.d/':
                         continue
                     for entitlement_file in files:
-                        log.debug(_("Parsing entitlement file %s") %(entitlement_file), level=8)
+                        log.debug(_("Parsing entitlement file %s") % (entitlement_file), level=8)
 
                         if os.access(os.path.join(root, entitlement_file), os.R_OK):
                             self.entitlement_files.append(
@@ -138,7 +138,7 @@ class Entitlement(object):
 
                         else:
                             print >> sys.stderr, \
-                                    _("License file %s not readable!") %(
+                                    _("License file %s not readable!") % (
                                             os.path.join(root, entitlement_file)
                                         )
 
@@ -227,7 +227,7 @@ class License(object):
 
         if not customer_cert_serial == cert_serial:
             raise Exception, _("Invalid entitlement verification " + \
-                    "certificate at %s") %(customer_cert_file)
+                    "certificate at %s") % (customer_cert_file)
 
         customer_cert_issuer_hash = subprocess.Popen(
                 [
@@ -243,7 +243,7 @@ class License(object):
 
         if not customer_cert_issuer_hash == cert_issuer_hash:
             raise Exception, _("Invalid entitlement verification " + \
-                    "certificate at %s") %(customer_cert_file)
+                    "certificate at %s") % (customer_cert_file)
 
         customer_cert_subject_hash = subprocess.Popen(
                 [
@@ -259,7 +259,7 @@ class License(object):
 
         if not customer_cert_subject_hash == cert_subject_hash:
             raise Exception, _("Invalid entitlement verification " + \
-                    "certificate at %s") %(customer_cert_file)
+                    "certificate at %s") % (customer_cert_file)
 
     def get(self):
         return self.entitlement

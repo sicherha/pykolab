@@ -107,13 +107,13 @@ class LDAP(object):
 
     def _authenticate(self, login, domain):
         log.debug(_("Attempting to authenticate user %s in domain %s")
-            %(login, domain), level=8)
+            % (login, domain), level=8)
 
         self._connect()
         user_dn = self._find_dn(login[0], domain)
         try:
             log.debug(_("Binding with user_dn %s and password %s")
-                %(user_dn, login[1]))
+                % (user_dn, login[1]))
 
             # Needs to be synchronous or succeeds and continues setting retval
             # to True!!
@@ -121,7 +121,7 @@ class LDAP(object):
             retval = True
         except:
             log.debug(
-                    _("Failed to authenticate as user %s") %(user_dn),
+                    _("Failed to authenticate as user %s") % (user_dn),
                     level=8
                 )
 
@@ -144,7 +144,7 @@ class LDAP(object):
             key = 'uri'
 
         if conf.has_option(domain, 'uri'):
-            log.warning(_("Deprecation: Setting 'uri' for LDAP in section %s needs to be updated to 'ldap_uri'") %(domain))
+            log.warning(_("Deprecation: Setting 'uri' for LDAP in section %s needs to be updated to 'ldap_uri'") % (domain))
             section = domain
             key = 'uri'
         elif conf.has_option(domain, 'ldap_uri'):
@@ -155,7 +155,7 @@ class LDAP(object):
 
         uri = conf.get(section, key)
 
-        log.debug(_("Attempting to use LDAP URI %s") %(uri), level=8)
+        log.debug(_("Attempting to use LDAP URI %s") % (uri), level=8)
 
         trace_level = 0
 
@@ -241,7 +241,7 @@ class LDAP(object):
                         _("Deprecation warning: The setting " + \
                             "kolab_smtp_access_policy.address_search_attrs " + \
                             "is to be replaced with the 'auth_attrs' key in " + \
-                            "the 'ldap' or '%s' domain section.") %(domain)
+                            "the 'ldap' or '%s' domain section.") % (domain)
                     )
 
                 auth_search_attrs = conf.get_list(
@@ -260,14 +260,14 @@ class LDAP(object):
         auth_search_filter = [ '(|' ]
 
         for auth_search_attr in auth_search_attrs:
-            auth_search_filter.append('(%s=%s)' %(auth_search_attr,login))
-            auth_search_filter.append('(%s=%s@%s)' %(auth_search_attr,login,domain))
+            auth_search_filter.append('(%s=%s)' % (auth_search_attr,login))
+            auth_search_filter.append('(%s=%s@%s)' % (auth_search_attr,login,domain))
 
         auth_search_filter.append(')')
 
         auth_search_filter = ''.join(auth_search_filter)
 
-        search_filter = "(&%s%s)" %(
+        search_filter = "(&%s%s)" % (
                 auth_search_filter,
                 user_filter
             )
@@ -285,7 +285,7 @@ class LDAP(object):
             # Retry to find the user_dn with just uid=%s against the root_dn,
             # if the login is not fully qualified
             if len(login.split('@')) < 2:
-                search_filter = "(uid=%s)" %(login)
+                search_filter = "(uid=%s)" % (login)
                 _results = self._search(
                         domain,
                         filterstr=search_filter,
@@ -320,20 +320,20 @@ class LDAP(object):
             user_base_dn = conf.get_raw(
                     section,
                     'user_base_dn'
-                ) %({'base_dn': domain_root_dn})
+                ) % ({'base_dn': domain_root_dn})
         else:
             user_base_dn = base_dn
 
         if type(attr) == str:
-            search_filter = "(%s=%s)" %(
+            search_filter = "(%s=%s)" % (
                     attr,
                     value
                 )
         elif type(attr) == list:
             search_filter = "(|"
             for _attr in attr:
-                search_filter = "%s(%s=%s)" %(search_filter, _attr, value)
-            search_filter = "%s)" %(search_filter)
+                search_filter = "%s(%s=%s)" % (search_filter, _attr, value)
+            search_filter = "%s)" % (search_filter)
 
         if additional_filter:
             search_filter = additional_filter % {
@@ -341,7 +341,7 @@ class LDAP(object):
                 }
 
         log.debug(
-                _("Attempting to find the user with search filter: %s") %(
+                _("Attempting to find the user with search filter: %s") % (
                         search_filter
                     ),
                 level=8
@@ -379,20 +379,20 @@ class LDAP(object):
             user_base_dn = conf.get_raw(
                     section,
                     'user_base_dn'
-                ) %({'base_dn': domain_root_dn})
+                ) % ({'base_dn': domain_root_dn})
         else:
             user_base_dn = base_dn
 
         if type(attr) == str:
-            search_filter = "(%s=%s)" %(
+            search_filter = "(%s=%s)" % (
                     attr,
                     value
                 )
         elif type(attr) == list:
             search_filter = "(|"
             for _attr in attr:
-                search_filter = "%s(%s=%s)" %(search_filter, _attr, value)
-            search_filter = "%s)" %(search_filter)
+                search_filter = "%s(%s=%s)" % (search_filter, _attr, value)
+            search_filter = "%s)" % (search_filter)
 
         if additional_filter:
             search_filter = additional_filter % {
@@ -400,7 +400,7 @@ class LDAP(object):
                 }
 
         log.debug(
-                _("Attempting to find entries with search filter: %s") %(
+                _("Attempting to find entries with search filter: %s") % (
                         search_filter
                     ),
                 level=8
@@ -471,8 +471,8 @@ class LDAP(object):
 
             for dn,entry,srv_ctrls in res_data:
                 log.debug(_("LDAP Search Result Data Entry:"), level=8)
-                log.debug("    DN: %r" %(dn), level=8)
-                log.debug("    Entry: %r" %(entry), level=8)
+                log.debug("    DN: %r" % (dn), level=8)
+                log.debug("    Entry: %r" % (entry), level=8)
 
                 ecn_ctrls = [
                         c for c in srv_ctrls
@@ -491,7 +491,7 @@ class LDAP(object):
                         )
 
                     log.debug(
-                            "    " + _("Change Type: %r (%r)") %(
+                            "    " + _("Change Type: %r (%r)") % (
                                     change_type,
                                     change_type_desc
                                 ),
@@ -499,7 +499,7 @@ class LDAP(object):
                         )
 
                     log.debug(
-                            "    " + _("Previous DN: %r") %(previous_dn),
+                            "    " + _("Previous DN: %r") % (previous_dn),
                             level=8
                         )
 
@@ -553,7 +553,7 @@ class LDAP(object):
                     ) = self.ldap.result3(_search)
 
             except ldap.NO_SUCH_OBJECT, e:
-                log.warning(_("Object %s searched no longer exists") %(base_dn))
+                log.warning(_("Object %s searched no longer exists") % (base_dn))
                 break
 
             if callback:
@@ -565,7 +565,7 @@ class LDAP(object):
 
             _results.extend(_result_data)
             if (pages % 2) == 0:
-                log.debug(_("%d results...") %(len(_results)))
+                log.debug(_("%d results...") % (len(_results)))
 
             pctrls = [
                     c for c in _result_controls
@@ -699,7 +699,7 @@ class LDAP(object):
         if len(self.ldap.supported_controls) < 1:
             for control_num in SUPPORTED_LDAP_CONTROLS.keys():
                 log.debug(
-                        _("Checking for support for %s") %(
+                        _("Checking for support for %s") % (
                                 SUPPORTED_LDAP_CONTROLS[control_num]['desc']
                             ),
                         level=8
@@ -739,7 +739,7 @@ class LDAP(object):
                     callback=callback,
                     primary_domain=%r,
                     secondary_domains=%r
-                )""" %(
+                )""" % (
                         supported_control,
                         base_dn,
                         scope,
@@ -777,7 +777,7 @@ class LDAP(object):
         attribute = attribute.lower()
 
         log.debug(
-                _("Getting attribute %s for user %s") %(attribute,user),
+                _("Getting attribute %s for user %s") % (attribute,user),
                 level=8
             )
 
@@ -801,7 +801,7 @@ class LDAP(object):
             (user_dn, user_attrs) = _result_data[0]
         else:
             log.warning(_("Could not get attribute %s for user %s")
-                %(attribute,user['dn']))
+                % (attribute,user['dn']))
 
             return None
 
@@ -810,7 +810,7 @@ class LDAP(object):
         if not user_attrs.has_key(attribute):
             log.debug(
                     _("Wanted attribute %s, which does not exist for user " + \
-                    "%r") %(
+                    "%r") % (
                             attribute,
                             user_dn
                         ),
@@ -838,7 +838,7 @@ class LDAP(object):
                 domain_root_dn,
                 ldap.SCOPE_SUBTREE,
                 # TODO: Configurable
-                '(|(mail=%s)(mailalternateaddress=%s))' %(
+                '(|(mail=%s)(mailalternateaddress=%s))' % (
                         mail_address,
                         mail_address
                     ),
@@ -886,7 +886,7 @@ class LDAP(object):
         except:
             log.warning(
                     _("LDAP modification of attribute %s for %s to value " + \
-                    "%s failed") %(attribute,user_dn,value)
+                    "%s failed") % (attribute,user_dn,value)
                 )
 
     def _list_domains(self):
@@ -952,7 +952,7 @@ class LDAP(object):
     def _kolab_domain_root_dn(self, domain):
         self._bind()
 
-        log.debug(_("Finding domain root dn for domain %s") %(domain), level=8)
+        log.debug(_("Finding domain root dn for domain %s") % (domain), level=8)
 
         bind_dn = conf.get('ldap', 'bind_dn')
         bind_pw = conf.get('ldap', 'bind_pw')
@@ -967,7 +967,7 @@ class LDAP(object):
             _results = self._search(
                     domain_base_dn,
                     ldap.SCOPE_SUBTREE,
-                    "(%s=%s)" %(domain_name_attribute,domain),
+                    "(%s=%s)" % (domain_name_attribute,domain),
                     override_search='_regular_search'
                 )
 
@@ -994,7 +994,7 @@ class LDAP(object):
         self._initial_sync_done = False
 
         log.info(_("Listing users for domain %s (and %s)")
-            %(primary_domain, ', '.join(secondary_domains)))
+            % (primary_domain, ', '.join(secondary_domains)))
 
         self._bind()
 
@@ -1014,7 +1014,7 @@ class LDAP(object):
         user_base_dn = conf.get_raw(
                 section,
                 'user_base_dn'
-            ) %({'base_dn': domain_root_dn})
+            ) % ({'base_dn': domain_root_dn})
 
         if conf.has_option(primary_domain, 'kolab_user_filter'):
             section = primary_domain
@@ -1034,7 +1034,7 @@ class LDAP(object):
             kolab_user_scope = LDAP_SCOPE[_kolab_user_scope]
         else:
             log.warning(
-                    _("LDAP Search scope %s not found, using 'sub'") %(
+                    _("LDAP Search scope %s not found, using 'sub'") % (
                             _kolab_user_scope
                         )
                 )
@@ -1051,8 +1051,8 @@ class LDAP(object):
         try:
             self.ldap.simple_bind_s(bind_dn, bind_pw)
         except ldap.SERVER_DOWN, e:
-            error = eval("%s" %(e))
-            log.error(_("Error binding to LDAP: %s") %(error['desc']))
+            error = eval("%s" % (e))
+            log.error(_("Error binding to LDAP: %s") % (error['desc']))
             # TODO: Exit the fork (if fork!)
             return
 
@@ -1077,10 +1077,10 @@ class LDAP(object):
             )
 
         if callback == None:
-            log.info(_("Found %d users") %(len(_search)))
+            log.info(_("Found %d users") % (len(_search)))
 
             log.debug(_("Iterating over %d users, making sure we have the " + \
-                "necessary attributes...") %(len(_search)), level=6)
+                "necessary attributes...") % (len(_search)), level=6)
 
             users = []
 
@@ -1106,7 +1106,7 @@ class LDAP(object):
                 if (num_user % 1000) == 0:
                     log.debug(
                             _("Done iterating over user %d of %d")
-                                %(num_user,num_users),
+                                % (num_user,num_users),
                             level=3
                         )
 
@@ -1189,7 +1189,7 @@ class LDAP(object):
                 # or 1 (which should be the entry we're looking at here)
                 if len(results) == 0:
                     log.debug(
-                            _("No results for mail address %s found") %(
+                            _("No results for mail address %s found") % (
                                     _primary_mail
                                 ),
                             level=8
@@ -1200,7 +1200,7 @@ class LDAP(object):
 
                 if len(results) == 1:
                     log.debug(
-                            _("1 result for address %s found, verifying") %(
+                            _("1 result for address %s found, verifying") % (
                                     _primary_mail
                                 ),
                             level=8
@@ -1211,7 +1211,7 @@ class LDAP(object):
                         if not result[0] == user['dn']:
                             log.debug(
                                     _("Too bad, primary email address %s " + \
-                                    "already in use for %s (we are %s)") %(
+                                    "already in use for %s (we are %s)") % (
                                             _primary_mail,
                                             result[0],
                                             user['dn']
@@ -1226,7 +1226,7 @@ class LDAP(object):
                         continue
 
                 i += 1
-                _primary_mail = "%s%d@%s" %(
+                _primary_mail = "%s%d@%s" % (
                         primary_mail.split('@')[0],
                         i,
                         primary_mail.split('@')[1]
@@ -1289,7 +1289,7 @@ class LDAP(object):
                         # or 1 (which should be the entry we're looking at here)
                         if len(results) == 0:
                             log.debug(
-                                    _("No results for address %s found") %(
+                                    _("No results for address %s found") % (
                                             __secondary_mail
                                         ),
                                     level=8
@@ -1301,7 +1301,7 @@ class LDAP(object):
                         if len(results) == 1:
                             log.debug(
                                     _("1 result for address %s found, " + \
-                                    "verifying...") %(
+                                    "verifying...") % (
                                             __secondary_mail
                                         ),
                                     level=8
@@ -1313,7 +1313,7 @@ class LDAP(object):
                                     log.debug(
                                             _("Too bad, secondary email " + \
                                             "address %s already in use for " + \
-                                            "%s (we are %s)") %(
+                                            "%s (we are %s)") % (
                                                     __secondary_mail,
                                                     result[0],
                                                     user['dn']
@@ -1328,7 +1328,7 @@ class LDAP(object):
                                 continue
 
                         i += 1
-                        __secondary_mail = "%s%d@%s" %(
+                        __secondary_mail = "%s%d@%s" % (
                                 _secondary_mail.split('@')[0],
                                 i,
                                 _secondary_mail.split('@')[1]
@@ -1437,7 +1437,7 @@ class LDAP(object):
 
             elif kw['change_type'] == 2:
                 # TODO: Use Cyrus SASL authorization ID
-                folder = 'user/%s' %(user['mail'].lower())
+                folder = 'user/%s' % (user['mail'].lower())
                 # TODO: Verify if folder exists
                 pykolab.imap.delete_mailfolder(folder)
                 done = True

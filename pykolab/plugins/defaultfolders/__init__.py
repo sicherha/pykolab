@@ -44,11 +44,11 @@ class KolabDefaultfolders(object):
         """
 
         if not kw.has_key('additional_folders'):
-            log.error(_("Plugin %s called without required keyword %s.") %("defaultfolders", "additional_folders"))
+            log.error(_("Plugin %s called without required keyword %s.") % ("defaultfolders", "additional_folders"))
             return {}
 
         try:
-            exec("additional_folders = %s" %(kw['additional_folders']))
+            exec("additional_folders = %s" % (kw['additional_folders']))
         except Exception, e:
             log.error(_("Could not parse additional_folders"))
             return {}

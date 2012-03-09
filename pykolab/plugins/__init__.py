@@ -50,7 +50,7 @@ class KolabPlugins(object):
 
             if os.path.isdir(plugin_path):
                 for plugin in os.listdir(plugin_path):
-                    if os.path.isdir('%s/%s/' %(plugin_path,plugin,)):
+                    if os.path.isdir('%s/%s/' % (plugin_path,plugin,)):
                         self.plugins[plugin] = False
 
         self.check_plugins()
@@ -63,7 +63,7 @@ class KolabPlugins(object):
         """
         for plugin in self.plugins:
             try:
-                exec("from pykolab.plugins import %s" %(plugin))
+                exec("from pykolab.plugins import %s" % (plugin))
                 self.plugins[plugin] = True
                 self.load_plugins(plugins=[plugin])
             except ImportError, e:
@@ -186,7 +186,7 @@ class KolabPlugins(object):
                 except AttributeError, e:
                     log.error(_("Cannot check options for plugin %s: %s") % (plugin,e))
             else:
-                log.debug(_("Not checking options for plugin %s: No function 'check_options()'") %(plugin), level=5)
+                log.debug(_("Not checking options for plugin %s: No function 'check_options()'") % (plugin), level=5)
 
     def plugin_check_setting(self, func, option, val, plugins=[]):
         """
@@ -224,13 +224,13 @@ class KolabPlugins(object):
 
             if hasattr(getattr(self,plugin),hook):
                 try:
-                    log.debug(_("Executing hook %s for plugin %s") %(hook,plugin), level=8)
-                    #print "retval = self.%s.%s(%r, %r)" %(plugin,hook, args, kw)
-                    exec("retval = self.%s.%s(*args, **kw)" %(plugin,hook))
+                    log.debug(_("Executing hook %s for plugin %s") % (hook,plugin), level=8)
+                    #print "retval = self.%s.%s(%r, %r)" % (plugin,hook, args, kw)
+                    exec("retval = self.%s.%s(*args, **kw)" % (plugin,hook))
                 except TypeError, e:
-                    log.error(_("Cannot execute hook %s for plugin %s: %s") %(hook,plugin,e))
+                    log.error(_("Cannot execute hook %s for plugin %s: %s") % (hook,plugin,e))
                 except AttributeError, e:
-                    log.error(_("Cannot execute hook %s for plugin %s: %s") %(hook,plugin,e))
+                    log.error(_("Cannot execute hook %s for plugin %s: %s") % (hook,plugin,e))
 
         return retval
 

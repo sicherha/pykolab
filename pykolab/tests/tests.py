@@ -43,9 +43,9 @@ def __init__():
             if filename.startswith('test_') and filename.endswith('.py'):
                 module_name = filename.replace('.py','')
                 test_name = module_name.replace('test_', '')
-                #print "exec(\"from %s import __init__ as %s_register\"" %(module_name,test_name)
-                exec("from %s import __init__ as %s_register" %(module_name,test_name))
-                exec("%s_register()" %(test_name))
+                #print "exec(\"from %s import __init__ as %s_register\"" % (module_name,test_name)
+                exec("from %s import __init__ as %s_register" % (module_name,test_name))
+                exec("%s_register()" % (test_name))
 
         for dirname in dirnames:
             register_group(tests_path, dirname)
@@ -76,21 +76,21 @@ def list_tests(*args, **kw):
             if __tests[_test].has_key('function'):
                 # This is a top-level test
                 if not __tests[_test]['description'] == None:
-                    print "%-25s - %s" %(_test.replace('_','-'),__tests[_test]['description'])
+                    print "%-25s - %s" % (_test.replace('_','-'),__tests[_test]['description'])
                 else:
-                    print "%-25s" %(_test.replace('_','-'))
+                    print "%-25s" % (_test.replace('_','-'))
 
     for _test in _tests:
         if not __tests[_test].has_key('function'):
             # This is a nested test
-            print "\n" + _("Test Suite: %s") %(_test) + "\n"
+            print "\n" + _("Test Suite: %s") % (_test) + "\n"
             ___tests = __tests[_test].keys()
             ___tests.sort()
             for __test in ___tests:
                 if not __tests[_test][__test]['description'] == None:
-                    print "%-4s%-21s - %s" %('',__test.replace('_','-'),__tests[_test][__test]['description'])
+                    print "%-4s%-21s - %s" % ('',__test.replace('_','-'),__tests[_test][__test]['description'])
                 else:
-                    print "%-4s%-21s" %('',__test.replace('_','-'))
+                    print "%-4s%-21s" % ('',__test.replace('_','-'))
 
 def execute(test_name, *args, **kw):
     print "tests:", tests
@@ -109,15 +109,15 @@ def execute(test_name, *args, **kw):
         group = tests[test_name]['group']
         _test_name = tests[test_name]['test_name']
         try:
-            exec("from %s.test_%s import cli_options as %s_%s_cli_options" %(group,_test_name,group,test_name))
-            exec("%s_%s_cli_options()" %(group,test_name))
+            exec("from %s.test_%s import cli_options as %s_%s_cli_options" % (group,_test_name,group,test_name))
+            exec("%s_%s_cli_options()" % (group,test_name))
         except ImportError, e:
             pass
 
     else:
         try:
-            exec("from test_%s import cli_options as %s_cli_options" %(test_name,test_name))
-            exec("%s_cli_options()" %(test_name))
+            exec("from test_%s import cli_options as %s_cli_options" % (test_name,test_name))
+            exec("%s_cli_options()" % (test_name))
         except ImportError, e:
             pass
 
@@ -138,13 +138,13 @@ def register_group(dirname, module):
             if filename.startswith('test_') and filename.endswith('.py'):
                 module_name = filename.replace('.py','')
                 test_name = module_name.replace('test_', '')
-                #print "exec(\"from %s.%s import __init__ as %s_%s_register\"" %(module,module_name,module,test_name)
-                exec("from %s.%s import __init__ as %s_%s_register" %(module,module_name,module,test_name))
-                exec("%s_%s_register()" %(module,test_name))
+                #print "exec(\"from %s.%s import __init__ as %s_%s_register\"" % (module,module_name,module,test_name)
+                exec("from %s.%s import __init__ as %s_%s_register" % (module,module_name,module,test_name))
+                exec("%s_%s_register()" % (module,test_name))
 
 def register(test_name, func, group=None, description=None, aliases=[]):
     if not group == None:
-        test = "%s_%s" %(group,test_name)
+        test = "%s_%s" % (group,test_name)
     else:
         test = test_name
 
@@ -154,11 +154,11 @@ def register(test_name, func, group=None, description=None, aliases=[]):
         aliases = [aliases]
 
     if tests.has_key(test):
-        log.fatal(_("Test '%s' already registered") %(test))
+        log.fatal(_("Test '%s' already registered") % (test))
         sys.exit(1)
 
     if tests.has_key(test):
-        log.fatal(_("Test '%s' already registered") %(test))
+        log.fatal(_("Test '%s' already registered") % (test))
         sys.exit(1)
 
     if callable(func):
@@ -180,7 +180,7 @@ def register(test_name, func, group=None, description=None, aliases=[]):
         for alias in aliases:
             tests[alias] = {
                     'function': func,
-                    'description': _("Alias for %s") %(test_name)
+                    'description': _("Alias for %s") % (test_name)
                 }
 
 ##

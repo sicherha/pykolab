@@ -41,21 +41,21 @@ def description():
 
 def execute(*args, **kw):
     try:
-        log.debug(_("Connecting at %s") %(time.time()), level=8)
+        log.debug(_("Connecting at %s") % (time.time()), level=8)
         imap.connect(login=False)
-        log.debug(_("Connected at %s") %(time.time()), level=8)
+        log.debug(_("Connected at %s") % (time.time()), level=8)
     except:
         raise TestFailureException, __file__
 
     try:
-        log.debug(_("Logging in at %s") %(time.time()), level=8)
+        log.debug(_("Logging in at %s") % (time.time()), level=8)
         imap.login('doe', password='0cvRKSdluPU4ewN')
-        log.debug(_("Logged in at %s") %(time.time()), level=8)
+        log.debug(_("Logged in at %s") % (time.time()), level=8)
         #imap.login('doe', password='bla')
     except:
         raise TestFailureException(__file__)
 
 class TestFailureException(BaseException):
     def __init__(self, test_file):
-        log.error(_("Test failure in %s") %(test_file))
+        log.error(_("Test failure in %s") % (test_file))
         utils.ask_confirmation('Would you like to log this as a bug?')

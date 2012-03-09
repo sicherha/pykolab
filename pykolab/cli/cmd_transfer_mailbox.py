@@ -51,7 +51,7 @@ def execute(*args, **kw):
     if mbox_parts['domain'] == None:
         user_identifier = mbox_parts['path_parts'][1]
     else:
-        user_identifier = "%s@%s" %(mbox_parts['path_parts'][1], mbox_parts['domain'])
+        user_identifier = "%s@%s" % (mbox_parts['path_parts'][1], mbox_parts['domain'])
 
     print "User Identifier:", user_identifier
 

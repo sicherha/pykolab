@@ -100,7 +100,7 @@ def execute(*args, **kw):
 
         return
 
-    print _("Session by %s on server %s") %(user.sasl_username,server.fqdn)
+    print _("Session by %s on server %s") % (user.sasl_username,server.fqdn)
 
     command_issues = db.query(
             telemetry.TelemetryCommandIssue
@@ -121,7 +121,7 @@ def execute(*args, **kw):
                     id=command_issue.command_arg_id
                 ).first()
 
-        print "Client(%d): %s %s %s" %(
+        print "Client(%d): %s %s %s" % (
                 command_issue.id,
                 command_issue.command_tag,
                 command.command,
@@ -137,7 +137,7 @@ def execute(*args, **kw):
         for server_response in server_responses:
             server_response_lines = server_response.response.split('\n');
             for server_response_line in server_response_lines:
-                print "Server(%d): %s" %(
+                print "Server(%d): %s" % (
                         server_response.id,
                         server_response_line
                     )

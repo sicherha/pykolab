@@ -76,4 +76,4 @@ AddSampleEntries = No
 Port = 9830
 ServerAdminID = admin
 ServerAdminPwd = %(admin_pass)s
-""" %(_input)
+""" % (_input)

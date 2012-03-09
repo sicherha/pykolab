@@ -82,7 +82,7 @@ class Conf(object):
 
         # But, they should be available in our class as well
         for option in self.defaults.__dict__.keys():
-            log.debug(_("Setting %s to %r (from defaults)") %(option, self.defaults.__dict__[option]), level=8)
+            log.debug(_("Setting %s to %r (from defaults)") % (option, self.defaults.__dict__[option]), level=8)
             setattr(self,option,self.defaults.__dict__[option])
 
         # This is where we check our parser for the defaults being set there.
@@ -94,17 +94,17 @@ class Conf(object):
         if hasattr(self,'cli_keywords') and not self.cli_keywords == None:
             for option in self.cli_keywords.__dict__.keys():
                 retval = False
-                if hasattr(self, "check_setting_%s" %(option)):
+                if hasattr(self, "check_setting_%s" % (option)):
                     exec("retval = self.check_setting_%s(%r)" % (option, self.cli_keywords.__dict__[option]))
 
                     # The warning, error or confirmation dialog is in the check_setting_%s() function
                     if not retval:
                         continue
 
-                    log.debug(_("Setting %s to %r (from CLI, verified)") %(option, self.cli_keywords.__dict__[option]), level=8)
+                    log.debug(_("Setting %s to %r (from CLI, verified)") % (option, self.cli_keywords.__dict__[option]), level=8)
                     setattr(self,option,self.cli_keywords.__dict__[option])
                 else:
-                    log.debug(_("Setting %s to %r (from CLI, not checked)") %(option, self.cli_keywords.__dict__[option]), level=8)
+                    log.debug(_("Setting %s to %r (from CLI, not checked)") % (option, self.cli_keywords.__dict__[option]), level=8)
                     setattr(self,option,self.cli_keywords.__dict__[option])
 
     def load_config(self, config):
@@ -136,8 +136,8 @@ class Conf(object):
                 elif isinstance(self.defaults.__dict__[section][key], dict):
                     value = eval(config.get(section,key))
 
-                if hasattr(self,"check_setting_%s_%s" %(section,key)):
-                    exec("retval = self.check_setting_%s_%s(%r)" %(section,key,value))
+                if hasattr(self,"check_setting_%s_%s" % (section,key)):
+                    exec("retval = self.check_setting_%s_%s(%r)" % (section,key,value))
                     if not retval:
                         # We just don't set it, check_setting_%s should have
                         # taken care of the error messages
@@ -145,10 +145,10 @@ class Conf(object):
 
                 if not self.defaults.__dict__[section][key] == value:
                     if key.count('password') >= 1:
-                        log.debug(_("Setting %s_%s to '****' (from configuration file)") %(section,key), level=8)
+                        log.debug(_("Setting %s_%s to '****' (from configuration file)") % (section,key), level=8)
                     else:
-                        log.debug(_("Setting %s_%s to %r (from configuration file)") %(section,key,value), level=8)
-                    setattr(self,"%s_%s" %(section,key),value)
+                        log.debug(_("Setting %s_%s to %r (from configuration file)") % (section,key,value), level=8)
+                    setattr(self,"%s_%s" % (section,key),value)
 
     def options_set_from_config(self):
         """
@@ -193,18 +193,18 @@ class Conf(object):
             elif isinstance(self.defaults.__dict__['testing'][key], dict):
                 value = eval(config.get('testing',key))
 
-            if hasattr(self,"check_setting_%s_%s" %('testing',key)):
+            if hasattr(self,"check_setting_%s_%s" % ('testing',key)):
                 exec("retval = self.check_setting_%s_%s(%r)" % ('testing',key,value))
                 if not retval:
                     # We just don't set it, check_setting_%s should have
                     # taken care of the error messages
                     continue
 
-            setattr(self,"%s_%s" %('testing',key),value)
+            setattr(self,"%s_%s" % ('testing',key),value)
             if key.count('password') >= 1:
-                log.debug(_("Setting %s_%s to '****' (from configuration file)") %('testing',key), level=8)
+                log.debug(_("Setting %s_%s to '****' (from configuration file)") % ('testing',key), level=8)
             else:
-                log.debug(_("Setting %s_%s to %r (from configuration file)") %('testing',key,value), level=8)
+                log.debug(_("Setting %s_%s to %r (from configuration file)") % ('testing',key,value), level=8)
 
     def check_config(self, val=None):
         """
@@ -345,21 +345,21 @@ class Conf(object):
 
         for item in items:
             mode = self.cfg_parser.get('kolab',item)
-            print "%s = %s" %(item,mode)
+            print "%s = %s" % (item,mode)
 
             if not self.cfg_parser.has_section(mode):
-                print "WARNING: No configuration section %s for item %s" %(mode,item)
+                print "WARNING: No configuration section %s for item %s" % (mode,item)
                 continue
 
             keys = self.cfg_parser.options(mode)
             keys.sort()
 
             if self.cfg_parser.has_option(mode, 'leave_this_one_to_me'):
-                print "Ignoring section %s" %(mode,)
+                print "Ignoring section %s" % (mode,)
                 continue
 
             for key in keys:
-                print "%s_%s = %s" %(mode, key ,self.cfg_parser.get(mode,key))
+                print "%s_%s = %s" % (mode, key ,self.cfg_parser.get(mode,key))
 
     def read_config(self, value=None):
         """
@@ -384,7 +384,7 @@ class Conf(object):
 
         exec("args = %r" % args)
 
-        print "%s/%s: %r" %(args[0],args[1],self.get(args[0], args[1]))
+        print "%s/%s: %r" % (args[0],args[1],self.get(args[0], args[1]))
 
 #        if len(args) == 3:
 #            # Return non-zero if no match
@@ -411,7 +411,7 @@ class Conf(object):
             log.error(_("Insufficient options. Need section, key and value -in that order."))
 
         if not self.cfg_parser.has_section(args[0]):
-            log.error(_("No section '%s' exists.") %(args[0]))
+            log.error(_("No section '%s' exists.") % (args[0]))
 
         self.cfg_parser.set(args[0], args[1], args[2])
         fp = open(self.cli_keywords.config_file, "w+")
@@ -442,7 +442,7 @@ class Conf(object):
 
         # But, they should be available in our class as well
         for option in self.cli_parser.defaults.keys():
-            log.debug(_("Setting %s to %r (from the default values for CLI options)") %(option, self.cli_parser.defaults[option]), level=8)
+            log.debug(_("Setting %s to %r (from the default values for CLI options)") % (option, self.cli_parser.defaults[option]), level=8)
             setattr(self,option,self.cli_parser.defaults[option])
 
     def has_section(self, section):
@@ -501,11 +501,11 @@ class Conf(object):
         if self.cfg_parser.has_option(section, key):
             return self.cfg_parser.get(section,key)
 
-        if hasattr(self, "get_%s_%s" %(section,key)):
+        if hasattr(self, "get_%s_%s" % (section,key)):
             try:
-                exec("retval = self.get_%s_%s(quiet)" %(section,key))
+                exec("retval = self.get_%s_%s(quiet)" % (section,key))
             except Exception, e:
-                log.error(_("Could not execute configuration function: %s") %("get_%s_%s(quiet=%r)" %(section,key,quiet)))
+                log.error(_("Could not execute configuration function: %s") % ("get_%s_%s(quiet=%r)" % (section,key,quiet)))
                 return None
 
             return retval
@@ -513,12 +513,12 @@ class Conf(object):
         if quiet:
             return ""
         else:
-            log.warning(_("Option %s/%s does not exist in config file %s, pulling from defaults") %(section, key, self.config_file))
-            if hasattr(self.defaults, "%s_%s" %(section,key)):
-                return getattr(self.defaults, "%s_%s" %(section,key))
-            elif hasattr(self.defaults, "%s" %(section)):
-                if key in getattr(self.defaults, "%s" %(section)):
-                    _dict = getattr(self.defaults, "%s" %(section))
+            log.warning(_("Option %s/%s does not exist in config file %s, pulling from defaults") % (section, key, self.config_file))
+            if hasattr(self.defaults, "%s_%s" % (section,key)):
+                return getattr(self.defaults, "%s_%s" % (section,key))
+            elif hasattr(self.defaults, "%s" % (section)):
+                if key in getattr(self.defaults, "%s" % (section)):
+                    _dict = getattr(self.defaults, "%s" % (section))
                     return _dict[key]
                 else:
                     log.warning(_("Option does not exist in defaults."))
@@ -534,10 +534,10 @@ class Conf(object):
                 self.config_file = value
                 return True
             else:
-                log.error(_("Configuration file %s not readable.") %(value))
+                log.error(_("Configuration file %s not readable.") % (value))
                 return False
         else:
-            log.error(_("Configuration file %s does not exist.") %(value))
+            log.error(_("Configuration file %s does not exist.") % (value))
             return False
 
     def check_setting_debuglevel(self, value):
@@ -607,7 +607,7 @@ class Conf(object):
             selectively = False
             for item in [ 'calendar', 'contacts', 'mail' ]:
                 if self.cli_keywords.__dict__[item]:
-                    log.debug(_("Found you specified a specific set of items to test: %s") %(item), level=8)
+                    log.debug(_("Found you specified a specific set of items to test: %s") % (item), level=8)
                     selectively = item
 
             if not selectively:
@@ -615,7 +615,7 @@ class Conf(object):
                 self.contacts = True
                 self.mail = True
             else:
-                log.debug(_("Selectively selecting: %s") %(selectively), level=8)
+                log.debug(_("Selectively selecting: %s") % (selectively), level=8)
                 setattr(self, selectively, True)
 
             self.test_suites.append('zpush')

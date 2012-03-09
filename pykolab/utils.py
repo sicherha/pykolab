@@ -36,12 +36,12 @@ def ask_question(question, default="", password=False):
         Usage: pykolab.utils.ask_question("What is the server?", default="localhost")
     """
     if password:
-        answer = getpass.getpass("%s: " %(question))
+        answer = getpass.getpass("%s: " % (question))
     else:
         if default == "":
-            answer = raw_input("%s: " %(question))
+            answer = raw_input("%s: " % (question))
         else:
-            answer = raw_input("%s [%s]: " %(question, default))
+            answer = raw_input("%s [%s]: " % (question, default))
 
     if answer == "":
         return default
@@ -71,7 +71,7 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
 
     answer = False
     while answer == False:
-        answer = raw_input("%s [%s/%s]: " %(question,default_yes,default_no))
+        answer = raw_input("%s [%s/%s]: " % (question,default_yes,default_no))
         # Parse answer and set back to False if not appropriate
         if all_inclusive_no:
             if not answer in [ "y", "Y", "yes" ]:
@@ -206,7 +206,7 @@ def pop_empty_from_list(_input_list):
             _output_list.append(item)
 
 def standard_root_dn(domain):
-    return 'dc=%s' %(',dc='.join(domain.split('.')))
+    return 'dc=%s' % (',dc='.join(domain.split('.')))
 
 def translate(mystring, locale_name='en_US'):
     import locale
