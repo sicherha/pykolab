@@ -30,6 +30,7 @@ EXTRA_DIST = \
 	README.tests \
 	pykolab.spec \
 	pykolab.spec.in \
+	pylint.log \
 	$(PYTHON_FILES)
 
 SUBDIRS = \
@@ -41,8 +42,11 @@ SUBDIRS = \
 	saslauthd \
 	wallace
 
-ChangeLog:
+ChangeLog: pylint
 	(GIT_DIR=.git git log $(PACKAGE)-$(VERSION) > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || (touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
+
+pylint:
+	@pylint bonnie.py conf.py kolabd.py kolab.py kolabtest.py saslauthd.py setup-kolab.py wallace.py bonnie/ kolabd/ kolab/ pykolab/ saslauthd/ wallace/ > pylint.log
 
 srpm: ChangeLog dist 
 	@rpmbuild -ts $(PACKAGE)-$(VERSION).tar.gz
