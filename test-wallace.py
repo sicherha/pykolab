@@ -32,7 +32,7 @@ from email.Utils import COMMASPACE, formatdate
 from email import Encoders
 
 def send_mail(send_from, send_to, send_with=None):
-    smtp = smtplib.SMTP("localhost", 8025)
+    smtp = smtplib.SMTP("localhost", 10026)
     smtp.set_debuglevel(True)
     subject = "This is a Kolab load test mail"
     text = """Hi there,
@@ -88,6 +88,15 @@ if __name__ == "__main__":
             #send_to
         #)
 
-    send_to = [ 'Jeroen van Meeuwen <jeroen.vanmeeuwen@klab.cc>' ]
+    send_to = [
+            'Jeroen van Meeuwen (REJECT) <vanmeeuwen+reject@kolabsys.com>',
+            'Jeroen van Meeuwen (HOLD) <vanmeeuwen+hold@kolabsys.com>',
+            'Jeroen van Meeuwen (DEFER) <vanmeeuwen+defer@kolabsys.com>',
+            'Jeroen van Meeuwen (ACCEPT) <vanmeeuwen+accept@kolabsys.com>',
+            'Jeroen "kanarip" van Meeuwen (ACCEPT) <kanarip+accept@kolabsys.com>',
+            'Jeroen "kanarip" van Meeuwen (REJECT) <kanarip+reject@kolabsys.com>',
+            'Lucy Meier (REJECT) <meier+reject@kolabsys.com>',
+            'Georg Greve (REJECT) <greve+reject@kolabsys.com>',
+        ]
 
     send_mail('Jeroen van Meeuwen <vanmeeuwen@kolabsys.com>', send_to)

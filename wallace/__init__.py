@@ -56,7 +56,7 @@ class WallaceDaemon(object):
                 "-p", "--port",
                 dest    = "wallace_port",
                 action  = "store",
-                default = 10027,
+                default = 10026,
                 help    = _("Port that Wallace is supposed to use.")
             )
 
