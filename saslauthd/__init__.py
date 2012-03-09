@@ -141,7 +141,7 @@ class SASLAuthDaemon(object):
                 (length,) = struct.unpack("!H", received[start:end])
                 start += 2
                 end += length
-                (value,) = struct.unpack("!%ds" %(length), received[start:end])
+                (value,) = struct.unpack("!%ds" % (length), received[start:end])
                 start += length
                 end = start + 2
                 login.append(value)
@@ -170,5 +170,5 @@ class SASLAuthDaemon(object):
     def write_pid(self):
         pid = os.getpid()
         fp = open(conf.pidfile,'w')
-        fp.write("%d\n" %(pid))
+        fp.write("%d\n" % (pid))
         fp.close()
