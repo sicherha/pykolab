@@ -23,18 +23,16 @@
     consider providing an option to specify the pid file path.
 """
 
-from optparse import OptionParser
-from ConfigParser import SafeConfigParser
-
 import os
 import shutil
+import sys
 import time
 import traceback
 
 import pykolab
 
 from pykolab.auth import Auth
-from pykolab.constants import *
+from pykolab import constants
 from pykolab.translate import _
 
 log = pykolab.getLogger('kolabd')
@@ -87,23 +85,27 @@ class KolabDaemon(object):
             elif not conf.fork_mode:
                 self.do_sync()
 
-        except SystemExit, e:
-            exitcode = e
+        except SystemExit, errcode:
+            exitcode = errcode
         except KeyboardInterrupt:
             exitcode = 1
             log.info(_("Interrupted by user"))
-        except AttributeError, e:
+        except AttributeError, errmsg:
             exitcode = 1
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a bug at http://bugzilla.kolabsys.com")
-        except TypeError, e:
+            print >> sys.stderr, _("Traceback occurred, please report a " + \
+                "bug at http://bugzilla.kolabsys.com")
+
+        except TypeError, errmsg:
             exitcode = 1
             traceback.print_exc()
-            log.error(_("Type Error: %s") % e)
+            log.error(_("Type Error: %s") % errmsg)
         except:
             exitcode = 2
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a bug at http://bugzilla.kolabsys.com")
+            print >> sys.stderr, _("Traceback occurred, please report a " + \
+                "bug at http://bugzilla.kolabsys.com")
+
         sys.exit(exitcode)
 
     def do_sync(self):
@@ -122,25 +124,54 @@ class KolabDaemon(object):
                 time.sleep(600)
             end = time.time()
 
-            log.debug(_("Found %d domains in %d seconds") %(len(domains),(end-start)), level=8)
+            log.debug(
+                    _("Found %d domains in %d seconds") % (
+                            len(domains),
+                            (end-start)
+                        ),
+                    level=8
+                )
 
-            for primary_domain,secondary_domains in domains:
-                log.debug(_("Running for domain %s") %(primary_domain), level=5)
+            for primary_domain, secondary_domains in domains:
+                log.debug(
+                        _("Running for domain %s") % (
+                                primary_domain
+                            ),
+                        level=5
+                    )
 
                 if not pid == 0 and not domain_auth.has_key(primary_domain):
-                    log.debug(_("Domain %s did not have a key yet") %(primary_domain), level=5)
+                    log.debug(
+                            _("Domain %s did not have a key yet") % (
+                                    primary_domain
+                                ),
+                            level=5
+                        )
+
                     domain_auth[primary_domain] = Auth()
                     pid = os.fork()
                     if pid == 0:
                         domain_auth[primary_domain].connect(primary_domain)
                         start_time = time.time()
-                        domain_auth[primary_domain].synchronize(primary_domain, secondary_domains)
+                        domain_auth[primary_domain].synchronize(
+                                primary_domain,
+                                secondary_domains
+                            )
+
                         end_time = time.time()
 
-                        log.info(_("Synchronizing users for %s took %d seconds")
-                                %(primary_domain, (end_time-start_time))
+                        log.info(
+                                _("Synchronizing users for %s took %d seconds")
+                                    % (
+                                        primary_domain,
+                                        (end_time-start_time)
+                                    )
                             )
-                        domain_auth[primary_domain].synchronize(primary_domain, secondary_domains)
+
+                        domain_auth[primary_domain].synchronize(
+                                primary_domain,
+                                secondary_domains
+                            )
 
     def reload_config(self, *args, **kw):
         pass
@@ -158,5 +189,5 @@ class KolabDaemon(object):
     def write_pid(self):
         pid = os.getpid()
         fp = open(conf.pidfile,'w')
-        fp.write("%d\n" %(pid))
+        fp.write("%d\n" % (pid))
         fp.close()
