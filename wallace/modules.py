@@ -200,7 +200,7 @@ X-Wallace-Result: REJECT
 
     msg = MIMEMultipart("report")
     msg['From'] = "MAILER-DAEMON@%s" % (constants.fqdn)
-    msg['To'] = formataddr(envelope_sender)
+    msg['To'] = formataddr(envelope_sender[0])
     msg['Date'] = formatdate(localtime=True)
     msg['Subject'] = ndr_message_subject
 
@@ -225,9 +225,10 @@ X-Wallace-Result: REJECT
     try:
         smtp.sendmail(
                 "MAILER-DAEMON@%s" % (constants.fqdn),
-                [formataddr(envelope_sender)],
+                [formataddr(envelope_sender[0])],
                 msg.as_string()
             )
+
     except smtplib.SMTPDataError, errmsg:
         # DEFER
         pass
@@ -255,12 +256,13 @@ def cb_action_ACCEPT(module, filepath):
 
     try:
         smtp.sendmail(
-                formataddr(envelope_sender),
+                formataddr(envelope_sender[0]),
                 COMMASPACE.join(
                         [formataddr(recipient) for recipient in recipients]
                     ),
                 message.as_string()
             )
+
     except smtplib.SMTPDataError, errmsg:
         # DEFER
         pass
@@ -289,8 +291,16 @@ def register_group(dirname, module):
             if filename.startswith('module_') and filename.endswith('.py'):
                 module_name = filename.replace('.py','')
                 name = module_name.replace('module_', '')
-                #print "exec(\"from %s.%s import __init__ as %s_%s_register\"" % (module,module_name,module,name)
-                exec("from %s.%s import __init__ as %s_%s_register" % (module,module_name,module,name))
+                # TODO: Error recovery from incomplete / incorrect modules.
+                exec(
+                        "from %s.%s import __init__ as %s_%s_register" % (
+                                module,
+                                module_name,
+                                module,
+                                name
+                            )
+                    )
+
                 exec("%s_%s_register()" % (module,name))
 
 def register(name, func, group=None, description=None, aliases=[]):
