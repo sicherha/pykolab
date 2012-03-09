@@ -87,39 +87,80 @@ class WallaceDaemon(object):
         os.close(fp)
 
         while threading.active_count() > 25:
-            log.debug(_("Number of threads currently running: %d") %(threading.active_count()), level=8)
-            time.sleep(10)
+            log.debug(
+                    _("Number of threads currently running: %d") % (
+                            threading.active_count()
+                        ),
+                    level=8
+                )
 
-        log.debug(_("Continuing with %d threads currently running") %(threading.active_count()), level=8)
+            time.sleep(1)
+
+        log.debug(
+                _("Continuing with %d threads currently running") % (
+                        threading.active_count()
+                    ),
+                level=8
+            )
 
         # TODO: Apply throttling
-        log.debug(_("Creating thread for message in %s") %(filename), level=8)
+        log.debug(_("Creating thread for message in %s") % (filename), level=8)
 
         thread = threading.Thread(target=self.thread_run, args=[ filename ])
         thread.start()
 
     def thread_run(self, filename, *args, **kw):
         while threading.active_count() > 25:
-            log.debug(_("Number of threads currently running: %d") %(threading.active_count()), level=8)
+            log.debug(
+                    _("Number of threads currently running: %d") % (
+                            threading.active_count()
+                        ),
+                    level=8
+                )
+
             time.sleep(10)
 
-        log.debug(_("Continuing with %d threads currently running") %(threading.active_count()), level=8)
+        log.debug(
+                _("Continuing with %d threads currently running") % (
+                        threading.active_count()
+                    ),
+                level=8
+            )
 
-        log.debug(_("Running thread %s for message file %s") %(threading.current_thread().name,filename), level=8)
+        log.debug(
+                _("Running thread %s for message file %s") % (
+                        threading.current_thread().name,
+                        filename
+                    ),
+                level=8
+            )
 
         if kw.has_key('module'):
-            log.debug(_("This message was already in module %s, delegating specifically to that module") %(kw['module']), level=8)
+            log.debug(
+                    _("This message was already in module %s, delegating " + \
+                        "specifically to that module") % (
+                            kw['module']
+                        ),
+                    level=8
+                )
 
             if kw.has_key('stage'):
-                log.debug(_("It was also in a certain stage: %s, letting module %s know that") %(kw['stage'],kw['module']), level=8)
+                log.debug(
+                        _("It was also in a certain stage: %s, letting " + \
+                            "module %s know that") % (
+                                kw['stage'],
+                                kw['module']
+                            ),
+                        level=8
+                    )
 
-                log.debug(_("Executing module %s") %(kw['module']), level=8)
+                log.debug(_("Executing module %s") % (kw['module']), level=8)
 
                 modules.execute(kw['module'], filename, stage=kw['stage'])
 
                 return
 
-            log.debug(_("Executing module %s") %(kw['module']), level=8)
+            log.debug(_("Executing module %s") % (kw['module']), level=8)
             modules.execute(kw['module'], filename, stage=kw['stage'])
 
             return
@@ -129,7 +170,7 @@ class WallaceDaemon(object):
             wallace_modules = []
 
         for module in wallace_modules:
-            log.debug(_("Executing module %s") %(module), level=8)
+            log.debug(_("Executing module %s") % (module), level=8)
             modules.execute(module, filename)
 
     def run(self):
@@ -158,7 +199,9 @@ class WallaceDaemon(object):
         except AttributeError, e:
             exitcode = 1
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a bug at http://bugzilla.kolabsys.com")
+            print >> sys.stderr, _("Traceback occurred, please report a " + \
+                "bug at http://bugzilla.kolabsys.com")
+
         except TypeError, e:
             exitcode = 1
             traceback.print_exc()
@@ -166,7 +209,9 @@ class WallaceDaemon(object):
         except:
             exitcode = 2
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a bug at http://bugzilla.kolabsys.com")
+            print >> sys.stderr, _("Traceback occurred, please report a " + \
+                "bug at http://bugzilla.kolabsys.com")
+
         sys.exit(exitcode)
 
     def pickup_defer(self):
@@ -199,7 +244,12 @@ class WallaceDaemon(object):
             time.sleep(1)
 
             for module in wallace_modules:
-                log.debug(_("Picking up deferred messages for module %s") %(module), level=8)
+                log.debug(
+                        _("Picking up deferred messages for module %s") % (
+                                module
+                            ),
+                        level=8
+                    )
 
                 module_defer_path = os.path.join(base_path, module, 'DEFER')
 
@@ -222,8 +272,8 @@ class WallaceDaemon(object):
                 log.debug(_("Sleeping for 1 second"), level=8)
                 time.sleep(1)
             else:
-                log.debug(_("Sleeping for 10 seconds"), level=8)
-                time.sleep(10)
+                log.debug(_("Sleeping for 1800 seconds"), level=8)
+                time.sleep(1800)
 
 
     def do_wallace(self):
@@ -249,7 +299,7 @@ class WallaceDaemon(object):
             except Exception, e:
                 log.warning(
                         _("Could not bind to socket on port %d on bind " + \
-                            "address %s") %(
+                            "address %s") % (
                                 conf.wallace_port,
                                 conf.wallace_bind_address
                             )
@@ -280,8 +330,8 @@ class WallaceDaemon(object):
                 if not root == pickup_path:
                     module = os.path.dirname(root).replace(pickup_path, '')
 
-                    # Compare uppercase status (specifically, DEFER) with lowercase
-                    # (plugin names).
+                    # Compare uppercase status (specifically, DEFER) with
+                    # lowercase (plugin names).
                     #
                     # The messages in DEFER are supposed to be picked up by
                     # another thread, whereas the messages in other directories
@@ -309,13 +359,19 @@ class WallaceDaemon(object):
                     if stage.lower() == "defer":
                         continue
 
-                    log.debug(_("Number of threads currently running: %d") %(threading.active_count()), level=8)
+                    log.debug(
+                            _("Number of threads currently running: %d") % (
+                                    threading.active_count()
+                                ),
+                            level=8
+                        )
+
                     thread = threading.Thread(
                             target = self.thread_run,
                             args = [ filepath ],
                             kwargs = {
-                                    "module": '%s' %(module),
-                                    "stage": '%s' %(stage)
+                                    "module": '%s' % (module),
+                                    "stage": '%s' % (stage)
                                 }
                         )
 
@@ -324,9 +380,25 @@ class WallaceDaemon(object):
 
                     continue
 
-                log.debug(_("Picking up spooled email file %s") %(filepath), level=8)
-                log.debug(_("Number of threads currently running: %d") %(threading.active_count()), level=8)
-                thread = threading.Thread(target=self.thread_run, args=[ filepath ])
+                log.debug(
+                        _("Picking up spooled email file %s") % (
+                                filepath
+                            ),
+                        level=8
+                    )
+
+                log.debug(
+                        _("Number of threads currently running: %d") % (
+                                threading.active_count()
+                            ),
+                        level=8
+                    )
+
+                thread = threading.Thread(
+                        target=self.thread_run,
+                        args=[ filepath ]
+                    )
+
                 thread.start()
                 time.sleep(0.5)
 
@@ -342,7 +414,7 @@ class WallaceDaemon(object):
                     log.info(_("Accepted connection"))
                     if not pair == None:
                         connection, address = pair
-                        #print "Accepted connection from %r" %(address)
+                        #print "Accepted connection from %r" % (address)
                         channel = SMTPChannel(self, connection, address)
                         asyncore.loop()
             except Exception, e:

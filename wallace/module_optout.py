@@ -49,16 +49,16 @@ def execute(*args, **kw):
     filepath = args[0]
 
     if kw.has_key('stage'):
-        log.debug(_("Issuing callback after processing to stage %s") %(kw['stage']), level=8)
-        log.debug(_("Testing cb_action_%s()") %(kw['stage']), level=8)
-        if hasattr(modules, 'cb_action_%s' %(kw['stage'])):
-            log.debug(_("Attempting to execute cb_action_%s()") %(kw['stage']), level=8)
-            exec('modules.cb_action_%s(%r, %r)' %(kw['stage'],'optout',filepath))
+        log.debug(_("Issuing callback after processing to stage %s") % (kw['stage']), level=8)
+        log.debug(_("Testing cb_action_%s()") % (kw['stage']), level=8)
+        if hasattr(modules, 'cb_action_%s' % (kw['stage'])):
+            log.debug(_("Attempting to execute cb_action_%s()") % (kw['stage']), level=8)
+            exec('modules.cb_action_%s(%r, %r)' % (kw['stage'],'optout',filepath))
             return
 
         #modules.next_module('optout')
 
-    log.debug(_("Consulting opt-out service for %r, %r") %(args, kw), level=8)
+    log.debug(_("Consulting opt-out service for %r, %r") % (args, kw), level=8)
 
     import email
     message = email.message_from_file(open(filepath, 'r'))
@@ -86,7 +86,7 @@ def execute(*args, **kw):
         for recipient in recipients[recipient_type]:
             log.debug(
                     _("Running opt-out consult from envelope sender '%s " + \
-                        "<%s>' to recipient %s <%s>") %(
+                        "<%s>' to recipient %s <%s>") % (
                             envelope_sender[0][0],
                             envelope_sender[0][1],
                             recipient[0],
@@ -143,23 +143,23 @@ def execute(*args, **kw):
         if use_this:
             # TODO: Do not set items with an empty list.
 
-            (fp, filename) = tempfile.mkstemp(dir="/var/spool/pykolab/wallace/optout/%s" %(answer))
+            (fp, filename) = tempfile.mkstemp(dir="/var/spool/pykolab/wallace/optout/%s" % (answer))
             os.write(fp, _message.__str__())
             os.close(fp)
 
             # Callback with new filename
-            if hasattr(modules, 'cb_action_%s' %(answer)):
-                log.debug(_("Attempting to execute cb_action_%s(%r, %r)") %(answer, 'optout', filename), level=8)
-                exec('modules.cb_action_%s(%r, %r)' %(answer,'optout', filename))
+            if hasattr(modules, 'cb_action_%s' % (answer)):
+                log.debug(_("Attempting to execute cb_action_%s(%r, %r)") % (answer, 'optout', filename), level=8)
+                exec('modules.cb_action_%s(%r, %r)' % (answer,'optout', filename))
 
     os.unlink(filepath)
 
-    #print "Moving filepath %s to new_filepath %s" %(filepath, new_filepath)
+    #print "Moving filepath %s to new_filepath %s" % (filepath, new_filepath)
     #os.rename(filepath, new_filepath)
 
-    #if hasattr(modules, 'cb_action_%s' %(optout_answer)):
-        #log.debug(_("Attempting to execute cb_action_%s()") %(optout_answer), level=8)
-        #exec('modules.cb_action_%s(%r, %r)' %(optout_answer,'optout', new_filepath))
+    #if hasattr(modules, 'cb_action_%s' % (optout_answer)):
+        #log.debug(_("Attempting to execute cb_action_%s()") % (optout_answer), level=8)
+        #exec('modules.cb_action_%s(%r, %r)' % (optout_answer,'optout', new_filepath))
         #return
 
 def request(params=None):
@@ -170,7 +170,7 @@ def request(params=None):
     try:
         f = urllib.urlopen(optout_url, params)
     except Exception, e:
-        log.error(_("Could not send request to optout_url %s") %(optout_url))
+        log.error(_("Could not send request to optout_url %s") % (optout_url))
         return "DEFER"
 
     response = f.read()
