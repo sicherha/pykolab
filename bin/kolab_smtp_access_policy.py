@@ -204,7 +204,7 @@ class PolicyRequest(object):
                 pass
 
         log.debug(
-                _("Adding policy request to instance %s") %(self.instance),
+                _("Adding policy request to instance %s") % (self.instance),
                 level=8
             )
 
@@ -478,7 +478,7 @@ class PolicyRequest(object):
                 )
 
             reject(
-                    _("Could not find envelope sender user %s") %(
+                    _("Could not find envelope sender user %s") % (
                         self.sasl_username
                         )
                 )
@@ -538,7 +538,7 @@ class PolicyRequest(object):
                     sasl_sender=self.sasl_sender
                 )
 
-            reject(_("Could not find envelope sender user %s") %(self.sender))
+            reject(_("Could not find envelope sender user %s") % (self.sender))
 
         attrs = search_attrs
         attrs.extend(
@@ -565,18 +565,18 @@ class PolicyRequest(object):
 
         if not self.sender_user.has_key('kolabdelegate'):
             reject(
-                    _("%s is unauthorized to send on behalf of %s") %(
+                    _("%s is unauthorized to send on behalf of %s") % (
                             self.sasl_user['dn'],
                             self.sender_user['dn']
                         )
                 )
 
         elif self.sender_user['kolabdelegate'] == None:
-            # No delegates for this sender could be found. The user is definitely
-            # NOT a delegate of the sender.
+            # No delegates for this sender could be found. The user is
+            # definitely NOT a delegate of the sender.
             log.warning(
                 _("User %s attempted to use envelope sender address %s " + \
-                    "without authorization") %(
+                    "without authorization") % (
                             policy_request["sasl_username"],
                             policy_request["sender"]
                         )
@@ -635,7 +635,7 @@ class PolicyRequest(object):
             for sender_delegate in sender_delegates:
                 if self.sasl_user['dn'] == sender_delegate:
                     log.debug(
-                            _("Found user %s to be a delegate user of %s") %(
+                            _("Found user %s to be a delegate user of %s") % (
                                     policy_request["sasl_username"],
                                     policy_request["sender"]
                                 ),
@@ -646,7 +646,7 @@ class PolicyRequest(object):
 
                 elif self.sasl_user['uid'] == sender_delegate:
                     log.debug(
-                            _("Found user %s to be a delegate user of %s") %(
+                            _("Found user %s to be a delegate user of %s") % (
                                     policy_request["sasl_username"],
                                     policy_request["sender"]
                                 ),
@@ -672,11 +672,11 @@ class PolicyRequest(object):
         if not self.sasl_username == '' and not self.sasl_username == None:
             log.debug(_("Verifying authenticated sender '%(sender)s' with " + \
                     "sasl_username '%(sasl_username)s' for recipient " + \
-                    "'%(recipient)s'") %(self.__dict__)
+                    "'%(recipient)s'") % (self.__dict__)
                 )
         else:
             log.debug(_("Verifying unauthenticated sender '%(sender)s' " + \
-                    "for recipient '%(recipient)s'") %(self.__dict__)
+                    "for recipient '%(recipient)s'") % (self.__dict__)
                 )
 
         recipient_verified = False
@@ -694,7 +694,7 @@ class PolicyRequest(object):
                 log.info(
                         _("Reproducing verify_recipient(%s, %s) from " + \
                             "cache, saving you queries, time and thus " + \
-                            "money.") %(self.sender, recipient)
+                            "money.") % (self.sender, recipient)
                     )
 
                 return record[0].value
@@ -709,7 +709,7 @@ class PolicyRequest(object):
         if verify_domain(sasl_domain):
             if auth.secondary_domains.has_key(sasl_domain):
                 log.debug(
-                        _("Using authentication domain %s instead of %s") %(
+                        _("Using authentication domain %s instead of %s") % (
                                 auth.secondary_domains[sasl_domain],
                                 sasl_domain
                             ),
@@ -719,7 +719,7 @@ class PolicyRequest(object):
                 sasl_domain = auth.secondary_domains[sasl_domain]
             else:
                 log.debug(
-                        _("Domain %s is a primary domain") %(
+                        _("Domain %s is a primary domain") % (
                                 sasl_domain
                         ),
                         level=8
@@ -728,7 +728,7 @@ class PolicyRequest(object):
         else:
             log.warning(
                     _("Checking the recipient for domain %s that is not " + \
-                    "ours. This is probably a configuration error.") %(
+                    "ours. This is probably a configuration error.") % (
                             sasl_domain
                         )
                 )
@@ -839,7 +839,7 @@ class PolicyRequest(object):
 
                     if not recipient_found:
                         reject(_("Sender %s is not allowed to send to " + \
-                                "recipient %s") %(self.sender,recipient))
+                                "recipient %s") % (self.sender,recipient))
 
         for recipient in self.recipients:
             recipient_verified = self.verify_recipient(recipient)
@@ -879,7 +879,7 @@ class PolicyRequest(object):
 
             if not records == None and len(records) == len(self.recipients):
                 log.info(_("Reproducing verify_sender(%r) from cache, " + \
-                        "saving you queries, time and thus money.") %(
+                        "saving you queries, time and thus money.") % (
                                 self.__dict__
                             )
                     )
@@ -892,7 +892,7 @@ class PolicyRequest(object):
 
                     if recipient_found and not record.value:
                         reject(_("Sender %s is not allowed to send to " + \
-                                "recipient %s") %(self.sender,recipient))
+                                "recipient %s") % (self.sender,recipient))
 
                 return True
 
@@ -945,7 +945,7 @@ class PolicyRequest(object):
                     'kolabAllowSMTPRecipient'
                 )
 
-        log.debug(_("Result is %r") %(recipient_policy), level=8)
+        log.debug(_("Result is %r") % (recipient_policy), level=8)
 
         # If no such attribute has been specified, allow
         if recipient_policy == None:
@@ -975,7 +975,7 @@ class PolicyRequest(object):
                 if not recipient_allowed:
                     reject(
                             _("Sender %s not allowed to send to recipient " + \
-                                "%s") %(recipient_policy_user['dn'],recipient)
+                                "%s") % (recipient_policy_user['dn'],recipient)
                         )
 
             sender_verified = True
@@ -1042,7 +1042,7 @@ def cache_init():
     try:
         metadata.create_all(engine)
     except sqlalchemy.exc.OperationalError, e:
-        log.error(_("Operational Error in caching: %s" %(e)))
+        log.error(_("Operational Error in caching: %s" % (e)))
         return False
 
     Session = sessionmaker(bind=engine)
@@ -1075,7 +1075,8 @@ def cache_select(
             ).filter(
                     PolicyResult.recipient.in_(recipients)
                 ).filter(
-                        PolicyResult.created >= ((int)(time.time()) - cache_expire)
+                        PolicyResult.created >= \
+                            ((int)(time.time()) - cache_expire)
                     ).all()
 
 def cache_insert(
@@ -1092,7 +1093,7 @@ def cache_insert(
         return []
 
     log.debug(
-            _("Caching the policy result with timestamp %d") %(
+            _("Caching the policy result with timestamp %d") % (
                     (int)(time.time())
                 ),
             level=8
@@ -1169,28 +1170,28 @@ def cache_update(
                 )
 
 def defer_if_permit(message, policy_request=None):
-    log.info(_("Returning action DEFER_IF_PERMIT: %s") %(message))
-    print "action=DEFER_IF_PERMIT %s\n\n" %(message)
+    log.info(_("Returning action DEFER_IF_PERMIT: %s") % (message))
+    print "action=DEFER_IF_PERMIT %s\n\n" % (message)
     sys.exit(0)
 
 def dunno(message, policy_request=None):
-    log.info(_("Returning action DUNNO: %s") %(message))
-    print "action=DUNNO %s\n\n" %(message)
+    log.info(_("Returning action DUNNO: %s") % (message))
+    print "action=DUNNO %s\n\n" % (message)
     sys.exit(0)
 
 def hold(message, policy_request=None):
-    log.info(_("Returning action HOLD: %s") %(message))
-    print "action=HOLD %s\n\n" %(message)
+    log.info(_("Returning action HOLD: %s") % (message))
+    print "action=HOLD %s\n\n" % (message)
     sys.exit(0)
 
 def permit(message, policy_request=None):
-    log.info(_("Returning action PERMIT: %s") %(message))
+    log.info(_("Returning action PERMIT: %s") % (message))
     print "action=PERMIT\n\n"
     sys.exit(0)
 
 def reject(message, policy_request=None):
-    log.info(_("Returning action REJECT: %s") %(message))
-    print "action=REJECT %s\n\n" %(message)
+    log.info(_("Returning action REJECT: %s") % (message))
+    print "action=REJECT %s\n\n" % (message)
     sys.exit(0)
 
 def expand_mydomains():
@@ -1218,7 +1219,7 @@ def normalize_address(email_address):
     if len(email_address.split("+")) > 1:
         # Take the first part split by recipient delimiter and the last part
         # split by '@'.
-        return "%s@%s" %(
+        return "%s@%s" % (
                 email_address.split("+")[0],
                 # TODO: Under some conditions, the recipient may not be fully
                 # qualified. We'll cross that bridge when we get there, though.
@@ -1246,7 +1247,7 @@ def read_request_input():
                 end_of_request = True
         else:
             request_line = request_line.strip()
-            log.debug(_("Getting line: %s") %(request_line), level=8)
+            log.debug(_("Getting line: %s") % (request_line), level=8)
             policy_request[request_line.split('=')[0]] = \
                 '='.join(request_line.split('=')[1:]).lower()
 
@@ -1307,7 +1308,7 @@ if __name__ == "__main__":
     while True:
         policy_request = read_request_input()
         instance = policy_request['instance']
-        log.debug(_("Got request instance %s") %(instance))
+        log.debug(_("Got request instance %s") % (instance))
         if policy_requests.has_key(instance):
             policy_requests[instance].add_request(policy_request)
         else:
@@ -1315,10 +1316,20 @@ if __name__ == "__main__":
 
         protocol_state = policy_request['protocol_state'].strip().lower()
 
-        log.debug(_("Request instance %s is in state %s") %(instance,protocol_state))
+        log.debug(
+                _("Request instance %s is in state %s") % (
+                        instance,
+                        protocol_state
+                    )
+            )
 
         if not protocol_state == 'data':
-            log.debug(_("Request instance %s is not yet in DATA state") %(instance))
+            log.debug(
+                    _("Request instance %s is not yet in DATA state") % (
+                            instance
+                        )
+                )
+
             print "action=DUNNO\n\n"
             sys.stdout.flush()
 
@@ -1326,7 +1337,7 @@ if __name__ == "__main__":
         # set to a non-zero value and the protocol_state being set to 'data'.
         # Note that the input we're getting is a string, not an integer.
         else:
-            log.debug(_("Request instance %s reached DATA state") %(instance))
+            log.debug(_("Request instance %s reached DATA state") % (instance))
 
             sender_allowed = False
             recipient_allowed = False
@@ -1337,7 +1348,9 @@ if __name__ == "__main__":
                 sender_allowed = True
 
             if conf.verify_recipient:
-                recipient_allowed = policy_requests[instance].verify_recipients()
+                recipient_allowed = \
+                        policy_requests[instance].verify_recipients()
+
             else:
                 recipient_allowed = True
 
