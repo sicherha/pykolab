@@ -21,13 +21,17 @@ import os
 import sys
 import time
 
-import email
+from email import message_from_file
+from email.message import Message
 from email.mime.base import MIMEBase
 from email.mime.message import MIMEMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE
 from email.utils import formatdate
+from email.utils import formataddr
+from email.utils import getaddresses
+from email.utils import parsedate_tz
 
 import smtplib
 
@@ -115,9 +119,9 @@ def cb_action_HOLD(module, filepath):
 
 def cb_action_DEFER(module, filepath):
     log.info(_("Deferring message in %s (by module %s)") % (filepath, module))
-    message = email.message_from_file(open(filepath, 'r'))
+    message = message_from_file(open(filepath, 'r'))
 
-    internal_time = email.Utils.parsedate_tz(message.__getitem__('Date'))
+    internal_time = parsedate_tz(message.__getitem__('Date'))
     internal_time = time.mktime(internal_time[:9]) + internal_time[9]
 
     now_time = time.time()
@@ -157,11 +161,11 @@ def cb_action_DEFER(module, filepath):
 def cb_action_REJECT(module, filepath):
     log.info(_("Rejecting message in %s (by module %s)") % (filepath, module))
 
-    message = email.message_from_file(open(filepath, 'r'))
-    envelope_sender = email.utils.getaddresses(message.get_all('From', []))
+    message = message_from_file(open(filepath, 'r'))
+    envelope_sender = getaddresses(message.get_all('From', []))
 
-    recipients = email.utils.getaddresses(message.get_all('To', [])) + \
-            email.utils.getaddresses(message.get_all('Cc', []))
+    recipients = getaddresses(message.get_all('To', [])) + \
+            getaddresses(message.get_all('Cc', []))
 
     _recipients = []
 
@@ -196,7 +200,7 @@ X-Wallace-Result: REJECT
 
     msg = MIMEMultipart("report")
     msg['From'] = "MAILER-DAEMON@%s" % (constants.fqdn)
-    msg['To'] = email.utils.formataddr(envelope_sender)
+    msg['To'] = formataddr(envelope_sender)
     msg['Date'] = formatdate(localtime=True)
     msg['Subject'] = ndr_message_subject
 
@@ -206,7 +210,7 @@ X-Wallace-Result: REJECT
     part.add_header("Content-Description", "Notification")
     msg.attach(part)
 
-    _diag_message = email.message.Message()
+    _diag_message = Message()
     _diag_message.set_payload(diagnostics)
     part = MIMEMessage(_diag_message, "delivery-status")
     part.add_header("Content-Description", "Delivery Report")
@@ -221,7 +225,7 @@ X-Wallace-Result: REJECT
     try:
         smtp.sendmail(
                 "MAILER-DAEMON@%s" % (constants.fqdn),
-                [email.utils.formataddr(envelope_sender)],
+                [formataddr(envelope_sender)],
                 msg.as_string()
             )
     except smtplib.SMTPDataError, errmsg:
@@ -241,19 +245,19 @@ X-Wallace-Result: REJECT
 
 def cb_action_ACCEPT(module, filepath):
     log.info(_("Accepting message in %s (by module %s)") % (filepath, module))
-    message = email.message_from_file(open(filepath, 'r'))
-    envelope_sender = email.utils.getaddresses(message.get_all('From', []))
+    message = message_from_file(open(filepath, 'r'))
+    envelope_sender = getaddresses(message.get_all('From', []))
 
-    recipients = email.utils.getaddresses(message.get_all('To', [])) + \
-            email.utils.getaddresses(message.get_all('Cc', []))
+    recipients = getaddresses(message.get_all('To', [])) + \
+            getaddresses(message.get_all('Cc', []))
 
     smtp = smtplib.SMTP("localhost", 10027)
 
     try:
         smtp.sendmail(
-                email.utils.formataddr(envelope_sender),
+                formataddr(envelope_sender),
                 COMMASPACE.join(
-                        [email.utils.formataddr(recipient) for recipient in recipients]
+                        [formataddr(recipient) for recipient in recipients]
                     ),
                 message.as_string()
             )
