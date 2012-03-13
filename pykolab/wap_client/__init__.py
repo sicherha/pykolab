@@ -16,6 +16,9 @@ session_id = None
 
 conn = None
 
+from connect import connect
+from request import request
+
 def authenticate(username=None, password=None):
     global session_id
 
@@ -92,23 +95,23 @@ def get_group_input():
 def get_user_input():
     user_types = user_types_list()
 
-    if len(user_types.keys()) > 1:
-        for key in user_types.keys():
+    if user_types['count'] > 1:
+        for key in user_types['list'].keys():
             if not key == "status":
-                print "%s) %s" % (key,user_types[key]['name'])
+                print "%s) %s" % (key,user_types['list'][key]['name'])
 
         user_type_id = utils.ask_question("Please select the user type")
 
-    elif len(user_types.keys()) > 0:
+    elif user_types['count'] > 0:
         print "Automatically selected the only user type available"
-        user_type_id = user_types.keys()[0]
+        user_type_id = user_types['list'].keys()[0]
 
     else:
         print "No user types available"
         sys.exit(1)
 
-    if user_types.has_key(user_type_id):
-        user_type_info = user_types[user_type_id]['attributes']
+    if user_types['list'].has_key(user_type_id):
+        user_type_info = user_types['list'][user_type_id]['attributes']
     else:
         print "No such user type"
         sys.exit(1)
@@ -116,6 +119,8 @@ def get_user_input():
     params = {
             'user_type_id': user_type_id
         }
+
+    print user_type_info
 
     for attribute in user_type_info['form_fields'].keys():
         params[attribute] = utils.ask_question(attribute)
@@ -170,8 +175,8 @@ def request(method, api_uri, params=None, headers={}):
     response = conn.getresponse()
     data = response.read()
 
-    #print method, api_uri, params
-    #print data
+    print method, api_uri, params
+    print data
 
     try:
         response_data = json.loads(data)
@@ -180,7 +185,7 @@ def request(method, api_uri, params=None, headers={}):
         print "Response data is not JSON"
         sys.exit(1)
 
-    #print response_data
+    print response_data
 
     if response_data['status'] == "OK":
         del response_data['status']
@@ -253,8 +258,8 @@ def user_form_value_generate_mail(params=None):
 
     return request('POST', 'user_form_value.generate_mail', params)
 
-def user_form_value_generate_password(*args, **kw):
-    return request('GET', 'user_form_value.generate_password')
+def form_value_generate_password(*args, **kw):
+    return request('GET', 'form_value.generate_password')
 
 def user_form_value_generate_uid(params=None):
     if params == None:
@@ -265,7 +270,7 @@ def user_form_value_generate_uid(params=None):
     return request('POST', 'user_form_value.generate_uid', params)
 
 def user_form_value_generate_userpassword(*args, **kw):
-    result = user_form_value_generate_password()
+    result = form_value_generate_password()
     return { 'userpassword': result['password'] }
 
 def user_info():
