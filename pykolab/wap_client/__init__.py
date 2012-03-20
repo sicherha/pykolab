@@ -26,7 +26,7 @@ def authenticate(username=None, password=None):
         username = utils.ask_question("Login", "cn=Directory Manager")
 
     if password == None:
-        password = utils.ask_question("Password", "5auTYwxBK1uGTpy", password=True)
+        password = utils.ask_question("Password", password=True)
 
     params = json.dumps(
             {
