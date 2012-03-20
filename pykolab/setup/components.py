@@ -50,9 +50,9 @@ def __init__():
         for dirname in dirnames:
             register_group(components_path, dirname)
 
-    register('help', list_setup, description=_("Display this help."))
+    register('help', list_components, description=_("Display this help."))
 
-def list_setup(*args, **kw):
+def list_components(*args, **kw):
     """
         List components
     """
@@ -91,7 +91,41 @@ def list_setup(*args, **kw):
                 else:
                     print "%-4s%-21s" % ('',__component.replace('_','-'))
 
+def _list_components(*args, **kw):
+    """
+        List components and return API compatible, parseable lists and
+        dictionaries.
+    """
+
+    __components = {}
+
+    for component in components.keys():
+        if isinstance(component, tuple):
+            component_group, component = component
+            __components[component_group] = {
+                    component: components[(component_group,component)]
+                }
+        else:
+            __components[component] = components[component]
+
+    _components = __components.keys()
+    _components.sort()
+
+    return _components
+
 def execute(component_name, *args, **kw):
+    if component_name == '':
+        log.debug(
+                _("No component selected, continuing for all components"),
+                level=8
+            )
+
+        for component in _list_components():
+            if not component == 'help':
+                execute(component)
+
+        return
+
     if not components.has_key(component_name):
         log.error(_("No such component."))
         sys.exit(1)
@@ -118,7 +152,12 @@ def execute(component_name, *args, **kw):
             pass
 
     conf.finalize_conf()
-    _component_name = conf.cli_args.pop(0)
+
+    if len(conf.cli_args) >= 1:
+        _component_name = conf.cli_args.pop(0)
+    else:
+        _component_name = component_name
+
     components[component_name]['function'](conf.cli_args, kw)
 
 def register_group(dirname, module):

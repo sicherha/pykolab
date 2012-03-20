@@ -38,5 +38,5 @@ except ImportError, e:
     sys.exit(1)
 
 if __name__ == "__main__":
-    kolab = Setup()
-    kolab.run()
+    setup = Setup()
+    setup.run()
