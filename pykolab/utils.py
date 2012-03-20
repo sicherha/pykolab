@@ -36,7 +36,10 @@ def ask_question(question, default="", password=False):
         Usage: pykolab.utils.ask_question("What is the server?", default="localhost")
     """
     if password:
-        answer = getpass.getpass("%s: " % (question))
+        if default == "":
+            answer = getpass.getpass("%s: " % (question))
+        else:
+            answer = getpass.getpass("%s [%s]: " % (question, default))
     else:
         if default == "":
             answer = raw_input("%s: " % (question))
@@ -89,6 +92,18 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
                 answer = False
                 print >> sys.stderr, _("Please answer 'yes' or 'no'.")
                 sys.stderr.flush()
+
+def generate_password():
+    import subprocess
+
+    p1 = subprocess.Popen(['head', '-c', '200', '/dev/urandom'], stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(['tr', '-dc', '_A-Z-a-z-0-9'], stdin=p1.stdout, stdout=subprocess.PIPE)
+    p3 = subprocess.Popen(['head', '-c', '15'], stdin=p2.stdout, stdout=subprocess.PIPE)
+    p1.stdout.close()
+    p2.stdout.close()
+    output = p3.communicate()[0]
+
+    return output
 
 def normalize(_object):
     if type(_object) == list:
