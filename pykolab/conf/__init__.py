@@ -402,8 +402,6 @@ class Conf(object):
             TODO: Add key value checking
         """
 
-        exec("args = %r" % args)
-
         if not self.cfg_parser:
             self.read_config()
 
