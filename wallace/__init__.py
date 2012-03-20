@@ -70,19 +70,22 @@ class WallaceDaemon(object):
             We have retrieved the message.
 
             - Dispatch to virus-scanning and anti-spam filtering?
+                Not for now. We use some sort of re-injection.
+
             - Apply access policies;
                 - Maximum number of recipients,
                 - kolabAllowSMTPSender,
                 - kolabAllowSMTPRecipient,
                 - Rule-based matching against white- and/or blacklist
                 - ...
+
             - Accounting
+
             - Data Loss Prevention
         """
         inheaders = 1
 
         (fp, filename) = tempfile.mkstemp(dir="/var/spool/pykolab/wallace/")
-
         os.write(fp, data)
         os.close(fp)
 
@@ -266,15 +269,11 @@ class WallaceDaemon(object):
 
                 time.sleep(1)
 
-            # Sleep longer if last time around we didn't find any deferred
-            # message files
-            if file_count > 0:
-                log.debug(_("Sleeping for 1 second"), level=8)
-                time.sleep(1)
-            else:
-                log.debug(_("Sleeping for 1800 seconds"), level=8)
-                time.sleep(1800)
-
+            # Sleep for 300 seconds before reprocessing the deferred queues.
+            # TODO: Consider using queue_run_delay from Postfix, which is where
+            # the default value of 300 seconds comes from.
+            log.debug(_("Sleeping for 300 seconds"), level=8)
+            time.sleep(300)
 
     def do_wallace(self):
         import binascii
@@ -343,7 +342,8 @@ class WallaceDaemon(object):
 
                     if module.lower() == "defer":
                         # Wallace was unable to deliver to re-injection smtpd.
-                        # Skip it, another thread is picking up the defers.
+                        # Skip it, another thread is picking up the deferred
+                        # messages.
                         continue
 
                     stage = root.replace(pickup_path, '').split('/')
@@ -417,7 +417,7 @@ class WallaceDaemon(object):
                         #print "Accepted connection from %r" % (address)
                         channel = SMTPChannel(self, connection, address)
                         asyncore.loop()
-            except Exception, e:
+            except Exception, errmsg:
                 traceback.print_exc()
                 s.shutdown(1)
                 s.close()
