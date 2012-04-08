@@ -166,7 +166,7 @@ class Cyrus(cyruslib.CYRUS):
         """
         server = self.find_mailfolder_server(mailfolder)
         #print "server:", server
-        imap.connect('imap://%s:143' % (server))
+        imap.connect(self.uri.replace(self.server,server))
 
         log.debug(_("Setting quota for INBOX folder %s to %s") % (mailfolder,quota), level=8)
         try:
@@ -179,7 +179,7 @@ class Cyrus(cyruslib.CYRUS):
             Login to the actual backend server, then rename.
         """
         server = self.find_mailfolder_server(from_mailfolder)
-        imap.connect('imap://%s:143' % (server))
+        imap.connect(self.uri.replace(self.server,server))
 
         log.debug(_("Moving INBOX folder %s to %s") % (from_mailfolder,to_mailfolder), level=8)
         imap.rename(from_mailfolder, to_mailfolder, partition)
@@ -192,7 +192,7 @@ class Cyrus(cyruslib.CYRUS):
             Login to the actual backend server, then set annotation.
         """
         server = self.find_mailfolder_server(mailfolder)
-        imap.connect('imap://%s:143' % (server))
+        imap.connect(self.uri.replace(self.server,server))
 
         log.debug(_("Setting annotation %s on folder %s") % (annotation,mailfolder), level=8)
 
@@ -201,7 +201,7 @@ class Cyrus(cyruslib.CYRUS):
         imap.setannotation(mailfolder, annotation, value)
 
     def _xfer(self, mailfolder, current_server, new_server):
-        imap.connect('imap://%s:143' % (current_server))
+        imap.connect(self.uri.replace(self.server,server))
         log.debug(_("Transferring folder %s from %s to %s") % (mailfolder, current_server, new_server), level=8)
         imap.xfer(mailfolder, new_server)
 
