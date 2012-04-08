@@ -149,6 +149,8 @@ class KolabDaemon(object):
                         )
 
                     domain_auth[primary_domain] = Auth()
+                    # TODO: Consider threading for domain name space specific
+                    # Authn/Authz operations.
                     pid = os.fork()
                     if pid == 0:
                         domain_auth[primary_domain].connect(primary_domain)
