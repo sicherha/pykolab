@@ -854,6 +854,9 @@ class LDAP(object):
 
         attribute = attribute.lower()
 
+        if not user.has_key(attribute):
+            user[attribute] = self._get_user_attribute(user, attribute)
+
         mode = None
 
         # TODO: This should be a schema check!
@@ -875,18 +878,17 @@ class LDAP(object):
                         user['objectclass']
                     )
 
-            if not user.has_key(attribute):
-                mode = ldap.MOD_ADD
-
-        if mode == None:
+        if user.has_key(attribute) and not user[attribute] == None:
             mode = ldap.MOD_REPLACE
+        else:
+            mode = ldap.MOD_ADD
 
         try:
-            self.ldap.modify(user['dn'], [(mode, attribute, value)])
-        except:
+            self.ldap.modify(user['dn'], [(mode, attribute, '%s' % (value))])
+        except ldap.LDAPError, e:
             log.warning(
                     _("LDAP modification of attribute %s for %s to value " + \
-                    "%s failed") % (attribute,user_dn,value)
+                    "%s failed: %r") % (attribute,user_dn,value,e.message['info'])
                 )
 
     def _list_domains(self):
