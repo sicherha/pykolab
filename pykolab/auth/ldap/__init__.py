@@ -884,7 +884,10 @@ class LDAP(object):
             mode = ldap.MOD_ADD
 
         try:
-            self.ldap.modify(user['dn'], [(mode, attribute, '%s' % (value))])
+            if isinstance(value, int):
+                value = (str)(value)
+
+            self.ldap.modify(user['dn'], [(mode, attribute, value)])
         except ldap.LDAPError, e:
             log.warning(
                     _("LDAP modification of attribute %s for %s to value " + \
