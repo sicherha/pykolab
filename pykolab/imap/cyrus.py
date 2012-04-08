@@ -185,7 +185,6 @@ class Cyrus(cyruslib.CYRUS):
         imap.rename(from_mailfolder, to_mailfolder, partition)
 
     def _getannotation(self, *args, **kw):
-        imap.connect()
         return imap.getannotation(*args, **kw)
 
     def _setannotation(self, mailfolder, annotation, value):
