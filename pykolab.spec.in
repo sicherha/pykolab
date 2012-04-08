@@ -120,14 +120,14 @@ rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
 
 mkdir -p \
-    %{buildroot}/%{_initddir} \
+    %{buildroot}/%{_initrddir} \
     %{buildroot}/%{_sysconfdir}/sysconfig
 
 %{__install} -p -m 644 saslauthd/kolab-saslauthd.sysconfig %{buildroot}/%{_sysconfdir}/sysconfig/kolab-saslauthd
-%{__install} -p -m 755 saslauthd/kolab-saslauthd.sysvinit %{buildroot}/%{_initddir}/kolab-saslauthd
+%{__install} -p -m 755 saslauthd/kolab-saslauthd.sysvinit %{buildroot}/%{_initrddir}/kolab-saslauthd
 
 %{__install} -p -m 644 kolabd/kolabd.sysconfig %{buildroot}/%{_sysconfdir}/sysconfig/kolabd
-%{__install} -p -m 755 kolabd/kolabd.sysvinit %{buildroot}/%{_initddir}/kolabd
+%{__install} -p -m 755 kolabd/kolabd.sysvinit %{buildroot}/%{_initrddir}/kolabd
 
 %find_lang pykolab
 
@@ -252,7 +252,7 @@ rm -rf %{buildroot}
 %files -n kolab-saslauthd
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
-%{_initddir}/kolab-saslauthd
+%{_initrddir}/kolab-saslauthd
 %config(noreplace) %{_sysconfdir}/sysconfig/kolab-saslauthd
 %{_sbindir}/kolab-saslauthd
 %{python_sitelib}/saslauthd/
@@ -262,7 +262,7 @@ rm -rf %{buildroot}
 %files -n kolab-server
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
-%{_initddir}/kolabd
+%{_initrddir}/kolabd
 %config(noreplace) %{_sysconfdir}/sysconfig/kolabd
 %{_sbindir}/kolabd
 %{python_sitelib}/kolabd/
