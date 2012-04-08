@@ -204,3 +204,7 @@ ServerAdminPwd = %(admin_pass)s
             'aci',
             '(targetattr = "*") (version 3.0;acl "Kolab Services";allow (read,compare,search)(userdn = "ldap:///%s");)' % ('uid=kolab-service,ou=Special Users,%s' % (_input['rootdn']))
         )
+
+    # TODO: Add the primary domain to cn=kolab,cn=config
+    # TODO: Make sure 'uid' is unique
+    # TODO: Enable referential integrity plugin
