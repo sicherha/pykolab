@@ -201,7 +201,7 @@ class Cyrus(cyruslib.CYRUS):
         imap.setannotation(mailfolder, annotation, value)
 
     def _xfer(self, mailfolder, current_server, new_server):
-        imap.connect(self.uri.replace(self.server,server))
+        imap.connect(self.uri.replace(self.server,current_server))
         log.debug(_("Transferring folder %s from %s to %s") % (mailfolder, current_server, new_server), level=8)
         imap.xfer(mailfolder, new_server)
 
