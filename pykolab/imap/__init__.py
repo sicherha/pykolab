@@ -385,7 +385,7 @@ class IMAP(object):
                     elif type(user[_inbox_folder_attr]) == str:
                         folder = "user/%s" % user[_inbox_folder_attr]
             elif type(user) == str:
-                quota = auth.get_user_attribute(user, 'quota')
+                quota = auth.get_user_attribute(user, _quota_attr)
                 folder = "user/%s" % (user)
 
             folder = folder.lower()
