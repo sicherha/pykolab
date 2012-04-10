@@ -33,6 +33,7 @@ class Logger(logging.Logger):
         loglevel capabilities, a debuglevel capability.
     """
     debuglevel = 0
+    fork = False
     loglevel = logging.CRITICAL
 
     for arg in sys.argv:
@@ -40,6 +41,7 @@ class Logger(logging.Logger):
             debuglevel = int(arg)
             loglevel = logging.DEBUG
             break
+
         if '-d' == arg:
             debuglevel = -1
             continue
@@ -47,6 +49,10 @@ class Logger(logging.Logger):
         if '-l' == arg:
             loglevel = -1
             continue
+
+        if '--fork' == arg:
+            fork = True
+
         if loglevel == -1:
             if hasattr(logging,arg.upper()):
                 loglevel = getattr(logging,arg.upper())
@@ -65,10 +71,11 @@ class Logger(logging.Logger):
 
         plaintextformatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 
-        self.console_stdout = logging.StreamHandler(sys.stdout)
-        self.console_stdout.setFormatter(plaintextformatter)
+        if not self.fork:
+            self.console_stdout = logging.StreamHandler(sys.stdout)
+            self.console_stdout.setFormatter(plaintextformatter)
 
-        self.addHandler(self.console_stdout)
+            self.addHandler(self.console_stdout)
 
         if kw.has_key('logfile'):
             self.logfile = kw['logfile']
@@ -88,8 +95,9 @@ class Logger(logging.Logger):
                 pass
 
     def remove_stdout_handler(self):
-        self.console_stdout.close()
-        self.removeHandler(self.console_stdout)
+        if not self.fork:
+            self.console_stdout.close()
+            self.removeHandler(self.console_stdout)
 
     def debug(self, msg, level=1):
         self.setLevel(self.loglevel)
