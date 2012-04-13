@@ -751,10 +751,23 @@ class PolicyRequest(object):
                     )
             }
 
+        group = {
+                'dn': auth.find_group(
+                        search_attrs,
+                        normalize_address(recipient),
+                        domain=sasl_domain,
+                        # TODO: Get the filter from the configuration.
+                        additional_filter="(&(|(objectclass=" + \
+                            "groupofuniquenames)(objectclass=" + \
+                            "groupofurls))%(search_filter)s)"
+                    )
+            }
+
+
         # We have gotten an invalid recipient. We need to catch this case,
         # because testing can input invalid recipients, and so can faulty
         # applications, or misconfigured servers.
-        if not user['dn']:
+        if not user['dn'] and not group['dn']:
             if not conf.allow_unauthenticated:
                 cache_update(
                         function='verify_recipient',
@@ -779,11 +792,19 @@ class PolicyRequest(object):
                 log.debug(_("Could not find this user, accepting"), level=8)
                 return True
 
-        recipient_policy = auth.get_user_attribute(
-                sasl_domain,
-                user,
-                'kolabAllowSMTPSender'
-            )
+        if not user['dn'] == None:
+            recipient_policy = auth.get_user_attribute(
+                    sasl_domain,
+                    user,
+                    'kolabAllowSMTPSender'
+                )
+
+        if not group['dn'] == None:
+            recipient_policy = auth.get_group_attribute(
+                    sasl_domain,
+                    group,
+                    'kolabAllowSMTPSender'
+                )
 
         # If no such attribute has been specified, allow
         if recipient_policy == None:

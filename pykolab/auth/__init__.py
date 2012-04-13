@@ -144,6 +144,23 @@ class Auth(object):
 
         self._auth._disconnect()
 
+    def find_group(self, attr, value, domain=None, **kw):
+        self.connect(domain)
+
+        if self.secondary_domains.has_key(domain):
+            log.debug(
+                    _("Using primary domain %s instead of secondary domain %s")
+                    % (
+                            self.secondary_domains[domain],
+                            domain
+                        ),
+                    level=9
+                )
+
+            domain = self.secondary_domains[domain]
+
+        return self._auth._find_group(attr, value, domain=domain, **kw)
+
     def find_user(self, attr, value, domain=None, **kw):
         self.connect(domain)
 
@@ -241,6 +258,14 @@ class Auth(object):
             domain = self.secondary_domains[domain]
 
         return self._auth._domain_section(domain)
+
+    def get_group_attribute(self, domain, group, attribute):
+        self.connect(domain=domain)
+
+        if self.secondary_domains.has_key(domain):
+            domain = self.secondary_domains[domain]
+
+        return self._auth._get_group_attribute(group, attribute)
 
     def get_user_attribute(self, domain, user, attribute):
         self.connect(domain=domain)

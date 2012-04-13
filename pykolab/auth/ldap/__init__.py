@@ -302,6 +302,65 @@ class LDAP(object):
 
         return _user_dn
 
+    def _find_group(self, attr, value, domain=None, additional_filter=None, base_dn=None):
+        self._connect()
+        self._bind()
+
+        if domain == None:
+            domain = conf.get('kolab', 'primary_domain')
+
+        domain_root_dn = self._kolab_domain_root_dn(domain)
+
+        if conf.has_option(domain, 'group_base_dn'):
+            section = domain
+        else:
+            section = 'ldap'
+
+        if base_dn == None:
+            group_base_dn = conf.get_raw(
+                    section,
+                    'group_base_dn'
+                ) % ({'base_dn': domain_root_dn})
+        else:
+            group_base_dn = base_dn
+
+        if type(attr) == str:
+            search_filter = "(%s=%s)" % (
+                    attr,
+                    value
+                )
+        elif type(attr) == list:
+            search_filter = "(|"
+            for _attr in attr:
+                search_filter = "%s(%s=%s)" % (search_filter, _attr, value)
+            search_filter = "%s)" % (search_filter)
+
+        if additional_filter:
+            search_filter = additional_filter % {
+                    'search_filter': search_filter
+                }
+
+        log.debug(
+                _("Attempting to find the group with search filter: %s") % (
+                        search_filter
+                    ),
+                level=8
+            )
+
+        _results = self.ldap.search_s(
+                group_base_dn,
+                scope=ldap.SCOPE_SUBTREE,
+                filterstr=search_filter,
+                attrlist=[ 'dn' ]
+            )
+
+        if len(_results) == 1:
+            (_group_dn, _group_attrs) = _results[0]
+        else:
+            return False
+
+        return _group_dn
+
     def _find_user(self, attr, value, domain=None, additional_filter=None, base_dn=None):
         self._connect()
         self._bind()
@@ -770,6 +829,56 @@ class LDAP(object):
             return domain
         else:
             return 'ldap'
+
+    def _get_group_attribute(self, group, attribute):
+        self._bind()
+
+        attribute = attribute.lower()
+
+        log.debug(
+                _("Getting attribute %s for group %s") % (attribute,user),
+                level=8
+            )
+
+        _result_type = None
+
+        _search = self.ldap.search_ext(
+                group['dn'],
+                ldap.SCOPE_BASE,
+                '(objectclass=*)',
+                [ 'dn', attribute ]
+            )
+
+        (
+                _result_type,
+                _result_data,
+                _result_msgid,
+                _result_controls
+            ) = self.ldap.result3(_search)
+
+        if len(_result_data) >= 1:
+            (group_dn, group_attrs) = _result_data[0]
+        else:
+            log.warning(_("Could not get attribute %s for group %s")
+                % (attribute,user['dn']))
+
+            return None
+
+        group_attrs = utils.normalize(group_attrs)
+
+        if not group_attrs.has_key(attribute):
+            log.debug(
+                    _("Wanted attribute %s, which does not exist for group " + \
+                    "%r") % (
+                            attribute,
+                            group_dn
+                        ),
+                    level=8
+                )
+
+            group_attrs[attribute] = None
+
+        return group_attrs[attribute]
 
     def _get_user_attribute(self, user, attribute):
         self._bind()
