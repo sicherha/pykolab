@@ -792,14 +792,14 @@ class PolicyRequest(object):
                 log.debug(_("Could not find this user, accepting"), level=8)
                 return True
 
-        if not user['dn'] == None:
+        if not user['dn'] == False:
             recipient_policy = auth.get_user_attribute(
                     sasl_domain,
                     user,
                     'kolabAllowSMTPSender'
                 )
 
-        if not group['dn'] == None:
+        if not group['dn'] == False:
             recipient_policy = auth.get_group_attribute(
                     sasl_domain,
                     group,

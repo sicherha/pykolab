@@ -836,7 +836,7 @@ class LDAP(object):
         attribute = attribute.lower()
 
         log.debug(
-                _("Getting attribute %s for group %s") % (attribute,user),
+                _("Getting attribute %s for group %s") % (attribute,group),
                 level=8
             )
 
