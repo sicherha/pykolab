@@ -2,7 +2,7 @@
 #
 # kolabd   Start/Stop the Kolab server daemon
 #
-# chkconfig:        - 65 10
+# chkconfig:        - 98 10
 # description:      The Kolab server is a server process which synchronizes
 #                   LDAP, SQL and other authentication databases with Cyrus IMAP,
 #                   Dovecot or other IMAP servers.
