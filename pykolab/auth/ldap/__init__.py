@@ -141,7 +141,7 @@ class LDAP(object):
 
         if domain == None:
             section = 'ldap'
-            key = 'uri'
+            key = 'ldap_uri'
 
         if conf.has_option(domain, 'uri'):
             log.warning(_("Deprecation: Setting 'uri' for LDAP in section %s needs to be updated to 'ldap_uri'") % (domain))
@@ -899,12 +899,16 @@ class LDAP(object):
                 [ 'dn', attribute ]
             )
 
-        (
-                _result_type,
-                _result_data,
-                _result_msgid,
-                _result_controls
-            ) = self.ldap.result3(_search)
+        try:
+            (
+                    _result_type,
+                    _result_data,
+                    _result_msgid,
+                    _result_controls
+                ) = self.ldap.result3(_search)
+        except ldap.NO_SUCH_OBJECT, e:
+            log.error(_("No such object %r in Auth::LDAP::_get_user_attribute") % (user['dn']))
+            return None
 
         if len(_result_data) >= 1:
             (user_dn, user_attrs) = _result_data[0]
