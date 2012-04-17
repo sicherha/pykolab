@@ -72,7 +72,13 @@ class Cyrus(cyruslib.CYRUS):
 
         self.uri = "%s://%s:%s" % (scheme,hostname,port)
 
-        cyruslib.CYRUS.__init__(self, self.uri)
+        while 1:
+            try:
+                cyruslib.CYRUS.__init__(self, self.uri)
+                break
+            except cyruslib.CYRUSError:
+                log.warning(_("Could not connect to Cyrus IMAP server %r") % (self.uri))
+                time.sleep(10)
 
         if conf.debuglevel > 8:
             self.VERBOSE = True
