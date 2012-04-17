@@ -119,7 +119,12 @@ class KolabDaemon(object):
             log.debug(_("Listing domains..."), level=5)
 
             start = time.time()
-            domains = primary_auth.list_domains()
+            try:
+                domains = primary_auth.list_domains()
+            except:
+                time.sleep(60)
+                continue
+
             if len(domains) == len(domain_auth.keys()):
                 time.sleep(600)
             end = time.time()

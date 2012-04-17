@@ -112,20 +112,25 @@ ServerAdminPwd = %(admin_pass)s
 
     (stdoutdata, stderrdata) = setup_389.communicate()
 
-    # Copy in kolab schema
-    #
-    shutil.copy(
-            '/usr/share/doc/kolab-schema-3.0/kolab2.ldif',
-            '/etc/dirsrv/slapd-%s/schema/99kolab2.ldif' % (_input['hostname'])
-        )
+    # Find the kolab schema. It's installed as %doc in the kolab-schema package.
+    # TODO: Chown nobody, nobody, chmod 440
+    schema_file = None
+    for root, directories, filenames in os.walk('/usr/share/doc/'):
+        for filename in filenames:
+            if filename == 'kolab2.ldif':
+                schema_file = os.path.join(root,filename)
+
+    if not schema_file == None:
+        shutil.copy(
+                schema_file,
+                '/etc/dirsrv/slapd-%s/schema/99kolab2.ldif' % (
+                        _input['hostname']
+                    )
+            )
+    else:
+        log.warning(_("Could not find the Kolab schema file"))
 
     subprocess.call(['service', 'dirsrv@%s' % (_input['hostname']), 'restart'])
-
-    # Write out kolab configuration
-    conf.command_set('kolab', 'primary_domain', _input['domain'])
-    conf.command_set('ldap', 'base_dn', _input['rootdn'])
-    conf.command_set('ldap', 'bind_dn', 'cn=Directory Manager')
-    conf.command_set('ldap', 'bind_pw', _input['dirmgr_pass'])
 
     _input['cyrus_admin_pass'] = utils.ask_question(
             _("Cyrus Administrator password"),
@@ -138,6 +143,14 @@ ServerAdminPwd = %(admin_pass)s
             default=utils.generate_password(),
             password=True
         )
+
+    # Write out kolab configuration
+    conf.command_set('kolab', 'primary_domain', _input['domain'])
+    conf.command_set('ldap', 'base_dn', _input['rootdn'])
+    conf.command_set('ldap', 'bind_dn', 'cn=Directory Manager')
+    conf.command_set('ldap', 'bind_pw', _input['dirmgr_pass'])
+    conf.command_set('ldap', 'service_bind_dn', 'uid=kolab-service,ou=Special Users,%s' % (_input['rootdn']))
+    conf.command_set('ldap', 'service_bind_pw', _input['kolab_service_pass'])
 
     # Insert service users
     auth = pykolab.auth
@@ -181,11 +194,6 @@ ServerAdminPwd = %(admin_pass)s
     # Do the actual synchronous add-operation to the ldapserver
     auth._auth.ldap.add_s(dn, ldif)
 
-    #dn: cn=kolab,cn=config
-    #objectClass: top
-    #objectClass: extensibleObject
-    #cn: kolab
-
     dn = 'cn=kolab,cn=config'
 
     # A dict to help build the "body" of the object
@@ -206,5 +214,67 @@ ServerAdminPwd = %(admin_pass)s
         )
 
     # TODO: Add the primary domain to cn=kolab,cn=config
-    # TODO: Make sure 'uid' is unique
+    dn = "associateddomain=%s,cn=kolab,cn=config" % (domainname)
+    attrs = {}
+    attrs['objectclass'] = ['top','domainrelatedobject']
+    attrs['associateddomain'] = '%s' % (domainname)
+
+    ldif = ldap.modlist.addModlist(attrs)
+
+    auth._auth.ldap.add_s(dn, ldif)
+
+    # TODO: Allow no anonymous binds
+    dn = "cn=config"
+    modlist = []
+    modlist.append((ldap.MOD_REPLACE, "nsslapd-allow-anonymous-access", "off"))
+    auth._auth.ldap.modify_s(dn, modlist)
+
+    # TODO: Ensure the uid attribute is unique
+    # TODO^2: Consider renaming the general "attribute uniqueness to "uid attribute uniqueness"
+    dn = "cn=attribute uniqueness,cn=plugins,cn=config"
+    modlist = []
+    modlist.append((ldap.MOD_REPLACE, "nsslapd-pluginEnabled", "on"))
+    auth._auth.ldap.modify_s(dn, modlist)
+
     # TODO: Enable referential integrity plugin
+    dn = "cn=referential integrity postoperation,cn=plugins,cn=config"
+    modlist = []
+    modlist.append((ldap.MOD_REPLACE, "nsslapd-pluginEnabled", "on"))
+    auth._auth.ldap.modify_s(dn, modlist)
+
+    # TODO: Enable account policy plugin
+    dn = "cn=Account Policy Plugin,cn=plugins,cn=config"
+    modlist = []
+    modlist.append((ldap.MOD_REPLACE, "nsslapd-pluginEnabled", "on"))
+    modlist.append((ldap.MOD_ADD, "nsslapd-pluginarg0", "cn=config,cn=Account Policy Plugin,cn=plugins,cn=config"))
+    auth._auth.ldap.modify_s(dn, modlist)
+
+    dn = "cn=config,cn=Account Policy Plugin,cn=plugins,cn=config"
+    modlist = []
+    modlist.append((ldap.MOD_REPLACE, "alwaysrecordlogin", "yes"))
+    modlist.append((ldap.MOD_ADD, "stateattrname", "lastLoginTime"))
+    modlist.append((ldap.MOD_ADD, "altstateattrname", "createTimestamp"))
+    auth._auth.ldap.modify_s(dn, modlist)
+
+    # TODO: Add kolab-admin role
+    dn = "cn=kolab-admin,%s" % (_input['rootdn'])
+    attrs = {}
+    attrs['description'] = "Kolab Administrator"
+    attrs['objectClass'] = ['top','ldapsubentry','nsroledefinition','nssimpleroledefinition','nsmanagedroledefinition']
+    attrs['cn'] = "kolab-admin"
+    ldif = ldap.modlist.addModlist(attrs)
+
+    auth._auth.ldap.add_s(dn, ldif)
+
+    # TODO: User writeable attributes on root_dn
+    dn = _input['rootdn']
+    aci = []
+    aci.append('(targetattr = "homePhone || preferredDeliveryMethod || jpegPhoto || postalAddress || carLicense || userPassword || mobile || kolabAllowSMTPRecipient || displayName || kolabDelegate || description || labeledURI || homePostalAddress || postOfficeBox || registeredAddress || postalCode || photo || title || street || kolabInvitationPolicy || pager || o || l || initials || kolabAllowSMTPSender || telephoneNumber || preferredLanguage || facsimileTelephoneNumber") (version 3.0;acl "Enable self write for common attributes";allow (read,compare,search,write)(userdn = "ldap:///self");)')
+    aci.append('(targetattr = "*") (version 3.0;acl "Directory Administrators Group";allow (all)(groupdn = "ldap:///cn=Directory Administrators,%(rootdn)s" or roledn = "ldap:///cn=kolab-admin,%(rootdn)s");)' % (_input))
+    aci.append('(targetattr="*")(version 3.0; acl "Configuration Administrators Group"; allow (all) groupdn="ldap:///cn=Configuration Administrators,ou=Groups,ou=TopologyManagement,o=NetscapeRoot";)')
+    aci.append('(targetattr="*")(version 3.0; acl "Configuration Administrator"; allow (all) userdn="ldap:///uid=admin,ou=Administrators,ou=TopologyManagement,o=NetscapeRoot";)')
+    aci.append('(targetattr = "*")(version 3.0; acl "SIE Group"; allow (all) groupdn = "ldap:///cn=slapd-%(hostname)s,cn=389 Directory Server,cn=Server Group,cn=%(fqdn)s,ou=%(domain)s,o=NetscapeRoot";)' %(_input))
+    aci.append('(targetattr = "*") (version 3.0;acl "Search Access";allow (read,compare,search)(userdn = "ldap:///all");)')
+    modlist = []
+    modlist.append((ldap.MOD_REPLACE, "aci", aci))
+    auth._auth.ldap.modify_s(dn, modlist)

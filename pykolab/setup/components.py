@@ -31,6 +31,8 @@ conf = pykolab.getConf()
 components = {}
 component_groups = {}
 
+executed_components = []
+
 def __init__():
     # We only want the base path
     components_base_path = os.path.dirname(__file__)
@@ -120,9 +122,36 @@ def execute(component_name, *args, **kw):
                 level=8
             )
 
-        for component in _list_components():
-            if not component == 'help':
-                execute(component)
+        while 1:
+            for component in _list_components():
+                execute_this = True
+
+                if component in executed_components:
+                    print "component", component, "already executed, continuing"
+                    execute_this = False
+
+                if component == "help":
+                    execute_this = False
+
+                if execute_this:
+                    if components[component].has_key('after'):
+                        print "component", component, "has after key, let's see what it holds"
+                        for _component in components[component]['after']:
+                            if not _component in executed_components:
+                                print "component", component, "is waiting for component", _component
+                                execute_this = False
+
+                if execute_this:
+                    execute(component)
+                    executed_components.append(component)
+
+            executed_all = True
+            for component in _list_components():
+                if not component in executed_components and not component == "help":
+                    executed_all = False
+
+            if executed_all:
+                break
 
         return
 
@@ -177,7 +206,7 @@ def register_group(dirname, module):
                 exec("from %s.%s import __init__ as %s_%s_register" % (module,module_name,module,component_name))
                 exec("%s_%s_register()" % (module,component_name))
 
-def register(component_name, func, group=None, description=None, aliases=[]):
+def register(component_name, func, group=None, description=None, after=[], before=[], aliases=[]):
     if not group == None:
         component = "%s_%s" % (group,component_name)
     else:
@@ -194,12 +223,16 @@ def register(component_name, func, group=None, description=None, aliases=[]):
         if group == None:
             components[component_name] = {
                     'function': func,
-                    'description': description
+                    'description': description,
+                    'after': after,
+                    'before': before,
                 }
         else:
             components[group][component_name] = {
                     'function': func,
-                    'description': description
+                    'description': description,
+                    'after': after,
+                    'before': before,
                 }
 
             components[component] = components[group][component_name]
