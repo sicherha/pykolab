@@ -18,9 +18,6 @@
 
 """
     The Kolab daemon.
-
-    TODO: Write a pid file, check the pid file has a valid pid, and
-    consider providing an option to specify the pid file path.
 """
 
 import os
@@ -35,16 +32,15 @@ from pykolab.auth import Auth
 from pykolab import constants
 from pykolab.translate import _
 
-log = pykolab.getLogger('kolabd')
+from process import KolabdProcess as Process
+
+log = pykolab.getLogger('pykolab.daemon')
 conf = pykolab.getConf()
 
 class KolabDaemon(object):
     def __init__(self):
         """
-            self.args == Arguments passed on the CLI
-            self.cli_options == Parser results (again, CLI)
-            self.parser == The actual Parser (from OptionParser)
-            self.plugins == Our Kolab Plugins
+            The main Kolab Groupware daemon process.
         """
 
         daemon_group = conf.add_cli_parser_option_group(_("Daemon Options"))
@@ -63,18 +59,14 @@ class KolabDaemon(object):
 
         conf.finalize_conf()
 
-        self.thread_count = 0
-
     def run(self):
         """Run Forest, RUN!"""
 
         exitcode = 0
 
-        # TODO: Add a nosync option
         try:
             pid = 1
             if conf.fork_mode:
-                self.thread_count += 1
                 pid = os.fork()
 
             if pid == 0:
@@ -87,9 +79,11 @@ class KolabDaemon(object):
 
         except SystemExit, errcode:
             exitcode = errcode
+
         except KeyboardInterrupt:
             exitcode = 1
             log.info(_("Interrupted by user"))
+
         except AttributeError, errmsg:
             exitcode = 1
             traceback.print_exc()
@@ -100,6 +94,7 @@ class KolabDaemon(object):
             exitcode = 1
             traceback.print_exc()
             log.error(_("Type Error: %s") % errmsg)
+
         except:
             exitcode = 2
             traceback.print_exc()
@@ -113,72 +108,48 @@ class KolabDaemon(object):
 
         pid = os.getpid()
 
+        primary_domain = conf.get('kolab', 'primary_domain')
+
         while 1:
-            primary_auth = Auth()
+            primary_auth = Auth(primary_domain)
 
             log.debug(_("Listing domains..."), level=5)
 
             start = time.time()
+
             try:
                 domains = primary_auth.list_domains()
             except:
                 time.sleep(60)
                 continue
 
-            if len(domains) == len(domain_auth.keys()):
-                time.sleep(600)
-            end = time.time()
-
-            log.debug(
-                    _("Found %d domains in %d seconds") % (
-                            len(domains),
-                            (end-start)
-                        ),
-                    level=8
-                )
-
+            # domains now is a list of tuples, we want the primary_domains
+            primary_domains = []
             for primary_domain, secondary_domains in domains:
-                log.debug(
-                        _("Running for domain %s") % (
-                                primary_domain
-                            ),
-                        level=5
-                    )
+                primary_domains.append(primary_domain)
 
-                if not pid == 0 and not domain_auth.has_key(primary_domain):
-                    log.debug(
-                            _("Domain %s did not have a key yet") % (
-                                    primary_domain
-                                ),
-                            level=5
-                        )
+            # Now we can check if any changes happened.
+            added_domains = []
+            removed_domains = []
 
-                    domain_auth[primary_domain] = Auth()
-                    # TODO: Consider threading for domain name space specific
-                    # Authn/Authz operations.
-                    pid = os.fork()
-                    if pid == 0:
-                        domain_auth[primary_domain].connect(primary_domain)
-                        start_time = time.time()
-                        domain_auth[primary_domain].synchronize(
-                                primary_domain,
-                                secondary_domains
-                            )
+            all_domains = set(primary_domains + domain_auth.keys())
 
-                        end_time = time.time()
+            for domain in all_domains:
+                if domain in domain_auth.keys() and domain in primary_domains:
+                    continue
+                elif domain in domain_auth.keys():
+                    removed_domains.append(domain)
+                else:
+                    added_domains.append(domain)
 
-                        log.info(
-                                _("Synchronizing users for %s took %d seconds")
-                                    % (
-                                        primary_domain,
-                                        (end_time-start_time)
-                                    )
-                            )
+            if len(removed_domains) == 0 and len(added_domains) == 0:
+                time.sleep(600)
 
-                        domain_auth[primary_domain].synchronize(
-                                primary_domain,
-                                secondary_domains
-                            )
+            log.debug(_("added domains: %r, removed domains: %r") % (added_domains, removed_domains), level=8)
+
+            for domain in added_domains:
+                domain_auth[domain] = Process(domain)
+                domain_auth[domain].start()
 
     def reload_config(self, *args, **kw):
         pass

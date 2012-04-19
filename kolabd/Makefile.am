@@ -1,5 +1,6 @@
 EXTRA_DIST = \
 	kolabd.sysconfig \
+	kolabd.systemd \
 	kolabd.sysvinit
 
 kolabddir = $(pythondir)/kolabd
