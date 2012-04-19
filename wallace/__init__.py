@@ -53,7 +53,15 @@ class WallaceDaemon(object):
             )
 
         daemon_group.add_option(
-                "-p", "--port",
+                "-p", "--pid-file",
+                dest    = "pidfile",
+                action  = "store",
+                default = "/var/run/wallaced/wallaced.pid",
+                help    = _("Path to the PID file to use.")
+            )
+
+        daemon_group.add_option(
+                "--port",
                 dest    = "wallace_port",
                 action  = "store",
                 default = 10026,
@@ -187,6 +195,8 @@ class WallaceDaemon(object):
             pid = 1
             if conf.fork_mode:
                 self.thread_count += 1
+                self.write_pid()
+                self.set_signal_handlers()
                 pid = os.fork()
 
             if pid == 0:
@@ -421,3 +431,22 @@ class WallaceDaemon(object):
                 traceback.print_exc()
                 s.shutdown(1)
                 s.close()
+
+    def reload_config(self, *args, **kw):
+        pass
+
+    def remove_pid(self, *args, **kw):
+        if os.access(conf.pidfile, os.R_OK):
+            os.remove(conf.pidfile)
+        raise SystemExit
+
+    def set_signal_handlers(self):
+        import signal
+        signal.signal(signal.SIGHUP, self.reload_config)
+        signal.signal(signal.SIGTERM, self.remove_pid)
+
+    def write_pid(self):
+        pid = os.getpid()
+        fp = open(conf.pidfile,'w')
+        fp.write("%d\n" % (pid))
+        fp.close()
