@@ -24,12 +24,12 @@ import pykolab
 log = pykolab.getLogger('pykolab.setup')
 conf = pykolab.getConf()
 
+to_execute = []
+
 class Setup(object):
     def __init__(self):
         import components
         components.__init__()
-
-        to_execute = []
 
         arg_num = 0
         for arg in sys.argv[1:]:
@@ -38,7 +38,5 @@ class Setup(object):
                 if components.components.has_key(sys.argv[arg_num].replace('-','_')):
                     to_execute.append(sys.argv[arg_num].replace('-','_'))
 
-        components.execute('_'.join(to_execute))
-
     def run(self):
-        pass
+        components.execute('_'.join(to_execute))
