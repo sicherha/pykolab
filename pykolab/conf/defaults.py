@@ -29,6 +29,8 @@ class Defaults(object):
         # library should try to retrieve annotations
         self.cyrus_annotations_retry_interval = 1
 
-        self.address_search_attrs = "mail, alias"
+        self.address_search_attrs = ['mail', 'alias']
+        self.mail_attributes = ['mail', 'alias']
 
         self.kolab_default_locale = 'en_US'
+        self.ldap_unique_attribute = 'nsuniqueid'

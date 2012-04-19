@@ -48,6 +48,8 @@ class Conf(object):
 
         self.entitlement = None
 
+        self.changelog = {}
+
         try:
             from pykolab.conf.entitlement import Entitlement
             entitlements = True
@@ -496,8 +498,14 @@ class Conf(object):
         if not self.cfg_parser:
             self.read_config()
 
+        #log.debug(_("Obtaining value for section %r, key %r") % (section, key), level=8)
+
         if self.cfg_parser.has_option(section, key):
-            return self.cfg_parser.get(section,key)
+            try:
+                return self.cfg_parser.get(section, key)
+            except:
+                self.read_config()
+                return self.cfg_parser.get(section, key)
 
         if hasattr(self, "get_%s_%s" % (section,key)):
             try:

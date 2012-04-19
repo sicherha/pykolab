@@ -16,6 +16,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import datetime
 import _ldap
 import ldap
 import ldap.async
@@ -24,6 +25,7 @@ import logging
 import time
 
 import pykolab
+import pykolab.base
 
 from pykolab import utils
 from pykolab.constants import *
@@ -95,22 +97,56 @@ class SimplePagedResultsControl(ldap.controls.SimplePagedResultsControl):
         else:
             return self.controlValue[0]
 
-class LDAP(object):
+class LDAP(pykolab.base.Base):
     """
         Abstraction layer for the LDAP authentication / authorization backend,
         for use with Kolab.
     """
 
-    def __init__(self):
+    def __init__(self, domain=None):
+        """
+            Initialize the LDAP object for domain. If no domain is specified,
+            domain name space configured as 'kolab'.'primary_domain' is used.
+        """
+        pykolab.base.Base.__init__(self)
+
         self.ldap = None
         self.bind = False
+        if domain == None:
+            self.domain = conf.get('kolab', 'primary_domain')
+        else:
+            self.domain = domain
 
-    def _authenticate(self, login, domain):
-        log.debug(_("Attempting to authenticate user %s in domain %s")
-            % (login, domain), level=8)
+    def authenticate(self, login, realm):
+        """
+            Find the entry corresponding to login, and attempt a bind.
 
-        self._connect()
-        user_dn = self._find_dn(login[0], domain)
+            login is a tuple with 4 values. In order of appearance;
+
+            [0] - the login username.
+
+            [1] - the password
+
+            [2] - the service (optional)
+
+            [3] - the realm
+
+            Called from pykolab.auth.Auth, the realm parameter is derived, while
+            login[3] preserves the originally specified realm.
+        """
+
+        log.debug(
+                _("Attempting to authenticate user %s in realm %s") % (
+                        login,
+                        realm
+                    ),
+                level=8
+            )
+
+        self.connect()
+
+        user_dn = self._find_user_dn(login[0], realm)
+
         try:
             log.debug(_("Binding with user_dn %s and password %s")
                 % (user_dn, login[1]))
@@ -129,31 +165,16 @@ class LDAP(object):
 
         return retval
 
-    def _connect(self, domain=None):
+    def connect(self):
         """
             Connect to the LDAP server through the uri configured.
-
-            Pass it a configuration section name to get the ldap options from
-            that section instead of the default [ldap] section.
         """
         if not self.ldap == None:
             return
 
-        if domain == None:
-            section = 'ldap'
-            key = 'ldap_uri'
-
-        if conf.has_option(domain, 'uri'):
-            log.warning(_("Deprecation: Setting 'uri' for LDAP in section %s needs to be updated to 'ldap_uri'") % (domain))
-            section = domain
-            key = 'uri'
-        elif conf.has_option(domain, 'ldap_uri'):
-            section = domain
-            key = 'ldap_uri'
-
         log.debug(_("Connecting to LDAP..."), level=8)
 
-        uri = conf.get(section, key)
+        uri = self.config_get('ldap_uri')
 
         log.debug(_("Attempting to use LDAP URI %s") % (uri), level=8)
 
@@ -166,14 +187,443 @@ class LDAP(object):
         self.ldap.protocol_version = 3
         self.ldap.supported_controls = []
 
+    def entry_dn(self, entry_id):
+        """
+            Get a entry's distinguished name for an entry ID.
+
+            The entry ID may be any of:
+
+            - an entry's value for the configured unique_attribute,
+            - a (syntactically valid) Distinguished Name,
+            - a dictionary such as previously returned as (part of) the result
+              of a search.
+        """
+        entry_dn = None
+
+        if self._entry_dn(entry_id):
+            return entry_id
+
+        if self._entry_dict(entry_id):
+            return entry_id['dn']
+
+        unique_attribute = self.config_get('unique_attribute')
+        base_dn = self.config_get('base_dn')
+
+        _search = self.ldap.search_ext(
+                base_dn,
+                ldap.SCOPE_SUBTREE,
+                '(%s=%s)' % (unique_attribute, entry_id),
+                ['entrydn']
+            )
+
+        (
+                _result_type,
+                _result_data,
+                _result_msgid,
+                _result_controls
+            ) = self.ldap.result3(_search)
+
+        if len(_result_data) >= 1:
+            (entry_dn, entry_attrs) = _result_data[0]
+
+        return entry_dn
+
+    def get_entry_attribute(self, entry_id, attribute):
+        """
+            Get an attribute for an entry.
+
+            Return the attribute value if successful, or None if not.
+        """
+
+        entry_attrs = self.get_entry_attributes(entry_id, [attribute])
+
+        if entry_attrs.has_key(attribute):
+            return entry_attrs[attribute]
+        else:
+            return None
+
+    def get_entry_attributes(self, entry_id, attributes):
+        """
+            Get multiple attributes for an entry.
+        """
+
+        entry_dn = self.entry_dn(entry_id)
+
+        _search = self.ldap.search_ext(
+                entry_dn,
+                ldap.SCOPE_BASE,
+                '(objectclass=*)',
+                [ 'dn' ] + attributes
+            )
+
+        (
+                _result_type,
+                _result_data,
+                _result_msgid,
+                _result_controls
+            ) = self.ldap.result3(_search)
+
+        if len(_result_data) >= 1:
+            (_entry_dn, _entry_attrs) = _result_data[0]
+        else:
+            return None
+
+        return utils.normalize(_entry_attrs)
+
+    def find_recipient(self, address="*", exclude_entry_id=None):
+        """
+            Given an address string or list of addresses, find one or more valid
+            recipients.
+
+            Use this function only to detect whether an address is already in
+            use by any entry in the tree.
+
+            Specify an additional entry_id to exclude to exclude matches against
+            the current entry.
+        """
+
+        if not exclude_entry_id == None:
+            __filter_prefix = "(&"
+            __filter_suffix = "(!(%s=%s)))" % (
+                    self.config_get('unique_attribute'),
+                    exclude_entry_id
+                )
+
+        else:
+            __filter_prefix = ""
+            __filter_suffix = ""
+
+        kolab_filter = self._kolab_filter()
+        recipient_address_attrs = self.config_get_list("mail_attributes")
+        result_attributes = recipient_address_attrs
+        result_attributes.append(self.config_get('unique_attribute'))
+
+        _filter = "(|"
+
+        for recipient_address_attr in recipient_address_attrs:
+            if isinstance(address, basestring):
+                _filter += "(%s=%s)" % (recipient_address_attr, address)
+            else:
+                for _address in address:
+                    _filter += "(%s=%s)" % (recipient_address_attr, _address)
+
+        _filter += ")"
+
+        _filter = "%s%s%s" % (__filter_prefix,_filter,__filter_suffix)
+
+
+        log.debug(_("Finding recipient with filter %r") % (_filter), level=8)
+
+        if len(_filter) <= 6:
+            return None
+
+        _results = self.ldap.search_s(
+                self.config_get('base_dn'),
+                scope=ldap.SCOPE_SUBTREE,
+                filterstr=_filter,
+                attrlist=result_attributes,
+                attrsonly=True
+            )
+
+        _entry_dns = []
+
+        for _result in _results:
+            (_entry_id, _entry_attrs) = _result
+            _entry_dns.append(_entry_id)
+
+        return _entry_dns
+
+    def list_secondary_domains(self):
+        """
+            List alias domain name spaces for the current domain name space.
+        """
+        return [s for s, p in self.secondary_domains.iteritems() if p == self.domain]
+
+    def recipient_policy(self, entry):
+        """
+            Apply a recipient policy, if configured.
+
+            Given an entry, returns the entry's attribute values to be set.
+        """
+
+        entry_dn = self.entry_dn(entry)
+        entry_modifications = {}
+        entry_type = self._entry_type(entry)
+        primary_mail = None
+        primary_mail_attribute = self.config_get_list('mail_attributes')[0]
+        secondary_mail = None
+        secondary_mail_attribute = self.config_get_list('mail_attributes')[1]
+        want_attrs = []
+
+        # See which mail attributes we would want to control.
+        #
+        # 'mail' is considered for primary_mail,
+        # 'alias' and 'mailalternateaddress' are considered for secondary mail.
+        #
+        primary_mail = self.config_get_raw('%s_primary_mail' % (entry_type))
+        if primary_mail == None and entry_type == 'user':
+            primary_mail = self.config_get_raw('primary_mail')
+
+        secondary_mail = self.config_get_raw('%s_secondary_mail' % (entry_type))
+        if secondary_mail == None and entry_type == 'user':
+            secondary_mail = self.config_get_raw('secondary_mail')
+
+        # See if the relevant mail attributes exist
+        _mail_attrs = self.config_get('mail_attributes')
+        for _mail_attr in _mail_attrs:
+            if not entry.has_key(_mail_attr):
+                if _mail_attr == primary_mail_attribute:
+                    if not primary_mail == None:
+                        want_attrs.append(_mail_attr)
+                elif _mail_attr == secondary_mail_attribute:
+                    if not secondary_mail == None:
+                        want_attrs.append(_mail_attr)
+
+        # Also append the preferredlanguage or 'native tongue' configured
+        # for the entry.
+        if not entry.has_key('preferredlanguage'):
+            want_attrs.append('preferredlanguage')
+
+        # If we wanted anything, now is the type to get it.
+        if len(want_attrs) > 0:
+            attributes = self.get_entry_attributes(entry_dn, want_attrs)
+
+            for attribute in attributes.keys():
+                entry[attribute] = attributes[attribute]
+
+        # Primary mail address
+        if not primary_mail == None:
+            if not entry.has_key(primary_mail_attribute) or entry[primary_mail_attribute] == None:
+                primary_mail_address = conf.plugins.exec_hook(
+                        "set_primary_mail",
+                        kw={
+                                'primary_mail': primary_mail,
+                                'entry': entry,
+                                'primary_domain': self.domain
+                            }
+                    )
+            else:
+                primary_mail_address = entry[primary_mail_attribute]
+
+            i = 1
+            _primary_mail = primary_mail_address
+
+            done = False
+            while not done:
+                results = self.find_recipient(_primary_mail, entry['id'])
+
+                # Length of results should be 0 (no entry found)
+                # or 1 (which should be the entry we're looking at here)
+                if len(results) == 0:
+                    log.debug(
+                            _("No results for mail address %s found") % (
+                                    _primary_mail
+                                ),
+                            level=8
+                        )
+
+                    done = True
+                    continue
+
+                if len(results) == 1:
+                    log.debug(
+                            _("1 result for address %s found, verifying") % (
+                                    _primary_mail
+                                ),
+                            level=8
+                        )
+
+                    almost_done = True
+                    for result in results:
+                        if not result == entry_dn:
+                            log.debug(
+                                    _("Too bad, primary email address %s " + \
+                                    "already in use for %s (we are %s)") % (
+                                            _primary_mail,
+                                            result,
+                                            entry_dn
+                                        ),
+                                    level=8
+                                )
+
+                            almost_done = False
+                        else:
+                            log.debug(_("Address assigned to us"), level=8)
+
+                    if almost_done:
+                        done = True
+                        continue
+
+                i += 1
+                _primary_mail = "%s%d@%s" % (
+                        primary_mail_address.split('@')[0],
+                        i,
+                        primary_mail_address.split('@')[1]
+                    )
+
+            primary_mail_address = _primary_mail
+
+            ###
+            ### FIXME
+            ###
+            if not primary_mail_address == None:
+                if not entry.has_key(primary_mail_attribute):
+                    self.set_entry_attribute(entry, primary_mail_attribute, primary_mail_address)
+                    entry_modifications[primary_mail_attribute] = primary_mail_address
+                else:
+                    if not primary_mail_address == entry[primary_mail_attribute]:
+                        self.set_entry_attribute(entry, primary_mail_attribute, primary_mail_address)
+
+                        entry_modifications[primary_mail_attribute] = primary_mail_address
+
+        if not secondary_mail == None:
+            # Execute the plugin hook
+            suggested_secondary_mail = conf.plugins.exec_hook(
+                    "set_secondary_mail",
+                    kw={
+                            'secondary_mail': secondary_mail,
+                            'entry': entry,
+                            'domain': self.domain,
+                            'primary_domain': self.domain,
+                            'secondary_domains': self.list_secondary_domains()
+                        }
+                ) # end of conf.plugins.exec_hook() call
+
+            secondary_mail_addresses = []
+
+            for _secondary_mail in suggested_secondary_mail:
+                i = 1
+                __secondary_mail = _secondary_mail
+
+                done = False
+                while not done:
+                    results = self.find_recipient(__secondary_mail, entry['id'])
+
+                    # Length of results should be 0 (no entry found)
+                    # or 1 (which should be the entry we're looking at here)
+                    if len(results) == 0:
+                        log.debug(
+                                _("No results for address %s found") % (
+                                        __secondary_mail
+                                    ),
+                                level=8
+                            )
+
+                        done = True
+                        continue
+
+                    if len(results) == 1:
+                        log.debug(
+                                _("1 result for address %s found, " + \
+                                "verifying...") % (
+                                        __secondary_mail
+                                    ),
+                                level=8
+                            )
+
+                        almost_done = True
+                        for result in results:
+                            if not result == entry_dn:
+                                log.debug(
+                                        _("Too bad, secondary email " + \
+                                        "address %s already in use for " + \
+                                        "%s (we are %s)") % (
+                                                __secondary_mail,
+                                                result,
+                                                entry_dn
+                                            ),
+                                        level=8
+                                    )
+
+                                almost_done = False
+                            else:
+                                log.debug(_("Address assigned to us"), level=8)
+
+                        if almost_done:
+                            done = True
+                            continue
+
+                    i += 1
+                    __secondary_mail = "%s%d@%s" % (
+                            _secondary_mail.split('@')[0],
+                            i,
+                            _secondary_mail.split('@')[1]
+                        )
+
+                secondary_mail_addresses.append(__secondary_mail)
+
+            if not secondary_mail_addresses == None:
+                secondary_mail_addresses = list(set(secondary_mail_addresses))
+                # Avoid duplicates
+                while primary_mail in secondary_mail_addresses:
+                    secondary_mail_addresses.pop(secondary_mail_addresses.index(primary_mail))
+
+                if not entry.has_key(secondary_mail_attribute):
+                    if not len(secondary_mail_addresses) == 0:
+                        self.set_entry_attribute(
+                                entry,
+                                secondary_mail_attribute,
+                                secondary_mail_addresses
+                            )
+
+                        entry_modifications[secondary_mail_attribute] = secondary_mail_addresses
+                else:
+                    if not secondary_mail_addresses == entry[secondary_mail_attribute]:
+                        self.set_entry_attribute(
+                                entry,
+                                secondary_mail_attribute,
+                                secondary_mail_addresses
+                            )
+
+                        entry_modifications[secondary_mail_attribute] = secondary_mail_addresses
+
+        return entry_modifications
+
+    def set_entry_attribute(self, entry_id, attribute, value):
+        self.set_entry_attributes(entry_id, { attribute: value })
+
+    def set_entry_attributes(self, entry_id, attributes):
+        self._bind()
+
+        entry_dn = self.entry_dn(entry_id)
+
+        print entry_dn
+
+        attrs = {}
+        for attribute in attributes.keys():
+            attrs[attribute.lower()] = attributes[attribute]
+
+    def synchronize(self):
+        """
+            Synchronize with LDAP
+        """
+        self._bind()
+
+        _filter = self._kolab_filter()
+
+        modified_after = datetime.datetime.utcfromtimestamp(time.time()-18600).strftime("%Y%m%d%H%M%SZ")
+        _filter = "(&%s(modifytimestamp>=%s))" % (_filter,modified_after)
+
+        log.debug(_("Using filter %r") % (_filter), level=8)
+
+        self._search(
+                self.config_get('base_dn'),
+                filterstr=_filter,
+                attrlist=[ '*', self.config_get('unique_attribute') ],
+                callback=self._synchronize_callback,
+            )
+
+    ###
+    ### API depth level increasing!
+    ###
+
     def _bind(self):
-        # TODO: Implement some mechanism for r/o, r/w and mgmt binding.
-        self._connect()
+        if self.ldap == None:
+            self.connect()
 
         if not self.bind:
-            # TODO: Use bind credentials for the domain itself.
-            bind_dn = conf.get('ldap', 'bind_dn')
-            bind_pw = conf.get('ldap', 'bind_pw')
+            bind_dn = self.config_get('bind_dn')
+            bind_pw = self.config_get('bind_pw')
 
             # TODO: Binding errors control
             try:
@@ -189,13 +639,350 @@ class LDAP(object):
             except ldap.INVALID_CREDENTIALS:
                 log.error(_("Invalid bind credentials"))
 
-    def _unbind(self):
-        self.ldap.unbind()
-        self.bind = False
+    def _change_add_user(self, entry, change):
+        """
+            An entry of type user was added.
+        """
+        mailserver_attribute = self.config_get('mailserver_attribute')
+        result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
-    def _reconnect(self):
-        self._disconnect()
-        self._connect()
+        if not entry.has_key(mailserver_attribute):
+            entry[mailserver_attribute] = \
+                self.get_entry_attribute(entry, mailserver_attribute)
+
+        if not entry.has_key(result_attribute):
+            entry = self.recipient_policy(entry)
+            return
+
+        if entry[result_attribute] == None:
+            return
+
+        self.imap.connect(domain=self.domain)
+
+        if not self.imap.user_mailbox_exists(entry[result_attribute]):
+            folder = self.imap.user_mailbox_create(
+                    entry[result_attribute],
+                    entry[mailserver_attribute]
+                )
+        else:
+            folder = "user%s%s" % (self.imap.separator,entry[result_attribute])
+
+        server = self.imap.user_mailbox_server(folder)
+
+        if not entry[mailserver_attribute] == server:
+            self.set_entry_attribute(entry, mailserver_attribute, server)
+
+    def _change_add_group(self, entry, change):
+        """
+            An entry of type group was added.
+
+            The Kolab daemon has little to do for this type of action on this
+            type of entry.
+        """
+        pass
+
+    def _change_add_role(self, entry, change):
+        """
+            An entry of type role was added.
+
+            The Kolab daemon has little to do for this type of action on this
+            type of entry.
+        """
+        pass
+
+    def _change_add_sharedfolder(self, entry, change):
+        """
+            An entry of type sharedfolder was added.
+        """
+        self.imap.connect(domain=self.domain)
+
+        server = None
+        mailserver_attribute = self.config_get('mailserver_attribute')
+
+        if entry.has_key(mailserver_attribute):
+            server = entry['mailserver_attribute']
+
+        if not entry.has_key('kolabtargetfolder'):
+            entry['kolabtargetfolder'] = self.get_entry_attribute(
+                    entry['id'],
+                    'kolabtargetfolder'
+                )
+
+        if not entry.has_key('kolabfoldertype'):
+            entry['kolabfoldertype'] = self.get_entry_attribute(
+                    entry['id'],
+                    'kolabfoldertype'
+                )
+
+        #if not entry.has_key('kolabmailfolderaclentry'):
+            #entry['kolabmailfolderaclentry'] = self.get_entry_attribute(
+                    #entry['id'],
+                    #'kolabmailfolderaclentry'
+                #)
+
+        if entry.has_key('kolabtargetfolder') and not entry['kolabtargetfolder'] == None:
+            folder_path = entry['kolabtargetfolder']
+        else:
+            # TODO: What is *the* way to see if we need to create an @domain
+            # shared mailbox?
+            # TODO^2: self.domain, really? Presumes any mail attribute is
+            # set to the primary domain name space...
+            # TODO^3: Test if the cn is already something@domain
+            result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+            if result_attribute in ['mail']:
+                folder_path = "%s@%s" % (entry['cn'], self.domain)
+            else:
+                folder_path = entry['cn']
+
+        if not self.imap.shared_folder_exists(folder_path):
+            self.imap.shared_folder_create(folder_path, server)
+
+        if entry.has_key('kolabfoldertype') and not entry['kolabfoldertype'] == None:
+            self.imap.shared_folder_set_type(folder_path, entry['kolabfoldertype'])
+
+        #if entry.has_key('kolabmailfolderaclentry') and not entry['kolabmailfolderaclentry'] == None:
+            #self.imap._set_kolab_mailfolder_acls(entry['kolabmailfolderaclentry'])
+
+        #if server == None:
+            #self.entry_set_attribute(mailserver_attribute, server)
+
+    def _change_delete_group(self, entry, change):
+        """
+            An entry of type group was deleted.
+        """
+
+        result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+
+        if not entry.has_key(result_attribute):
+            return None
+
+        if entry[result_attribute] == None:
+            return None
+
+        self.imap.cleanup_acls(entry[result_attribute])
+
+
+    def _change_delete_None(self, entry, change):
+        """
+            Redirect to _change_delete_unknown
+        """
+        self._change_delete_unknown(entry, change)
+
+    def _change_delete_sharedfolder(self, entry, change):
+        pass
+
+    def _change_delete_unknown(self, entry, change):
+        """
+            An entry has been deleted, and we do not know of what object type
+            the entry was - user, group, role or sharedfolder.
+        """
+        result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+        if not entry.has_key(result_attribute):
+            return None
+
+        if entry[result_attribute] == None:
+            return None
+
+        success = True
+        for _type in ['user','group','role','sharedfolder']:
+            try:
+                eval("_change_delete_%s(entry, change)" % (_type))
+            except:
+                success = False
+
+            if success:
+                break
+
+    def _change_delete_user(self, entry, change):
+        """
+            An entry of type user was deleted.
+        """
+
+        result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+
+        if not entry.has_key(result_attribute):
+            return None
+
+        if entry[result_attribute] == None:
+            return None
+
+        self.imap.user_mailbox_delete(entry[result_attribute])
+        self.imap.cleanup_acls(entry[result_attribute])
+
+
+    def _change_moddn_group(self, entry, change):
+        # TODO: If the rdn attribute is the same as the result attribute...
+        pass
+
+    def _change_moddn_role(self, entry, change):
+        pass
+
+    def _change_moddn_user(self, entry, change):
+        old_dn = change['previous_dn']
+        new_dn = change['dn']
+
+        import ldap.dn
+        old_rdn = ldap.dn.explode_dn(old_dn)[0].split('=')[0]
+        new_rdn = ldap.dn.explode_dn(new_dn)[0].split('=')[0]
+
+        result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+
+        if conf.changelog.has_key(entry['id']):
+            old_canon_attr = conf.changelog[entry['id']]
+
+        # See if we have to trigger the recipient policy. Only really applies to
+        # situations in which the result_attribute is used in the old or in the
+        # new DN.
+        trigger_recipient_policy = False
+
+        if old_rdn == result_attribute:
+            if new_rdn == result_attribute:
+                if new_rdn == old_rdn:
+                    trigger_recipient_policy = True
+            else:
+                if not new_rdn == old_rdn:
+                    trigger_recipient_policy = True
+        else:
+            if new_rdn == result_attribute:
+                if not new_rdn == old_rdn:
+                    trigger_recipient_policy = True
+
+        if trigger_recipient_policy:
+            entry_changes = self.recipient_policy(entry)
+            # Now look at entry_changes and old_canon_attr, and see if they're the
+            # same value.
+            if entry_changes.has_key(result_attribute):
+                if not entry_changes[result_attribute] == old_canon_attr:
+                    self.imap.user_mailbox_rename(old_canon_attr, entry_changes[result_attribute])
+                    conf.changelog[entry['id']] = entry_changes[result_attribute]
+
+    def _change_moddn_sharedfolder(self, entry, change):
+        pass
+
+    def _change_modify_group(self, entry, change):
+        pass
+
+    def _change_modify_role(self, entry, change):
+        pass
+
+    def _change_modify_sharedfolder(self, entry, change):
+        pass
+
+    def _change_modify_user(self, entry, change):
+        for entry_key in conf.changelog.keys():
+            log.debug(_("Current changelog entry %s with %s") % (entry_key,conf.changelog[entry_key]), level=8)
+
+        if conf.changelog.has_key(entry['id']):
+            old_canon_attr = conf.changelog[entry['id']]
+
+        entry_changes = self.recipient_policy(entry)
+
+        log.debug(_("Result from recipient policy: %r") % (entry_changes), level=8)
+
+        result_attribute = conf.get('cyrus-sasl','result_attribute')
+        if entry_changes.has_key(result_attribute):
+            if not entry_changes[result_attribute] == old_canon_attr:
+                self.imap.user_mailbox_rename(old_canon_attr, entry_changes[result_attribute])
+                conf.changelog[entry['id']] = entry_changes[result_attribute]
+
+    def _change_none_group(self, entry, change):
+        """
+            A group entry as part of the initial search result set.
+
+            The Kolab daemon has little to do for this type of action on this
+            type of entry.
+        """
+        pass
+
+    def _change_none_role(self, entry, change):
+        """
+            A role entry as part of the initial search result set.
+
+            The Kolab daemon has little to do for this type of action on this
+            type of entry.
+        """
+        pass
+
+    def _change_none_sharedfolder(self, entry, change):
+        """
+            A sharedfolder entry as part of the initial search result set.
+        """
+        self.imap.connect(domain=self.domain)
+
+        server = None
+        mailserver_attribute = self.config_get('mailserver_attribute')
+
+        if entry.has_key(mailserver_attribute):
+            server = entry['mailserver_attribute']
+
+        if not entry.has_key('kolabtargetfolder'):
+            entry['kolabtargetfolder'] = self.get_entry_attribute(
+                    entry['id'],
+                    'kolabtargetfolder'
+                )
+
+        if not entry.has_key('kolabfoldertype'):
+            entry['kolabfoldertype'] = self.get_entry_attribute(
+                    entry['id'],
+                    'kolabfoldertype'
+                )
+
+        #if not entry.has_key('kolabmailfolderaclentry'):
+            #entry['kolabmailfolderaclentry'] = self.get_entry_attribute(
+                    #entry['id'],
+                    #'kolabmailfolderaclentry'
+                #)
+
+        if entry.has_key('kolabtargetfolder') and not entry['kolabtargetfolder'] == None:
+            folder_path = entry['kolabtargetfolder']
+        else:
+            # TODO: What is *the* way to see if we need to create an @domain
+            # shared mailbox?
+            # TODO^2: self.domain, really? Presumes any mail attribute is
+            # set to the primary domain name space...
+            # TODO^3: Test if the cn is already something@domain
+            result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+            if result_attribute in ['mail']:
+                folder_path = "%s@%s" % (entry['cn'], self.domain)
+            else:
+                folder_path = entry['cn']
+
+        if not self.imap.shared_folder_exists(folder_path):
+            self.imap.shared_folder_create(folder_path, server)
+
+        if entry.has_key('kolabfoldertype') and not entry['kolabfoldertype'] == None:
+            self.imap.shared_folder_set_type(folder_path, entry['kolabfoldertype'])
+
+        #if entry.has_key('kolabmailfolderaclentry') and not entry['kolabmailfolderaclentry'] == None:
+            #self.imap._set_kolab_mailfolder_acls(entry['kolabmailfolderaclentry'])
+
+        #if server == None:
+            #self.entry_set_attribute(mailserver_attribute, server)
+
+    def _change_none_user(self, entry, change):
+        """
+            A user entry as part of the initial search result set.
+        """
+        result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+
+        test = self.recipient_policy(entry)
+
+        if not entry.has_key(result_attribute):
+            # TODO: Execute plugin-hook
+            return
+
+        if entry[result_attribute] == None:
+            # TODO: Execute plugin-hook
+            return
+
+        if not conf.changelog.has_key(entry['id']):
+            conf.changelog[entry['id']] = entry[result_attribute]
+
+        self.imap.connect(domain=self.domain)
+
+        if not self.imap.user_mailbox_exists(entry[result_attribute]):
+            folder = self.imap.user_mailbox_create(entry[result_attribute])
+            server = self.imap.user_mailbox_server(folder)
 
     def _disconnect(self):
         self._unbind()
@@ -203,65 +990,87 @@ class LDAP(object):
         self.ldap = None
         self.bind = False
 
-    def _find_dn(self, login, domain=None):
+    def _entry_dict(self, value):
+        """
+            Tests if 'value' is a valid entry dictionary with a DN contained
+            within key 'dn'.
+
+            Returns True or False
+        """
+        if isinstance(value, dict):
+            if value.has_key('dn'):
+                return True
+
+        return False
+
+    def _entry_dn(self, value):
+        """
+            Tests if 'value' is a valid DN.
+
+            Returns True or False
+        """
+
+        # Only basestrings can be DNs
+        if not isinstance(value, basestring):
+            return False
+
+        try:
+            import ldap.dn
+            ldap_dn = ldap.dn.explode_dn(value)
+        except ldap.DECODING_ERROR:
+            # This is not a DN.
+            return False
+
+        return True
+
+    def _entry_type(self, entry_id):
+        """
+            Return the type of object for an entry.
+        """
+
+        entry_dn = self.entry_dn(entry_id)
+
+        base_dn = self.config_get('base_dn')
+
+        for _type in ['user', 'group', 'sharedfolder']:
+            __filter = self.config_get('kolab_%s_filter' % (_type))
+            if __filter == None:
+                __filter = self.config_get('%s_filter' % (_type))
+
+            if not __filter == None:
+                try:
+                    result = self._regular_search(entry_dn, filterstr=__filter)
+                except:
+                    result = self._regular_search(
+                            base_dn,
+                            filterstr="(%s=%s)" %(
+                                    self.config_get('unique_attribute'),
+                                    entry_id['id'])
+                                )
+
+                if not result:
+                    continue
+                else:
+                    return _type
+
+    def _find_user_dn(self, login, realm):
         """
             Find the distinguished name (DN) for an entry in LDAP.
-
         """
-        self._connect()
-        self._bind()
 
-        if domain == None:
-            domain = conf.get('kolab', 'primary_domain')
+        domain_root_dn = self._kolab_domain_root_dn(self.domain)
 
-        domain_root_dn = self._kolab_domain_root_dn(domain)
+        base_dn = self.config_get('user_base_dn')
+        if base_dn == None:
+            base_dn = self.config_get('base_dn')
 
-        if conf.has_option(domain, 'base_dn'):
-            section = domain
-        else:
-            section = 'ldap'
-
-        user_base_dn = conf.get_raw(section, 'base_dn')
-
-        if conf.has_option(domain, 'user_filter'):
-            section = domain
-        else:
-            section = 'ldap'
-
-        user_filter = conf.get(section, 'user_filter', quiet=True)
-
-        if user_filter == "":
-            user_filter = conf.get('ldap', 'user_filter')
-
-        if conf.has_option(section, 'auth_attrs'):
-            auth_search_attrs = conf.get_list(section, 'auth_attrs')
-        elif conf.has_section('kolab_smtp_access_policy'):
-            if conf.has_option('kolab_smtp_access_policy', 'address_search_attrs'):
-                log.warning(
-                        _("Deprecation warning: The setting " + \
-                            "kolab_smtp_access_policy.address_search_attrs " + \
-                            "is to be replaced with the 'auth_attrs' key in " + \
-                            "the 'ldap' or '%s' domain section.") % (domain)
-                    )
-
-                auth_search_attrs = conf.get_list(
-                        'kolab_smtp_access_policy',
-                        'address_search_attrs'
-                    )
-
-            else:
-                auth_search_attrs = [ 'uid', 'mail' ]
-        else:
-            auth_search_attrs = [ 'uid', 'mail' ]
-
-        if not 'uid' in auth_search_attrs:
-            auth_search_attrs.append('uid')
+        auth_attrs = self.config_get_list('auth_attributes')
 
         auth_search_filter = [ '(|' ]
 
-        for auth_search_attr in auth_search_attrs:
-            auth_search_filter.append('(%s=%s)' % (auth_search_attr,login))
-            auth_search_filter.append('(%s=%s@%s)' % (auth_search_attr,login,domain))
+        for auth_attr in auth_attrs:
+            auth_search_filter.append('(%s=%s)' % (auth_attr,login))
+            auth_search_filter.append('(%s=%s@%s)' % (auth_attr,login,self.domain))
 
         auth_search_filter.append(')')
 
@@ -302,183 +1111,185 @@ class LDAP(object):
 
         return _user_dn
 
-    def _find_group(self, attr, value, domain=None, additional_filter=None, base_dn=None):
-        self._connect()
+    def _kolab_domain_root_dn(self, domain):
         self._bind()
 
-        if domain == None:
-            domain = conf.get('kolab', 'primary_domain')
+        log.debug(_("Finding domain root dn for domain %s") % (domain), level=8)
 
-        domain_root_dn = self._kolab_domain_root_dn(domain)
+        bind_dn = conf.get('ldap', 'bind_dn')
+        bind_pw = conf.get('ldap', 'bind_pw')
 
-        if conf.has_option(domain, 'group_base_dn'):
-            section = domain
-        else:
-            section = 'ldap'
+        domain_base_dn = conf.get('ldap', 'domain_base_dn', quiet=True)
 
-        if base_dn == None:
-            group_base_dn = conf.get_raw(
-                    section,
-                    'group_base_dn'
-                ) % ({'base_dn': domain_root_dn})
-        else:
-            group_base_dn = base_dn
+        if not domain_base_dn == "":
 
-        if type(attr) == str:
-            search_filter = "(%s=%s)" % (
-                    attr,
-                    value
+            # If we haven't returned already, let's continue searching
+            domain_name_attribute = conf.get('ldap', 'domain_name_attribute')
+
+            _results = self._search(
+                    domain_base_dn,
+                    ldap.SCOPE_SUBTREE,
+                    "(%s=%s)" % (domain_name_attribute,domain),
+                    override_search='_regular_search'
                 )
-        elif type(attr) == list:
-            search_filter = "(|"
-            for _attr in attr:
-                search_filter = "%s(%s=%s)" % (search_filter, _attr, value)
-            search_filter = "%s)" % (search_filter)
 
-        if additional_filter:
-            search_filter = additional_filter % {
-                    'search_filter': search_filter
-                }
+            domains = []
+            for _domain in _results:
+                (domain_dn, _domain_attrs) = _domain
+                domain_rootdn_attribute = conf.get(
+                        'ldap',
+                        'domain_rootdn_attribute'
+                    )
+                _domain_attrs = utils.normalize(_domain_attrs)
+                if _domain_attrs.has_key(domain_rootdn_attribute):
+                    return _domain_attrs[domain_rootdn_attribute]
 
-        log.debug(
-                _("Attempting to find the group with search filter: %s") % (
-                        search_filter
-                    ),
-                level=8
-            )
-
-        _results = self.ldap.search_s(
-                group_base_dn,
-                scope=ldap.SCOPE_SUBTREE,
-                filterstr=search_filter,
-                attrlist=[ 'dn' ]
-            )
-
-        if len(_results) == 1:
-            (_group_dn, _group_attrs) = _results[0]
         else:
-            return False
+            if conf.has_option('ldap', 'base_dn'):
+                return conf.get('ldap', 'base_dn')
 
-        return _group_dn
+        return utils.standard_root_dn(domain)
 
-    def _find_user(self, attr, value, domain=None, additional_filter=None, base_dn=None):
-        self._connect()
-        self._bind()
+    def _kolab_filter(self):
+        """
+            Compose a filter using the relevant settings from configuration.
+        """
+        _filter = "(|"
+        for _type in ['user', 'group', 'sharedfolder']:
+            __filter = self.config_get('kolab_%s_filter' % (_type))
+            if __filter == None:
+                __filter = self.config_get('%s_filter' % (_type))
 
-        if domain == None:
-            domain = conf.get('kolab', 'primary_domain')
+            if not __filter == None:
+                _filter = "%s%s" % (_filter,__filter)
 
-        domain_root_dn = self._kolab_domain_root_dn(domain)
+        _filter = "%s)" % (_filter)
 
-        if conf.has_option(domain, 'user_base_dn'):
-            section = domain
+        return _filter
+
+    def _list_domains(self):
+        """
+            Find the domains related to this Kolab setup, and return a list of
+            DNS domain names.
+
+            Returns a list of tuples, each tuple containing the primary domain
+            name and a list of secondary domain names.
+
+            This function should only be called by the primary instance of Auth.
+        """
+
+        log.debug(_("Listing domains..."), level=8)
+
+        self.connect()
+
+        bind_dn = conf.get('ldap', 'bind_dn')
+        bind_pw = conf.get('ldap', 'bind_pw')
+
+        domain_base_dn = conf.get('ldap', 'domain_base_dn', quiet=True)
+
+        if domain_base_dn == "":
+            # No domains are to be found in LDAP, return an empty list.
+            # Note that the Auth() base itself handles this case.
+            return []
+
+        # If we haven't returned already, let's continue searching
+        domain_filter = conf.get('ldap', 'kolab_domain_filter')
+        if not domain_filter == None:
+            log.warning(_("ldap/kolab_domain_filter deprecated, use ldap/domain_filter instead."))
         else:
-            section = 'ldap'
+            domain_filter = conf.get('ldap', 'domain_filter')
 
-        if base_dn == None:
-            user_base_dn = conf.get_raw(
-                    section,
-                    'user_base_dn'
-                ) % ({'base_dn': domain_root_dn})
-        else:
-            user_base_dn = base_dn
+        if domain_base_dn == None or domain_filter == None:
+            return []
 
-        if type(attr) == str:
-            search_filter = "(%s=%s)" % (
-                    attr,
-                    value
+        # TODO: this function should be wrapped for error handling
+        try:
+            self.ldap.simple_bind_s(bind_dn, bind_pw)
+        except ldap.SERVER_DOWN, e:
+            raise AuthBackendError, _("Authentication database DOWN")
+
+        try:
+            _search = self._search(
+                    domain_base_dn,
+                    ldap.SCOPE_SUBTREE,
+                    domain_filter,
+                    # TODO: Where we use associateddomain is actually configurable
+                    [ 'associateddomain' ],
+                    override_search='_regular_search'
                 )
-        elif type(attr) == list:
-            search_filter = "(|"
-            for _attr in attr:
-                search_filter = "%s(%s=%s)" % (search_filter, _attr, value)
-            search_filter = "%s)" % (search_filter)
+        except:
+            return []
 
-        if additional_filter:
-            search_filter = additional_filter % {
-                    'search_filter': search_filter
-                }
+        domains = []
 
-        log.debug(
-                _("Attempting to find the user with search filter: %s") % (
-                        search_filter
-                    ),
-                level=8
-            )
+        for domain_dn, domain_attrs in _search:
+            primary_domain = None
+            secondary_domains = []
 
-        _results = self.ldap.search_s(
-                user_base_dn,
-                scope=ldap.SCOPE_SUBTREE,
-                filterstr=search_filter,
-                attrlist=[ 'dn' ]
-            )
+            domain_attrs = utils.normalize(domain_attrs)
 
-        if len(_results) == 1:
-            (_user_dn, _user_attrs) = _results[0]
+            # TODO: Where we use associateddomain is actually configurable
+            if type(domain_attrs['associateddomain']) == list:
+                primary_domain = domain_attrs['associateddomain'].pop(0)
+                secondary_domains = domain_attrs['associateddomain']
+            else:
+                primary_domain = domain_attrs['associateddomain']
+
+            domains.append((primary_domain,secondary_domains))
+
+        return domains
+
+    def _reconnect(self):
+        """
+            Reconnect to LDAP
+        """
+        self._disconnect()
+        self.connect()
+
+    def _synchronize_callback(self, *args, **kw):
+        change_type = None
+
+        change_dict = {
+                'change_type': kw['change_type'],
+                'previous_dn': kw['previous_dn'],
+                'change_number': kw['change_number'],
+                'dn': kw['dn']
+            }
+
+        entry = utils.normalize(kw['entry'])
+        entry['dn'] = kw['dn']
+
+        unique_attr = self.config_get('unique_attribute')
+        entry['id'] = entry[unique_attr]
+
+        try:
+            entry['type'] = self._entry_type(entry)
+        except:
+            entry['type'] = "unknown"
+
+        log.debug(_("Entry type: %s") % (entry['type']), level=8)
+
+        if change_dict['change_type'] == None:
+            # This entry was in the start result set
+            eval("self._change_none_%s(entry, change_dict)" % (entry['type']))
         else:
-            return False
+            change = psearch.CHANGE_TYPES_STR[change_dict['change_type']].lower()
+            eval("self._change_%s_%s(entry, change_dict)" % (change, entry['type']))
 
-        return _user_dn
+    def _unbind(self):
+        """
+            Discard the current set of bind credentials.
 
-    def _search_users(self, attr, value, domain=None, additional_filter=None, base_dn=None):
-        self._connect()
-        self._bind()
+            Virtually disconnects the LDAP connection, and should be followed by
+            a call to _bind() afterwards.
+        """
 
-        if domain == None:
-            domain = conf.get('kolab', 'primary_domain')
+        self.ldap.unbind()
+        self.bind = False
 
-        domain_root_dn = self._kolab_domain_root_dn(domain)
-
-        if conf.has_option(domain, 'user_base_dn'):
-            section = domain
-        else:
-            section = 'ldap'
-
-        if base_dn == None:
-            user_base_dn = conf.get_raw(
-                    section,
-                    'user_base_dn'
-                ) % ({'base_dn': domain_root_dn})
-        else:
-            user_base_dn = base_dn
-
-        if type(attr) == str:
-            search_filter = "(%s=%s)" % (
-                    attr,
-                    value
-                )
-        elif type(attr) == list:
-            search_filter = "(|"
-            for _attr in attr:
-                search_filter = "%s(%s=%s)" % (search_filter, _attr, value)
-            search_filter = "%s)" % (search_filter)
-
-        if additional_filter:
-            search_filter = additional_filter % {
-                    'search_filter': search_filter
-                }
-
-        log.debug(
-                _("Attempting to find entries with search filter: %s") % (
-                        search_filter
-                    ),
-                level=8
-            )
-
-        _results = self.ldap.search_s(
-                user_base_dn,
-                scope=ldap.SCOPE_SUBTREE,
-                filterstr=search_filter,
-                attrlist=[ 'dn' ]
-            )
-
-        _user_dns = []
-
-        for _result in _results:
-            (_user_dn, _user_attrs) = _result
-            _user_dns.append(_user_dn)
-
-        return _user_dns
+    ###
+    ### Backend search functions
+    ###
 
     def _persistent_search(self,
             base_dn,
@@ -713,8 +1524,8 @@ class LDAP(object):
             primary_domain=None,
             secondary_domains=[]
         ):
-        self._connect()
-        self._bind()
+
+        log.debug(_("Searching with filter %r") % (filterstr), level=8)
 
         _search = self.ldap.search(
                 base_dn,
@@ -758,8 +1569,9 @@ class LDAP(object):
         if len(self.ldap.supported_controls) < 1:
             for control_num in SUPPORTED_LDAP_CONTROLS.keys():
                 log.debug(
-                        _("Checking for support for %s") % (
-                                SUPPORTED_LDAP_CONTROLS[control_num]['desc']
+                        _("Checking for support for %s on %s") % (
+                                SUPPORTED_LDAP_CONTROLS[control_num]['desc'],
+                                self.domain
                             ),
                         level=8
                     )
@@ -812,776 +1624,3 @@ class LDAP(object):
                 )
 
         return _results
-
-    def _result(self, msgid=ldap.RES_ANY, all=1, timeout=-1):
-        return self.ldap.result(msgid, all, timeout)
-
-    def _domain_default_quota(self, domain):
-        if conf.has_option(domain, 'default_quota'):
-            return conf.get(domain, 'default_quota', quiet=True)
-        elif conf.has_option('ldap', 'default_quota'):
-            return conf.get('ldap', 'default_quota', quiet=True)
-        elif conf.has_option('kolab', 'default_quota'):
-            return conf.get('kolab', 'default_quota', quiet=True)
-
-    def _domain_section(self, domain):
-        if conf.has_section(domain):
-            return domain
-        else:
-            return 'ldap'
-
-    def _get_group_attribute(self, group, attribute):
-        self._bind()
-
-        attribute = attribute.lower()
-
-        log.debug(
-                _("Getting attribute %s for group %s") % (attribute,group),
-                level=8
-            )
-
-        _result_type = None
-
-        _search = self.ldap.search_ext(
-                group['dn'],
-                ldap.SCOPE_BASE,
-                '(objectclass=*)',
-                [ 'dn', attribute ]
-            )
-
-        (
-                _result_type,
-                _result_data,
-                _result_msgid,
-                _result_controls
-            ) = self.ldap.result3(_search)
-
-        if len(_result_data) >= 1:
-            (group_dn, group_attrs) = _result_data[0]
-        else:
-            log.warning(_("Could not get attribute %s for group %s")
-                % (attribute,user['dn']))
-
-            return None
-
-        group_attrs = utils.normalize(group_attrs)
-
-        if not group_attrs.has_key(attribute):
-            log.debug(
-                    _("Wanted attribute %s, which does not exist for group " + \
-                    "%r") % (
-                            attribute,
-                            group_dn
-                        ),
-                    level=8
-                )
-
-            group_attrs[attribute] = None
-
-        return group_attrs[attribute]
-
-    def _get_user_attribute(self, user, attribute):
-        self._bind()
-
-        attribute = attribute.lower()
-
-        log.debug(
-                _("Getting attribute %s for user %s") % (attribute,user),
-                level=8
-            )
-
-        _result_type = None
-
-        _search = self.ldap.search_ext(
-                user['dn'],
-                ldap.SCOPE_BASE,
-                '(objectclass=*)',
-                [ 'dn', attribute ]
-            )
-
-        try:
-            (
-                    _result_type,
-                    _result_data,
-                    _result_msgid,
-                    _result_controls
-                ) = self.ldap.result3(_search)
-        except ldap.NO_SUCH_OBJECT, e:
-            log.error(_("No such object %r in Auth::LDAP::_get_user_attribute") % (user['dn']))
-            return None
-
-        if len(_result_data) >= 1:
-            (user_dn, user_attrs) = _result_data[0]
-        else:
-            log.warning(_("Could not get attribute %s for user %s")
-                % (attribute,user['dn']))
-
-            return None
-
-        user_attrs = utils.normalize(user_attrs)
-
-        if not user_attrs.has_key(attribute):
-            log.debug(
-                    _("Wanted attribute %s, which does not exist for user " + \
-                    "%r") % (
-                            attribute,
-                            user_dn
-                        ),
-                    level=8
-                )
-
-            user_attrs[attribute] = None
-
-        return user_attrs[attribute]
-
-    def _get_user_attributes(self, user, attributes):
-        _user_attrs = {}
-
-        for attribute in attributes:
-            _user_attrs[attribute] = self._get_user_attribute(user, attribute)
-
-        return _user_attrs
-
-    def _search_mail_address(self, domain, mail_address):
-        self._bind()
-
-        domain_root_dn = self._kolab_domain_root_dn(domain)
-
-        return self._search(
-                domain_root_dn,
-                ldap.SCOPE_SUBTREE,
-                # TODO: Configurable
-                '(|(mail=%s)(mailalternateaddress=%s))' % (
-                        mail_address,
-                        mail_address
-                    ),
-                [ 'mail', 'mailalternateaddress' ],
-                override_search='_regular_search'
-            )
-
-    def _set_user_attribute(self, user, attribute, value):
-        self._bind()
-
-        if isinstance(user, basestring):
-            user = { "dn": user }
-
-        attribute = attribute.lower()
-
-        if not user.has_key(attribute):
-            user[attribute] = self._get_user_attribute(user, attribute)
-
-        mode = None
-
-        # TODO: This should be a schema check!
-        if attribute in [ 'mailquota', 'mailalternateaddress' ]:
-            if not user.has_key('objectclass'):
-                user['objectclass'] = self._get_user_attribute(
-                        user,
-                        'objectclass'
-                    )
-
-                if user['objectclass'] == None:
-                    return
-
-            if not 'mailrecipient' in user['objectclass']:
-                user['objectclass'].append('mailrecipient')
-                self._set_user_attribute(
-                        user,
-                        'objectclass',
-                        user['objectclass']
-                    )
-
-        if user.has_key(attribute) and not user[attribute] == None:
-            mode = ldap.MOD_REPLACE
-        else:
-            mode = ldap.MOD_ADD
-
-        try:
-            if isinstance(value, int):
-                value = (str)(value)
-
-            self.ldap.modify(user['dn'], [(mode, attribute, value)])
-        except ldap.LDAPError, e:
-            log.warning(
-                    _("LDAP modification of attribute %s for %s to value " + \
-                    "%s failed: %r") % (attribute,user_dn,value,e.message['info'])
-                )
-
-    def _list_domains(self):
-        """
-            Find the domains related to this Kolab setup, and return a list of
-            DNS domain names.
-
-            Returns a list of tuples, each tuple containing the primary domain
-            name and a list of secondary domain names.
-        """
-
-        log.debug(_("Listing domains..."), level=8)
-
-        self._connect()
-
-        bind_dn = conf.get('ldap', 'bind_dn')
-        bind_pw = conf.get('ldap', 'bind_pw')
-
-        domain_base_dn = conf.get('ldap', 'domain_base_dn', quiet=True)
-
-        if domain_base_dn == "":
-            # No domains are to be found in LDAP, return an empty list.
-            # Note that the Auth() base itself handles this case.
-            return []
-
-        # If we haven't returned already, let's continue searching
-        kolab_domain_filter = conf.get('ldap', 'kolab_domain_filter')
-
-        # TODO: this function should be wrapped for error handling
-        try:
-            self.ldap.simple_bind_s(bind_dn, bind_pw)
-        except ldap.SERVER_DOWN, e:
-            raise AuthBackendError, _("Authentication database DOWN")
-
-        _search = self._search(
-                domain_base_dn,
-                ldap.SCOPE_SUBTREE,
-                kolab_domain_filter,
-                # TODO: Where we use associateddomain is actually configurable
-                [ 'associateddomain' ],
-                override_search='_regular_search'
-            )
-
-        domains = []
-
-        for domain_dn, domain_attrs in _search:
-            primary_domain = None
-            secondary_domains = []
-
-            domain_attrs = utils.normalize(domain_attrs)
-
-            # TODO: Where we use associateddomain is actually configurable
-            if type(domain_attrs['associateddomain']) == list:
-                primary_domain = domain_attrs['associateddomain'].pop(0)
-                secondary_domains = domain_attrs['associateddomain']
-            else:
-                primary_domain = domain_attrs['associateddomain']
-
-            domains.append((primary_domain,secondary_domains))
-
-        return domains
-
-    def _kolab_domain_root_dn(self, domain):
-        self._bind()
-
-        log.debug(_("Finding domain root dn for domain %s") % (domain), level=8)
-
-        bind_dn = conf.get('ldap', 'bind_dn')
-        bind_pw = conf.get('ldap', 'bind_pw')
-
-        domain_base_dn = conf.get('ldap', 'domain_base_dn', quiet=True)
-
-        if not domain_base_dn == "":
-
-            # If we haven't returned already, let's continue searching
-            domain_name_attribute = conf.get('ldap', 'domain_name_attribute')
-
-            _results = self._search(
-                    domain_base_dn,
-                    ldap.SCOPE_SUBTREE,
-                    "(%s=%s)" % (domain_name_attribute,domain),
-                    override_search='_regular_search'
-                )
-
-            domains = []
-            for _domain in _results:
-                (domain_dn, _domain_attrs) = _domain
-                domain_rootdn_attribute = conf.get(
-                        'ldap',
-                        'domain_rootdn_attribute'
-                    )
-                _domain_attrs = utils.normalize(_domain_attrs)
-                if _domain_attrs.has_key(domain_rootdn_attribute):
-                    return _domain_attrs[domain_rootdn_attribute]
-
-        else:
-            if conf.has_option('ldap', 'base_dn'):
-                return conf.get('ldap', 'base_dn')
-
-        return utils.standard_root_dn(domain)
-
-    def _list_users(self, primary_domain, secondary_domains=[], callback=None):
-
-        # Track state for psearch and paged searches.
-        self._initial_sync_done = False
-
-        log.info(_("Listing users for domain %s (and %s)")
-            % (primary_domain, ', '.join(secondary_domains)))
-
-        self._bind()
-
-        # TODO: Bind with read-only credentials, perhaps even domain-specific
-        bind_dn = conf.get('ldap', 'bind_dn')
-        #bind_dn = conf.get('ldap', 'ro_bind_dn')
-        bind_pw = conf.get('ldap', 'bind_pw')
-        #bind_pw = conf.get('ldap', 'ro_bind_pw')
-
-        if conf.has_option(primary_domain, 'user_base_dn'):
-            section = primary_domain
-        else:
-            section = 'ldap'
-
-        domain_root_dn = self._kolab_domain_root_dn(primary_domain)
-
-        user_base_dn = conf.get_raw(
-                section,
-                'user_base_dn'
-            ) % ({'base_dn': domain_root_dn})
-
-        if conf.has_option(primary_domain, 'kolab_user_filter'):
-            section = primary_domain
-        else:
-            section = 'ldap'
-
-        kolab_user_filter = conf.get(section, 'kolab_user_filter', quiet=True)
-
-        if conf.has_option(primary_domain, 'kolab_user_scope'):
-            section = primary_domain
-        else:
-            section = 'ldap'
-
-        _kolab_user_scope = conf.get(section, 'kolab_user_scope', quiet=True)
-
-        if LDAP_SCOPE.has_key(_kolab_user_scope):
-            kolab_user_scope = LDAP_SCOPE[_kolab_user_scope]
-        else:
-            log.warning(
-                    _("LDAP Search scope %s not found, using 'sub'") % (
-                            _kolab_user_scope
-                        )
-                )
-
-            kolab_user_scope = ldap.SCOPE_SUBTREE
-
-        # TODO: Is, perhaps, a domain specific setting
-        result_attribute = conf.get(
-                'cyrus-sasl',
-                'result_attribute',
-                quiet=True
-            )
-
-        try:
-            self.ldap.simple_bind_s(bind_dn, bind_pw)
-        except ldap.SERVER_DOWN, e:
-            error = eval("%s" % (e))
-            log.error(_("Error binding to LDAP: %s") % (error['desc']))
-            # TODO: Exit the fork (if fork!)
-            return
-
-        # TODO: The quota and alternative address attributes are actually
-        # supposed to be settings.
-        _search = self._search(
-                user_base_dn,
-                kolab_user_scope,
-                kolab_user_filter,
-                attrlist=[
-                        'dn',
-                        result_attribute,
-                        'sn',
-                        'givenname',
-                        'cn',
-                        'uid'
-                    ],
-                attrsonly=0,
-                callback=callback,
-                primary_domain=primary_domain,
-                secondary_domains=secondary_domains
-            )
-
-        if callback == None:
-            log.info(_("Found %d users") % (len(_search)))
-
-            log.debug(_("Iterating over %d users, making sure we have the " + \
-                "necessary attributes...") % (len(_search)), level=6)
-
-            users = []
-
-            num_users = len(_search)
-            num_user = 0
-
-            for user_dn, user_attrs in _search:
-                num_user += 1
-
-                # Placeholder for the user attributes
-                user = user_attrs
-                user['dn'] = user_dn
-
-                user = self._get_user_details(
-                        user,
-                        primary_domain,
-                        secondary_domains
-                    )
-
-                if user:
-                    users.append(user)
-
-                if (num_user % 1000) == 0:
-                    log.debug(
-                            _("Done iterating over user %d of %d")
-                                % (num_user,num_users),
-                            level=3
-                        )
-
-            return users
-
-    def _get_user_details(self, user, primary_domain, secondary_domains=[]):
-
-        # TODO: Is, perhaps, a domain specific setting
-        result_attribute = conf.get(
-                'cyrus-sasl',
-                'result_attribute',
-                quiet=True
-            )
-
-        if not user.has_key('standard_domain'):
-            user['standard_domain'] = (primary_domain, secondary_domains)
-
-        user = utils.normalize(user)
-
-        _get_attrs = []
-        _wanted_attributes = [
-                result_attribute,
-                'mail',
-                'mailalternateaddress',
-                'sn',
-                'givenname',
-                'cn',
-                'uid',
-                'preferredLanguage'
-            ]
-
-        for attribute in _wanted_attributes:
-            if not user.has_key(attribute):
-                _get_attrs.append(attribute)
-                #user[attribute] = self._get_user_attribute(user, attribute)
-
-        if len(_get_attrs) > 0:
-            _user_attrs = self._get_user_attributes(user, _get_attrs)
-            for key in _user_attrs.keys():
-                user[key] = _user_attrs[key]
-
-        user = utils.normalize(user)
-
-        if not user.has_key('preferredlanguage') or user['preferredlanguage'] == None:
-            if conf.has_option(primary_domain, 'default_locale'):
-                default_locale = conf.get(primary_domain, 'default_locale')
-            else:
-                default_locale = conf.get('kolab','default_locale')
-
-            self._set_user_attribute(user, 'preferredlanguage', default_locale)
-            user['preferredlanguage'] = default_locale
-
-        # Check to see if we want to apply a primary mail recipient policy
-        if conf.has_option(primary_domain, 'primary_mail'):
-            primary_mail = conf.plugins.exec_hook(
-                    "set_primary_mail",
-                    kw={
-                            'primary_mail':
-                                conf.get_raw(
-                                        primary_domain,
-                                        'primary_mail'
-                                    ),
-                            'user_attrs': user,
-                            'primary_domain': primary_domain,
-                            'secondary_domains': secondary_domains
-                        }
-                )
-
-            i = 1
-            _primary_mail = primary_mail
-
-            done = False
-            while not done:
-                results = self._search_mail_address(
-                        primary_domain,
-                        _primary_mail
-                    )
-
-                # Length of results should be 0 (no entry found)
-                # or 1 (which should be the entry we're looking at here)
-                if len(results) == 0:
-                    log.debug(
-                            _("No results for mail address %s found") % (
-                                    _primary_mail
-                                ),
-                            level=8
-                        )
-
-                    done = True
-                    continue
-
-                if len(results) == 1:
-                    log.debug(
-                            _("1 result for address %s found, verifying") % (
-                                    _primary_mail
-                                ),
-                            level=8
-                        )
-
-                    almost_done = True
-                    for result in results:
-                        if not result[0] == user['dn']:
-                            log.debug(
-                                    _("Too bad, primary email address %s " + \
-                                    "already in use for %s (we are %s)") % (
-                                            _primary_mail,
-                                            result[0],
-                                            user['dn']
-                                        ),
-                                    level=8
-                                )
-
-                            almost_done = False
-
-                    if almost_done:
-                        done = True
-                        continue
-
-                i += 1
-                _primary_mail = "%s%d@%s" % (
-                        primary_mail.split('@')[0],
-                        i,
-                        primary_mail.split('@')[1]
-                    )
-
-            primary_mail = _primary_mail
-
-            if not primary_mail == None:
-                if not user.has_key('mail'):
-                    self._set_user_attribute(user, 'mail', primary_mail)
-                    user['mail'] = primary_mail
-                else:
-                    if not primary_mail == user['mail']:
-                        self._set_user_attribute(user, 'mail', primary_mail)
-
-                        if not user['mail'] == None:
-                            user['old_mail'] = user['mail']
-
-                        user['mail'] = primary_mail
-
-            # Check to see if we want to apply a secondary mail recipient
-            # policy.
-            section = None
-
-            if conf.has_option(primary_domain, 'secondary_mail'):
-                section = primary_domain
-            elif conf.has_option('kolab', 'secondary_mail'):
-                section = 'kolab'
-
-            if not section == None:
-                # Execute the plugin hook
-                suggested_secondary_mail = conf.plugins.exec_hook(
-                        "set_secondary_mail",
-                        kw={
-                                'secondary_mail':
-                                    conf.get_raw(
-                                            primary_domain,
-                                            'secondary_mail'
-                                        ),
-                                'user_attrs': user,
-                                'primary_domain': primary_domain,
-                                'secondary_domains': secondary_domains
-                            }
-                    ) # end of conf.plugins.exec_hook() call
-
-                secondary_mail = []
-
-                for _secondary_mail in suggested_secondary_mail:
-                    i = 1
-                    __secondary_mail = _secondary_mail
-
-                    done = False
-                    while not done:
-                        results = self._search_mail_address(
-                                primary_domain,
-                                __secondary_mail
-                            )
-
-                        # Length of results should be 0 (no entry found)
-                        # or 1 (which should be the entry we're looking at here)
-                        if len(results) == 0:
-                            log.debug(
-                                    _("No results for address %s found") % (
-                                            __secondary_mail
-                                        ),
-                                    level=8
-                                )
-
-                            done = True
-                            continue
-
-                        if len(results) == 1:
-                            log.debug(
-                                    _("1 result for address %s found, " + \
-                                    "verifying...") % (
-                                            __secondary_mail
-                                        ),
-                                    level=8
-                                )
-
-                            almost_done = True
-                            for result in results:
-                                if not result[0] == user['dn']:
-                                    log.debug(
-                                            _("Too bad, secondary email " + \
-                                            "address %s already in use for " + \
-                                            "%s (we are %s)") % (
-                                                    __secondary_mail,
-                                                    result[0],
-                                                    user['dn']
-                                                ),
-                                            level=8
-                                        )
-
-                                    almost_done = False
-
-                            if almost_done:
-                                done = True
-                                continue
-
-                        i += 1
-                        __secondary_mail = "%s%d@%s" % (
-                                _secondary_mail.split('@')[0],
-                                i,
-                                _secondary_mail.split('@')[1]
-                            )
-
-                    secondary_mail.append(__secondary_mail)
-
-                if not secondary_mail == None:
-                    secondary_mail = list(set(secondary_mail))
-                    # Avoid duplicates
-                    while primary_mail in secondary_mail:
-                        secondary_mail.pop(secondary_mail.index(primary_mail))
-
-                    if not user.has_key('mailalternateaddress'):
-                        if not len(secondary_mail) == 0:
-                            self._set_user_attribute(
-                                    user,
-                                    'mailalternateaddress',
-                                    secondary_mail
-                                )
-
-                            user['mailalternateaddress'] = secondary_mail
-                    else:
-                        if not secondary_mail == user['mailalternateaddress']:
-                            self._set_user_attribute(
-                                    user,
-                                    'mailalternateaddress',
-                                    secondary_mail
-                                )
-
-                            user['mailalternateaddress'] = secondary_mail
-
-        return user
-
-    def sync_user(self, *args, **kw):
-        # See if kw['dn'] has been set.
-
-        if kw.has_key('dn'):
-            self.sync_ldap_user(*args, **kw)
-        elif kw.has_key('user'):
-            for user_dn, user_attrs in kw['user']:
-                _user = utils.normalize(user_attrs)
-                _user['dn'] = user_dn
-                kw['user'] = _user
-                self.sync_ldap_user(*args, **kw)
-        else:
-            # TODO: Not yet implemented
-            pass
-
-    def sync_ldap_user(self, *args, **kw):
-        user = None
-
-        done = False
-
-        if kw.has_key('change_type'):
-            # This is a EntryChangeControl notification
-            user = utils.normalize(kw['entry'])
-            user['dn'] = kw['dn']
-
-            if kw['change_type'] == None:
-                # This user has not been changed, but existed already.
-                user = self._get_user_details(
-                        user,
-                        primary_domain=kw['primary_domain'],
-                        secondary_domains=kw['secondary_domains']
-                    )
-
-                pykolab.imap.synchronize(
-                        users=[user],
-                        primary_domain=kw['primary_domain'],
-                        secondary_domains=kw['secondary_domains']
-                    )
-
-                done = True
-
-            elif kw['change_type'] == 1:
-                user = self._get_user_details(
-                        user,
-                        primary_domain=kw['primary_domain'],
-                        secondary_domains=kw['secondary_domains']
-                    )
-
-                pykolab.imap.synchronize(
-                        users=[user],
-                        primary_domain=kw['primary_domain'],
-                        secondary_domains=kw['secondary_domains']
-                    )
-
-                done = True
-
-            elif kw['change_type'] == 4:
-                # TODO: How do we know what has changed?
-                user = self._get_user_details(
-                        user,
-                        primary_domain=kw['primary_domain'],
-                        secondary_domains=kw['secondary_domains']
-                    )
-
-                pykolab.imap.synchronize(
-                        users=[user],
-                        primary_domain=kw['primary_domain'],
-                        secondary_domains=kw['secondary_domains']
-                    )
-
-                done = True
-
-            elif kw['change_type'] == 2:
-                # TODO: Use Cyrus SASL authorization ID
-                folder = 'user/%s' % (user['mail'].lower())
-                # TODO: Verify if folder exists
-                pykolab.imap.delete_mailfolder(folder)
-                done = True
-
-            elif kw['change_type'] == 8:
-                # Object has had its rdn changed
-                user = self._get_user_details(
-                        user,
-                        primary_domain=kw['primary_domain'],
-                        secondary_domains=kw['secondary_domains']
-                    )
-
-                pykolab.imap.synchronize(
-                        users=[user],
-                        primary_domain=kw['primary_domain'],
-                        secondary_domains=kw['secondary_domains']
-                    )
-
-                done = True
-
-        if kw.has_key('user'):
-            user = kw['user']
-
-        if user and not done:
-            pykolab.imap.synchronize(
-                    users=[user],
-                    primary_domain=kw['primary_domain'],
-                    secondary_domains=kw['secondary_domains']
-                )

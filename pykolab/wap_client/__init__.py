@@ -193,6 +193,9 @@ def request(method, api_uri, params=None, headers={}):
     else:
         return response_data['result']
 
+def role_capabilities():
+    return request('GET', 'role.capabilities')
+
 def system_capabilities():
     return request('GET', 'system.capabilities')
 
@@ -260,6 +263,78 @@ def user_form_value_generate_mail(params=None):
 
 def form_value_generate_password(*args, **kw):
     return request('GET', 'form_value.generate_password')
+
+def form_value_list_options(attribute_name, *args, **kw):
+    params = json.dumps({'attribute': attribute_name})
+
+    return request('POST', 'form_value.list_options', params)
+
+def form_value_select_options(attribute_name, *args, **kw):
+    params = json.dumps({'attributes': [attribute_name]})
+
+    return request('POST', 'form_value.select_options', params)
+
+def role_find_by_attribute(params=None):
+    if params == None:
+        role_name = utils.ask_question("Role name")
+    else:
+        role_name = params['cn']
+
+    role = request('GET', 'role.find_by_attribute?cn=%s' % (role_name))
+
+    return role
+
+def role_add(params=None):
+    if params == None:
+        role_name = utils.ask_question("Role name")
+        params = {
+                'cn': role_name
+            }
+
+    params = json.dumps(params)
+
+    return request('POST', 'role.add', params)
+
+def role_delete(params=None):
+    if params == None:
+        role_name = utils.ask_question("Role name")
+        role = role_find_by_attribute({'cn': role_name})
+        params = {
+                'role': role.keys()[0]
+            }
+
+    if not params.has_key('role'):
+        role = role_find_by_attribute(params)
+        params = {
+                'role': role.keys()[0]
+            }
+
+    params = json.dumps(params)
+
+    return request('POST', 'role.delete', params)
+
+def role_info(params=None):
+    if params == None:
+        role_name = utils.ask_question("Role name")
+        role = role_find_by_attribute({'cn': role_name})
+        params = {
+                'role': role
+            }
+
+    if not params.has_key('role'):
+        role = role_find_by_attribute(params)
+        params = {
+                'role': role
+            }
+
+    print role
+
+    role = request('GET', 'role.info?role=%s' % (params['role'].keys()[0]))
+
+    return role
+
+def roles_list():
+    return request('GET', 'roles.list')
 
 def user_form_value_generate_uid(params=None):
     if params == None:

@@ -26,6 +26,7 @@
 import logging
 import shutil
 import sys
+import threading
 import traceback
 
 from pykolab.logger import Logger
@@ -44,10 +45,11 @@ from pykolab.conf import Conf
 conf = Conf()
 
 def getConf():
+    _data = threading.local()
+    if hasattr(_data, 'conf'):
+        log.debug(_("Returning thread local configuration"))
+        return _data.conf
+
     return conf
 
-from pykolab.auth import Auth
-auth = Auth()
-
-from pykolab.imap import IMAP
-imap = IMAP()
+import base

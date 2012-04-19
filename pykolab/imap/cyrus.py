@@ -29,8 +29,6 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.imap')
 conf = pykolab.getConf()
 
-imap = pykolab.imap
-
 class Cyrus(cyruslib.CYRUS):
     """
         Abstraction class for some common actions to do exclusively in Cyrus.
@@ -100,6 +98,7 @@ class Cyrus(cyruslib.CYRUS):
         cyruslib.CYRUS.login(self, *args, **kw)
         self.separator = self.SEP
 
+        log.debug(_("Continuing with separator: %r") % (self.separator), level=8)
         self.murder = False
 
         for capability in self.m.capabilities:
@@ -113,10 +112,7 @@ class Cyrus(cyruslib.CYRUS):
     def find_mailfolder_server(self, mailfolder):
         annotations = {}
 
-        #print "mailfolder:", mailfolder
-
         _mailfolder = self.parse_mailfolder(mailfolder)
-        #print "_mailfolder:", _mailfolder
 
         prefix = _mailfolder['path_parts'].pop(0)
         mbox = _mailfolder['path_parts'].pop(0)
@@ -198,7 +194,6 @@ class Cyrus(cyruslib.CYRUS):
             Login to the actual backend server, then set annotation.
         """
         server = self.find_mailfolder_server(mailfolder)
-        imap.connect(self.uri.replace(self.server,server))
 
         log.debug(_("Setting annotation %s on folder %s") % (annotation,mailfolder), level=8)
 

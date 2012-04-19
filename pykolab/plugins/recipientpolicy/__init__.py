@@ -54,7 +54,7 @@ class KolabRecipientpolicy(object):
             Return the new primary mail address
         """
 
-        user_attrs = utils.normalize(kw['user_attrs'])
+        user_attrs = utils.normalize(kw['entry'])
 
         if not user_attrs.has_key('domain'):
             user_attrs['domain'] = kw['primary_domain']
@@ -84,7 +84,7 @@ class KolabRecipientpolicy(object):
             Return a list of secondary mail addresses
         """
 
-        user_attrs = utils.normalize(kw['user_attrs'])
+        user_attrs = utils.normalize(kw['entry'])
 
         if not user_attrs.has_key('domain'):
             user_attrs['domain'] = kw['primary_domain']
