@@ -1,3 +1,14 @@
-wallacedir = $(pythondir)/wallace
-wallace_PYTHON = $(wildcard *.py)
+EXTRA_DIST = \
+	wallaced.sysconfig \
+	wallaced.systemd \
+	wallaced.sysvinit
 
+wallacedir = $(pythondir)/wallace
+wallace_PYTHON = \
+	__init__.py \
+	modules.py \
+	$(wildcard module_*.py)
+
+install-exec-local:
+	mkdir -p $(DESTDIR)/$(sbindir) \
+		$(DESTDIR)/$(localstatedir)/run/wallaced
