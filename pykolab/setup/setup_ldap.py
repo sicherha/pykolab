@@ -29,6 +29,7 @@ import components
 import pykolab
 
 from pykolab import utils
+from pykolab.auth import Auth
 from pykolab.constants import *
 from pykolab.translate import _
 
@@ -42,22 +43,34 @@ def description():
     return _("Setup LDAP.")
 
 def execute(*args, **kw):
+    ask_questions = True
+
+    if not conf.config_file == conf.defaults.config_file:
+        ask_questions = False
+
     _input = {}
 
-    _input['admin_pass'] = utils.ask_question(
-            _("Administrator password"),
-            default=utils.generate_password(),
-            password=True
-        )
+    if ask_questions:
+        _input['admin_pass'] = utils.ask_question(
+                _("Administrator password"),
+                default=utils.generate_password(),
+                password=True
+            )
 
-    _input['dirmgr_pass'] = utils.ask_question(
-            _("Directory Manager password"),
-            default=utils.generate_password(),
-            password=True
-        )
+        _input['dirmgr_pass'] = utils.ask_question(
+                _("Directory Manager password"),
+                default=utils.generate_password(),
+                password=True
+            )
 
-    _input['userid'] = utils.ask_question(_("User"), default="nobody")
-    _input['group'] = utils.ask_question(_("Group"), default="nobody")
+        _input['userid'] = utils.ask_question(_("User"), default="nobody")
+        _input['group'] = utils.ask_question(_("Group"), default="nobody")
+
+    else:
+        _input['admin_pass'] = conf.get('ldap', 'bind_pw')
+        _input['dirmgr_pass'] = conf.get('ldap', 'bind_pw')
+        _input['userid'] = "nobody"
+        _input['group'] = "nobody"
 
     _input['fqdn'] = fqdn
     _input['hostname'] = hostname.split('.')[0]
@@ -130,19 +143,32 @@ ServerAdminPwd = %(admin_pass)s
     else:
         log.warning(_("Could not find the Kolab schema file"))
 
-    subprocess.call(['service', 'dirsrv@%s' % (_input['hostname']), 'restart'])
+    if os.path.isfile('/bin/systemctl'):
+        subprocess.call(['/bin/systemctl', 'restart', 'dirsrv.target'])
+        subprocess.call(['/bin/systemctl', 'enable', 'dirsrv.target'])
+    elif os.path.isfile('/sbin/service'):
+        subprocess.call(['/sbin/service', 'dirsrv', 'restart'])
+        subprocess.call(['/sbin/chkconfig', 'dirsrv', 'on'])
+    else:
+        log.error(_("Could not start and configure to start on boot, the " + \
+                "directory server service."))
 
-    _input['cyrus_admin_pass'] = utils.ask_question(
-            _("Cyrus Administrator password"),
-            default=utils.generate_password(),
-            password=True
-        )
+    if ask_questions:
+        _input['cyrus_admin_pass'] = utils.ask_question(
+                _("Cyrus Administrator password"),
+                default=utils.generate_password(),
+                password=True
+            )
 
-    _input['kolab_service_pass'] = utils.ask_question(
-            _("Kolab Service password"),
-            default=utils.generate_password(),
-            password=True
-        )
+        _input['kolab_service_pass'] = utils.ask_question(
+                _("Kolab Service password"),
+                default=utils.generate_password(),
+                password=True
+            )
+
+    else:
+        _input['cyrus_admin_pass'] = conf.get('cyrus-imap', 'admin_password')
+        _input['kolab_service_pass'] = conf.get('ldap', 'service_bind_pw')
 
     # Write out kolab configuration
     conf.command_set('kolab', 'primary_domain', _input['domain'])
@@ -153,9 +179,9 @@ ServerAdminPwd = %(admin_pass)s
     conf.command_set('ldap', 'service_bind_pw', _input['kolab_service_pass'])
 
     # Insert service users
-    auth = pykolab.auth
+    auth = Auth(_input['domain'])
     auth.connect()
-    auth._auth._connect()
+    auth._auth.connect()
     auth._auth._bind()
 
     dn = 'uid=cyrus-admin,ou=Special Users,%s' % (_input['rootdn'])
@@ -207,12 +233,14 @@ ServerAdminPwd = %(admin_pass)s
     # Do the actual synchronous add-operation to the ldapserver
     auth._auth.ldap.add_s(dn, ldif)
 
-    auth._auth._set_user_attribute(
+    auth._auth.set_entry_attribute(
             dn,
             'aci',
             '(targetattr = "*") (version 3.0;acl "Kolab Services";allow (read,compare,search)(userdn = "ldap:///%s");)' % ('uid=kolab-service,ou=Special Users,%s' % (_input['rootdn']))
         )
 
+    # TODO: Add kolab-admin role
+    # TODO: Assign kolab-admin admin ACLs
     # TODO: Add the primary domain to cn=kolab,cn=config
     dn = "associateddomain=%s,cn=kolab,cn=config" % (domainname)
     attrs = {}
@@ -278,3 +306,11 @@ ServerAdminPwd = %(admin_pass)s
     modlist = []
     modlist.append((ldap.MOD_REPLACE, "aci", aci))
     auth._auth.ldap.modify_s(dn, modlist)
+
+    if os.path.isfile('/bin/systemctl'):
+        subprocess.call(['/bin/systemctl', 'enable', 'dirsrv-admin.service'])
+    elif os.path.isfile('/sbin/service'):
+        subprocess.call(['/sbin/chkconfig', 'dirsrv-admin', 'on'])
+    else:
+        log.error(_("Could not start and configure to start on boot, the " + \
+                "directory server admin service."))

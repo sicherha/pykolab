@@ -30,6 +30,7 @@ conf = pykolab.getConf()
 
 components = {}
 component_groups = {}
+executed_components = []
 
 executed_components = []
 
@@ -206,7 +207,7 @@ def register_group(dirname, module):
                 exec("from %s.%s import __init__ as %s_%s_register" % (module,module_name,module,component_name))
                 exec("%s_%s_register()" % (module,component_name))
 
-def register(component_name, func, group=None, description=None, after=[], before=[], aliases=[]):
+def register(component_name, func, group=None, description=None, aliases=[], after=[], before=[]):
     if not group == None:
         component = "%s_%s" % (group,component_name)
     else:
