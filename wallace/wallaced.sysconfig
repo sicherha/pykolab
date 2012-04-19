@@ -1,0 +1,5 @@
+# Configuration file for the Kolab Server daemon Wallace.
+#
+# See wallaced --help for more flags.
+#
+FLAGS="--fork -l warning"
