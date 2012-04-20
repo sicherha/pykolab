@@ -1,7 +1,7 @@
 EXTRA_DIST = \
-	wallaced.sysconfig \
-	wallaced.systemd \
-	wallaced.sysvinit
+	wallace.sysconfig \
+	wallace.systemd \
+	wallace.sysvinit
 
 wallacedir = $(pythondir)/wallace
 wallace_PYTHON = \
