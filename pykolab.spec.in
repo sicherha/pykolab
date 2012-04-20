@@ -119,15 +119,19 @@ This is the Kolab Content Filter, with plugins
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
 
-mkdir -p \
-    %{buildroot}/%{_initrddir} \
-    %{buildroot}/%{_sysconfdir}/sysconfig
-
-%{__install} -p -m 644 saslauthd/kolab-saslauthd.sysconfig %{buildroot}/%{_sysconfdir}/sysconfig/kolab-saslauthd
-%{__install} -p -m 755 saslauthd/kolab-saslauthd.sysvinit %{buildroot}/%{_initrddir}/kolab-saslauthd
-
-%{__install} -p -m 644 kolabd/kolabd.sysconfig %{buildroot}/%{_sysconfdir}/sysconfig/kolabd
+%if 0{?fedora} > 15
+mkdir -p %{buildroot}/%{_unitdir}
+%{__install} -p -m 644 kolabd/kolabd.systemd %{buildroot}/%{_unitdir}/kolabd.service
+%{__install} -p -m 644 saslauthd/kolab-saslauthd.systemd %{buildroot}/%{_unitdir}/kolab-saslauthd.service
+%else
+mkdir -p %{buildroot}/%{_initddir}
 %{__install} -p -m 755 kolabd/kolabd.sysvinit %{buildroot}/%{_initrddir}/kolabd
+%{__install} -p -m 755 saslauthd/kolab-saslauthd.sysvinit %{buildroot}/%{_initrddir}/kolab-saslauthd
+%endif
+
+mkdir -p %{buildroot}/%{_sysconfdir}/sysconfig
+%{__install} -p -m 644 kolabd/kolabd.sysconfig %{buildroot}/%{_sysconfdir}/sysconfig/kolabd
+%{__install} -p -m 644 saslauthd/kolab-saslauthd.sysconfig %{buildroot}/%{_sysconfdir}/sysconfig/kolab-saslauthd
 
 %find_lang pykolab
 
