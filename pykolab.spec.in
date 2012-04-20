@@ -166,42 +166,71 @@ if [ $1 -gt 1 ] ; then
 fi
 
 %post -n kolab-saslauthd
-if [ $1 -eq  1 ] ; then
-    chkconfig --add kolab-saslauthd
+if [ $1 -eq 1 ]; then
+%if 0%{?fedora} >= 15
+    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+%else
+    /sbin/chkconfig --add kolab-saslauthd
+%endif
 else
     /sbin/service kolab-saslauthd condrestart
 fi
 
 %preun -n kolab-saslauthd
 if [ $1 = 0 ]; then
+%if 0%{?fedora} >= 15
+    /bin/systemctl --no-reload disable kolab-saslauthd.service >/dev/null 2>&1 || :
+    /bin/systemctl stop kolab-saslauthd.service >/dev/null 2>&1 || :
+%else
     /sbin/service kolab-saslauthd stop > /dev/null 2>&1
     /sbin/chkconfig --del kolab-saslauthd
+%endif
 fi
 
 %post -n kolab-server
 if [ $1 -eq  1 ] ; then
-    chkconfig --add kolabd
-else
-    /sbin/service kolabd condrestart
+%if 0%{?fedora} >= 15
+    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+%else
+    /sbin/chkconfig --add kolabd
+%endif
 fi
 
 %preun -n kolab-server
 if [ $1 = 0 ]; then
+%if 0%{?fedora} >= 15
+    /bin/systemctl --no-reload disable kolabd.service >/dev/null 2>&1 || :
+    /bin/systemctl stop kolabd.service >/dev/null 2>&1 || :
+%else
     /sbin/service kolabd stop > /dev/null 2>&1
     /sbin/chkconfig --del kolabd
+%endif
 fi
 
 %post -n wallace
 if [ $1 -eq  1 ] ; then
+%if 0%{?fedora} >= 15
+    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+%else
     chkconfig --add wallace
+%endif
 else
+%if 0%{?fedora} >= 15
     /sbin/service wallace condrestart
+%else
+    /bin/systemctl reload-or-try-restart wallace.service
+%endif
 fi
 
 %preun -n wallace
 if [ $1 = 0 ]; then
+%if 0%{?fedora} >= 15
+    /bin/systemctl --no-reload disable wallace.service
+    /biin/systemctl stop wallace.service
+%else
     /sbin/service wallace stop > /dev/null 2>&1
     /sbin/chkconfig --del wallace
+%endif
 fi
 
 %clean
@@ -217,10 +246,6 @@ rm -rf %{buildroot}
 %{python_sitelib}/pykolab/*.pyc
 %{python_sitelib}/pykolab/*.pyo
 %{python_sitelib}/pykolab/auth/
-%dir %{python_sitelib}/pykolab/cli/
-%{python_sitelib}/pykolab/cli/*.py
-%{python_sitelib}/pykolab/cli/*.pyc
-%{python_sitelib}/pykolab/cli/*.pyo
 %{python_sitelib}/pykolab/conf/
 %{python_sitelib}/pykolab/imap/
 %dir %{python_sitelib}/pykolab/plugins/
@@ -230,7 +255,6 @@ rm -rf %{buildroot}
 %{python_sitelib}/pykolab/plugins/defaultfolders
 %{python_sitelib}/pykolab/plugins/dynamicquota
 %{python_sitelib}/pykolab/plugins/recipientpolicy
-%exclude %{python_sitelib}/pykolab/setup/
 %exclude %{python_sitelib}/pykolab/tests/
 %{python_sitelib}/kolab/
 %{python_sitelib}/cyruslib.py
@@ -252,6 +276,14 @@ rm -rf %{buildroot}
 %{_bindir}/*
 %{_sbindir}/kolab
 %{_sbindir}/kolab-conf
+%dir %{python_sitelib}/pykolab/cli/
+%{python_sitelib}/pykolab/cli/*.py
+%{python_sitelib}/pykolab/cli/*.pyc
+%{python_sitelib}/pykolab/cli/*.pyo
+%dir %{python_sitelib}/pykolab/setup/
+%{python_sitelib}/pykolab/setup/*.py
+%{python_sitelib}/pykolab/setup/*.pyc
+%{python_sitelib}/pykolab/setup/*.pyo
 
 %files -n kolab-saslauthd
 %defattr(-,root,root,-)
