@@ -26,7 +26,7 @@ Source0:            http://files.kolab.org/releases/%{name}-%{version}.tar.gz
 BuildRoot:          %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch:          noarch
 Requires:           kolab-cli = %{version}-%{release}
-Requires:           python-ldap
+Requires:           python-ldap >= 2.4
 Requires(pre):      /usr/sbin/useradd
 Requires(pre):      /usr/sbin/usermod
 Requires(pre):      /usr/sbin/groupadd
@@ -53,6 +53,7 @@ Cyrus IMAP Telemetry logging handling capabilities for Kolab Groupware
 Summary:            Kolab CLI components
 Group:              Applications/System
 BuildRequires:      intltool, gettext, python
+Requires:           %{name} = %{version}-%{release}
 
 %description -n kolab-cli
 Kolab CLI utilities
@@ -64,7 +65,7 @@ Kolab CLI utilities
 Summary:            Kolab SASL Authentication Daemon
 Group:              Applications/System
 BuildRequires:      intltool, gettext, python
-Requires:           pykolab = %{version}-%{release}
+Requires:           %{name} = %{version}-%{release}
 
 %description -n kolab-saslauthd
 Kolab SASL Authentication Daemon for multi-domain, multi-authn database deployments
@@ -76,7 +77,7 @@ Kolab SASL Authentication Daemon for multi-domain, multi-authn database deployme
 Summary:            Kolab Server implemented in Python
 Group:              Applications/System
 BuildRequires:      intltool, gettext, python
-Requires:           pykolab = %{version}-%{release}
+Requires:           %{name} = %{version}-%{release}
 
 %description -n kolab-server
 Kolab Server implemented in Python
@@ -89,7 +90,7 @@ Summary:            Kolab SMTP Access Policy for Postfix
 Group:              Applications/System
 BuildRequires:      intltool, gettext, python
 Requires:           postfix
-Requires:           pykolab = %{version}-%{release}
+Requires:           %{name} = %{version}-%{release}
 Requires:           python-sqlalchemy
 Requires:           MySQL-python
 
@@ -102,7 +103,7 @@ Kolab SMTP Access Policy for Postfix
 %package -n wallace
 Summary:            Kolab Content-Filter
 Group:              Applications/System
-Requires:           pykolab = %{version}-%{release}
+Requires:           %{name} = %{version}-%{release}
 Requires:           python-sqlalchemy
 Requires:           MySQL-python
 
@@ -123,15 +124,18 @@ make install DESTDIR=%{buildroot}
 mkdir -p %{buildroot}/%{_unitdir}
 %{__install} -p -m 644 kolabd/kolabd.systemd %{buildroot}/%{_unitdir}/kolabd.service
 %{__install} -p -m 644 saslauthd/kolab-saslauthd.systemd %{buildroot}/%{_unitdir}/kolab-saslauthd.service
+%{__install} -p -m 644 wallace/wallace.systemd %{buildroot}/%{_unitdir}/wallace.service
 %else
 mkdir -p %{buildroot}/%{_initddir}
 %{__install} -p -m 755 kolabd/kolabd.sysvinit %{buildroot}/%{_initrddir}/kolabd
 %{__install} -p -m 755 saslauthd/kolab-saslauthd.sysvinit %{buildroot}/%{_initrddir}/kolab-saslauthd
+%{__install} -p -m 755 wallace/wallace.sysvinit %{buildroot}/%{_initrddir}/wallace
 %endif
 
 mkdir -p %{buildroot}/%{_sysconfdir}/sysconfig
 %{__install} -p -m 644 kolabd/kolabd.sysconfig %{buildroot}/%{_sysconfdir}/sysconfig/kolabd
 %{__install} -p -m 644 saslauthd/kolab-saslauthd.sysconfig %{buildroot}/%{_sysconfdir}/sysconfig/kolab-saslauthd
+%{__install} -p -m 644 wallace/wallace.sysconfig %{buildroot}/%{_sysconfdir}/sysconfig/wallace
 
 %find_lang pykolab
 
@@ -276,6 +280,7 @@ rm -rf %{buildroot}
 %{_bindir}/*
 %{_sbindir}/kolab
 %{_sbindir}/kolab-conf
+%{_sbindir}/setup-kolab
 %dir %{python_sitelib}/pykolab/cli/
 %{python_sitelib}/pykolab/cli/*.py
 %{python_sitelib}/pykolab/cli/*.pyc
@@ -288,7 +293,11 @@ rm -rf %{buildroot}
 %files -n kolab-saslauthd
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
+%if 0%{?fedora} >= 15
+%{_unitdir}/kolab-saslauthd.service
+%else
 %{_initrddir}/kolab-saslauthd
+%endif
 %config(noreplace) %{_sysconfdir}/sysconfig/kolab-saslauthd
 %{_sbindir}/kolab-saslauthd
 %{python_sitelib}/saslauthd/
@@ -298,7 +307,11 @@ rm -rf %{buildroot}
 %files -n kolab-server
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
+%if 0%{?fedora} >= 15
+%{_unitdir}/kolabd.service
+%else
 %{_initrddir}/kolabd
+%endif
 %config(noreplace) %{_sysconfdir}/sysconfig/kolabd
 %{_sbindir}/kolabd
 %{python_sitelib}/kolabd/
@@ -312,6 +325,12 @@ rm -rf %{buildroot}
 %files -n wallace
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING
+%if 0%{?fedora} >= 15
+%{_unitdir}/wallace.service
+%else
+%{_initrddir}/wallace
+%endif
+%{_sysconfdir}/sysconfig/wallace
 %{_sbindir}/wallaced
 %{python_sitelib}/wallace
 
