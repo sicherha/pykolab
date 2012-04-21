@@ -39,6 +39,17 @@ conf = pykolab.getConf()
 def __init__():
     components.register('ldap', execute, description=description())
 
+def cli_options():
+    ldap_group = conf.add_cli_parser_option_group(_("LDAP Options"))
+
+    ldap_group.add_option(
+            "--fqdn",
+            dest    = "fqdn",
+            action  = "store",
+            default = fqdn,
+            help    = _("Specify FQDN (overriding defaults).")
+        )
+
 def description():
     return _("Setup LDAP.")
 
@@ -72,13 +83,23 @@ def execute(*args, **kw):
         _input['userid'] = "nobody"
         _input['group'] = "nobody"
 
-    _input['fqdn'] = fqdn
-    _input['hostname'] = hostname.split('.')[0]
-    _input['domain'] = domainname
+    # TODO: This takes the system fqdn, domainname and hostname, rather then
+    # the desired fqdn, domainname and hostname.
+    #
+    # TODO^2: This should be confirmed.
 
-    _input['nodotdomain'] = domainname.replace('.','_')
+    if conf.fqdn:
+        _input['fqdn'] = conf.fqdn
+        _input['hostname'] = conf.fqdn.split('.')[0]
+        _input['domain'] = '.'.join(conf.fqdn.split('.')[1:])
+    else:
+        _input['fqdn'] = fqdn
+        _input['hostname'] = hostname.split('.')[0]
+        _input['domain'] = domainname
 
-    _input['rootdn'] = utils.standard_root_dn(domainname)
+    _input['nodotdomain'] = _input['domain'].replace('.','_')
+
+    _input['rootdn'] = utils.standard_root_dn(_input['domain'])
 
     data = """
 [General]
@@ -91,6 +112,7 @@ ConfigDirectoryAdminID = admin
 ConfigDirectoryAdminPwd = %(admin_pass)s
 
 [slapd]
+start_server = 0
 SlapdConfigForMC = Yes
 UseExistingMC = 0
 ServerPort = 389
@@ -113,7 +135,8 @@ ServerAdminPwd = %(admin_pass)s
 
     command = [
             '/usr/sbin/setup-ds-admin.pl',
-            '--silent',
+            '--debug',
+            '--force',
             '--file=%s' % (filename)
         ]
 
@@ -124,6 +147,12 @@ ServerAdminPwd = %(admin_pass)s
         )
 
     (stdoutdata, stderrdata) = setup_389.communicate()
+
+    log.debug(_("Setup DS stdout:"), level=8)
+    log.debug(stdoutdata, level=8)
+
+    log.debug(_("Setup DS stderr:"), level=8)
+    log.debug(stderrdata, level=8)
 
     # Find the kolab schema. It's installed as %doc in the kolab-schema package.
     # TODO: Chown nobody, nobody, chmod 440
@@ -242,10 +271,10 @@ ServerAdminPwd = %(admin_pass)s
     # TODO: Add kolab-admin role
     # TODO: Assign kolab-admin admin ACLs
     # TODO: Add the primary domain to cn=kolab,cn=config
-    dn = "associateddomain=%s,cn=kolab,cn=config" % (domainname)
+    dn = "associateddomain=%s,cn=kolab,cn=config" % (_input['domain'])
     attrs = {}
     attrs['objectclass'] = ['top','domainrelatedobject']
-    attrs['associateddomain'] = '%s' % (domainname)
+    attrs['associateddomain'] = '%s' % (_input['domain'])
 
     ldif = ldap.modlist.addModlist(attrs)
 
