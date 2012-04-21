@@ -128,7 +128,6 @@ def execute(component_name, *args, **kw):
                 execute_this = True
 
                 if component in executed_components:
-                    print "component", component, "already executed, continuing"
                     execute_this = False
 
                 if component == "help":
@@ -136,10 +135,8 @@ def execute(component_name, *args, **kw):
 
                 if execute_this:
                     if components[component].has_key('after'):
-                        print "component", component, "has after key, let's see what it holds"
                         for _component in components[component]['after']:
                             if not _component in executed_components:
-                                print "component", component, "is waiting for component", _component
                                 execute_this = False
 
                 if execute_this:
@@ -169,14 +166,14 @@ def execute(component_name, *args, **kw):
         group = components[component_name]['group']
         component_name = components[component_name]['component_name']
         try:
-            exec("from %s.cmd_%s import cli_options as %s_%s_cli_options" % (group,component_name,group,component_name))
+            exec("from %s.setup_%s import cli_options as %s_%s_cli_options" % (group,component_name,group,component_name))
             exec("%s_%s_cli_options()" % (group,component_name))
         except ImportError, e:
             pass
 
     else:
         try:
-            exec("from cmd_%s import cli_options as %s_cli_options" % (component_name,component_name))
+            exec("from setup_%s import cli_options as %s_cli_options" % (component_name,component_name))
             exec("%s_cli_options()" % (component_name))
         except ImportError, e:
             pass
@@ -200,9 +197,9 @@ def register_group(dirname, module):
             continue
 
         for filename in filenames:
-            if filename.startswith('cmd_') and filename.endswith('.py'):
+            if filename.startswith('setup_') and filename.endswith('.py'):
                 module_name = filename.replace('.py','')
-                component_name = module_name.replace('cmd_', '')
+                component_name = module_name.replace('setup_', '')
                 #print "exec(\"from %s.%s import __init__ as %s_%s_register\"" % (module,module_name,module,component_name)
                 exec("from %s.%s import __init__ as %s_%s_register" % (module,module_name,module,component_name))
                 exec("%s_%s_register()" % (module,component_name))
