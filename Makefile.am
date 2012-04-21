@@ -191,6 +191,7 @@ endif
 	$(INSTALL) -p -m 755 saslauthd.py $(DESTDIR)/$(sbindir)/kolab-saslauthd
 	$(INSTALL) -p -m 755 wallace.py $(DESTDIR)/$(sbindir)/wallaced
 	$(INSTALL) -p -m 755 kolabtest.py $(DESTDIR)/$(bindir)/kolab-test
+	$(INSTALL) -p -m 755 setup-kolab.py $(DESTDIR)/$(sbindir)/setup-kolab
 	$(INSTALL) -p -m 644 cyruslib.py $(DESTDIR)/$(pythondir)
 	$(INSTALL) -p -m 755 bin/kolab_parse_telemetry.py $(DESTDIR)/$(sbindir)/kolab_parse_telemetry
 	$(INSTALL) -p -m 755 bin/kolab_smtp_access_policy.py $(DESTDIR)/$(libexecdir)/postfix/kolab_smtp_access_policy
