@@ -147,6 +147,7 @@ class SASLAuthDaemon(object):
                 login.append(value)
 
             auth = Auth()
+            auth.connect()
             if auth.authenticate(login):
                 clientsocket.send(struct.pack("!H2s", 2, "OK"))
             else:
