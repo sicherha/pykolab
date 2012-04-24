@@ -144,20 +144,48 @@ class LDAP(pykolab.base.Base):
             )
 
         self.connect()
+        self._bind()
 
-        user_dn = self._find_user_dn(login[0], realm)
+        user_filter = self.config_get('user_filter')
+
+        _filter = '(&(|'
+
+        auth_attrs = self.config_get_list('auth_attributes')
+
+        for attr in auth_attrs:
+            _filter += "(%s=%s)" % (attr, login[0])
+            _filter += "(%s=%s@%s)" % (attr, login[0], realm)
+
+        _filter += ')%s)' % (user_filter)
+
+        _search = self.ldap.search_ext(
+                self.config_get('base_dn'),
+                ldap.SCOPE_SUBTREE,
+                _filter,
+                ['entrydn']
+            )
+
+        (
+                _result_type,
+                _result_data,
+                _result_msgid,
+                _result_controls
+            ) = self.ldap.result3(_search)
+
+        if len(_result_data) >= 1:
+            (entry_dn, entry_attrs) = _result_data[0]
 
         try:
             log.debug(_("Binding with user_dn %s and password %s")
-                % (user_dn, login[1]))
+                % (entry_dn, login[1]))
 
             # Needs to be synchronous or succeeds and continues setting retval
             # to True!!
-            self.ldap.simple_bind_s(user_dn, login[1])
+            self.ldap.simple_bind_s(entry_dn, login[1])
             retval = True
         except:
             log.debug(
-                    _("Failed to authenticate as user %s") % (user_dn),
+                    _("Failed to authenticate as user %s") % (entry_dn),
                     level=8
                 )
 
