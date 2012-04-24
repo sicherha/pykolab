@@ -23,7 +23,7 @@ class Defaults(object):
     def __init__(self, plugins=None):
         self.loglevel = logging.CRITICAL
 
-        self.virtual_domains = 'userid'
+        self.imap_virtual_domains = 'userid'
 
         # An integer or float to indicate the interval at which the Cyrus IMAP
         # library should try to retrieve annotations
