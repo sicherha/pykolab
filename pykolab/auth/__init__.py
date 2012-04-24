@@ -33,7 +33,7 @@ class Auth(pykolab.base.Base):
         This is the Authentication and Authorization module for PyKolab.
     """
 
-    def __init__(self, domain):
+    def __init__(self, domain=None):
         """
             Initialize the authentication class.
         """
@@ -41,7 +41,10 @@ class Auth(pykolab.base.Base):
 
         self._auth = None
 
-        self.domain = domain
+        if not domain == None:
+            self.domain = domain
+        else:
+            self.domain = conf.get('kolab', 'primary_domain')
 
     def authenticate(self, login):
         """
