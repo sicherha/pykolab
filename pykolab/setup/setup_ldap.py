@@ -136,6 +136,7 @@ ServerAdminPwd = %(admin_pass)s
     command = [
             '/usr/sbin/setup-ds-admin.pl',
             '--debug',
+            '--silent',
             '--force',
             '--file=%s' % (filename)
         ]
