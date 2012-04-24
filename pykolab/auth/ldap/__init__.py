@@ -1193,11 +1193,7 @@ class LDAP(pykolab.base.Base):
             return []
 
         # If we haven't returned already, let's continue searching
-        domain_filter = conf.get('ldap', 'kolab_domain_filter')
-        if not domain_filter == None:
-            log.warning(_("ldap/kolab_domain_filter deprecated, use ldap/domain_filter instead."))
-        else:
-            domain_filter = conf.get('ldap', 'domain_filter')
+        domain_filter = conf.get('ldap', 'domain_filter')
 
         if domain_base_dn == None or domain_filter == None:
             return []
