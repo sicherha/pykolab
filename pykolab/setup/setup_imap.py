@@ -66,7 +66,7 @@ def execute(*args, **kw):
             "ldap_time_limit": "10",
             "unixhierarchysep": "1",
             "virt_domains": "userid",
-            "admins": "cyrus-imapd",
+            "admins": "cyrus-admin",
             "annotation_definitions": "/etc/imapd.annotations.conf",
             "sieve_extensions": "fileinto reject vacation imapflags notify envelope include relational regex subaddress copy",
             "allowallsubscribe": "0",
