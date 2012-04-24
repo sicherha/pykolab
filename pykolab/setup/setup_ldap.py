@@ -112,7 +112,6 @@ ConfigDirectoryAdminID = admin
 ConfigDirectoryAdminPwd = %(admin_pass)s
 
 [slapd]
-start_server = 0
 SlapdConfigForMC = Yes
 UseExistingMC = 0
 ServerPort = 389
@@ -207,6 +206,10 @@ ServerAdminPwd = %(admin_pass)s
     conf.command_set('ldap', 'bind_pw', _input['dirmgr_pass'])
     conf.command_set('ldap', 'service_bind_dn', 'uid=kolab-service,ou=Special Users,%s' % (_input['rootdn']))
     conf.command_set('ldap', 'service_bind_pw', _input['kolab_service_pass'])
+
+    fp = open(conf.defaults.config_file, "w+")
+    conf.cfg_parser.write(fp)
+    fp.close()
 
     # Insert service users
     auth = Auth(_input['domain'])
