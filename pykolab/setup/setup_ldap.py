@@ -217,12 +217,12 @@ ServerAdminPwd = %(admin_pass)s
     auth._auth.connect()
     auth._auth._bind()
 
-    dn = 'uid=cyrus-admin,ou=Special Users,%s' % (_input['rootdn'])
+    dn = 'uid=%s,ou=Special Users,%s' % (conf.get('cyrus-imap', 'admin_login'), _input['rootdn'])
 
     # A dict to help build the "body" of the object
     attrs = {}
     attrs['objectclass'] = ['top','person','inetorgperson','organizationalperson']
-    attrs['uid'] = "cyrus-admin"
+    attrs['uid'] = conf.get('cyrus-imap', 'admin_login')
     attrs['givenname'] = "Cyrus"
     attrs['surname'] = "Administrator"
     attrs['cn'] = "Cyrus Administrator"
