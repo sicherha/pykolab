@@ -35,6 +35,8 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.auth')
 conf = pykolab.getConf()
 
+import cache
+
 # Catch python-ldap-2.4 changes
 from distutils import version
 
@@ -361,6 +363,9 @@ class LDAP(pykolab.base.Base):
 
         return _entry_dns
 
+    def get_latest_sync_timestamp(self):
+        return cache.last_modify_timestamp(self.domain)
+
     def list_secondary_domains(self):
         """
             List alias domain name spaces for the current domain name space.
@@ -583,8 +588,10 @@ class LDAP(pykolab.base.Base):
             if not secondary_mail_addresses == None:
                 secondary_mail_addresses = list(set(secondary_mail_addresses))
                 # Avoid duplicates
-                while primary_mail in secondary_mail_addresses:
-                    secondary_mail_addresses.pop(secondary_mail_addresses.index(primary_mail))
+                while primary_mail_address in secondary_mail_addresses:
+                    secondary_mail_addresses.pop(
+                            secondary_mail_addresses.index(primary_mail_address)
+                        )
 
                 if not entry.has_key(secondary_mail_attribute):
                     if not len(secondary_mail_addresses) == 0:
@@ -629,7 +636,7 @@ class LDAP(pykolab.base.Base):
 
         _filter = self._kolab_filter()
 
-        modified_after = datetime.datetime.utcfromtimestamp(time.time()-18600).strftime("%Y%m%d%H%M%SZ")
+        modified_after = self.get_latest_sync_timestamp()
         _filter = "(&%s(modifytimestamp>=%s))" % (_filter,modified_after)
 
         log.debug(_("Using filter %r") % (_filter), level=8)
@@ -637,7 +644,11 @@ class LDAP(pykolab.base.Base):
         self._search(
                 self.config_get('base_dn'),
                 filterstr=_filter,
-                attrlist=[ '*', self.config_get('unique_attribute') ],
+                attrlist=[
+                        '*',
+                        self.config_get('unique_attribute'),
+                        'modifytimestamp'
+                    ],
                 callback=self._synchronize_callback,
             )
 
@@ -678,12 +689,17 @@ class LDAP(pykolab.base.Base):
             entry[mailserver_attribute] = \
                 self.get_entry_attribute(entry, mailserver_attribute)
 
+        rcpt_addrs = self.recipient_policy(entry)
+        for key in rcpt_addrs:
+            entry[key] = rcpt_addrs[key]
+
         if not entry.has_key(result_attribute):
-            entry = self.recipient_policy(entry)
             return
 
         if entry[result_attribute] == None:
             return
+
+        cache.get_entry(self.domain, entry)
 
         self.imap.connect(domain=self.domain)
 
@@ -834,6 +850,8 @@ class LDAP(pykolab.base.Base):
         if entry[result_attribute] == None:
             return None
 
+        cache.delete_entry(self.domain, entry)
+
         self.imap.user_mailbox_delete(entry[result_attribute])
         self.imap.cleanup_acls(entry[result_attribute])
 
@@ -855,8 +873,11 @@ class LDAP(pykolab.base.Base):
 
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
-        if conf.changelog.has_key(entry['id']):
-            old_canon_attr = conf.changelog[entry['id']]
+        old_canon_attr = None
+
+        cache_entry = cache.get_entry(self.domain, entry)
+        if not cache_entry == None:
+            old_canon_attr = cache_entry['result_attribute']
 
         # See if we have to trigger the recipient policy. Only really applies to
         # situations in which the result_attribute is used in the old or in the
@@ -877,12 +898,19 @@ class LDAP(pykolab.base.Base):
 
         if trigger_recipient_policy:
             entry_changes = self.recipient_policy(entry)
+
+            for key in entry_changes.keys():
+                entry[key] = entry_changes[key]
+
             # Now look at entry_changes and old_canon_attr, and see if they're the
             # same value.
             if entry_changes.has_key(result_attribute):
-                if not entry_changes[result_attribute] == old_canon_attr:
+                if not old_canon_attr == None:
+                    self.imap.user_mailbox_create(entry_changes[result_attribute])
+                elif not entry_changes[result_attribute] == old_canon_attr:
                     self.imap.user_mailbox_rename(old_canon_attr, entry_changes[result_attribute])
-                    conf.changelog[entry['id']] = entry_changes[result_attribute]
+
+        cache.get_entry(self.domain, entry)
 
     def _change_moddn_sharedfolder(self, entry, change):
         pass
@@ -993,15 +1021,22 @@ class LDAP(pykolab.base.Base):
         """
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
-        test = self.recipient_policy(entry)
+        rcpt_addrs = self.recipient_policy(entry)
+        for key in rcpt_addrs.keys():
+            entry[key] = rcpt_addrs[key]
 
-        if not entry.has_key(result_attribute):
-            # TODO: Execute plugin-hook
-            return
+        db = cache.init_db(self.domain)
+        _entry = db.query(cache.Entry).filter_by(uniqueid=entry['id']).first()
+        if _entry == None:
+            db.add(cache.Entry(
+                    entry['id'],
+                    entry[result_attribute],
+                    entry['modifytimestamp']
+                ))
 
-        if entry[result_attribute] == None:
-            # TODO: Execute plugin-hook
-            return
+            _entry = db.query(cache.Entry).filter_by(uniqueid=entry['id']).first()
+
+        db.commit()
 
         if not conf.changelog.has_key(entry['id']):
             conf.changelog[entry['id']] = entry[result_attribute]
