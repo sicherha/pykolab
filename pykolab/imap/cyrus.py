@@ -129,6 +129,7 @@ class Cyrus(cyruslib.CYRUS):
             return self.server
 
         log.debug(_("Checking actual backend server for folder %s through annotations") % (mailfolder), level=8)
+
         if self.mbox.has_key(mailfolder):
             return self.mbox[mailfolder]
 
@@ -153,11 +154,6 @@ class Cyrus(cyruslib.CYRUS):
         server = annotations[mailfolder]['/vendor/cmu/cyrus-imapd/server']
         self.mbox[mailfolder] = server
 
-        if not server == self.server:
-            if imap._imap.has_key(server):
-                if not imap._imap[server].mbox.has_key(mailfolder):
-                    imap._imap[server].mbox[mailfolder] = server
-
         log.debug(_("Server for INBOX folder %s is %s") % (mailfolder,server), level=8)
 
         return server
@@ -168,11 +164,11 @@ class Cyrus(cyruslib.CYRUS):
         """
         server = self.find_mailfolder_server(mailfolder)
         #print "server:", server
-        imap.connect(self.uri.replace(self.server,server))
+        self.connect(self.uri.replace(self.server,server))
 
         log.debug(_("Setting quota for INBOX folder %s to %s") % (mailfolder,quota), level=8)
         try:
-            imap.setquota(mailfolder, quota)
+            self.m.setquota(mailfolder, quota)
         except:
             log.error(_("Could not set quota for mailfolder %s") % (mailfolder))
 
@@ -181,13 +177,13 @@ class Cyrus(cyruslib.CYRUS):
             Login to the actual backend server, then rename.
         """
         server = self.find_mailfolder_server(from_mailfolder)
-        imap.connect(self.uri.replace(self.server,server))
+        self.connect(self.uri.replace(self.server,server))
 
         log.debug(_("Moving INBOX folder %s to %s") % (from_mailfolder,to_mailfolder), level=8)
-        imap.rename(from_mailfolder, to_mailfolder, partition)
+        self.m.rename(from_mailfolder, to_mailfolder, partition)
 
     def _getannotation(self, *args, **kw):
-        return imap.getannotation(*args, **kw)
+        return self.getannotation(*args, **kw)
 
     def _setannotation(self, mailfolder, annotation, value):
         """
@@ -200,14 +196,14 @@ class Cyrus(cyruslib.CYRUS):
         #if annotation.startswith('/private'):
 
         try:
-            imap.setannotation(mailfolder, annotation, value)
+            self.setannotation(mailfolder, annotation, value)
         except cyruslib.CYRUSError, e:
             log.error(_("Could not set annotation %r on mail folder %r: %r") % (annotation,mailfolder,e))
 
     def _xfer(self, mailfolder, current_server, new_server):
-        imap.connect(self.uri.replace(self.server,current_server))
+        self.connect(self.uri.replace(self.server,current_server))
         log.debug(_("Transferring folder %s from %s to %s") % (mailfolder, current_server, new_server), level=8)
-        imap.xfer(mailfolder, new_server)
+        self.xfer(mailfolder, new_server)
 
     def undelete_mailfolder(self, mailfolder, to_mailfolder=None, recursive=True):
         """
