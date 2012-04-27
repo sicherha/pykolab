@@ -1025,21 +1025,7 @@ class LDAP(pykolab.base.Base):
         for key in rcpt_addrs.keys():
             entry[key] = rcpt_addrs[key]
 
-        db = cache.init_db(self.domain)
-        _entry = db.query(cache.Entry).filter_by(uniqueid=entry['id']).first()
-        if _entry == None:
-            db.add(cache.Entry(
-                    entry['id'],
-                    entry[result_attribute],
-                    entry['modifytimestamp']
-                ))
-
-            _entry = db.query(cache.Entry).filter_by(uniqueid=entry['id']).first()
-
-        db.commit()
-
-        if not conf.changelog.has_key(entry['id']):
-            conf.changelog[entry['id']] = entry[result_attribute]
+        cache.get_entry(entry)
 
         self.imap.connect(domain=self.domain)
 
