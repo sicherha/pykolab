@@ -54,6 +54,7 @@ Summary:            Kolab CLI components
 Group:              Applications/System
 BuildRequires:      intltool, gettext, python
 Requires:           %{name} = %{version}-%{release}
+Requires:           python-augeas
 
 %description -n kolab-cli
 Kolab CLI utilities
