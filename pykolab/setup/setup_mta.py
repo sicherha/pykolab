@@ -221,5 +221,31 @@ result_attribute = mail
 
     myaugeas.save()
 
+    postfix_master_settings = {
+        }
+
+    template_file = None
+
+    if os.path.isfile('/etc/kolab/templates/master.cf.tpl'):
+        template_file = '/etc/kolab/templates/master.cf.tpl'
+    elif os.path.isfile('/usr/share/kolab/templates/master.cf.tpl'):
+        template_file = '/usr/share/kolab/templates/master.cf.tpl'
+    elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'master.cf.tpl'))):
+        template_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'master.cf.tpl'))
+
+    if not template_file == None:
+        fp = open(template_file, 'r')
+        template_definition = fp.read()
+        fp.close()
+
+        t = Template(template_definition, searchList=[imapd_settings])
+        fp = open('/etc/postfix/master.cf', 'w')
+        fp.write(t.__str__())
+        fp.close()
+
+    else:
+        log.error(_("Could not write out Postfix configuration file /etc/postfix/master.cf"))
+        return
+
     subprocess.call(['service', 'postfix', 'restart'])
 
