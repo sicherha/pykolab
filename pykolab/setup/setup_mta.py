@@ -18,6 +18,7 @@
 #
 
 from augeas import Augeas
+from Cheetah.Template import Template
 import os
 import subprocess
 
@@ -238,7 +239,7 @@ result_attribute = mail
         template_definition = fp.read()
         fp.close()
 
-        t = Template(template_definition, searchList=[imapd_settings])
+        t = Template(template_definition, searchList=[postfix_master_settings])
         fp = open('/etc/postfix/master.cf', 'w')
         fp.write(t.__str__())
         fp.close()
