@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-from augeas import Augeas
+from Cheetah.Template import Template
 import os
 import subprocess
 
@@ -44,12 +44,7 @@ def execute(*args, **kw):
     """
 
     imapd_settings = {
-            "sasl_pwcheck_method": "auxprop saslauthd",
-            "sasl_mech_list": "PLAIN LOGIN",
-            "auth_mech": "pts",
-            "pts_module": "ldap",
             "ldap_servers": conf.get('ldap', 'ldap_uri'),
-            "ldap_sasl": "0",
             "ldap_base": conf.get('ldap', 'base_dn'),
             "ldap_bind_dn": conf.get('ldap', 'service_bind_dn'),
             "ldap_password": conf.get('ldap', 'service_bind_pw'),
@@ -61,49 +56,56 @@ def execute(*args, **kw):
             "ldap_member_base": conf.get('ldap','user_base_dn'),
             "ldap_member_method": "attribute",
             "ldap_member_attribute": "nsrole",
-            "ldap_restart": "1",
-            "ldap_timeout": "10",
-            "ldap_time_limit": "10",
-            "unixhierarchysep": "1",
-            "virt_domains": "userid",
             "admins": conf.get('cyrus-imap', 'admin_login'),
-            "annotation_definitions": "/etc/imapd.annotations.conf",
-            "sieve_extensions": "fileinto reject vacation imapflags notify envelope include relational regex subaddress copy",
-            "allowallsubscribe": "0",
-            "allowusermoves": "1",
-            "altnamespace": "1",
-            "hashimapspool": "1",
-            "anysievefolder": "1",
-            "fulldirhash": "0",
-            "sieveusehomedir": "0",
-            "sieve_allowreferrals": "0",
-            "lmtp_downcase_rcpt": "1",
-            "lmtp_fuzzy_mailbox_match": "1",
-            "username_tolower": "1",
-            #"normalizeuid": "1",
-            "deletedprefix": "DELETED",
-            "delete_mode": "delayed",
-            "expunge_mode": "delayed",
-            "flushseenstate": "1",
-            "virtdomains": "userid",
         }
 
-    myaugeas = Augeas()
+    template_file = None
 
-    setting_base = '/files/etc/imapd.conf/'
-    for setting_key in imapd_settings.keys():
-        setting = os.path.join(setting_base,setting_key)
-        current_value = myaugeas.get(setting)
+    if os.path.isfile('/etc/kolab/templates/imapd.conf.tpl'):
+        template_file = '/etc/kolab/templates/imapd.conf.tpl'
+    elif os.path.isfile('/usr/share/kolab/templates/imapd.conf.tpl'):
+        template_file = '/usr/share/kolab/templates/imapd.conf.tpl'
+    elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'imapd.conf.tpl'))):
+        template_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'imapd.conf.tpl'))
 
-        if current_value == None:
-            insert_paths = myaugeas.match('/files/etc/imapd.conf/*')
-            insert_path = insert_paths[(len(insert_paths)-1)]
-            myaugeas.insert(insert_path, setting_key, False)
+    if not template_file == None:
+        fp = open(template_file, 'r')
+        template_definition = fp.read()
+        fp.close()
 
-        log.debug(_("Setting key %r to %r") % (setting_key, imapd_settings[setting_key]), level=8)
-        myaugeas.set(setting, imapd_settings[setting_key])
+        t = Template(template_definition, searchList=[imapd_settings])
+        fp = open('/etc/imapd.conf', 'w')
+        fp.write(t.__str__())
+        fp.close()
 
-    myaugeas.save()
+    else:
+        log.error(_("Could not write out Cyrus IMAP configuration file /etc/imapd.conf"))
+        return
+
+    cyrus_settings = {}
+
+    template_file = None
+
+    if os.path.isfile('/etc/kolab/templates/cyrus.conf.tpl'):
+        template_file = '/etc/kolab/templates/cyrus.conf.tpl'
+    elif os.path.isfile('/usr/share/kolab/templates/cyrus.conf.tpl'):
+        template_file = '/usr/share/kolab/templates/cyrus.conf.tpl'
+    elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'cyrus.conf.tpl'))):
+        template_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'cyrus.conf.tpl'))
+
+    if not template_file == None:
+        fp = open(template_file, 'r')
+        template_definition = fp.read()
+        fp.close()
+
+        t = Template(template_definition, searchList=[cyrus_settings])
+        fp = open('/etc/cyrus.conf', 'w')
+        fp.write(t.__str__())
+        fp.close()
+
+    else:
+        log.error(_("Could not write out Cyrus IMAP configuration file /etc/imapd.conf"))
+        return
 
     annotations = [
             "/vendor/horde/share-params,mailbox,string,backend,value.shared value.priv,a",
