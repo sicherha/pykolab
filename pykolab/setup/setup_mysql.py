@@ -19,6 +19,7 @@
 
 import os
 import subprocess
+import tempfile
 
 import components
 
@@ -38,6 +39,42 @@ def description():
     return _("Setup MySQL.")
 
 def execute(*args, **kw):
+    if os.path.isfile('/bin/systemctl'):
+        subprocess.call(['/bin/systemctl', 'start', 'mysqld.service'])
+        subprocess.call(['/bin/systemctl', 'enable', 'mysqld.service'])
+    elif os.path.isfile('/sbin/service'):
+        subprocess.call(['/sbin/service', 'mysqld', 'start'])
+        subprocess.call(['/sbin/chkconfig', 'mysqld', 'on'])
+    else:
+        log.error(_("Could not start and configure to start on boot, the " + \
+                "MySQL database service."))
+
+    mysql_root_pw = utils.ask_question(
+            _("MySQL root password"),
+            default=utils.generate_password(),
+            password=True
+        )
+
+    p1 = subprocess.Popen(['echo', 'UPDATE mysql.user SET Password=PASSWORD(\'%s\') WHERE User=\'root\';' % (mysql_root_pw)], stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(['mysql'], stdin=p1.stdout)
+    p1.stdout.close()
+    p2.communicate()
+
+    p1 = subprocess.Popen(['echo', 'FLUSH PRIVILEGES;'], stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(['mysql'], stdin=p1.stdout)
+    p1.stdout.close()
+    p2.communicate()
+
+    data = """
+[mysql]
+user=root
+password=%s
+""" % (mysql_root_pw)
+
+    fp = open('/tmp/kolab-setup-my.cnf', 'w')
+    fp.write(data)
+    fp.close()
+
     schema_file = None
     for root, directories, filenames in os.walk('/usr/share/doc/'):
         for filename in filenames:
@@ -45,16 +82,17 @@ def execute(*args, **kw):
                 schema_file = os.path.join(root,filename)
 
     if not schema_file == None:
-        subprocess.call(['service', 'mysqld', 'start'])
         p1 = subprocess.Popen(['echo', 'create database kolab;'], stdout=subprocess.PIPE)
-        p2 = subprocess.Popen(['mysql'], stdin=p1.stdout)
+        p2 = subprocess.Popen(['mysql', '--defaults-file=/tmp/kolab-setup-my.cnf'], stdin=p1.stdout)
         p1.stdout.close()
         p2.communicate()
 
         p1 = subprocess.Popen(['cat', schema_file], stdout=subprocess.PIPE)
-        p2 = subprocess.Popen(['mysql', 'kolab'], stdin=p1.stdout)
+        p2 = subprocess.Popen(['mysql', '--defaults-file=/tmp/kolab-setup-my.cnf', 'kolab'], stdin=p1.stdout)
         p1.stdout.close()
         p2.communicate()
+
+        conf.command_set('kolab_wap', 'sql_uri', 'mysql://root:%s@localhost/kolab' % (mysql_root_pw))
     else:
         log.warning(_("Could not find the Kolab schema file"))
 
