@@ -147,6 +147,8 @@ getent passwd %{kolab_user} &>/dev/null || \
     useradd -r -u %{kolab_user_id} -g %{kolab_group} -d %{_localstatedir}/lib/%{kolab_user} -s /sbin/nologin \
         -c "Kolab System Account" %{kolab_user} &>/dev/null || :
 
+gpasswd -a apache kolab >/dev/null 2>&1 || :
+
 getent group %{kolabn_group} &>/dev/null || groupadd -r %{kolabn_group} -g %{kolabn_group_id} &>/dev/null
 getent passwd %{kolabn_user} &>/dev/null || \
     useradd -r -u %{kolabn_user_id} -g %{kolabn_group} -d %{_localstatedir}/lib/%{kolabn_user} -s /sbin/nologin \
