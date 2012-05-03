@@ -40,6 +40,12 @@ def description():
     return _("Setup Roundcube.")
 
 def execute(*args, **kw):
+    mysql_roundcube_password = utils.ask_question(
+            _("MySQL roundcube password"),
+            default=utils.generate_password(),
+            password=True
+        )
+
     rc_settings = {
             'imap_admin_login': conf.get('cyrus-imapd', 'admin_login'),
             'imap_admin_password': conf.get('cyrus-imapd', 'admin_password'),
@@ -51,7 +57,7 @@ def execute(*args, **kw):
             'ldap_service_bind_pw': conf.get('ldap', 'service_bind_pw'),
             'ldap_user_base_dn': conf.get('ldap', 'user_base_dn'),
             'ldap_user_filter': conf.get('ldap', 'user_filter'),
-            'mysql_uri': 'mysqli://root@localhost/roundcube',
+            'mysql_uri': 'mysqli://roundcube:%s@localhost/roundcube' % (mysql_roundcube_password),
         }
 
 
@@ -74,9 +80,6 @@ def execute(*args, **kw):
 
     for want_file in want_files:
         template_file = None
-
-        print "Going for", want_file
-
         if os.path.isfile('/etc/kolab/templates/roundcubemail/%s.tpl' % (want_file)):
             template_file = '/etc/kolab/templates/roundcubemail/%s.tpl' % (want_file)
         elif os.path.isfile('/usr/share/kolab/templates/roundcubemail/%s.tpl' % (want_file)):
@@ -85,11 +88,20 @@ def execute(*args, **kw):
             template_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'roundcubemail', '%s.tpl' % (want_file)))
 
         if not template_file == None:
+            log.debug(_("Using template file %r") % (template_file), level=8)
             fp = open(template_file, 'r')
             template_definition = fp.read()
             fp.close()
 
             t = Template(template_definition, searchList=[rc_settings])
+            log.debug(
+                    _("Successfully compiled template %r, writing out to %r") % (
+                            template_file,
+                            '/etc/roundcubemail/%s' % (want_file)
+                        ),
+                    level=8
+                )
+
             fp = open('/etc/roundcubemail/%s' % (want_file), 'w')
             fp.write(t.__str__())
             fp.close()
@@ -105,15 +117,34 @@ def execute(*args, **kw):
             if filename.startswith('mysql') and filename.endswith('.sql'):
                 schema_files.append(os.path.join(root,filename))
 
-    subprocess.call(['service', 'mysqld', 'start'])
     p1 = subprocess.Popen(['echo', 'create database roundcube;'], stdout=subprocess.PIPE)
-    p2 = subprocess.Popen(['mysql'], stdin=p1.stdout)
+    p2 = subprocess.Popen(['mysql', '--defaults-file=/tmp/kolab-setup-my.cnf'], stdin=p1.stdout)
+    p1.stdout.close()
+    p2.communicate()
+
+    p1 = subprocess.Popen(['echo', 'GRANT ALL PRIVILEGES ON roundcube.* TO \'roundcube\'@\'localhost\' IDENTIFIED BY \'%s\';' % (mysql_roundcube_password)], stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(['mysql', '--defaults-file=/tmp/kolab-setup-my.cnf'], stdin=p1.stdout)
     p1.stdout.close()
     p2.communicate()
 
     for schema_file in schema_files:
         p1 = subprocess.Popen(['cat', schema_file], stdout=subprocess.PIPE)
-        p2 = subprocess.Popen(['mysql', 'roundcube'], stdin=p1.stdout)
+        p2 = subprocess.Popen(['mysql', '--defaults-file=/tmp/kolab-setup-my.cnf', 'roundcube'], stdin=p1.stdout)
         p1.stdout.close()
         p2.communicate()
+
+    p1 = subprocess.Popen(['echo', 'FLUSH PRIVILEGES;'], stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(['mysql', '--defaults-file=/tmp/kolab-setup-my.cnf'], stdin=p1.stdout)
+    p1.stdout.close()
+    p2.communicate()
+
+    if os.path.isfile('/bin/systemctl'):
+        subprocess.call(['/bin/systemctl', 'start', 'httpd.service'])
+        subprocess.call(['/bin/systemctl', 'enable', 'httpd.service'])
+    elif os.path.isfile('/sbin/service'):
+        subprocess.call(['/sbin/service', 'httpd', 'start'])
+        subprocess.call(['/sbin/chkconfig', 'httpd', 'on'])
+    else:
+        log.error(_("Could not start and configure to start on boot, the " + \
+                "webserver service."))
 
