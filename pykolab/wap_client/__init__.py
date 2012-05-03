@@ -7,10 +7,10 @@ sys.path.append('../..')
 
 from pykolab import utils
 
-API_HOSTNAME = "admin.klab.cc"
+API_HOSTNAME = "localhost"
 API_PORT = "80"
 API_SCHEME = "http"
-API_BASE = "/~vanmeeuwen/kolab-wap/public_html/api"
+API_BASE = "/kolab-webadmin/api"
 
 session_id = None
 
@@ -54,6 +54,9 @@ def domains_capabilities():
 
 def domains_list():
     return request('GET', 'domains.list')
+
+def domain_info(domain):
+    return request('GET', 'domain.info?domain=%s' % (domain))
 
 def get_group_input():
     group_types = group_types_list()

@@ -140,6 +140,8 @@ ServerAdminPwd = %(admin_pass)s
             '--file=%s' % (filename)
         ]
 
+    log.info(_("Setting up 389 Directory Server"))
+
     setup_389 = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
@@ -199,6 +201,8 @@ ServerAdminPwd = %(admin_pass)s
         _input['cyrus_admin_pass'] = conf.get('cyrus-imap', 'admin_password')
         _input['kolab_service_pass'] = conf.get('ldap', 'service_bind_pw')
 
+    log.info(_("Writing out configuration to kolab.conf"))
+
     # Write out kolab configuration
     conf.command_set('kolab', 'primary_domain', _input['domain'])
     conf.command_set('ldap', 'base_dn', _input['rootdn'])
@@ -210,6 +214,8 @@ ServerAdminPwd = %(admin_pass)s
     fp = open(conf.defaults.config_file, "w+")
     conf.cfg_parser.write(fp)
     fp.close()
+
+    log.info(_("Inserting service users into LDAP."))
 
     # Insert service users
     auth = Auth(_input['domain'])
@@ -253,6 +259,8 @@ ServerAdminPwd = %(admin_pass)s
     # Do the actual synchronous add-operation to the ldapserver
     auth._auth.ldap.add_s(dn, ldif)
 
+    log.info(_("Writing out cn=kolab,cn=config"))
+
     dn = 'cn=kolab,cn=config'
 
     # A dict to help build the "body" of the object
@@ -274,17 +282,16 @@ ServerAdminPwd = %(admin_pass)s
 
     # TODO: Add kolab-admin role
     # TODO: Assign kolab-admin admin ACLs
-    # TODO: Add the primary domain to cn=kolab,cn=config
+
+    log.info(_("Adding domain %s to list of domains for this deployment") % (_input['domain']))
     dn = "associateddomain=%s,cn=kolab,cn=config" % (_input['domain'])
     attrs = {}
     attrs['objectclass'] = ['top','domainrelatedobject']
     attrs['associateddomain'] = '%s' % (_input['domain'])
-
     ldif = ldap.modlist.addModlist(attrs)
-
     auth._auth.ldap.add_s(dn, ldif)
 
-    # TODO: Allow no anonymous binds
+    log.info(_("Disabling anonymous binds"))
     dn = "cn=config"
     modlist = []
     modlist.append((ldap.MOD_REPLACE, "nsslapd-allow-anonymous-access", "off"))
@@ -292,18 +299,19 @@ ServerAdminPwd = %(admin_pass)s
 
     # TODO: Ensure the uid attribute is unique
     # TODO^2: Consider renaming the general "attribute uniqueness to "uid attribute uniqueness"
+    log.info(_("Enabling attribute uniqueness plugin"))
     dn = "cn=attribute uniqueness,cn=plugins,cn=config"
     modlist = []
     modlist.append((ldap.MOD_REPLACE, "nsslapd-pluginEnabled", "on"))
     auth._auth.ldap.modify_s(dn, modlist)
 
-    # TODO: Enable referential integrity plugin
+    log.info(_("Enabling referential integrity plugin"))
     dn = "cn=referential integrity postoperation,cn=plugins,cn=config"
     modlist = []
     modlist.append((ldap.MOD_REPLACE, "nsslapd-pluginEnabled", "on"))
     auth._auth.ldap.modify_s(dn, modlist)
 
-    # TODO: Enable account policy plugin
+    log.info(_("Enabling and configuring account policy plugin"))
     dn = "cn=Account Policy Plugin,cn=plugins,cn=config"
     modlist = []
     modlist.append((ldap.MOD_REPLACE, "nsslapd-pluginEnabled", "on"))
@@ -318,6 +326,7 @@ ServerAdminPwd = %(admin_pass)s
     auth._auth.ldap.modify_s(dn, modlist)
 
     # TODO: Add kolab-admin role
+    log.info(_("Adding the kolab-admin role"))
     dn = "cn=kolab-admin,%s" % (_input['rootdn'])
     attrs = {}
     attrs['description'] = "Kolab Administrator"
@@ -328,6 +337,7 @@ ServerAdminPwd = %(admin_pass)s
     auth._auth.ldap.add_s(dn, ldif)
 
     # TODO: User writeable attributes on root_dn
+    log.info(_("Setting access control to %s") % (_input['rootdn']))
     dn = _input['rootdn']
     aci = []
     aci.append('(targetattr = "homePhone || preferredDeliveryMethod || jpegPhoto || postalAddress || carLicense || userPassword || mobile || kolabAllowSMTPRecipient || displayName || kolabDelegate || description || labeledURI || homePostalAddress || postOfficeBox || registeredAddress || postalCode || photo || title || street || kolabInvitationPolicy || pager || o || l || initials || kolabAllowSMTPSender || telephoneNumber || preferredLanguage || facsimileTelephoneNumber") (version 3.0;acl "Enable self write for common attributes";allow (read,compare,search,write)(userdn = "ldap:///self");)')
