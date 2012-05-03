@@ -378,7 +378,6 @@ class LDAP(pykolab.base.Base):
 
             Given an entry, returns the entry's attribute values to be set.
         """
-
         entry_dn = self.entry_dn(entry)
         entry_modifications = {}
         entry_type = self._entry_type(entry)
@@ -387,6 +386,8 @@ class LDAP(pykolab.base.Base):
         secondary_mail = None
         secondary_mail_attribute = self.config_get_list('mail_attributes')[1]
         want_attrs = []
+
+        log.debug(_("Applying recipient policy to %r") % (entry_dn), level=8)
 
         # See which mail attributes we would want to control.
         #
@@ -401,17 +402,40 @@ class LDAP(pykolab.base.Base):
         if secondary_mail == None and entry_type == 'user':
             secondary_mail = self.config_get_raw('secondary_mail')
 
+        print primary_mail, secondary_mail
         # See if the relevant mail attributes exist
-        _mail_attrs = self.config_get('mail_attributes')
+        _mail_attrs = self.config_get_list('mail_attributes')
+
+        log.debug(
+                _("Using mail attributes: %r, with primary %r and " + \
+                        "secondary %r") % (
+                                _mail_attrs,
+                                primary_mail_attribute,
+                                secondary_mail_attribute
+                            ),
+                level=8
+            )
+
         for _mail_attr in _mail_attrs:
             if not entry.has_key(_mail_attr):
+                log.debug(_("key %r not in entry") % (_mail_attr), level=8)
                 if _mail_attr == primary_mail_attribute:
+                    log.debug(_("key %r is the prim. mail attr.") % (_mail_attr), level=8)
                     if not primary_mail == None:
+                        log.debug(_("prim. mail pol. is not empty"))
                         want_attrs.append(_mail_attr)
                 elif _mail_attr == secondary_mail_attribute:
+                    log.debug(_("key %r is the sec. mail attr.") % (_mail_attr), level=8)
                     if not secondary_mail == None:
+                        log.debug(_("sec. mail pol. is not empty"))
                         want_attrs.append(_mail_attr)
 
+        log.debug(_("Attributes %r are not yet available for entry %r") % (
+                    want_attrs,
+                    entry_dn
+                ),
+                level=8
+            )
         # Also append the preferredlanguage or 'native tongue' configured
         # for the entry.
         if not entry.has_key('preferredlanguage'):
@@ -419,6 +443,12 @@ class LDAP(pykolab.base.Base):
 
         # If we wanted anything, now is the type to get it.
         if len(want_attrs) > 0:
+            log.debug(_("Attributes %r are not yet available for entry %r") % (
+                        want_attrs,
+                        entry_dn
+                    ),
+                    level=8
+                )
             attributes = self.get_entry_attributes(entry_dn, want_attrs)
 
             for attribute in attributes.keys():
@@ -612,6 +642,8 @@ class LDAP(pykolab.base.Base):
 
                         entry_modifications[secondary_mail_attribute] = secondary_mail_addresses
 
+        log.debug(_("Entry modifications list: %r") % (entry_modifications), level=8)
+
         return entry_modifications
 
     def set_entry_attribute(self, entry_id, attribute, value):
@@ -621,8 +653,6 @@ class LDAP(pykolab.base.Base):
         self._bind()
 
         entry_dn = self.entry_dn(entry_id)
-
-        print entry_dn
 
         attrs = {}
         for attribute in attributes.keys():
@@ -647,6 +677,7 @@ class LDAP(pykolab.base.Base):
                 attrlist=[
                         '*',
                         self.config_get('unique_attribute'),
+                        conf.get('cyrus-sasl', 'result_attribute'),
                         'modifytimestamp'
                     ],
                 callback=self._synchronize_callback,
@@ -1022,10 +1053,11 @@ class LDAP(pykolab.base.Base):
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
         rcpt_addrs = self.recipient_policy(entry)
+
         for key in rcpt_addrs.keys():
             entry[key] = rcpt_addrs[key]
 
-        cache.get_entry(self.domain, entry)
+        #cache.get_entry(self.domain, entry)
 
         self.imap.connect(domain=self.domain)
 
