@@ -37,6 +37,7 @@ po/Makefile.in
 pykolab/constants.py
 pykolab/Makefile
 saslauthd/Makefile
+share/Makefile
 wallace/Makefile
 ])
 

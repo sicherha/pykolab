@@ -282,6 +282,8 @@ rm -rf %{buildroot}
 %{_sbindir}/kolab
 %{_sbindir}/kolab-conf
 %{_sbindir}/setup-kolab
+%dir %{_sysconfdir}/kolab/templates
+%{_datadir}/kolab/templates
 %dir %{python_sitelib}/pykolab/cli/
 %{python_sitelib}/pykolab/cli/*.py
 %{python_sitelib}/pykolab/cli/*.pyc

@@ -40,6 +40,7 @@ SUBDIRS = \
 	po \
 	pykolab \
 	saslauthd \
+	share \
 	wallace
 
 ChangeLog: pylint
