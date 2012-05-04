@@ -31,6 +31,7 @@ class Defaults(object):
 
         self.address_search_attrs = ['mail', 'alias']
         self.mail_attributes = ['mail', 'alias']
+        self.mailserver_attribute = 'mailhost'
 
         self.kolab_default_locale = 'en_US'
         self.ldap_unique_attribute = 'nsuniqueid'
