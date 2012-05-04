@@ -110,12 +110,21 @@ def execute(*args, **kw):
     for root, directories, filenames in os.walk('/usr/share/doc/'):
         for filename in filenames:
             if filename.startswith('mysql.initial') and filename.endswith('.sql'):
-                schema_files.append(os.path.join(root,filename))
+                schema_filepath = os.path.join(root,filename)
+                if not schema_filepath in schema_files:
+                    schema_files.append(schema_filepath)
+
+            if filename.startswith('horde_cache') and filename.endswith('.sql'):
+                schema_filepath = os.path.join(root,filename)
+                if not schema_filepath in schema_files:
+                    schema_files.append(schema_filepath)
 
     for root, directories, filenames in os.walk('/usr/share/roundcubemail/plugins/calendar/drivers/kolab/'):
         for filename in filenames:
             if filename.startswith('mysql') and filename.endswith('.sql'):
-                schema_files.append(os.path.join(root,filename))
+                schema_filepath = os.path.join(root,filename)
+                if not schema_filepath in schema_files:
+                    schema_files.append(schema_filepath)
 
     p1 = subprocess.Popen(['echo', 'create database roundcube;'], stdout=subprocess.PIPE)
     p2 = subprocess.Popen(['mysql', '--defaults-file=/tmp/kolab-setup-my.cnf'], stdin=p1.stdout)
