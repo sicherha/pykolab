@@ -654,9 +654,24 @@ class LDAP(pykolab.base.Base):
 
         entry_dn = self.entry_dn(entry_id)
 
+        entry = self.get_entry_attributes(entry_dn, ['*'])
+
         attrs = {}
         for attribute in attributes.keys():
             attrs[attribute.lower()] = attributes[attribute]
+
+        modlist = []
+
+        for attribute in attrs.keys():
+            if not entry.has_key(attribute):
+                entry[attribute] = self.get_entry_attribute(entry_id, attribute)
+
+        for attribute in attrs.keys():
+            if entry.has_key(attribute) and entry[attribute] == None:
+                modlist.append((ldap.MOD_ADD, attribute, attrs[attribute]))
+
+        dn = entry_dn
+        self.ldap.modify_s(dn, modlist)
 
     def synchronize(self):
         """
