@@ -714,6 +714,9 @@ class LDAP(pykolab.base.Base):
             An entry of type user was added.
         """
         mailserver_attribute = self.config_get('mailserver_attribute')
+        if mailserver_attribute == None:
+            mailserver_attribute = 'mailhost'
+
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
         if not entry.has_key(mailserver_attribute):
