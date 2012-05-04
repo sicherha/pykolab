@@ -90,7 +90,7 @@ result_attribute = %(domain_name_attribute)s
                         "service_bind_dn": conf.get('ldap', 'service_bind_dn'),
                         "service_bind_pw": conf.get('ldap', 'service_bind_pw'),
                     },
-            "/etc/postfix/ldap/mailenabled_distgroup.cf": """
+            "/etc/postfix/ldap/mailenabled_distgroups.cf": """
 server_host = localhost
 server_port = 389
 version = 3
@@ -114,7 +114,7 @@ leaf_result_attribute = mail
                         "service_bind_dn": conf.get('ldap', 'service_bind_dn'),
                         "service_bind_pw": conf.get('ldap', 'service_bind_pw'),
                     },
-            "/etc/postfix/ldap/mailenabled_dynamic_distgroup.cf": """
+            "/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf": """
 server_host = localhost
 server_port = 389
 version = 3
@@ -152,7 +152,7 @@ bind_pw = %(service_bind_pw)s
 
 query_filter = (&(|(mailAlternateAddress=%%s)(alias=%%s)(mail=%%s))(objectclass=kolabinetorgperson))
 result_attribute = mail
-result_format = lmtp:unix:/var/lib/imap/socket/lmtp.sock
+result_format = lmtp:unix:/var/lib/imap/socket/lmtp
 """ % {
                         "base_dn": conf.get('ldap', 'base_dn'),
                         "service_bind_dn": conf.get('ldap', 'service_bind_dn'),
@@ -191,7 +191,7 @@ result_attribute = mail
             "local_recipient_maps": "ldap:/etc/postfix/ldap/local_recipient_maps.cf",
             "mydestination": "ldap:/etc/postfix/ldap/mydestination.cf",
             "transport_maps": "ldap:/etc/postfix/ldap/transport_maps.cf",
-            "virtual_alias_maps": "virtual_alias_maps = $alias_maps, ldap:/etc/postfix/ldap/virtual_alias_maps.cf, ldap:/etc/postfix/ldap/mailenabled_distgroups.cf, ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf",
+            "virtual_alias_maps": "$alias_maps, ldap:/etc/postfix/ldap/virtual_alias_maps.cf, ldap:/etc/postfix/ldap/mailenabled_distgroups.cf, ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf",
             "smtpd_tls_auth_only": "no",
             "smtpd_tls_cert_file": "/etc/pki/tls/certs/localhost.crt",
             "smtpd_tls_key_file": "/etc/pki/tls/private/localhost.key",
