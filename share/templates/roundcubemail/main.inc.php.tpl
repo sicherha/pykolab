@@ -109,7 +109,6 @@
     //        'quickrules',
 
             'redundant_attachments',
-            'terms',
             'threading_as_default',
             // contextmenu must be after kolab_addressbook (#444)
             'contextmenu',
@@ -189,7 +188,6 @@
             'kolab_config',
             'kolab_folders',
             'password',
-            'terms'
         );
 
     foreach ( \$mandatory_plugins as \$num => \$plugin ) {
