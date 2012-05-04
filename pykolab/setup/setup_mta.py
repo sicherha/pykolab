@@ -50,7 +50,7 @@ def execute(*args, **kw):
         user_filter = conf.get('ldap','user_filter')
 
     files = {
-            "/etc/postfix/ldap/local_recipients_maps.cf": """
+            "/etc/postfix/ldap/local_recipient_maps.cf": """
 server_host = localhost
 server_port = 389
 version = 3
