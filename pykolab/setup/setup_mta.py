@@ -192,9 +192,9 @@ result_attribute = mail
             "mydestination": "ldap:/etc/postfix/ldap/mydestination.cf",
             "transport_maps": "ldap:/etc/postfix/ldap/transport_maps.cf",
             "virtual_alias_maps": "$alias_maps, ldap:/etc/postfix/ldap/virtual_alias_maps.cf, ldap:/etc/postfix/ldap/mailenabled_distgroups.cf, ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf",
-            "smtpd_tls_auth_only": "no",
-            "smtpd_tls_cert_file": "/etc/pki/tls/certs/localhost.crt",
-            "smtpd_tls_key_file": "/etc/pki/tls/private/localhost.key",
+            "smtpd_tls_auth_only": "yes",
+            "smtpd_tls_cert_file": "/etc/pki/tls/private/localhost.pem",
+            "smtpd_tls_key_file": "/etc/pki/tls/private/localhost.pem",
             "smtpd_recipient_restrictions": "permit_mynetworks, reject_unauth_pipelining, reject_rbl_client zen.spamhaus.org, reject_non_fqdn_recipient, reject_invalid_helo_hostname, reject_unknown_recipient_domain, reject_unauth_destination, check_policy_service unix:private/recipient_policy_incoming, permit",
             "smtpd_sender_restrictions": "permit_mynetworks, check_policy_service unix:private/sender_policy_incoming",
             "submission_recipient_restrictions": "check_policy_service unix:private/submission_policy, permit_sasl_authenticated, reject",
@@ -247,6 +247,8 @@ result_attribute = mail
     else:
         log.error(_("Could not write out Postfix configuration file /etc/postfix/master.cf"))
         return
+
+    subprocess.call(['/etc/pki/tls/certs/make-dummy-cert', '/etc/pki/tls/private/localhost.pem'])
 
     subprocess.call(['service', 'postfix', 'restart'])
 
