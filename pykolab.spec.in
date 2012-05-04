@@ -55,6 +55,7 @@ Group:              Applications/System
 BuildRequires:      intltool, gettext, python
 Requires:           %{name} = %{version}-%{release}
 Requires:           python-augeas
+Requires:           python-cheetah
 
 %description -n kolab-cli
 Kolab CLI utilities
