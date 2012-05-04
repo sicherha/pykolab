@@ -139,7 +139,7 @@
 
     \$rcmail_config['product_name'] = 'Kolab Groupware';
 
-    \$rcmail_config['skin'] = 'kolab';
+    \$rcmail_config['skin'] = 'default';
     \$rcmail_config['skin_logo'] = 'skins/kolab/images/kolab_logo.png';
     \$rcmail_config['skin_include_php'] = false;
     \$rcmail_config['mime_magic'] = '/usr/share/misc/magic';
