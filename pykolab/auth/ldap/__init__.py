@@ -402,7 +402,6 @@ class LDAP(pykolab.base.Base):
         if secondary_mail == None and entry_type == 'user':
             secondary_mail = self.config_get_raw('secondary_mail')
 
-        print primary_mail, secondary_mail
         # See if the relevant mail attributes exist
         _mail_attrs = self.config_get_list('mail_attributes')
 
