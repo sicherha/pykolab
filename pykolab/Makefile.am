@@ -52,8 +52,10 @@ pykolab_setupdir = $(pythondir)/$(PACKAGE)/setup
 pykolab_setup_PYTHON = \
 	setup/components.py \
 	setup/setup_imap.py \
+	setup/setup_kolabd.py \
 	setup/setup_ldap.py \
 	setup/setup_mta.py \
+	setup/setup_mysql.py \
 	setup/setup_roundcube.py \
 	setup/__init__.py
 
