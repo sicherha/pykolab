@@ -455,7 +455,9 @@ class LDAP(pykolab.base.Base):
 
         # Primary mail address
         if not primary_mail == None:
-            if not entry.has_key(primary_mail_attribute) or entry[primary_mail_attribute] == None:
+            if not entry.has_key(primary_mail_attribute) or \
+                    entry[primary_mail_attribute] == None:
+
                 primary_mail_address = conf.plugins.exec_hook(
                         "set_primary_mail",
                         kw={
