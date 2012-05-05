@@ -46,6 +46,9 @@ def ask_question(question, default="", password=False):
         else:
             answer = raw_input("%s [%s]: " % (question, default))
 
+    sys.stderr.flush()
+    sys.stdout.flush()
+
     if answer == "":
         return default
     else:
