@@ -54,17 +54,17 @@ def execute(*args, **kw):
         }
 
     want_files = [
-            'conf.d/10-kolab_conf_base.php',
+            'config.php',
         ]
 
     for want_file in want_files:
         template_file = None
-        if os.path.isfile('/etc/kolab/templates/horde/%s.tpl' % (want_file)):
-            template_file = '/etc/kolab/templates/horde/%s.tpl' % (want_file)
-        elif os.path.isfile('/usr/share/kolab/templates/horde/%s.tpl' % (want_file)):
-            template_file = '/usr/share/kolab/templates/horde/%s.tpl' % (want_file)
-        elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'horde', '%s.tpl' % (want_file)))):
-            template_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'horde', '%s.tpl' % (want_file)))
+        if os.path.isfile('/etc/kolab/templates/freebusy/%s.tpl' % (want_file)):
+            template_file = '/etc/kolab/templates/freebusy/%s.tpl' % (want_file)
+        elif os.path.isfile('/usr/share/kolab/templates/freebusy/%s.tpl' % (want_file)):
+            template_file = '/usr/share/kolab/templates/freebusy/%s.tpl' % (want_file)
+        elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'freebusy', '%s.tpl' % (want_file)))):
+            template_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'freebusy', '%s.tpl' % (want_file)))
 
         if not template_file == None:
             log.debug(_("Using template file %r") % (template_file), level=8)
@@ -72,16 +72,16 @@ def execute(*args, **kw):
             template_definition = fp.read()
             fp.close()
 
-            t = Template(template_definition, searchList=[horde_settings])
+            t = Template(template_definition, searchList=[freebusy_settings])
             log.debug(
                     _("Successfully compiled template %r, writing out to %r") % (
                             template_file,
-                            '/etc/horde/%s' % (want_file)
+                            '/etc/kolab/freebusy/%s' % (want_file)
                         ),
                     level=8
                 )
 
-            fp = open('/etc/horde/%s' % (want_file), 'w')
+            fp = open('/etc/kolab/freebusy/%s' % (want_file), 'w')
             fp.write(t.__str__())
             fp.close()
 
