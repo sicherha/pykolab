@@ -150,10 +150,10 @@ def execute(*args, **kw):
     p2.communicate()
 
     if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['/bin/systemctl', 'start', 'httpd.service'])
+        subprocess.call(['/bin/systemctl', 'restart', 'httpd.service'])
         subprocess.call(['/bin/systemctl', 'enable', 'httpd.service'])
     elif os.path.isfile('/sbin/service'):
-        subprocess.call(['/sbin/service', 'httpd', 'start'])
+        subprocess.call(['/sbin/service', 'httpd', 'restart'])
         subprocess.call(['/sbin/chkconfig', 'httpd', 'on'])
     else:
         log.error(_("Could not start and configure to start on boot, the " + \
