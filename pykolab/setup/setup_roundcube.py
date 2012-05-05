@@ -46,6 +46,8 @@ def execute(*args, **kw):
             password=True
         )
 
+    conf.mysql_roundcube_password = mysql_roundcube_password
+
     rc_settings = {
             'imap_admin_login': conf.get('cyrus-imapd', 'admin_login'),
             'imap_admin_password': conf.get('cyrus-imapd', 'admin_password'),
