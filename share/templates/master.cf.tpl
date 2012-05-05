@@ -13,12 +13,16 @@ smtp      inet  n       -       n       -       -       smtpd
 #smtpd     pass  -       -       n       -       -       smtpd
 #dnsblog   unix  -       -       n       -       0       dnsblog
 #tlsproxy  unix  -       -       n       -       0       tlsproxy
-#submission inet n       -       n       -       -       smtpd
-#  -o syslog_name=postfix/submission
-#  -o smtpd_tls_security_level=encrypt
-#  -o smtpd_sasl_auth_enable=yes
-#  -o smtpd_client_restrictions=permit_sasl_authenticated,reject
-#  -o milter_macro_daemon_name=ORIGINATING
+submission inet n       -       n       -       -       smtpd
+    -o syslog_name=postfix/submission
+    -o smtpd_tls_security_level=encrypt
+    -o smtpd_sasl_auth_enable=yes
+    -o smtpd_sasl_authenticated_header=yes
+    -o smtpd_client_restrictions=permit_sasl_authenticated,reject
+    -o smtpd_data_restrictions=$submission_data_restrictions
+    -o smtpd_recipient_restrictions=$submission_recipient_restrictions
+    -o smtpd_sender_restrictions=$submission_sender_restrictions
+
 #smtps     inet  n       -       n       -       -       smtpd
 #  -o syslog_name=postfix/smtps
 #  -o smtpd_tls_wrappermode=yes
