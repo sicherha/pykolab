@@ -19,7 +19,7 @@
     }
 
     // Defines the base path on the server, terminated by a slash
-    define('BASE_PATH', dirname($_SERVER['SCRIPT_FILENAME']) . "/");
+    define('BASE_PATH', dirname(\$_SERVER['SCRIPT_FILENAME']) . "/");
 
     // Define the include paths
     ini_set(
@@ -56,7 +56,7 @@
     define('SYNC_CONFLICT_DEFAULT', SYNC_CONFLICT_OVERWRITE_PIM);
 
     // The data providers that we are using (see configuration below
-    $BACKEND_PROVIDER = "BackendKolab";
+    \$BACKEND_PROVIDER = "BackendKolab";
 
     define("KOLAB_LDAP_ACL","");
     define('KOLAB_IMAP_NAMESPACES', Array(
