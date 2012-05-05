@@ -35,6 +35,11 @@ def ask_question(question, default="", password=False):
 
         Usage: pykolab.utils.ask_question("What is the server?", default="localhost")
     """
+
+    # Remove any buffering that may exist
+    sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+
     if password:
         if default == "":
             answer = getpass.getpass("%s: " % (question))
@@ -45,9 +50,6 @@ def ask_question(question, default="", password=False):
             answer = raw_input("%s: " % (question))
         else:
             answer = raw_input("%s [%s]: " % (question, default))
-
-    sys.stderr.flush()
-    sys.stdout.flush()
 
     if answer == "":
         return default
@@ -60,6 +62,10 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
         and a "yes" or "no" parsing that can either require an explicit, full
         "yes" or "no", or take the default or any YyNn answer.
     """
+
+    # Remove any buffering that may exist
+    sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
     if default in [ "y", "Y" ]:
         default_answer = True
@@ -94,7 +100,6 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
             else:
                 answer = False
                 print >> sys.stderr, _("Please answer 'yes' or 'no'.")
-                sys.stderr.flush()
 
 def generate_password():
     import subprocess
