@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!/usr/bin/python -u
 # -*- coding: utf-8 -*-
 #
 # Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
