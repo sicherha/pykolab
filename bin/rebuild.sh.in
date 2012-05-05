@@ -1,0 +1,63 @@
+#!/bin/bash
+
+package=@PACKAGE@
+version=@VERSION@
+release=@RELEASE@
+
+srpmdir=`rpm --eval="%{_srcrpmdir}"`
+
+declare -a dists
+declare -a dist_tags
+declare -a product_series
+
+declare -a answers
+declare -a tasks
+
+dists[${#dists[@]}]='f16';  dist_tags[${#dist_tags[@]}]='fc16'; product_series[${#product_series[@]}]="3.0"
+dists[${#dists[@]}]='f17';  dist_tags[${#dist_tags[@]}]='fc17'; product_series[${#product_series[@]}]="3.0"
+dists[${#dists[@]}]='el5';  dist_tags[${#dist_tags[@]}]='el5';  product_series[${#product_series[@]}]="2.4"
+dists[${#dists[@]}]='el6';  dist_tags[${#dist_tags[@]}]='el6';  product_series[${#product_series[@]}]="2.4"
+dists[${#dists[@]}]='el6';  dist_tags[${#dist_tags[@]}]='el6';  product_series[${#product_series[@]}]="3.0"
+
+autoreconf -v && ./configure && make dist || exit 1
+
+x=0
+while [ $x -lt ${#dists[@]} ]; do
+
+    read -p "Build for ${dists[$x]} / ${product_series[$x]}? [Y/n]: " answers[${#answers[@]}]
+
+    if [ "${answers[$x]}" != "n" ]; then
+        answers[$x]="y"
+    fi
+    let x++
+done
+
+x=0
+while [ $x -lt ${#dists[@]} ]; do
+    if [ "${answers[$x]}" == "y" ]; then
+        rpmbuild --define="dist .${dist_tags[$x]}.kolab_${product_series[$x]}" -ts ${package}-${version}.tar.gz
+        tasks[${#tasks[@]}]=`koji build --nowait \
+            feature-${dists[$x]}-kolab-${product_series[$x]}-development \
+            ${srpmdir}/${package}-${version}-${release}.${dist_tags[$x]}.kolab_${product_series[$x]}.src.rpm 2>&1 | \
+            grep "^Created task:" | awk '{print $3}'`
+    fi
+
+    let x++
+done
+
+koji watch-task ${tasks[@]}
+
+x=0
+while [ $x -lt ${#dists[@]} ]; do
+    if [ "${answers[$x]}" == "y" ]; then
+        koji wait-repo \
+            --build=${package}-${version}-${release}.${dist_tags[$x]}.kolab_${product_series[$x]} \
+            feature-${dists[$x]}-kolab-${product_series[$x]}-development-build &
+    fi
+
+    let x++
+done
+
+wait
+
+echo "All done."
