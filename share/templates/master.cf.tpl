@@ -19,9 +19,9 @@ submission inet n       -       n       -       -       smtpd
     -o smtpd_sasl_auth_enable=yes
     -o smtpd_sasl_authenticated_header=yes
     -o smtpd_client_restrictions=permit_sasl_authenticated,reject
-    -o smtpd_data_restrictions=$submission_data_restrictions
-    -o smtpd_recipient_restrictions=$submission_recipient_restrictions
-    -o smtpd_sender_restrictions=$submission_sender_restrictions
+    -o smtpd_data_restrictions=\$submission_data_restrictions
+    -o smtpd_recipient_restrictions=\$submission_recipient_restrictions
+    -o smtpd_sender_restrictions=\$submission_sender_restrictions
 
 #smtps     inet  n       -       n       -       -       smtpd
 #  -o syslog_name=postfix/smtps
