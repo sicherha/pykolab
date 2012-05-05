@@ -21,6 +21,7 @@ PYTHON_FILES = \
 	wallace.py
 
 EXTRA_DIST = \
+	bin/rebuild.sh.in \
 	AUTHORS \
 	ChangeLog \
 	COPYING \

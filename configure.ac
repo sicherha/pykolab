@@ -28,6 +28,7 @@ AM_CONDITIONAL([ENTERPRISE], [test "${enterprise}" = "true"])
 AC_SUBST(DATESTAMP,`date +"%a %b %d %Y"`)
 
 AC_CONFIG_FILES([
+bin/rebuild.sh
 Makefile
 pykolab.spec
 conf/Makefile
