@@ -10,6 +10,7 @@ Makefile.in
 aclocal.m4
 autom4te.cache/
 bin/test*
+ChangeLog
 config.log
 config.status
 configure
