@@ -56,7 +56,7 @@ def execute(*args, **kw):
             'ldap_service_bind_dn': conf.get('ldap', 'service_bind_dn'),
             'ldap_service_bind_pw': conf.get('ldap', 'service_bind_pw'),
             'primary_domain': conf.get('kolab', 'primary_domain'),
-            'roundcube_mysql_password': conf.mysql_roundcube_password
+            'mysql_roundcube_password': conf.mysql_roundcube_password
         }
 
     want_files = [
