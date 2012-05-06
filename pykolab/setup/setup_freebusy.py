@@ -44,6 +44,12 @@ def execute(*args, **kw):
         log.error(_("Free/Busy is not installed on this system"))
         return
 
+    if not hasattr(conf, 'mysql_roundcube_password'):
+        conf.mysql_roundcube_password = utils.ask_question(
+                _("MySQL roundcube password"),
+                password=True
+            )
+
     horde_settings = {
             'ldap_base_dn': conf.get('ldap', 'base_dn'),
             'ldap_ldap_uri': conf.get('ldap', 'ldap_uri'),
@@ -77,38 +83,6 @@ def execute(*args, **kw):
                     _("Successfully compiled template %r, writing out to %r") % (
                             template_file,
                             '/etc/kolab/freebusy/%s' % (want_file)
-                        ),
-                    level=8
-                )
-
-            fp = open('/etc/kolab/freebusy/%s' % (want_file), 'w')
-            fp.write(t.__str__())
-            fp.close()
-
-    want_files = [
-            'config.php',
-        ]
-
-    for want_file in want_files:
-        template_file = None
-        if os.path.isfile('/etc/kolab/templates/freebusy/%s.tpl' % (want_file)):
-            template_file = '/etc/kolab/templates/freebusy/%s.tpl' % (want_file)
-        elif os.path.isfile('/usr/share/kolab/templates/freebusy/%s.tpl' % (want_file)):
-            template_file = '/usr/share/kolab/templates/freebusy/%s.tpl' % (want_file)
-        elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'freebusy', '%s.tpl' % (want_file)))):
-            template_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'freebusy', '%s.tpl' % (want_file)))
-
-        if not template_file == None:
-            log.debug(_("Using template file %r") % (template_file), level=8)
-            fp = open(template_file, 'r')
-            template_definition = fp.read()
-            fp.close()
-
-            t = Template(template_definition, searchList=[freebusy_settings])
-            log.debug(
-                    _("Successfully compiled template %r, writing out to %r") % (
-                            template_file,
-                            '/etc/freebusy/%s' % (want_file)
                         ),
                     level=8
                 )
