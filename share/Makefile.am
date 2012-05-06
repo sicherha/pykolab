@@ -20,6 +20,7 @@ zpushtemplate_DATA = \
 
 EXTRA_DIST = \
 	$(template_DATA) \
+	$(fbtemplate_DATA) \
 	$(hordetemplate_DATA) \
 	$(rctemplate_DATA) \
 	$(zpushtemplate_DATA)
