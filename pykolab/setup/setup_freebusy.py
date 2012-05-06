@@ -50,7 +50,7 @@ def execute(*args, **kw):
                 password=True
             )
 
-    horde_settings = {
+    freebusy_settings = {
             'ldap_base_dn': conf.get('ldap', 'base_dn'),
             'ldap_ldap_uri': conf.get('ldap', 'ldap_uri'),
             'ldap_service_bind_dn': conf.get('ldap', 'service_bind_dn'),
