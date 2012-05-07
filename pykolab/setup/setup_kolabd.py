@@ -38,5 +38,9 @@ def description():
     return _("Setup the Kolab daemon.")
 
 def execute(*args, **kw):
-    subprocess.call(['service', 'kolabd', 'start'])
-    subprocess.call(['service', 'kolab-saslauthd', 'start'])
+    if os.path.isfile('/bin/systemctl'):
+        subprocess.call(['systemctl', 'restart', 'kolabd.service'])
+        subprocess.call(['systemctl', 'enable', 'kolabd.service'])
+    elif os.path.isfile('/sbin/service'):
+        subprocess.call(['service', 'kolabd', 'restart'])
+        subprocess.call(['chkconfig', 'kolabd', 'on'])
