@@ -1,0 +1,3214 @@
+commit 4425c58b3de6a89acace9c15c97714ad0ff4011b
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun May 6 17:57:04 2012 +0100
+
+    Release 0.4.0-1
+
+commit a6e0cdd6eee09dfe6b5da6ba5a5f673556d4a661
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun May 6 17:56:24 2012 +0100
+
+    Use correct variable name for freebusy template
+
+commit 7007aea484e33ba130594c42c876cd10eba9a469
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun May 6 13:41:25 2012 +0100
+
+    Bump pre-release
+
+commit e9cb83fec2eb700e530df77ec0b32dcbf9e3cf99
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun May 6 13:41:06 2012 +0100
+
+    Correct variable name
+
+commit 66cb2b091c3e59abc5aa9fc413f059b6837b6deb
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun May 6 11:53:35 2012 +0100
+
+    Bump pre-release
+
+commit 3507c91d8308870637245e54e6d8acec1208ca53
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun May 6 11:53:10 2012 +0100
+
+    Correct duplication in setup_freebusy
+
+commit 9bc25577dfaa1235b6971affe8bd9f566ea261e9
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun May 6 11:52:20 2012 +0100
+
+    Add fbtemplate_DATA
+
+commit 0c060b48212616874bc2984e67509fb4989c1d1e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun May 6 00:17:52 2012 +0100
+
+    Bump pre-release
+
+commit a71c738585d0d169f5e03f8e51296f9d89cff933
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun May 6 00:17:19 2012 +0100
+
+    Correct paths for freebusy configuration
+
+commit 06cf3d5976d3a495d2ccce1b71bddc2465368bba
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 20:31:47 2012 +0100
+
+    Bump pre-release
+
+commit cf383257f7abe863ddca8eabb20464409c7f0e53
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 20:31:16 2012 +0100
+
+    Correct running in unbuffered mode
+
+commit 168171fc34e65879fd6d25a9e4795caabc0e0af8
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 17:11:45 2012 +0100
+
+    Bump pre-release
+
+commit 0a151c662c67c17cffeee7e80e04a6348f0516af
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 17:11:07 2012 +0100
+
+    Add freebusy and zpush setup routines
+    Restart httpd server rather then starting it
+
+commit b3ff42571c0edab8e5b3c064ba3a488a1b534bab
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 17:10:23 2012 +0100
+
+    Truly remove any buffering that may exist
+
+commit 0d0a51065a6780dc40c21ff4250f6cb6b7db7896
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 15:44:03 2012 +0100
+
+    Bump pre-release
+
+commit 7f9167d2726d7cc48c85fcc36c06ea5a6db80add
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 15:43:11 2012 +0100
+
+    Add rebuild.sh.in to GIT
+
+commit 3912777a8cb8e5a0a2bd6eb48069095c5e3ce205
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 15:28:32 2012 +0100
+
+    Bump pre-release
+
+commit a7113ee384f490df83ef0ecf41df94eb58755a69
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 15:28:04 2012 +0100
+
+    Add a rebuild.sh for my own personal convenience
+
+commit 5fe4069058cc921c6183f3184bd91ea5a9b35ea9
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 15:27:13 2012 +0100
+
+    Correct variables in zpush configuration template
+
+commit a355e652a7b0d271247dfdf9304c00e8814465c4
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 14:12:21 2012 +0100
+
+    Bump pre-release
+
+commit 5ee3071696cdde66a26b8366b1b99ff0d6f307fe
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 14:11:02 2012 +0100
+
+    Correct smtpd_*_restrictions referring to a variable that is going to be expanded during parsing
+
+commit af9a357a6b13874ec6e1ccf30da00ef091a1d6d6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 14:09:55 2012 +0100
+
+    Flush stderr and stdout when asking a question
+
+commit 62c419ed0ccac9faa4b3ce4afb7daaaaf43236c7
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 13:12:48 2012 +0100
+
+    Bump pre-release
+
+commit 10050ea8c4393e7a79ed0844757259b7224911b4
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 02:12:00 2012 +0100
+
+    Add freebusy configuration file
+
+commit 36db38827d97a769e92a01727389a47491034577
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 02:04:57 2012 +0100
+
+    Add zpush configuration file template
+
+commit fa8610f4ac59b448cc5516a6eedc2386cddcff08
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 02:04:23 2012 +0100
+
+    Ship extra setup routines
+    Ship extra template files
+
+commit be0ef5a68ffc3ece17acb0a6a3df281375789040
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 02:03:46 2012 +0100
+
+    Add the submission service to postfix/master.cf.tpl
+
+commit b73cc1c23ac6e40ac9883b476bb3f69739120342
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 02:03:24 2012 +0100
+
+    Add basic kolab configuration template
+
+commit fbdb316b766747004dc7f17a9dab1098211105ab
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat May 5 02:03:09 2012 +0100
+
+    Store the mysql password for user roundcube in conf
+
+commit 9090cfaf49bb7bd73ef8a54c90e7607338749ab4
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 18:26:16 2012 +0100
+
+    Set correct certificate paths to a freshly generated dummy certificate
+
+commit eb0e0cb4e81d5daf9f2d78fcc02ce2d788164acd
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 18:19:08 2012 +0100
+
+    Fix another typo
+
+commit 844c99635e5f449e44cf51f7ef2e8595cb3132f5
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 16:46:47 2012 +0100
+
+    Bump pre-release
+
+commit 410bf5dca72d3079c276d3dd9b6a017e5dcbd972
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 16:46:33 2012 +0100
+
+    Lint issue
+
+commit ce08efd8fe57d7a8b359f26b265c0a1891c71f31
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 16:35:46 2012 +0100
+
+    Disable plugin terms by default
+
+commit 31c00e8ab2c9252c05d655fa3430b6692919a595
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 16:30:37 2012 +0100
+
+    Add horde_cache to sql schema files,
+    prevent duplicates
+
+commit 6ef876162465a0e8ca6f7ec2da21eb87f007a931
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 16:23:43 2012 +0100
+
+    Remove print statement (#721)
+
+commit 0cd026f71ac18945c9015d709cfe8b92f6e90e18
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 16:18:54 2012 +0100
+
+    Bump pre-release
+
+commit 87526c424771516dffa5d726425ef557914b236b
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 16:17:53 2012 +0100
+
+    Correct typos
+
+commit 4fa4da38d3d8ecdc0aee090605aaa5ea0e0de0bc
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 16:17:04 2012 +0100
+
+    Actually set entry attributes
+
+commit 193061bb0bbdfdac9fa537371f5fd395cf9cf5a4
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 14:04:59 2012 +0100
+
+    Bump pre-release
+
+commit 79958158335ff95370f915ed55bcf04028875e43
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 14:04:15 2012 +0100
+
+    This is where the actual default should come from, but pykolab/base.py:def config_get doesn't take into account the defaults
+
+commit fff443ef7205c03ee51747414b1ca6f686e212a0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 14:04:00 2012 +0100
+
+    Make sure a default mailserver_attribute is set
+
+commit 45c5bea87be934124f92a08333541e0c80e8fd04
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 14:02:12 2012 +0100
+
+    Use the default theme
+
+commit b863d25bc9570bbf0d0d4258ff979fb6301d2b53
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 01:01:31 2012 +0100
+
+    Bump pre-release
+
+commit edb5a0145ff597793b9bc0134647317ed1ad365a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 01:01:07 2012 +0100
+
+    Also require python-cheetah
+
+commit 7778863a0fe5ed03460ba7ed3226de1c6737e36f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri May 4 01:00:49 2012 +0100
+
+    Include more components to setup
+
+commit 70c329e6295ace7eaf05816cd9ec2769452b7b17
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 20:42:16 2012 +0100
+
+    Add more debugging
+
+commit 0b652a20ed2580a8e2d35339f68fdf3a27c4f3b6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 17:51:26 2012 +0100
+
+    Bump pre-release
+
+commit bf6b66e1038231f65cb991e190b1ae4b79cc60f0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 17:51:04 2012 +0100
+
+    Correct cache_entry call
+
+commit a256037e35128c30360c6a5ad5718045e1e85386
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 16:05:16 2012 +0100
+
+    Bump pre-release
+
+commit a8f9b177b728908dc2257f94f3e184ea69f3793a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 16:04:55 2012 +0100
+
+    Correct the use of mysql commands and debugging
+
+commit 834589fb53548e58a02ea02dce67011a8a4a806d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 16:04:34 2012 +0100
+
+    Set the MySQL root password
+
+commit b5aa2db0c05416f2a3ff4fe7f580efcdcf238535
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 16:04:08 2012 +0100
+
+    Import Template from Cheetah.Template
+
+commit e6718ddec843f91f44f0fff42e522685b0224547
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 16:03:36 2012 +0100
+
+    Add kolab_wap section
+
+commit 16293b6e69836c8853570cf1ba1b1a55cade5d39
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 15:03:44 2012 +0100
+
+    Bump pre-release
+
+commit a2905078b8e065ff61f5159fe141c180242ff302
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 15:03:12 2012 +0100
+
+    Add apache user to the kolab group
+
+commit 4892e46650a58f4fd9f206217005316537da8e03
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 15:02:17 2012 +0100
+
+    Correct permissions for /etc/kolab/kolab.conf
+
+commit d9375d2be9348831f588b6cf8c074a6e43a592df
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 15:01:57 2012 +0100
+
+    Add deploying master.cf
+
+commit c34d64f3b56353c2c46ffccbf423a40627fe4f3c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 15:01:24 2012 +0100
+
+    Add a template for master.cf
+
+commit 58f832ae12ab54acef7ed6b2576f461ecb62e29a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 13:24:59 2012 +0100
+
+    Bump pre-release
+
+commit 2843fdb8bf71aef985b00592ea0f88d4e719b264
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 13:24:32 2012 +0100
+
+    Adjust autofoo for the new templates
+
+commit c2ee99f72e5d683d1e3e88d5a0b68dca1943460d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 13:24:11 2012 +0100
+
+    Use the Roundcube templates in setup_roundcube
+
+commit 4a5c8e92a390dba483a9ff58d6b7a3005014f0b6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 13:23:58 2012 +0100
+
+    Add Roundcube templates
+
+commit 6764a33c367188f5aa0eb5e9a682797e8cc7b149
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 11:19:42 2012 +0100
+
+    Add cyrus.conf and imapd.conf templates
+
+commit b152dd98b3a53ae3b91474e36eea50145a2b0649
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu May 3 11:19:12 2012 +0100
+
+    Use templates for as long as Augeas does not ship lenses for /etc/cyrus.conf / /etc/imapd.conf
+
+commit 8fe7ac01670efa64aa7ae895cd1fec8947d00de8
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue May 1 11:54:57 2012 +0100
+
+    Require python-augeas for kolab-cli package which includes the setup procedures
+    Bump pre-release
+
+commit f1f955530e8d8b9398e9ce045b64a695bd9e75c0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 27 15:24:34 2012 +0100
+
+    Bump minor to 4, establishing version series 0.4
+
+commit 5d2036cd7d3ecb6d44ed1a54f4835fb85a067696
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 27 15:22:33 2012 +0100
+
+    Use the configured administrator login
+    Correct some of the options set in /etc/imapd.conf
+
+commit 1ab25276c9b0425ac638ab0935a8c5d30d699048
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 27 15:22:16 2012 +0100
+
+    Use the configured administrator login
+
+commit f2d68e09b3b536159a4929b5e0a812a018cc477d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 27 15:21:40 2012 +0100
+
+    Use self.m over imap.m
+
+commit 3bcd24035724cad66dd989a0007407d3a037c037
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 27 15:02:34 2012 +0100
+
+    Simplify use of caching
+
+commit 7735e7549ffee28d279d5cd49008c4095aca56b8
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 27 15:00:10 2012 +0100
+
+    Correct the comparison of potential secondary mail addresses with the known primary mail address
+    Make use of caching so we can maintain some sort of state in between restarts
+
+commit 80e68deaff4f6bfa9875b6733c9cd7f9068b2ac8
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 27 14:59:36 2012 +0100
+
+    Add auth/ldap/cache.py to the dist
+
+commit c093465b37658350e00a488492219b634f9558df
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 27 14:58:56 2012 +0100
+
+    Add a local sqlite cache layer to track when the daemon last synchronized, and what the last state was exactly
+
+commit 4054fb9435ec9e95f89d90e3794caed251071ab7
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 24 15:46:42 2012 +0200
+
+    Add kolabd and mysql setup
+
+commit 06ceb84a63d38cc2ab238c8a24efeb8c66f2a57b
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 24 15:46:29 2012 +0200
+
+    Bump prerelease
+
+commit 281e9b2eb9847bab32e12bd2ff796c897866f895
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 24 15:46:10 2012 +0200
+
+    Set the default for imap_virtual_domains
+
+commit c178883c4220c0cea8736b758d5ee82f445457ad
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 24 15:45:46 2012 +0200
+
+    Correct the authentication function
+
+commit 9d6b584e7826c0586895d974f91fd69dae645cd0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 24 15:45:05 2012 +0200
+
+    Connect the instance of Auth() or authentication will fail
+
+commit 934359775551443e95ecf67978dec07b86377478
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 24 15:10:14 2012 +0200
+
+    Allow domain=None to be passed to Auth()
+
+commit 00cfbaceebb863148b21f62af2d9c7acd89f1fa3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 24 15:06:25 2012 +0200
+
+    Admins include cyrus-admin, not cyrus-imapd
+
+commit 733b7119c192673e950dec81bdbad22feba4ad0d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 24 14:47:56 2012 +0200
+
+    Write out the configuration file to the default location.
+    Start the server after setup.
+
+commit 0d474191803e5be746e0fedefa1683cb6cb7a1b8
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 24 14:47:32 2012 +0200
+
+    Use domain_filter over kolab_domain_filter
+
+commit 132e781c8741029624913a965472307128456de4
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 24 10:27:59 2012 +0200
+
+    Add --silent to the options passed along to setup-ds-admin.pl
+
+commit d6306920bfcf1ca4342666be289096b83774af3f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Apr 21 18:05:06 2012 +0100
+
+    Supply some inline documentation in the default configuration file
+
+commit 9b8cc5b6819b2fe576d0fbe2a07e6da859bf76da
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Apr 21 16:00:07 2012 +0100
+
+    Update pykolab.spec for Fedora vs. Enterprise Linux installations (sysvinit vs. systemd, to be more precise)
+    Install the Wallace init scripts
+
+commit 9244a6c54b09fa841369b7aea26a201adfd10437
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Apr 21 15:59:19 2012 +0100
+
+    Allow overriding the fqdn and thus hostname and domain name used by adding --fqdn
+
+commit 8f4dbeeaf917f4fb6fa4cf693ab131fa444144ed
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Apr 21 15:58:11 2012 +0100
+
+    Allow setup components to add cli options, and suppress sequencing output
+
+commit 0eab2f43ac6bcfb72b1f8fb970376aca11d2d328
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Apr 21 15:57:28 2012 +0100
+
+    Install setup-kolab script
+
+commit 3a1ab1fb04fc2030776ad22d845f3c0c6ea77ace
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 20 11:46:34 2012 +0100
+
+    Correct condition
+
+commit a752c475cda8cbb3b16a6204123810990f764488
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 20 11:44:18 2012 +0100
+
+    Update installation and %pre/%post installation routines
+    Move CLI components to kolab-cli package
+
+commit 1ec0bdeddb9919ab66f0f35248ccd36964135229
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 20 11:34:04 2012 +0100
+
+    Install systemd unit files for Fedora > 15
+
+commit 07f108b041d21880d6d1fababb78d1c33b447f1f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 20 11:33:34 2012 +0100
+
+    Rename wallace system files back to the intended names
+
+commit 77d3804884bd6fc13182ec26f8d2d447cda3be61
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Apr 19 17:00:20 2012 +0100
+
+    Rebase on specification
+
+commit 1a2d4b809307316a59961811d3f252e0b50477fe
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Apr 19 16:58:46 2012 +0100
+
+    Add systemd file for kolab-saslauthd
+
+commit 5d4c3e69fd9ed03703f2ccc7feb46396f0e6bad9
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Apr 19 16:57:56 2012 +0100
+
+    Provide some preliminary setup.
+
+commit 98237c3fa335d54469f435761689be2b7a4cbc8a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Apr 19 16:57:13 2012 +0100
+
+    Merge
+
+commit 0a993d4b3c0b3afe76ed07d177b891791f6ae94f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Apr 19 16:56:16 2012 +0100
+
+    Add kolabd systemd file
+    Refactor process management in kolabd
+
+commit 9663ff263d90af9156112f46c9d7b1651664cb0f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Apr 19 16:55:14 2012 +0100
+
+    Wallace: Add pid file option and make sure we write it out and handle signals
+
+commit 940d3985175be8ba977faf5559800963c81c64d6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Apr 19 16:55:00 2012 +0100
+
+    Add the sources for Wallace
+
+commit c4581c05b1b7667d655b23612000d21fa700bfd3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Apr 19 16:54:31 2012 +0100
+
+    Add sysconfig, systemd and sysvinit files for Wallace
+
+commit 20b093ae09b9ad78c53141af958b129bdcc69cb7
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 17 10:08:44 2012 +0100
+
+    Bump prerelease
+
+commit 1462a29b9667af47c587e2b90648ed4106e53b7c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 17 10:07:57 2012 +0100
+
+    Prevent kolabd from having started too early, and not being able to connect to Cyrus IMAP, from defuncting the entire daemon
+
+commit 3527dc014a687c16c3794fcdb20c7e5f076f450f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 17 10:00:18 2012 +0100
+
+    Bump pre-release
+
+commit 73776a82589d28257f06ab84bb872ab89c83ef7c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 17 09:56:11 2012 +0100
+
+    try/except setting annotations on folders (#705)
+
+commit c62189144721d0c8aa7e8a37f75eaa45fcb0735f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 17 09:49:25 2012 +0100
+
+    try/except getting a user's attribute (#706)
+
+commit 38a66012ac40ba0d984609b9eb9522f10f768daf
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Apr 16 20:18:29 2012 +0100
+
+    Update default configuration
+
+commit 98b57c8b67776bd9b6725c56a5362f114340692e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Apr 16 17:21:17 2012 +0100
+
+    65 is too early in the boot process
+
+commit 673a04c3b6d651ab115546384530861e17b9d672
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Apr 16 13:55:51 2012 +0100
+
+    Bump pre-release
+
+commit 8dab42441b813631306bc27282288dcd2277bb1c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Apr 16 13:55:27 2012 +0100
+
+    Remove requirement on python-ldap >= 2.4, and use any python-ldap available
+
+commit 7a035d583d3c8cd961fb7881c86ce3769bab4e5d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 13 12:48:37 2012 +0100
+
+    Bump pre-release
+
+commit 9422f2cc8899c74e09f1dc047d049a74e72da283
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 13 12:48:13 2012 +0100
+
+    Fix some mistakes in the previous commit
+
+commit 8c6f0209bb5cef9be92cc6ef794397e2a2e6d313
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 13 12:33:39 2012 +0100
+
+    Bump pre-release
+
+commit 6bcf448d8ee1a9a542d7798c39a68d1be604c61f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Apr 13 12:33:10 2012 +0100
+
+    Allow the Kolab SMTP Access Policy to consult groups as well
+
+commit bc0af8397060e65a265bc9ce22df17b1353bf436
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Apr 10 11:20:26 2012 +0100
+
+    Silence the stdout logger if it can detect we're meant to fork to the background
+
+commit 316771abdd0a9be7010936081d3b1fec900a5884
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Apr 8 15:07:09 2012 +0100
+
+    Bump pre-release
+
+commit b1fd2589c6a80cd834d5e5d8b5512021a83cc615
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Apr 8 15:06:38 2012 +0100
+
+    Only make integers become a string on modify
+
+commit b43779a966d238a3ebf657aa0a9f36d7ee4a339f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Apr 8 14:46:54 2012 +0100
+
+    Bump pre-release
+
+commit a9adfa55489f5985f03273e99560218c5a267a13
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Apr 8 14:46:25 2012 +0100
+
+    Use current_server, not server, as server is undefined in this context
+
+commit 996d7a9a433ac7290fecb5bf342361784de810f1
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Apr 8 14:42:08 2012 +0100
+
+    Add TODOs to setup_ldap
+
+commit 913fc968c506aef006c32cec592aa9ab8bf2f174
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Apr 8 14:41:43 2012 +0100
+
+    Include relevant setup components in the dist
+
+commit 0123d55d358731119c57d3a7e4269c30691fe830
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Apr 8 13:49:20 2012 +0100
+
+    Correct macro used for the sysvinit rc.d directory
+
+commit 2992ee8ba598d24b54d9d7eabaff603d67132470
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Apr 8 13:41:36 2012 +0100
+
+    Bump pre-release
+
+commit 4b7299189dbbd1e4825c67b64a11301497a2fa08
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Apr 8 13:40:45 2012 +0100
+
+    Insert TODO
+
+commit 4090928dcf5aa57933b7b265c661f809eae83671
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Apr 8 13:39:44 2012 +0100
+
+    Connect to the new server using the template for the original uri
+
+commit 720c111b46bc4c558e93d752cf6152a588536d8f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Apr 8 13:39:32 2012 +0100
+
+    Use the configured quota attribute
+
+commit 07ef012ce1660979b53b8b383c19444f164bf50b
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Apr 8 13:34:11 2012 +0100
+
+    Correct adding back in an attribute
+
+commit 1e8c12a01a6be9a0b4b48ebbfb13048a6d11f3bd
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Apr 8 13:10:51 2012 +0100
+
+    Do not reconnect to get an annotation
+
+commit ecf63205e0538ddbaac083b61dcbcbf0c4623b80
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 20 17:50:54 2012 +0100
+
+    Update wallace to comply with some pylint warnings/errors
+
+commit 18f35345380722f87416ff8d021a4dd133af19db
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 20 17:50:14 2012 +0100
+
+    Do not include a password in source code files
+
+commit 065149af2ea917f5056dcb82140ae7d87bc084b4
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 20 17:49:39 2012 +0100
+
+    Evaluating args this way doesn't make any sense (it's not used anywhere but in setup anyway)
+
+commit 3322a02b5e6240f754cce529bc3ae331a1c18bac
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 20 17:49:08 2012 +0100
+
+    Add utils.generate_password() for setup-kolab.py
+
+commit 796413f66f681d6735245f99fcb2c7c082f749de
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 20 17:48:41 2012 +0100
+
+    Implement a version of setup-kolab.py around 389 Directory Server
+
+commit 812920a2077860091bd003956fdf4296d187b329
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 13 16:17:34 2012 +0000
+
+    Split out connect.py and request.py
+
+commit 3ee814c43398756b1756628ab8e1f9d09e1acec6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 9 11:33:12 2012 +0000
+
+    Correct the use of envelope_sender (this is a list??)
+
+commit a1d61b59186acf4e148baae656df86556f575b9e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 9 11:33:00 2012 +0000
+
+    Simplify the use of email here as well
+
+commit c7a80b9e38b4313a2f589031462575c2093eecc9
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 9 10:49:31 2012 +0000
+
+    Simplify the use of the email library by importing only the correct things
+
+commit 2354a1c857b163bda603f19956122a539e2b4a12
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 9 10:40:32 2012 +0000
+
+    Correct the port to be 10026
+
+commit 8f4e77a6488d9d286d83eba6712134354ddad93c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 9 10:38:37 2012 +0000
+
+    Correct some pylint conventions
+
+commit 107f91157704dbc5b6b7054cf420da5ef651027f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 9 10:38:13 2012 +0000
+
+    Correct some pylint conventions
+
+commit 61714a5e0d99ba1bc08eeac7f0ead106d72abae3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 9 10:37:49 2012 +0000
+
+    Correct some pylint conventions
+
+commit 0ae2417b2c4a614fd70c512b1283be37dd0c31dd
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 9 10:34:47 2012 +0000
+
+    Correct some pylint conventions/warnings/errors
+
+commit 02a9568915ea6017e887cb835b20888d6a30b73d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 9 10:33:44 2012 +0000
+
+    Correct some pylint conventions/errors/warnings
+
+commit fb76e19ce360ef9cbc3e9b506ad44046e511e363
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 9 10:32:59 2012 +0000
+
+    Add bin/ commands to pylint,
+    Make the list of files and directories to check a little more readable,
+    Escape the return code for pylint.
+
+commit 9867e7503682709ee25375eabf0f54b12acc738d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 9 10:22:44 2012 +0000
+
+    Execute and include pylint.log in the distribution tarball
+
+commit f213cbc49d412ab4ebb3d2ea4932be52756f5228
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 9 08:51:14 2012 +0000
+
+    Replace the use of httplib with urllib
+    Do not re-spool deferred messages that were already deferred
+
+commit 2cb4a47d99dcd55db0db3fd11d63d3c9e6a2962a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Mar 8 10:34:20 2012 +0000
+
+    Allow -b/--bind and -p/--port options to be specified on the command-line, for greater flexibility.
+    Move the standard port to 10027.
+
+commit 5e7fdbb97435fd823290c4040f01d1fe8481b9f7
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Mar 8 10:03:20 2012 +0000
+
+    Fix the empty recipient inserting at the data request state
+
+commit 4daf6124d0a72fe8227d3b9e6035e7050e550f6b
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 6 10:41:54 2012 +0000
+
+    Update Makefiles
+
+commit 372eb6cdd8396be35bb86ec145c4881ff393c76b
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 6 10:28:32 2012 +0000
+
+    Remove zpush tests
+
+commit e3a60392c58e0fb0902dfc2d3ff8299315be9e5e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 6 10:27:52 2012 +0000
+
+    Update the inclusion of tests files
+
+commit 3f8322c7e87c798c45f77098db400c78e6a6b677
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 6 10:16:42 2012 +0000
+
+    Bump prerelease
+
+commit 13f6d51d1055cd0feff46f348de9cd81f8755e05
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 6 10:16:11 2012 +0000
+
+    Add search_users() to Auth as well
+
+commit c201bf1264122105a201b68db7aa7d6843dafb90
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 6 10:15:53 2012 +0000
+
+    Fix typo
+
+commit 9e4ca546531e36916121e12d4f68d2256592d8f7
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 6 09:29:37 2012 +0000
+
+    Start counting at 1 for secondary addresses as well
+
+commit 1779104d7e23b481a52ce5ec3c54c268401ea62e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 6 09:29:04 2012 +0000
+
+    Start counting at 1
+
+commit 708a3703149943febe0b086281c7e16d97c681a3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 6 09:28:29 2012 +0000
+
+    Allow overriding the base_dn for find_user()
+    Add search_user()
+
+commit 91102c4fd11e4f4f4539bb1522d32d306e1cd904
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 2 15:49:04 2012 +0000
+
+    Add the wallace run code
+
+commit b481dac3b79ed078879516d1d720448e3591d138
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 2 15:48:33 2012 +0000
+
+    Add kolabd.sysconfig
+
+commit f68403e44926e0ea3cbcf4f6f153aedade5b8dec
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 2 15:47:38 2012 +0000
+
+    Update kolabtest.py to the new test suite semantics
+
+commit 219e2a96d15e867b220cc92ee91a03ede0984cfc
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 2 15:47:14 2012 +0000
+
+    Add the bare bones of Wallace with the optout module
+
+commit 2d7c188c7bea6932918d74715c32b2575358dd4a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 2 15:46:35 2012 +0000
+
+    Redo test suites
+
+commit 3533710ef014bf541daa2d0107bae8b34a8e9a20
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 2 15:46:00 2012 +0000
+
+    Add additional commands
+
+commit 3334c2ed460ef138f1ed3a9f3e01c2cc6ab24531
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 2 15:45:29 2012 +0000
+
+    Convert command list-domains to using the wap client
+
+commit 00d655a36452fd023062ae5cafe2080c46f79441
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 2 15:44:56 2012 +0000
+
+    Add the command-line wap client
+
+commit 5c3cb04cbc195d6e20824cb80fa12173623eb9db
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Mar 2 12:48:59 2012 +0000
+
+    conf.get_list() should always return a list
+
+commit ca23a3074be34a28b1595e9db167b7a6f7459645
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Feb 24 13:40:29 2012 +0000
+
+    Do not reset the retval for each plugin
+
+commit b3d17f8b87a9b9a9864ec701bbf3d2105f613914
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Feb 24 13:28:52 2012 +0000
+
+    Bump prerelease
+
+commit 8e8f0ce73e30e07f6edc9089bdc8f3445fbc57bc
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Feb 24 13:28:26 2012 +0000
+
+    Remove additional print statement
+
+commit c81b96a5c629dc20cc4a79eda9f124e78f807ea6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Feb 24 13:22:17 2012 +0000
+
+    Bump prerelease
+
+commit a20f3891f03a8509fd5f23025fb945995bcdde18
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Feb 24 13:21:59 2012 +0000
+
+    Do not solely support syncrepl (this is a development thing)
+
+commit ec88785a50e045fced5ed7f86efd0c6e91fc7c61
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Feb 24 13:21:18 2012 +0000
+
+    Mandatorily add uid to the list of authentication attributes to search for
+    Start on sync_repl support
+
+commit bab75f963d922fdbac6b86290f29312d74763c09
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Feb 24 13:20:58 2012 +0000
+
+    Remove print statements
+
+commit c62ce1d095ef694de120867555de692a54b5acd6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Feb 11 14:43:17 2012 +0100
+
+    Add user parameter to be passed to the dynamicquota plugin
+
+commit 57a618ec992e77e83aa4894fcc3431f83db119c8
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Feb 11 14:42:47 2012 +0100
+
+    Always return a return value, by default None, and only after all plugins have run
+
+commit b81fd0b37408891a312483242d90ac82e112ce04
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Feb 11 14:41:48 2012 +0100
+
+    Pass the user along with the dynamicquota plugin, so it can recognize policies based on roles
+
+commit 159ec790e8fb0870f07a245bc36342feb57f22aa
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Feb 11 14:41:05 2012 +0100
+
+    Set the return value for "no setting" to None, not an arbitrary default value
+
+commit 01efa922ba167e930ed426c610d30ff3cfd4ae6f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Feb 11 14:38:26 2012 +0100
+
+    Test for self._auth, but not as a dictionary
+
+commit 0424098e4173f44bd206ccb89c24e62545977f7c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Feb 11 14:36:04 2012 +0100
+
+    Correct indentation to match check on whether attribute on self exists
+
+commit 65b0905032e99caa7a16866f6b6a1f89400b0dc6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Feb 11 14:33:28 2012 +0100
+
+    Flush stdout/stderr
+
+commit 94dc3f68914a9aaf3d2441f90b2577afde05cf4b
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Feb 11 14:33:01 2012 +0100
+
+    Catch sqlalchemy API incompatibility
+
+commit 5fa5c3d1cf2cb04e96d47efa4bfcfcc0104e6834
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Feb 11 12:39:20 2012 +0100
+
+    Add stub imap_setup.py
+
+commit 60fdb600d147557cd6c0fc2a530e9c54dd22f05b
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Feb 11 12:37:10 2012 +0100
+
+    Bump prerelease
+
+commit 2b94311d874a35a78acc44a0546fea50b62e2c7c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Feb 11 12:36:42 2012 +0100
+
+    Add kolab-cli package contents
+
+commit adc24c02eb542c3032e072e09ed5c20cc0db94d1
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jan 4 13:14:50 2012 +0100
+
+    Update copyright
+
+commit 6570fb06a787f3b3bf59d40e412105c0a9f4eedc
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jan 4 12:29:49 2012 +0100
+
+    Don't forget to try/except importing the Entitlements class, and then only fail afterwards
+
+commit 84b58bf324226ac321cee8726bb46d864318cb9e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jan 4 12:17:26 2012 +0100
+
+    Add the framework for entitlements (there's no enforcement yet, but initialization fails if data does not check out)
+
+commit 9cf635005cd404c095d59f742fd44c7f9cf989e0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jan 2 14:33:04 2012 +0100
+
+    Update .gitignore with backup files and swap files from Kate
+
+commit f452173ce0c152cb4c2eb909f3378b13fba74f2d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Dec 6 17:54:13 2011 +0000
+
+    Bump prerelease
+
+commit bca1ca59aeeed0c52ed47a5ade47e0288a54b729
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Dec 6 17:53:48 2011 +0000
+
+    Fix typo
+
+commit 9155e3c4c2415389200ba75cea846e8e5ee766ae
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Dec 6 17:33:21 2011 +0000
+
+    Bump prerelease
+
+commit 76109c3c16fc5b6bf163eae0d2a21085bfcfcc8b
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Dec 6 17:32:40 2011 +0000
+
+    First translate, then lowercase the mail attributes.
+
+commit 4658e8acdbb17c67f3b84e412ee37c810c3af549
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Dec 6 17:32:11 2011 +0000
+
+    Fix "automatic" reconnecting should the connection timeout / cease to exist
+
+commit 56a66d16532896d9b93be9fe0806a8b18a7c2bda
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Dec 6 17:27:11 2011 +0000
+
+    Update obtaining the preferred language for a user
+
+commit bdd6e6a28d45bb909aa75140a1bd6316556f7903
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Dec 6 12:44:23 2011 +0000
+
+    Bump prerelease
+
+commit 339ca6bddefc166c487ecdd4092f9f34b274ff7f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Dec 6 12:43:57 2011 +0000
+
+    Update default_locale setting (default and obtaining)
+
+commit c26dbac28dfdb62e2f6a47ccd75c562819bc6156
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Dec 6 12:34:34 2011 +0000
+
+    Bump prerelease
+
+commit 727fb62b579c7c9a56dda165996e9a9bb84cd5b1
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Dec 6 12:34:05 2011 +0000
+
+    Use the available user_attrs dictionary, not the non-existent user dictionary
+
+commit 425b53619deaf92d3fd41964de159a3809b4f05f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Dec 6 11:04:03 2011 +0000
+
+    Bump prerelease
+
+commit b300f00c14270a3a5e2f52332259090ccc3c919d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Dec 6 09:46:01 2011 +0000
+
+    Add an default_locale setting to indicate the preferred system locale and default for all users
+    Add preferredLanguage setting to LDAP attributes obtained with a user account
+
+commit ed14a87d9912f504cfe513b9db9765e4590aa52f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Dec 5 16:20:25 2011 +0000
+
+    Use iconv to normalize/translate strings into their ascii representation
+
+commit a6a58cb40175115da485afc5a605928d01403eac
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Dec 4 18:46:58 2011 +0000
+
+    Translate a 'ó' into a 'o'.
+
+commit 0bb882ad21c9521e3489ecd5bef42d3b47c74c9e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Dec 1 18:36:54 2011 +0000
+
+    Bump prelease
+
+commit f0c49cef4c01dc8d9d9424922cf5a27d8be41d7f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Dec 1 18:36:24 2011 +0000
+
+    Attempt to execute a noop command before attempting to reuse the connection.
+
+commit ac2cd5d1a64fc2a966d4640f0928fbea09937fe1
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Nov 29 22:18:57 2011 +0000
+
+    Bump prelease
+
+commit bde8890fe3d1243ed6903a62db3105ef5ce8180d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Nov 29 22:18:24 2011 +0000
+
+    Tidy up (first log, then conf)
+
+commit 78d40271e62b5ada19b76849b545fb2044e53610
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Nov 29 22:17:51 2011 +0000
+
+    Allow re-login to an existing IMAP server connection.
+    Outcomment the incomplete if statement in Cyrus
+
+commit 746901752b119f5c53ce6b334f863f7b248fc46d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Nov 24 21:06:00 2011 +0000
+
+    Bump prerelease
+
+commit 34e09258076ec4b9f2e2ad90a3db7eb4f0e9337a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Nov 24 21:04:35 2011 +0000
+
+    Connect to the IMAP server for the particular domain
+
+commit 50f5c8ab7b7020f6e679cd5a6d965da8017ef48a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Nov 24 21:03:46 2011 +0000
+
+    Replace setting ldap/uri or <domain>/uri with <domain>/ldap_uri
+
+commit 953f35b331e9c613eecb4a04a713abd982d2cdd0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 23 07:54:44 2011 +0100
+
+    Lowercase rules and sender/recipient addresses when parsing the policy, or the policy values may not match the input values.
+    
+    It is safe to lowercase both as exploiting case-sensitivity in mail address local parts or domain name spaces is not allowed.
+    
+    Demo Python code:
+    
+        >>> address = "Jeroen.vanMeeuwen@kolab.org"
+        >>> address.startswith('jeroen')
+        False
+    
+    Solves #496.
+
+commit 5b349dbbb9c1d41d9bb01e477f77b13542dc0a8c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Nov 22 12:56:42 2011 +0100
+
+    Accept any arguments passed on to signal handlers
+
+commit 74ae6bdb18ee1a0bef0757784b4d701b0a08a6fd
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Nov 21 18:15:15 2011 +0100
+
+    Close stdout when removing the handler
+
+commit f37e3435eaacef0390c46f61641fda06f664fa21
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Nov 21 18:12:26 2011 +0100
+
+    Bump prerelease
+
+commit eee9247b505e2cb823caf935dc0cd47cd73a6d31
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Nov 21 18:10:24 2011 +0100
+
+    Remove stdout log handler when executing kolab_smtp_access_policy
+    Add parsing an LDAP DN as a separate function call
+    Add parsing an LDAP URI as a separate function call
+    Use these functions in parse_policy()
+    Disable caching for now
+    Only process the complete request in the DATA protocol stage
+
+commit 9e29b36f4cb2fdd716e1c4713607e1962383da60
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Nov 21 17:40:36 2011 +0100
+
+    We don't actually care about the parameters sent by signal handlers, but we must accept the correct number of parameters.
+    
+      Fixes #516
+
+commit 66b6626f4cbf07a0ca7ff58fa5ed7f209094107e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Nov 21 13:54:24 2011 +0100
+
+    Only create the INBOX folder and apply the rest of the logic when the INBOX folder does not already exist
+
+commit 7e1324dad409e2f9319c3347f071364f0c8f12aa
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 16 00:52:00 2011 +0000
+
+    The recipient policy should recognize special characters in a given name or surname, and replace them with the equivalent ascii valid in an email address.
+    
+      This fixes #509.
+
+commit 31405a32477129f1f8a1a916ffb90b790aaf8949
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 16 00:51:17 2011 +0000
+
+    Add utils.parse_ldap_uri(uri) to parse memberUrl and other LDAP references with
+
+commit f82c7350cd4f0257ab22cbcf0cb6523ba500ff81
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Nov 11 20:33:46 2011 +0000
+
+    A seperator is correctly spelled separator
+
+commit 4253ccba3edbfacca8e79f23e716cc16fc47d525
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 23:05:32 2011 +0000
+
+    Set the default for virtual_domains to 'userid'
+
+commit 7f4f1cb996ad2a45700f7f41b56a613235636305
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 23:04:58 2011 +0000
+
+    Comment out a section of code that should include some debug statements rather then "print" statements
+
+commit 1644d783d2b86ac4b2386fd7c2351b743c8960d6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 23:04:25 2011 +0000
+
+    Bump prerelease
+
+commit daa5b7849f4a1bca689f4a589b71465885fb79f6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 23:02:27 2011 +0000
+
+    Have the sysvinit scripts make use of the -p option
+    Fix default PID file location for kolab-saslauthd
+
+commit a5b0049c34e74c5725f31c615254464fe8d61de8
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 23:00:30 2011 +0000
+
+    Add signal handlers to kolabd and saslauthd
+    Add -p / --pid-file option to these daemons
+
+commit 44169b3a26e74ef4e2dcebd35cdbe938d1f11b90
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 17:14:30 2011 +0000
+
+    Remove $MECH and $SOCKETDIR from starting the daemon
+
+commit 9de20ab0991b37ba71ee8ba8d15ffe7491fd2848
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 15:28:11 2011 +0000
+
+    Own /var/run/kolabd/
+
+commit 3b2e32183dda46a7f424738c495d3cd140c52103
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 15:27:17 2011 +0000
+
+    When attempting to find a user_dn, use the base_dn as the search base (ou=People vs. ou=Special Users)
+
+commit 08bc3a29d75b918b4769969345f6fc8b9e763866
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 15:27:05 2011 +0000
+
+    Fix not loading plugins from installed packages
+
+commit 4ff70ee8ecf15e96c59ac707a377ad01e873cbbc
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 15:26:44 2011 +0000
+
+    Adjust sysvinit settings for kolabd and saslauthd
+
+commit 16c5b83ca5e6a67185a7d756d6172388c9ba2575
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 13:26:28 2011 +0000
+
+    Bump prerelease
+
+commit 2338814c2f84d1aa7bede235703a0b85a10a9dcf
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 13:25:54 2011 +0000
+
+    Fix forking to the background
+
+commit 8e397c829a317334be759c640710c512a601046f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 13:07:17 2011 +0000
+
+    Bump prerelease
+
+commit fe2d91869348c057cee2dd91ba214b272a97d291
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 13:06:57 2011 +0000
+
+    SASLDaemon has no attribute thread_count
+
+commit 0e8a5848550a1fbb4b64b9527a6cdccfb247ba89
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 13:06:05 2011 +0000
+
+    Include /etc/sysconfig/kolab{d,-saslauthd} in dist, and ship them as part of the RPM packages
+
+commit b82fa343260626e1908fc20ba499c6f73a4e9866
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 13:00:16 2011 +0000
+
+    Update saslauthd sysvinit script
+
+commit 8847bcf8a2c97ee3ef7c75985ce3a03dd576cf81
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 12:26:02 2011 +0000
+
+    Correct source location for kolab-server sysvinit script to install
+
+commit 9056f7c4b94b7df08da9d7b9462177559eff5de2
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 12:20:02 2011 +0000
+
+    Make sure to create /etc/rc.d/init.d before installing init scripts into it
+
+commit 44c1d779f9681f19fbdbc3f4aa34f7b52b7333a6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 12:14:54 2011 +0000
+
+    Correct source location for kolabd.py and saslauthd.py
+
+commit 546e58a0627395a03d7532194103564d3349f4d5
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 12:08:12 2011 +0000
+
+    Install sysvinit rc scripts for kolabd and kolab-saslauthd
+
+commit bf9893f6d338f5dccd7e9cae9b682390c2eaaf4e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 11:59:41 2011 +0000
+
+    Own the directories that saslauthd is going to install
+
+commit 62073628f16ee0cbb5a9e2253ede5b7356a75300
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 11:59:25 2011 +0000
+
+    Move installing saslauthd as part of saslauthd's own Makefile.am
+
+commit b1ca449cfe4e497b6192f592e1bab4e85f156f2f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 11:59:13 2011 +0000
+
+    Install as executable
+
+commit 93f84a5d10f0b9fd64a840631832271f122034d7
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 11:56:21 2011 +0000
+
+    Refactor kolab_smtp_access_policy to take into account subsequent access policy requests, and query databases only after the complete policy request has been received.
+
+commit b482086e4c42012a7651b8bdf590ee35c3dad909
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Nov 9 11:46:04 2011 +0000
+
+    Use regular search in _find_dn()
+
+commit ab3aeee1a30ee60458f7df99f13aea2992dd784c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Nov 4 11:40:54 2011 +0000
+
+    Merge stash
+
+commit b6ba2d8b09a60e30abc2ad576bc5fb5126d16ccb
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Nov 4 11:39:51 2011 +0000
+
+    Merge stash - no changes
+
+commit 30bf4a165eda33c14d493cdd2e91e5f0b3f614b9
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Nov 4 11:38:41 2011 +0000
+
+    Fix reference to revisor
+
+commit ab86e1e85ea181e2e3082c8f10864a567b7f2b0f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 28 12:41:35 2011 +0100
+
+    Enhance handling of search mail attributes
+
+commit f692c2c86d39f5da66922989656488ce03a5e710
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 28 12:40:44 2011 +0100
+
+    Add license header to pykolab/utils
+
+commit 22cfcd2406a44a49bbd263a2600f923a28f8be4c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 28 12:18:43 2011 +0100
+
+    Use the CLI command registration mechanism for setup components as well
+
+commit 45d4f21fe57ba47f97bf29e714bacdecdd2edca2
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 28 12:17:41 2011 +0100
+
+    Use one fork per domain name space found
+
+commit c7a72390e2996039da5920981780030e066db960
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 28 12:17:06 2011 +0100
+
+    Do not use a dictionary for auth to store domain name space specific authentication objects in
+
+commit b555c228ff5f65b5502580d53bfa2a1e693f0897
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 28 12:16:09 2011 +0100
+
+    Correct bug tracking URL
+
+commit 7e340bee4b2eb76610a886f73354718c73ffdc9e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 28 12:15:32 2011 +0100
+
+    Correct commands parsing
+
+commit 7790ecb12466e2022061ca5cd0b0565975349681
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 28 12:14:52 2011 +0100
+
+    Allow the user to be passed to be a simple dn basestring
+
+commit 5b5a863282fb37508a4536bdbaa670912317aebc
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 19 13:24:30 2011 +0100
+
+    Bump the release minor number for added features, and potentially breaking compatibility (with other applications of which there are none at this point)
+
+commit 6a154d0e2c41716df5da1944eb526081b42514de
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 19 13:23:57 2011 +0100
+
+    Include telemetry commands for the command-line in the telemetry sub-package
+
+commit 7423834758dda2093a6e8e675ab4078c5f87ffcd
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 19 13:22:42 2011 +0100
+
+    Restructure the command-line interface so that it can be extended easier, and particular commands can be shipped in seperate packages
+
+commit 7f981d42521913a3f7a715cd043cbf7fba5009b0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 19 13:20:18 2011 +0100
+
+    Prepare logger for multi-threading, by including the process PID in the debug messages.
+
+commit 11b08b988b983043f0c058014831228d4a4db985
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 19 13:19:18 2011 +0100
+
+    Correct attempting to load the wrong library (imap -> imaplib)
+    Circumvent cases where the port is not set
+
+commit 46884732b48f8ffb8d3c9b17c2e163f31a6eb4db
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Oct 2 15:44:48 2011 +0200
+
+    Update packaging
+
+commit 7cc9142f25af37feda41c4a5685009498d835e01
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Oct 2 15:44:37 2011 +0200
+
+    Install kolab_parse_telemetry
+
+commit 8614ecfac134d73b925a8478b3749315d3248273
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Sep 30 16:26:55 2011 +0200
+
+    Fix logging
+
+commit 45a877b33c797ccab7b35af9068bf0ea05518e00
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Sep 30 16:26:30 2011 +0200
+
+    Use the correct key
+
+commit 7aea161f9cccd84c5855e219d014fa5aec5884c3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Sep 30 16:25:06 2011 +0200
+
+    Fix debuglevel not set in Conf
+
+commit 14c07fad629d9e007786b98a1ab8f6bbc0e4a85d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 26 16:44:32 2011 +0100
+
+    Clean up import code
+
+commit 6a1290ef060c4a7982b400b04f2771a688124c21
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 26 11:58:56 2011 +0100
+
+    Update IMAP libs to be more consistent in terminology
+
+commit 12e585451d2089fb688f299342a8a4e6e5c614f6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 26 11:58:26 2011 +0100
+
+    Some other utilities like debug output, but do not take into account multiple levels of debugging.
+
+commit 1888524f0e8db15921d84d7bea6315af36825ae3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 26 11:58:08 2011 +0100
+
+    Reduce log level required for non-tracing output
+
+commit d71bf4c22beaf3ad5204bab0edcee454881c7084
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 26 11:57:33 2011 +0100
+
+    Strip object's keys with value None
+
+commit a0071cf51effbb2c0c65f9f6c6e6c060b22ab9e0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 26 11:55:06 2011 +0100
+
+    Ensure mail address assigned through Recipient Policies are unique amongst all attributes to a user we consider a valid recipient mail address.
+    Wrap lines
+
+commit 01ecf279a0dcdde1ab3b22d6d0c8fa4f1f8c6b59
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 26 11:35:42 2011 +0100
+
+    Add some telemetry report commands and wrap lines properly
+
+commit 8d8404ed73c89f32de7fe8344e364099c4de1a90
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 26 11:15:02 2011 +0100
+
+    Add telemetry log parsing capabilities
+
+commit 4c13cbbcedafb8c1483dd31e71e0cee8ef47476c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 26 11:14:48 2011 +0100
+
+    Add *.log to .gitignore
+
+commit 325a19c6a2f9fc529a15668494eaf59032e94ff9
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 26 11:14:01 2011 +0100
+
+    Add bin/test* to .gitignore
+
+commit 0c376127e2cc0661a84411e0e73e88b56f5bbc2e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 26 11:12:37 2011 +0100
+
+    Add statistical accounting for sender <-> recipient counts per date to the Kolab SMTP Access Policy
+
+commit 1cd487981b53d3e453132393faa2742aac083deb
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Sep 23 16:14:53 2011 +0100
+
+    Update dynamicquota plugin to obey LDAP changes to quota
+
+commit 10065c30df1fe22d111ea5ddd8648c9af06bd24a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Sep 23 16:03:02 2011 +0100
+
+    Update kolabd synchronizing routine
+
+commit bec94af8319f5343e57253bc69cf4a13c16ccde0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 15:13:02 2011 +0100
+
+    Fix syntax error
+
+commit 6ecd2a55995e24095c58ea689932f0b584a9ae40
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 15:06:17 2011 +0100
+
+    Use math.floor(), not math.round()
+
+commit 18a4e35cce6294e12f49ea363f94c04ec599a800
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 15:01:46 2011 +0100
+
+    Version 0.2.1
+
+commit ad2307a724ce0c2163f18471a2c1bc843f06fe6a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 15:01:11 2011 +0100
+
+    Make sure to import math
+
+commit 8c8c9433f5a8f7f814c3d37fdf5610a30b5ba5f9
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 12:38:26 2011 +0100
+
+    Add tarball target to Makefile.am
+
+commit d08f7bfe8719aa8cc8b9db73f61b416ca1a37916
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 12:26:02 2011 +0100
+
+    Bring us one step closer to version 1.0
+
+commit 11da87abc4b7bbf50e0c4e4135be05d55a6d2b99
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 12:23:18 2011 +0100
+
+    Detect running in a Murder using the CAPABILITIES line
+
+commit ac337546adcd3e0505a84384730ba65e3cd962e0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 12:22:45 2011 +0100
+
+    Consolidate abstract mailbox delete() function
+
+commit 321269cf8f3e8459991260799e51fdf4d9482015
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 12:20:34 2011 +0100
+
+    Allow increased tracing verbosity on executing plugin hooks
+
+commit 75a73b7182a7e5b2cc14331503c110591e6571e4
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 12:19:36 2011 +0100
+
+    Add conf.get_list() function to retrieve a python list from a comma and/or space seperated list
+
+commit 038ef94e3b58484e3907f982ed2748e8936f37c3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 12:18:51 2011 +0100
+
+    Shuffle some of the commands around for alphabetical ordering
+    Add alias shorthand functions
+    Add some future functions to be implemented
+
+commit 8552c02a92f75813a299ce77dab69233926f2d7f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 12:17:41 2011 +0100
+
+    Make sure we have a list of domains before attempting to search for anything
+    Add auth.get_user_attributes() for more then one attribute.
+
+commit 2733017d432ea32a0a7f42d164a70232364e8f60
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 12:17:16 2011 +0100
+
+    Add some words on kolab smtp access policy settings
+
+commit 98cf1af6955eb35a8858b9cf3d7483f650a1c441
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 12:15:23 2011 +0100
+
+    Make the attributes to search for valid addresses a configuration item.
+
+commit de29a02a1cc6a3a1cf86d624432f1ef14ec95be1
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 11:43:00 2011 +0100
+
+    Verify whether the user is using an alias as well
+
+commit 6430642c0925d44b82b89a1c000135d4ffd4bad5
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Sep 21 11:10:25 2011 +0100
+
+    Add currently unused function verify_quota.
+    Order functions alphabetically.
+
+commit 8f4b809e3a030ea2d3e2b1f93cf71a731f7a4e56
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Sep 13 15:16:54 2011 +0100
+
+    Bump release adding a command 'kolab export'
+
+commit ddf3ae610c727e90e8b7c861da88a79369cdea1f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Sep 13 15:15:27 2011 +0100
+
+    Add a command export
+
+commit b023694650c2e0accd8d5495b23cad30ca68dc8c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 12 16:08:31 2011 +0100
+
+    Bump release
+
+commit 5fd48d99789956abfc7bf1f72c5ab69357f19f01
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 12 16:08:01 2011 +0100
+
+    Make sure the sender exists before continuing
+
+commit 9eb9bfcbbdcc38681cf706be140debb3ba016d42
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Sep 12 16:07:28 2011 +0100
+
+    Make sure to translate secondary domains into the primary domain key before triggering the domain name space specific authentication technology instance
+
+commit 6f712c0fbec5983cf10626739613a9b29222bd27
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Aug 15 18:40:38 2011 -0400
+
+    Log using the correct variable
+
+commit e6dc1f88a35c470e359705d671a018458d5bf1a7
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Aug 15 17:50:57 2011 -0400
+
+    Add policy_done (part two of #332)
+
+commit 8ce75cbc9994142561f6f6afbfa78219f47c5a5c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Aug 15 17:46:24 2011 -0400
+
+    Bump release
+
+commit 339818bfba3f6facb48fe498a375cb567fb01093
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Aug 15 17:41:19 2011 -0400
+
+    Fix bug #332: Recipients are verified on the SMTP level, but rejected in the access policy
+
+commit ba6fd6a45ddbd715a016d27e2d901bf3d09080e6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Aug 3 11:46:25 2011 -0400
+
+    Bump release
+
+commit 486eb3985782841cb5028e0ab4f31824238fba3c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Aug 3 11:44:38 2011 -0400
+
+    Clean up the cache before attempting to insert anything
+
+commit e4f095d560342ba3f93a3effeea1bae2b2b06983
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Aug 3 09:04:02 2011 -0400
+
+    Bump release
+
+commit 783563a4ed9aba2628037539c3e1f75e7e79f04f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Aug 3 09:03:38 2011 -0400
+
+    Correct the inserts back into cache
+
+commit 961743dc37f00d916b8388bc905ce18d626dad6c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Aug 3 08:36:10 2011 -0400
+
+    Bump release
+
+commit 02dc5eaf28696f0c10fbfa19101cec1ae60577fb
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Aug 3 08:35:49 2011 -0400
+
+    Correct __version__ and __release__
+
+commit 0f1aa31f1f256c38e003837d7e4fcc44166b6061
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Aug 2 15:36:21 2011 -0400
+
+    Fix %pre
+
+commit 18a724eae69f5046fcde3facf6cae7c611a5e86f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Aug 2 11:19:46 2011 -0400
+
+    Add users/groups to the packaging for pykolab
+
+commit d93922a222bfe7759955841c9e5aae28f502a4c4
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Aug 1 14:34:44 2011 -0400
+
+    Bump version and reset release
+
+commit ce1429e7f3af6763109301e3b5936e297466a588
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Aug 1 14:19:45 2011 -0400
+
+    Using len() on an empty result is not useful. Fixes #258
+
+commit 835f25790ff6dfed09e2b2b437691008ebd55297
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Jul 29 16:36:29 2011 -0400
+
+    Bump release
+
+commit 0ec772807decee7440f7a99b3be2a4725026d7c5
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Jul 29 15:29:42 2011 -0400
+
+    Require more recent sqlalchemy
+
+commit 42e95c7721d5b9449e697b769fc29e968909d9d6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Jul 29 13:02:39 2011 -0400
+
+    Bump release
+
+commit 71587ad53f97a954969bdef73fb24e4fc60e6851
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Jul 29 13:01:52 2011 -0400
+
+    Add dependency on python-sqlalchemy
+
+commit e4c7a4bd74b60876286b74bc1834425a4b583bf5
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Jul 29 13:00:51 2011 -0400
+
+    Enhance kolab_smtp_access_policy by providing it with sqlalchemy-based SQL caching
+
+commit ebd1d9e9042a6a90e1ded684870b2ba9e667dc14
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 25 16:56:36 2011 -0400
+
+    Ship kolab_smtp_access_policy
+
+commit 5045e4b90bb49d23b9d5814c7128dbf186190ebf
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 25 16:50:36 2011 -0400
+
+    Lookup the domain name space specific configuration section by domain name space
+
+commit 1b86a960b8270c9a91c5c6d6a3e83bccda667e0c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 18 15:23:35 2011 +0200
+
+    Bump release
+
+commit 286705a702674b16f8f142238edf0c2eb1b36e59
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 18 15:23:01 2011 +0200
+
+    Make sure we only hand out one result per policy request
+
+commit 5ff684c37594dba5bf5936a40b685aa65e8da6ef
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 18 14:19:53 2011 +0200
+
+    Bump release
+
+commit 8e15d2962e5c990830c4d902294aa47d9ad826a3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 18 14:18:43 2011 +0200
+
+    Temporarily disable the cache for issues with multi-threading, and memory load upon high throughput
+
+commit 31b26a6ffc6d4369525a13e69fdfd7da44b386d3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 13 11:10:42 2011 +0200
+
+    Bump release
+
+commit d3952cd88932febef95e4198516d05323d624cc1
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 13 11:10:20 2011 +0200
+
+    Can't indefinitely loop
+
+commit 19d239e8f668b735d4cd69c51e3989590618d025
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 13 10:45:28 2011 +0200
+
+    Bump release
+
+commit bcfd9f6c0ee4077e7eb7ba13618ab0e951d0774f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 13 10:44:41 2011 +0200
+
+    Make sure we always end up with a result,
+    Improve log messages,
+    Read policy requests indefinitely
+
+commit f49b722a01222ddc31b07d0c54b96eef8d3f9c8c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 11 22:30:17 2011 +0200
+
+    Bump release
+
+commit ec0611d710283330082674d71c2f514892f36fb4
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 11 22:29:56 2011 +0200
+
+    Remember to set sender_allowed to true under the correct circumstances
+
+commit 44fadad98a7377515611cae47a0b60d0c31a0d81
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 6 18:25:46 2011 +0100
+
+    Bump release
+
+commit 39afc3b19cc724b5a2100fd66d0944b892a3368c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 6 18:25:00 2011 +0100
+
+    Use verify_domain() to verify the domain name space is something we host. Helps determining when to search and where to search for user objects
+
+commit 5430cac17017e335ddc1a6243c4ee386c44b9dde
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 6 18:24:41 2011 +0100
+
+    Set a default logfile
+
+commit 6cc40d31ef0aab69b4d3868e277cfaddad226d9d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 6 18:24:09 2011 +0100
+
+    On el5, urlparse returns a tuple
+
+commit 00ef2f73974fd25b437f43d4feb978edcdd741e7
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 6 18:23:35 2011 +0100
+
+    Allow for additional filter parameters to be send through the API
+
+commit a538ca41792679ca44f6abbb0e44d848b5c3f5e3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 6 17:18:18 2011 +0100
+
+    Allow the mapping of secondary domain names back onto the primary domain name space authentication library
+
+commit 6c6eb002a30c386ab8ca4629b8e88656dd9a7a7c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 6 16:52:48 2011 +0100
+
+    Use a regular search for domain name spaces
+
+commit 3ae7582f6d569ae7f8f0b83b3b88cfdb29614a51
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 6 15:56:47 2011 +0100
+
+    Sneak in another version bump
+
+commit 3f68a96c2aaae2115297f16e7eaacb985a1a21c2
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 6 15:56:20 2011 +0100
+
+    Insert more logging statements and be more verbose in any reject messages as to what the reason is of the rejection
+
+commit 322dbbedeb3ba5e2c8619b06a66db99f3bf16fc1
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 6 11:49:48 2011 +0100
+
+    Provide a bunch more commentary in the code
+
+commit f83f240cf0b9edfc16fe23cd3bb6ace03a465dce
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 6 11:28:22 2011 +0100
+
+    Bump release
+
+commit c2d2373ac4190ad1d7c99d03260e3ce622d18073
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jul 6 11:28:12 2011 +0100
+
+    Add cyrus.py
+
+commit 619bf425c57bb516d6cea2275f79026f06bab142
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 23:53:50 2011 +0100
+
+    Bump release
+
+commit e5628adee78efaad76e595b9f0534cb39d0c656a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 19:55:38 2011 +0100
+
+    Add directories to own
+
+commit 55d0838487f45b73cef7646c298e9ba4559dd4cb
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 19:55:23 2011 +0100
+
+    Add directories to create
+
+commit 68422fedfe7d5db35bbb12a6ac765a7507fd6ff5
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 19:53:57 2011 +0100
+
+    Correct path to cache
+
+commit d9a7b05a12559e37d0e61b4e3dc85e4d3b27b19a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 19:27:03 2011 +0100
+
+    Make sure we use /var/lib/kolab/cache/
+
+commit 205d3e034985c17e74eba01e1d79e3658130186b
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 17:38:01 2011 +0100
+
+    Avoid having to call the logger with a kw logfile
+
+commit 7e6d27a5da81f2cb8966c1a72de103024463690e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 15:33:47 2011 +0100
+
+    Bump release by just a tiny little bit
+
+commit 6e0cace0773528ab41dd9559e69b0b46e666ada6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 15:33:25 2011 +0100
+
+    Add an additional boolean to the call to connect to imap, whether or not to login
+
+commit 5730afec6a3d17b77676d59295cb275d5c4d9c02
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 15:32:01 2011 +0100
+
+    Only use authentication credentials for authorization, such as when verifying whether the sender is a delegate, if the sasl_username has been supplied
+
+commit 7a5c36fd28db707a9e6cc984d2201931f4fc23c8
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 13:53:56 2011 +0100
+
+    Bump release
+
+commit f50750867f5f82077e645c288f68c66ff5e611a2
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 13:53:37 2011 +0100
+
+    No longer require python-ldap >= 2.4.0
+
+commit 582cd5f957ff99fa52fd7682b9ad9b9b8b9f816a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 13:53:01 2011 +0100
+
+    Provide a _regular_search API call
+
+commit 9540f069b515e3ba6badd64414a47e93ceafa1dd
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 13:25:35 2011 +0100
+
+    Avoid unknown keyword recoverable
+
+commit 78f17cb9d1213d4c1529b644d72f304bca6bc32a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 13:25:13 2011 +0100
+
+    Avoid unknown keyword recoverable
+
+commit ecc170674d3486b4589d29b71657157d1123424a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 13:05:22 2011 +0100
+
+    Ensure an empty line follows our message.
+    Use permit() instead of defer_if_permit()
+
+commit 4db2566d1391ec458a6b4dd9a5324ae6f658ea15
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 13:04:08 2011 +0100
+
+    Amend some of the _connect() code
+
+commit a5462b9450047521bd766280c0d1b0af17f297ee
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 10:00:03 2011 +0100
+
+    Annotate the difference between a solution and a workaround
+
+commit 6125a1c672bfb0f50a256475034685116202bcda
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 09:59:27 2011 +0100
+
+    Install the saslauthd module in python's sitelib, too
+
+commit 3d9b7aa9998b3a71bf790199a45d6ee1521581ea
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 09:59:01 2011 +0100
+
+    Add action dunno for Kolab SMTP Access Policy
+
+commit b4cb49dd3690d8be274335fdfd423eb5339e76f9
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 09:58:47 2011 +0100
+
+    Remove unused import
+
+commit ed15509ca71bc93ca7d2fd063fd453c585fc9834
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jul 5 09:42:58 2011 +0100
+
+    Try only two locations for caching, /var/lib/kolab/ and /tmp/
+    Make sure we use the recipient as the object to pull kolabAllowSMTPSender from
+
+commit b982bd940db33270ed9b25fa11032ca291d94a54
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 18:32:34 2011 +0100
+
+    Require python-ldap >= 2.4.0
+
+commit a979af801737a1512c1756e2f6ed8a69ba617d3d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 17:23:01 2011 +0100
+
+    Wrapper around errors we're going to throw
+
+commit 6771a7fb990a43bf7eaaf35bfef141a2cc3e0d0e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 17:20:06 2011 +0100
+
+    Require python-ldap
+
+commit 42f6b59ede889ea31a3f87b499d79b4bfd78c744
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 17:11:12 2011 +0100
+
+    Include pykolab.conf
+
+commit 6c2dae837e31a9bd063c49bb03746d681a2b76d2
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 17:08:08 2011 +0100
+
+    If the folder does not exist, there's no annotations to be returned. This is a case for undelete.
+
+commit b7d8802c82886067d6849612397d31215456d3a0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 16:15:46 2011 +0100
+
+    Avoid very long lines
+
+commit 8c15a0c480c9dd2ae074933cd71a25bb543004b9
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 16:15:27 2011 +0100
+
+    Update locations to install our python files
+
+commit 96c64763ad8d08489415cbde48635112fe7958f8
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 15:48:13 2011 +0100
+
+    Separate package for kolab-server (/usr/sbin/kolabd)
+
+commit eaacd018f6334ad78b81bc0896cc99d3cd681e94
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 15:32:38 2011 +0100
+
+    Bump release to rebuild without dependency on kolab-python
+
+commit ca6a5430187c09e2c000caadc701a2db96a0d7c7
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 14:37:50 2011 +0100
+
+    Make sure all the secondary recipient policies are executed
+
+commit 2b483d09d7301d35c92e5f87b5032d4d513bc44e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 14:36:06 2011 +0100
+
+    Do not call a delete we do not have,
+    For an undelete, first transfer to the target server of the target folder, if any other then the default
+
+commit 2db7807b78fb46155736d344b3fa429ade90ff82
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 14:34:17 2011 +0100
+
+    Update the configuration lib to be a little more robust
+
+commit 209af0b2cb5529fff2ae7db5bc30cf14e1a7c7d6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 14:32:58 2011 +0100
+
+    Provide supportControls search before actual search, but use normal search where appropriate
+
+commit 3a55c071692e1846d4a36ae4589d6924360c49cd
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 14:31:34 2011 +0100
+
+    Correct default for service in is_service()
+
+commit c837fda74052c5dd4e2060f334f5ccec3f6c84e8
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 14:29:45 2011 +0100
+
+    Add a constant for KOLAB_LIB_PATH (/var/lib/kolab/)
+
+commit c6afa01abf303dcc83ba1967c31832e14fd23b73
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 14:29:19 2011 +0100
+
+    Update the packaging / release
+
+commit cd5febfb7be4ae4907759c0518cfe16a6c07289e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 14:28:52 2011 +0100
+
+    Add kolab smtp access policy plugin for postfix
+
+commit 694c0a493c15b931375ef7482245c2d5f8044133
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Jul 4 14:28:39 2011 +0100
+
+    Update po files
+
+commit ba0a4c06fec4cbcb2a763257592cd841f1ed20dd
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Jun 17 16:08:54 2011 -0500
+
+    Fix the undelete code
+
+commit b415ce79de1271eacbcb6dd5e65d15ded8662ada
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Jun 17 16:07:00 2011 -0500
+
+    Update the sync and undelete commands
+
+commit ba6b4c314e13b6a5fd73bbad6b69ef91a32132f4
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Jun 17 16:06:08 2011 -0500
+
+    Add an XFER call
+
+commit 29009021bd4050a467b9a96abfc82f0d201883d3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Jun 17 16:05:48 2011 -0500
+
+    Fix the URL to the bugtracker
+
+commit cd92ac9d39a82a1471dc2277cb55655ab3f8f0ef
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Jun 9 12:35:29 2011 +0100
+
+    Update the gen-ldif script
+
+commit 7c44e21b986c82fcee875c6855fcb03673222a2f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Jun 9 12:34:34 2011 +0100
+
+    Change the bug reporting URL
+
+commit 8823099e26dae10dcdebf39152cca92895b3253a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Jun 7 11:41:37 2011 +0100
+
+    Remove current version of kwap
+
+commit 841a05a13637cdf3aff88d1703e2753356e64231
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Jun 3 15:56:45 2011 +0100
+
+    Rename the setup for IMAP
+
+commit 898a4926973c57b341ffdcc48ae30df173436a38
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Apr 11 12:00:11 2011 +0100
+
+    Fix to conform to my own indentation rules
+    Need to pass 'self' as well
+
+commit a44f887e6609d46f39c6f4266a175dce1671d2a0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Apr 11 11:52:29 2011 +0100
+
+    Pull out auth and conf from becoming multi-instance all over the place. One of each suffices.
+    Clean up imap module, along with making the imap.cyrus module work better
+
+commit de8818dd793a1b1caff98be0ff03fc3e032f9f92
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Apr 11 11:51:07 2011 +0100
+
+    Make our auth.ldap module agnostic to python-ldap 2.4 changes
+
+commit b8a2d3b78886126ece422c3141d7bce92e67c65c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Mar 26 17:47:18 2011 +0000
+
+    Increase documentation but primarily write out TODOs
+
+commit aa668ab1bc93254dd03f22bbd85736992dbaa07c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Mar 26 17:42:43 2011 +0000
+
+    Normalize secondary mail in order to compare against primary mail, only return any new or unique results. Exploiting case-sensitivity is considered bad karma anyways.
+
+commit 617e4c80a44d1d67208948f72aa58c63e0793f35
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Mar 26 17:40:50 2011 +0000
+
+    Attemp to import a file that is actually generated with autofoo
+
+commit 780011b096d583b92634f503a58f6667f5b6a839
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Mar 26 17:40:03 2011 +0000
+
+    Ensure that regardless whether or not input is a list or dict, the result can still be normalized
+
+commit 715ba3a676efe04ca2bd11a9d6727074b9a6edfb
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Mar 24 16:31:18 2011 +0000
+
+    Add -l option to specify the loglevel
+
+commit 375d171c5c3ebe0129679231fdc98b9209c19605
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Mar 24 16:28:17 2011 +0000
+
+    Add '-l' option for the loglevel
+
+commit 81d89d1964a0e438b5869bddaf324d906afb9f60
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 19:26:09 2011 +0000
+
+    Fix some of the CLI routines
+
+commit 309aacf7f82de776229ba51f1da20b980db6b983
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 19:25:16 2011 +0000
+
+    Provide convenience functions to IMAP()
+
+commit dba6cf148af7a148d134471cab5ded391e3923d6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 19:24:06 2011 +0000
+
+    Add undelete() to Cyrus
+
+commit 0e7f65f1fc9742e6feb2d2b97074972effa534f6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 13:20:40 2011 +0000
+
+    The SASL authentication daemon too can use the logging and config subsystem enhancements
+
+commit b2c7f60ec0cf67b6510c8126f31e015d316634cb
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 13:19:30 2011 +0000
+
+    The plugins can now make use of the logging facilities,
+    Have the plugins be passed keywords and reflect that
+
+commit 5e5441ecd228e2fa71d6406ba6a7f1f94422d389
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 13:18:49 2011 +0000
+
+    Refactor the logging subsystem
+
+commit f4838fe27f98749f0fa0663d3d940eb5309c75b7
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 13:17:43 2011 +0000
+
+    Enhance imap handling with the ability to move users,
+    Provide a Cyrus (Murder) specific handling library
+    Enhance usage of logging and config subsystems
+
+commit 6dce8af0d6e1677950940c11c4b25ec2d1216a79
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 13:16:38 2011 +0000
+
+    Enhance configuration subsystem, and drop runtime
+
+commit fff400379f15390fbf90a75a1748f230bbdf0ee6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 13:15:27 2011 +0000
+
+    Enhance logger and config subsystem usage in pykolab.auth
+
+commit 50519b624a9e3aeb67cad2131ebe227d1d38f4d1
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 13:12:10 2011 +0000
+
+    Provide the functions for logging and config enhancements applied throughout the rest of the software
+
+commit e853de01cbc077e9cd31b2f479631ed87dfd1a30
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 13:11:33 2011 +0000
+
+    Remove the saslauthd component from kolabd
+
+commit c125bb6af218622da1426ee37b503e04471c6c3a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 13:10:49 2011 +0000
+
+    Enhance logging and config system in kolabd
+    Reuse the existing Auth() instance (avoid duplicate log entries)
+
+commit 4fd84dc9fce729114370fee5d5f8aff3b4ee95e3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 13:06:01 2011 +0000
+
+    Correct default setting
+
+commit 3ce9034d8c795fce7dd3adba79915fc814dfd455
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 13:05:19 2011 +0000
+
+    Update bin/gen-ldif with the objectclasses and attributes also in the default configuration
+
+commit e06ef982a1207bdd32e3886f02d4abdc86b793f3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 23 13:04:43 2011 +0000
+
+    Attempt to import the file that is actually generated by autofoo
+
+commit e8435b5d42e3432b4c349cf7a52706cbba83f4ca
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 19:03:30 2011 +0000
+
+    Ignore the src/ directory
+
+commit c183e5772139ca67cda102540c14e5410780f1bb
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 18:15:37 2011 +0000
+
+    Add api call for the domain section
+
+commit b7fc8775fcd2b3a2f278b80b63a14acd5120df09
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 18:14:07 2011 +0000
+
+    Catch cases a non-Kolab user needs to authenticate (e.g. 'cyrus-admin' outside of user_base_dn)
+
+commit 2aec8c84bf20fffacd1a8bdb30b104436eef372d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 18:07:27 2011 +0000
+
+    Fix the autofoo wrt. plugins having been moved
+
+commit 1a6d9ae93de38aa6c53f4cc2cf8d71e13d4ba83b
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 18:06:31 2011 +0000
+
+    Remove saslauthd options and code from the main daemon
+
+commit 9950787088462b26579400294b3ce92c8c94d2b2
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 18:04:46 2011 +0000
+
+    Add our saslauthd multi-domain implementation
+
+commit 3d7deea56bb1f05d773e1e9efe61044a0f5dcd3e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 17:57:33 2011 +0000
+
+    Also exclude MySQLdb in binary compilation
+
+commit 11c54d423e6a95c35932e83f81f367469a96c378
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 17:53:43 2011 +0000
+
+    Redo plugins so they can be binary compiled
+
+commit 354522b3d14ff28c4d976aeab35cb8ac93906b5f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 14:38:38 2011 +0000
+
+    Fix typo
+
+commit 55cb200892ad280feb1546c7bf5b4f0930839ade
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 14:37:41 2011 +0000
+
+    Use the new -b option to freeze.py, and make sure the prefix is correct too
+
+commit 34e000c485eea3194ac31a83f1f1c52aaf09c82d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 14:36:28 2011 +0000
+
+    Link against the dynamic library instead of the static library
+
+commit 94e8397004ef0d9c54ee5156466a3c5d9a975d12
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 14:35:39 2011 +0000
+
+    Take into account the library directory for multi-architecture compatibility (i.e. /usr/lib/ vs. /usr/lib64/)
+
+commit c41a8aedc77afd30784c04c0fa115bc24047e305
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 14:34:11 2011 +0000
+
+    Import external utility freeze.py from r88552
+    
+      URL http://svn.python.org/projects/python/trunk/Tools/freeze
+
+commit 2e35bd755bd6d2f64b714e95466343845b4908c5
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 14:24:06 2011 +0000
+
+    Add saslauthd.py to install target
+
+commit 5785cbf6b31e2355a42a1fc6551b67fc3f7c95c7
+Merge: 6bff64f 15be37a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 14:23:10 2011 +0000
+
+    Merge branch 'master' of ssh://git.kolabsys.com/git/pykolab
+
+commit 6bff64ff08b109e2511d65fada45a65882ce7e08
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 14:22:57 2011 +0000
+
+    Add saslauthd
+
+commit 15be37a1d3258256128ba887d811981cd7daae72
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sun Mar 13 14:22:10 2011 +0000
+
+    Add a make target based on Python's freeze.py (not included in the python packages)
+
+commit 3e64b678658bc67df02d32888384c6ddbfaa5437
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 8 14:52:57 2011 +0000
+
+    Expunging folders is part of the loop
+
+commit bc43942fe491fb6f3edcf111c99605c0fddd905f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 8 14:52:05 2011 +0000
+
+    Remove documentation and start over.
+
+commit 5a9c0167e3229cc8604e99e10d0f6d3d4db2a2c0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Tue Mar 8 12:34:19 2011 +0000
+
+    Remove unused base
+
+commit 43f44f19107fdc97120558d91caf334efb92fcea
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 17:47:35 2011 +0000
+
+    Also set the acls on additional folders
+    Make sure we seek out the quota_attribute setting in the right location
+
+commit 8f7b40e18c268f3dfa17315373e587bf1dafacd9
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 17:44:35 2011 +0000
+
+    Move quota_attribute to the actual auth_mechanism, from the backend technology section
+    Use 'acls', as in plural, since we also have 'annotations'
+
+commit 10060ab8e6aa44adedbdbb975021c98d5db3bb9d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 15:46:09 2011 +0000
+
+    Update license in spec
+
+commit 7d9324de99184598fb22824f9a500c55bd3a3aec
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 15:45:29 2011 +0000
+
+    Relicense from GPLv2 only to GPLv3+
+
+commit a6773874d462a661173991004d5e4dafd87c4b6c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 15:45:11 2011 +0000
+
+    More example configuration in the default configuration file.
+
+commit 4a4f7802472cc45ebf6a336c842e64789bc9dff9
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 15:35:28 2011 +0000
+
+    Add the GPLv3 license file
+
+commit 7e28ca3be562830401c1562f4c5d9b3bea661497
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 15:18:18 2011 +0000
+
+    Hooks in plugins may also like keyword dictionaries as arguments
+
+commit 8a8634397b25d64f22b7699f74365d45cbc1ab20
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 15:16:55 2011 +0000
+
+    Ensure the recipientpolicy plugin handles the new format for users
+
+commit f39d78d9993d62e8967d093ceeb52c5fc4054120
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 15:16:09 2011 +0000
+
+    Update dynamicquota plugin to also take the domain default quota, if any, as a parameter.
+
+commit 7227b5d35ccb95582dc879adddb5a93e93bb9647
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 15:15:21 2011 +0000
+
+    Update the imap abstraction layer to be a little more efficient, and make sure we handle multi-domain cases correctly
+
+commit 8888a7120e0993eb162895ce677e9b6b0f9e1e61
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 15:14:07 2011 +0000
+
+    Update Conf() with various tidbits
+    Prepare to limit access to Conf.cfg_parser
+
+commit e18baf8b7d48d9e1f07ba81e25e0ac7896565f40
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 15:12:37 2011 +0000
+
+    Rewrite action_sync()
+    Use the new library functions in action_list_domains()
+
+commit a593f9575820e6c029a8ff37d7df6253f35d0e84
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 15:09:51 2011 +0000
+
+    Resort module imports
+    Just use the Python loggin library logger
+    Standardize function names a little better
+    Make LDAP page its results so large sets of search results hit no admin or search limit
+
+commit eb8353dd68d593dffb8a8b40d3b16ab665635892
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 15:09:00 2011 +0000
+
+    Add an enhanced SASL authentication daemon to the Kolab daemon
+
+commit 0315add2c60954646962937dc9d616c4339d392e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 15:00:02 2011 +0000
+
+    Make the default be example.org instead of kanarip.com
+
+commit d40895d9aa0a2d5cb89c6f96a7f4f4779ed08d63
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 14:59:28 2011 +0000
+
+    Take options that modify which users end up where (domain name, rootdn and ou, in that order)
+
+commit a8c1bbcb6b20d60926be7b80dda0c6d77871b600
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Mar 7 13:56:01 2011 +0000
+
+    Add the normalization for dictionaries to utils, as it proves useful in more then just LDAP result normalization.
+    Also add the conversion between a domain name space and a standard root dn distilled from that domain name space
+
+commit 5660589ce87e80f0a4bf58d19802a758329b8ff5
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 2 18:40:37 2011 +0000
+
+    Add a script that'll generate randomized user accounts in LDIF format, given a number
+
+commit f45102c3260b6e534f1c4b5158f765c3d1ae1647
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 2 13:49:56 2011 +0000
+
+    Let's use the logger if we have it.
+
+commit fa08b287713bc6b34133fc28d4cdaf97021631a0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 2 13:49:33 2011 +0000
+
+    Enable alternative email addresses to also be inserted back into LDAP
+
+commit 18da9a49afe99a432c377b7e9b238adf33a5b3cc
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 2 13:48:36 2011 +0000
+
+    Implement a simple command, and start with just sync (nice for cronjobs!)
+
+commit 1df25181222459bd92ad64296b6bec05b842b981
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 2 13:37:07 2011 +0000
+
+    Bail out with a message on --help if no command is given on the CLI
+
+commit 8c754a5f9eed2ecb2d6257d3932c9c436f0eefa1
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 2 13:34:15 2011 +0000
+
+    Fix typo
+
+commit f0f6f6cc2499a7a4513cd67d54e8881a28a9800f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 2 12:05:53 2011 +0000
+
+    Include conf being passed on to plugins
+
+commit ceb8643ec9ebff8925fbc5b1e5f734634e692c2a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 2 12:04:36 2011 +0000
+
+    Update recipientpolicy plugin by splitting the functions for primary mail and alternative mail addresses, so we can remove its inclusion of Auth() and Conf()
+
+commit 83c85dd54a7e1d29913dc525ca81823185b55e73
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 2 12:04:01 2011 +0000
+
+    Plugins now get a configuration class object passed too
+
+commit c3e345d80f65657741475fcb93d907f0ee96d260
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 2 12:02:55 2011 +0000
+
+    Temporary disable additional_folders from being actively used,
+    Log to debug channel instead of printing messages
+
+commit 336be8ce36f282d08a9d79f871390765be3bda4b
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 2 12:02:31 2011 +0000
+
+    Pass on the configuration to the plugins wrapper
+
+commit 1f42b362709a09e73e3a93a61dd5c967b0d47098
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Mar 2 12:00:51 2011 +0000
+
+    Remove import not distributed, and only attempt to import the appropriate library after it's been verified the technology is actually used.
+    Remove unused import for IMAP
+    Simplify initialization
+
+commit 9537a8ea971833c8e3a1624ab685f844f3aa8e8e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Feb 25 11:03:18 2011 +0000
+
+    Update copyright notice
+
+commit 61056c5254c94d01350192231c79e03160558812
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Feb 25 11:02:33 2011 +0000
+
+    Add po/*.gmo to .gitignore
+
+commit afb9acc63e139042006342a0f86ecc97c1467c7f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Feb 21 22:30:22 2011 +0000
+
+    Add tests and tests/zpush
+
+commit 3fb8a8323374167da5594a933e1573ac3f94e72c
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Feb 21 22:22:24 2011 +0000
+
+    Update makefiles
+
+commit e765e9e33860e7659e1b27534f2f78bd632fa5e0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Feb 21 21:52:41 2011 +0000
+
+    Update gitignore
+
+commit 0f658c8ce990a816458d152a6ae4ce24e514e0db
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Feb 21 21:51:23 2011 +0000
+
+    Add a shortcut script to update the po files
+
+commit d4bbdffe03f54c98ffd34c3a2faeca375f57a6ee
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Feb 21 21:51:04 2011 +0000
+
+    Add semantics for packaging and localization
+
+commit cd89058ed3fa4b1def41b6ca97c398c8de6ed1c2
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Feb 21 19:42:11 2011 +0000
+
+    Increment thread_count
+
+commit 18f28384acd7fc91b1e5b814cd29d0f52cfcb9e9
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Feb 21 19:39:33 2011 +0000
+
+    Update AUTHORS
+
+commit 9445cb3c24e790172dade18f1942ca76614aedb0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Feb 21 15:19:16 2011 +0000
+
+    Update copyright headers
+
+commit b72a83b79a3616a0c451143f66332876929aee2b
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Feb 21 15:14:28 2011 +0000
+
+    Update pykolab including:
+    
+      - a plugin system,
+      - some example plugins,
+      - a working kolab daemon,
+      - copyright updates,
+      - auth/ldap/ abstraction so auth/sql/ can be plugged in,
+      - and more.
+
+commit 8a85a51fb60d01495ed470bd1e545d98c05b1299
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Feb 21 15:09:11 2011 +0000
+
+    Add additional options to kolab.conf
+
+commit 0a7b4ed46177d6bb3bb74b8e5fbe444a15bd8e89
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jan 5 12:52:58 2011 +0100
+
+    Add an example test configuration file
+
+commit 6a35e5efa2ffd88ebcc69b1bcd3c4d4639082f30
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Jan 5 12:38:37 2011 +0100
+
+    Add cyruslib
+
+commit 2179a1ff034888b263ec7d2c65550b55f1d2bf78
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Nov 15 23:41:53 2010 +0000
+
+    Add comment and fix location for debugging message
+
+commit daa9aa9bbe533caa806eb7717fb1943adc8605f8
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Nov 15 23:30:04 2010 +0000
+
+    Check for calendar/contacts/mail settings, and make sure the suites set them correctly, or bail out setting others if both a suite as well as one of the item types have been selected.
+
+commit c9850853870b264384e3e075a59a5b3e3fcd6dad
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Nov 12 15:34:18 2010 +0000
+
+    Add the ability to inject some email, too
+
+commit 03a8f945566e9ec5e9b9ada9bff79ee3b67c366d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Nov 12 13:53:51 2010 +0000
+
+    Fix syntax mishap typo (</given_name> -> </given-name>, thanks volker)
+    Fix qp encoded -> 7bit(?) (thanks volker)
+
+commit 6e7f0ce2d336874af5566e8210d674b96146f48f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Nov 12 13:26:30 2010 +0000
+
+    Fix 'events' in creating 'contacts' message
+
+commit 62b6ea1562f6c07133743ae0e3cd2c83b098282a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Nov 12 13:25:47 2010 +0000
+
+    Update the testing of contacts
+
+commit 036d9edf388cc979f2583849e247ef46d8dba8fd
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Nov 12 13:24:43 2010 +0000
+
+    Expand README on tests
+
+commit 33344bf341ed1416f22122a704b9e8c0360d52e9
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 27 23:16:05 2010 +0100
+
+    Add a README.tests
+
+commit 2a78370ea84447e486079080eaa7901979d572bc
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 27 22:54:59 2010 +0100
+
+    Add some constants to the general testing, and add the calendaring item semantics
+
+commit c8d0eaff597164079866421a08ff993a8cdfe43f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 27 22:53:08 2010 +0100
+
+    Comment a little more on the utilities in pykolab/utils.py
+
+commit 9dd56890008a4255dcf4a528b83dcc889013025e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 27 22:52:36 2010 +0100
+
+    Add the test suite for zpush
+
+commit bfefee96a24c5a5896be635d31708fa7d1431eec
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 27 22:51:35 2010 +0100
+
+    Instead of executing one arbitrary forcefull imap message file injection here, move to executing suites of tests
+
+commit f7f16586b4b26e5bd198ac53f60ca869754bff13
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 27 22:46:00 2010 +0100
+
+    Make sure the configuration lib parts have;
+    
+      - Configuration file parsing semantics
+      - Sufficient defaults to handle a test suite
+      - Configuration item checking semantics
+
+commit 97baa8876b3969cc663aa25a8e5b1d5adaa49b22
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 27 22:45:08 2010 +0100
+
+    I know this was a copy/paste job, but this program is called pykolab
+
+commit 24b2b7782945d0953ed0a0086ce0fff3025b6512
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 27 22:44:42 2010 +0100
+
+    Reorder importing the core components
+
+commit 0cb6931999d22a3c9c1ef1965983ff33b61ba614
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 27 22:43:46 2010 +0100
+
+    Make sure we finalize the configuration
+
+commit 7f7ea5bb073e3335173f5e337a345589f1607739
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Wed Oct 27 22:42:00 2010 +0100
+
+    Move files from python code directories to their new location in share/tests/
+
+commit 9c4499cbb60a45e6086a0ba5c3102b2e6c256cad
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Mon Oct 25 15:27:06 2010 +0100
+
+    Explain what utils.ask_confirmation() is all about
+
+commit 6e8f6623668d0f0e77ad7094941bfa10bfe1ecba
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Oct 23 01:34:25 2010 +0100
+
+    Add some, lose some, add some empty attrs.
+
+commit 264073e33057ad6bc189f037e27fd6d810291763
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Oct 23 01:22:38 2010 +0100
+
+    Remove duplicate space
+
+commit 5c189c4754968092ce97470737085ed60f9dab94
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Oct 23 01:00:00 2010 +0100
+
+    Fix some other errors as well
+
+commit 74d1d469d6c26e449daa03a6d00689d1d2d7b3ae
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Oct 23 00:45:15 2010 +0100
+
+    Make sure we are using double digits
+
+commit c260a62c276fbcea14a95b6e515497a25039475f
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Oct 23 00:43:46 2010 +0100
+
+    	renamed:    kaddressbook-contact.tpl -> kaddress-contact.tpl
+
+commit 36805525151bf0a1029ec8ddac3ab789827c7ff6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Oct 23 00:42:56 2010 +0100
+
+    fix syntax error
+
+commit 852fae409f8af5d32ef01a4f108847766838771d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Oct 23 00:42:25 2010 +0100
+
+    => becomes >=
+
+commit dfa1c7f32cb96796976cc8edb14fd5b19a17a3b2
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Oct 23 00:41:27 2010 +0100
+
+    Fix typo
+
+commit 3bfb67e380f45fe5e78b3ffe6896644de0c172b7
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Oct 23 00:39:59 2010 +0100
+
+    Fix the 's' in here as well
+
+commit 717bb2bfade7713fd011d53002df0a1ecb9492ad
+Author: Paul James Adams (Kolab Systems) <adams@kolabsys.com>
+Date:   Sat Oct 23 00:39:18 2010 +0100
+
+    Check in Paul's script for mass-creating contacts
+
+commit 416ee1d06b67b68cd4d50415c2cb2d04b41c6df1
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Sat Oct 23 00:10:30 2010 +0100
+
+    Let's not print status information any longer, but instead indicate what would be doing here
+
+commit f5e907e62f1e0d5c756603523ede3002c032b7b0
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 22 23:16:40 2010 +0100
+
+    Use the day, in a day
+
+commit 7f9812c072cf5d4f0088a592d6913a5bdddb6ba2
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 22 23:11:29 2010 +0100
+
+    Update the line termination on the recurrence
+    Reduce the number of iterations
+
+commit 3cb81928f93e806f6f930e57eaff70246335ecc3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 22 22:50:20 2010 +0100
+
+    Fix the 's' in domains
+
+commit 6751dbf6eb5169faaba67f18de43b4333356462a
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 22 21:55:54 2010 +0100
+
+    Correct the path for the files using the appropriate domain and location
+
+commit 0b3390839207a82956cf996fec79cc7b5696bb98
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 22 21:43:14 2010 +0100
+
+    Populate a bunch of user calendar directories with a bunch of events
+
+commit 9d6bb677ffe6a362dc939c9fd152f9c27a4a96d6
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 8 13:32:35 2010 +0200
+
+    Attempt to load the lib, but fail verbosely if it doesn't succeed
+
+commit d60eebbdfe20859dd29fa3d6f0ad0daea77bc0f3
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 8 13:32:18 2010 +0200
+
+    Check in the first set of actions to execute
+
+commit ad572e9d144c603d0af4e17a2510ef0c2c1f5f24
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 8 13:31:31 2010 +0200
+
+    Split up the initialization of .conf adding a finalization
+
+commit bde4c1530a3aedc562dfd8c7e0cc13721336179d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 8 13:27:49 2010 +0200
+
+    If the user says we must be quiet... well we better be quiet
+
+commit 11c2e732e4ae8dd1e8b5eee6e7de8d34f63568a1
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Fri Oct 8 13:26:39 2010 +0200
+
+    A simple dialog asking for confirmation
+
+commit 05e06399f287e7bf6387b3fd8eb7100df607bda4
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Aug 26 11:59:08 2010 +0200
+
+    Fix the source tree identifier
+
+commit 13cc61bcef3c40e9c2821626df4d20cd82bbfd1e
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Aug 26 11:58:52 2010 +0200
+
+    Update .gitignore to reflect former changes
+
+commit 1119b629ca26edfbac1bbb519136e3e664cad4fc
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Aug 26 11:57:20 2010 +0200
+
+    Make the compile/build time variables appear in constants, and then re-use constants
+
+commit b2939c5516e3f8d3dc77ccbc5ddbfc46938c2423
+Author: Jeroen van Meeuwen <jmeeuwen@master.puppetmanaged.org>
+Date:   Thu Aug 26 11:22:23 2010 +0200
+
+    Add yet another file to the ignore list ;-)
+
+commit d0adba5b736a80b16243e079ba9df66b5ee2a3b6
+Author: Jeroen van Meeuwen <jmeeuwen@master.puppetmanaged.org>
+Date:   Thu Aug 26 11:20:43 2010 +0200
+
+    Add extra files to ignore
+
+commit e2f75e06656c1bd0cd0cecb4a99b8220f468fd8d
+Author: Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+Date:   Thu Aug 26 10:17:37 2010 +0100
+
+    Initial commit
