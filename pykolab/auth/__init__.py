@@ -91,7 +91,8 @@ class Auth(pykolab.base.Base):
             back to the primary domain specified by the configuration.
         """
 
-        log.debug(_("Called for domain %r") % (domain))
+        log.debug(_("Called for domain %r") % (domain), level=9)
+
         if not self._auth == None:
             return
 
@@ -102,9 +103,19 @@ class Auth(pykolab.base.Base):
             self.list_domains()
             section = domain
 
+        log.debug(
+                _("Using section %s and domain %s") % (section,domain),
+                level=9
+            )
+
         if self.secondary_domains.has_key(domain):
             section = self.secondary_domains[domain]
             domain = self.secondary_domains[domain]
+
+        log.debug(
+                _("Using section %s and domain %s") % (section,domain),
+                level=9
+            )
 
         log.debug(
                 _("Connecting to Authentication backend for domain %s") % (
@@ -117,16 +128,33 @@ class Auth(pykolab.base.Base):
             section = 'kolab'
 
         if not conf.has_option(section, 'auth_mechanism'):
-            section = 'kolab'
+            log.debug(
+                    _("Section %s has no option 'auth_mechanism'") % (section),
+                    level=9
+                )
 
+            section = 'kolab'
+        else:
+            log.debug(
+                    _("Section %s has auth_mechanism: %r") % (
+                            section,
+                            conf.get(section,'auth_mechanism')
+                        ),
+                    level=9
+                )
+
+        # Get the actual authentication and authorization backend.
         if conf.get(section, 'auth_mechanism') == 'ldap':
+            log.debug(_("Starting LDAP..."), level=9)
             from pykolab.auth import ldap
             self._auth = ldap.LDAP(self.domain)
+
         elif conf.get(section, 'auth_mechanism') == 'sql':
             from pykolab.auth import sql
             self._auth = sql.SQL(self.domain)
 
         else:
+            log.debug(_("Starting LDAP..."), level=9)
             from pykolab.auth import ldap
             self._auth = ldap.LDAP(self.domain)
 
