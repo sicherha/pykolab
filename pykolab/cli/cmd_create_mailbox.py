@@ -26,9 +26,6 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
-auth = pykolab.auth
-imap = pykolab.imap
-
 def __init__():
     commands.register('create_mailbox', execute, description=description(), aliases='cm')
 
