@@ -38,9 +38,6 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
-auth = pykolab.auth
-imap = pykolab.imap
-
 class Cli(object):
     def __init__(self):
         import commands

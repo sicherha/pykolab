@@ -25,9 +25,6 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
-auth = pykolab.auth
-imap = pykolab.imap
-
 from pykolab import telemetry
 from pykolab.cli import commands
 

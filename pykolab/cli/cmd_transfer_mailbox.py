@@ -26,9 +26,6 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
-auth = pykolab.auth
-imap = pykolab.imap
-
 def __init__():
     commands.register('transfer_mailbox', execute, description="Transfer a mailbox to another server.")
 
