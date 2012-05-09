@@ -158,4 +158,4 @@ def last_modify_timestamp(domain):
     if not last_change == None:
         return last_change.last_change.strftime("%Y%m%d%H%M%SZ")
 
-    return 0
+    return datetime.datetime(1900, 01, 01, 00, 00, 00).strftime("%Y%m%d%H%M%SZ")
