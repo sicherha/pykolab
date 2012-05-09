@@ -381,10 +381,18 @@ class LDAP(pykolab.base.Base):
         entry_dn = self.entry_dn(entry)
         entry_modifications = {}
         entry_type = self._entry_type(entry)
+        mail_attributes = self.config_get_list('mail_attributes')
         primary_mail = None
-        primary_mail_attribute = self.config_get_list('mail_attributes')[0]
+        primary_mail_attribute = None
         secondary_mail = None
-        secondary_mail_attribute = self.config_get_list('mail_attributes')[1]
+        secondary_mail_attribute = None
+
+        if len(mail_attributes) >= 1:
+            primary_mail_attribute = mail_attributes[0]
+
+        if len(mail_attributes) >= 2:
+            secondary_mail_attribute = mail_attributes[1]
+
         want_attrs = []
 
         log.debug(_("Applying recipient policy to %r") % (entry_dn), level=8)
@@ -398,24 +406,22 @@ class LDAP(pykolab.base.Base):
         if primary_mail == None and entry_type == 'user':
             primary_mail = self.config_get_raw('primary_mail')
 
-        secondary_mail = self.config_get_raw('%s_secondary_mail' % (entry_type))
-        if secondary_mail == None and entry_type == 'user':
-            secondary_mail = self.config_get_raw('secondary_mail')
-
-        # See if the relevant mail attributes exist
-        _mail_attrs = self.config_get_list('mail_attributes')
+        if not secondary_mail_attribute == None:
+            secondary_mail = self.config_get_raw('%s_secondary_mail' % (entry_type))
+            if secondary_mail == None and entry_type == 'user':
+                secondary_mail = self.config_get_raw('secondary_mail')
 
         log.debug(
                 _("Using mail attributes: %r, with primary %r and " + \
                         "secondary %r") % (
-                                _mail_attrs,
+                                mail_attributes,
                                 primary_mail_attribute,
                                 secondary_mail_attribute
                             ),
                 level=8
             )
 
-        for _mail_attr in _mail_attrs:
+        for _mail_attr in mail_attributes:
             if not entry.has_key(_mail_attr):
                 log.debug(_("key %r not in entry") % (_mail_attr), level=8)
                 if _mail_attr == primary_mail_attribute:
@@ -452,6 +458,9 @@ class LDAP(pykolab.base.Base):
 
             for attribute in attributes.keys():
                 entry[attribute] = attributes[attribute]
+
+        if not entry.has_key('preferredlanguage'):
+            entry['preferredlanguage'] = conf.get('kolab', 'default_locale')
 
         # Primary mail address
         if not primary_mail == None:
@@ -658,6 +667,7 @@ class LDAP(pykolab.base.Base):
         entry = self.get_entry_attributes(entry_dn, ['*'])
 
         attrs = {}
+
         for attribute in attributes.keys():
             attrs[attribute.lower()] = attributes[attribute]
 
@@ -1343,34 +1353,77 @@ class LDAP(pykolab.base.Base):
         self.connect()
 
     def _synchronize_callback(self, *args, **kw):
-        change_type = None
+        """
+           Determine the characteristics of the callback being placed, and
+           what data is contained within *args and **kw exactly.
 
-        change_dict = {
-                'change_type': kw['change_type'],
-                'previous_dn': kw['previous_dn'],
-                'change_number': kw['change_number'],
-                'dn': kw['dn']
-            }
+           The exact form and shape of the feedback very much depends on the
+           supportedControl used to even get the data.
+        """
 
-        entry = utils.normalize(kw['entry'])
-        entry['dn'] = kw['dn']
+        log.debug(
+                "auth.ldap.LDAP._synchronize_callback(args %r, kw %r)" % (
+                        args,
+                        kw
+                    ),
+                level=9
+            )
 
-        unique_attr = self.config_get('unique_attribute')
-        entry['id'] = entry[unique_attr]
+        # Typical for Persistent Change Control EntryChangeNotification
+        if kw.has_key('change_type'):
+            change_type = None
 
-        try:
-            entry['type'] = self._entry_type(entry)
-        except:
-            entry['type'] = "unknown"
+            change_dict = {
+                    'change_type': kw['change_type'],
+                    'previous_dn': kw['previous_dn'],
+                    'change_number': kw['change_number'],
+                    'dn': kw['dn']
+                }
 
-        log.debug(_("Entry type: %s") % (entry['type']), level=8)
+            entry = utils.normalize(kw['entry'])
+            entry['dn'] = kw['dn']
 
-        if change_dict['change_type'] == None:
-            # This entry was in the start result set
-            eval("self._change_none_%s(entry, change_dict)" % (entry['type']))
-        else:
-            change = psearch.CHANGE_TYPES_STR[change_dict['change_type']].lower()
-            eval("self._change_%s_%s(entry, change_dict)" % (change, entry['type']))
+            unique_attr = self.config_get('unique_attribute')
+            entry['id'] = entry[unique_attr]
+
+            try:
+                entry['type'] = self._entry_type(entry)
+            except:
+                entry['type'] = "unknown"
+
+            log.debug(_("Entry type: %s") % (entry['type']), level=8)
+
+            if change_dict['change_type'] == None:
+                # This entry was in the start result set
+                eval("self._change_none_%s(entry, change_dict)" % (entry['type']))
+            else:
+                change = psearch.CHANGE_TYPES_STR[change_dict['change_type']].lower()
+                eval("self._change_%s_%s(entry, change_dict)" % (change, entry['type']))
+
+        # Typical for Paged Results Control
+        elif kw.has_key('user') and isinstance(kw['user'], list):
+            for entry_dn,entry_attrs in kw['user']:
+                entry = { 'dn': entry_dn }
+                for attr in entry_attrs.keys():
+                    entry[attr.lower()] = entry_attrs[attr]
+
+                unique_attr = self.config_get('unique_attribute')
+                entry['id'] = entry[unique_attr]
+
+                result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+
+                rcpt_addrs = self.recipient_policy(entry)
+
+                for key in rcpt_addrs.keys():
+                    entry[key] = rcpt_addrs[key]
+
+                #cache.get_entry(self.domain, entry)
+
+                self.imap.connect(domain=self.domain)
+
+                if not self.imap.user_mailbox_exists(entry[result_attribute]):
+                    folder = self.imap.user_mailbox_create(entry[result_attribute])
+                    server = self.imap.user_mailbox_server(folder)
 
     def _unbind(self):
         """
@@ -1523,11 +1576,7 @@ class LDAP(pykolab.base.Base):
                 break
 
             if callback:
-                callback(
-                        user=_result_data,
-                        primary_domain=primary_domain,
-                        secondary_domains=secondary_domains
-                    )
+                callback(user=_result_data)
 
             _results.extend(_result_data)
             if (pages % 2) == 0:
@@ -1539,8 +1588,12 @@ class LDAP(pykolab.base.Base):
                 ]
 
             if pctrls:
-                size = pctrls[0].size
-                cookie = pctrls[0].cookie
+                if hasattr(pctrls[0], 'size'):
+                    size = pctrls[0].size
+                    cookie = pctrls[0].cookie
+                else:
+                    size, cookie = pctrls[0].controlValue
+
                 if cookie:
                     server_page_control.cookie = cookie
                     _search = self.ldap.search_ext(
