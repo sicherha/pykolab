@@ -2,8 +2,14 @@
 
 echo "Updating language files"
 cd po/
-intltool-update --pot
+intltool-update --pot --gettext-package=pykolab
 if [ "$1" == "po" ]; then
-    ls *po | cut -f1 -d'.' | xargs -I'{}' intltool-update -d '{}'
+    for lang_file in `ls -1 *.po`; do
+        lang=$(echo ${lang_file} | cut -f1 -d'.')
+        intltool-update -d ${lang}
+        msginit --no-translator --locale=${lang} --input=pykolab.pot --output=${lang_file}
+        msgmerge -U ${lang_file} pykolab.pot
+    done
+    
 fi
 cd ..
