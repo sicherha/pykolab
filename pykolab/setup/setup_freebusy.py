@@ -34,7 +34,12 @@ log = pykolab.getLogger('pykolab.setup')
 conf = pykolab.getConf()
 
 def __init__():
-    components.register('freebusy', execute, description=description(), after=['mysql','ldap', 'roundcube'])
+    components.register(
+            'freebusy',
+            execute,
+            description=description(),
+            after=['mysql','ldap', 'roundcube']
+        )
 
 def description():
     return _("Setup Free/Busy.")
@@ -45,9 +50,19 @@ def execute(*args, **kw):
         return
 
     if not hasattr(conf, 'mysql_roundcube_password'):
+        print >> sys.sdterr, utils.multiline_message(
+                _("""
+                        Please supply the MySQL password for the 'roundcube'
+                        user. You have supplied this password earlier, and it is
+                        available from the database URI setting in
+                        /etc/roundcubemail/db.inc.php.
+                    """)
+            )
+
         conf.mysql_roundcube_password = utils.ask_question(
                 _("MySQL roundcube password"),
-                password=True
+                password=True,
+                confirm=True
             )
 
     freebusy_settings = {

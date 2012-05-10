@@ -33,7 +33,12 @@ log = pykolab.getLogger('pykolab.setup')
 conf = pykolab.getConf()
 
 def __init__():
-    components.register('imap', execute, description=description(), after=['ldap'])
+    components.register(
+            'imap',
+            execute,
+            description=description(),
+            after=['ldap']
+        )
 
 def description():
     return _("Setup IMAP.")

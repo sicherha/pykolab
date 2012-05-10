@@ -32,7 +32,12 @@ log = pykolab.getLogger('pykolab.setup')
 conf = pykolab.getConf()
 
 def __init__():
-    components.register('kolabd', execute, description=description(), after=['ldap','imap'])
+    components.register(
+            'kolabd',
+            execute,
+            description=description(),
+            after=['ldap','imap']
+        )
 
 def description():
     return _("Setup the Kolab daemon.")

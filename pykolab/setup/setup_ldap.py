@@ -62,16 +62,35 @@ def execute(*args, **kw):
     _input = {}
 
     if ask_questions:
+        print >> sys.stderr, utils.multiline_message(
+                _("""
+                        Please supply a password for the LDAP administrator user
+                        'admin', used to login to the graphical console of 389
+                        Directory server.
+                    """)
+            )
+
         _input['admin_pass'] = utils.ask_question(
                 _("Administrator password"),
                 default=utils.generate_password(),
-                password=True
+                password=True,
+                confirm=True
+            )
+
+        print >> sys.stderr, utils.multiline_message(
+                _("""
+                        Please supply a password for the LDAP Directory Manager
+                        user, which is the administrator user you will be using
+                        to at least initially log in to the Web Admin, and that
+                        Kolab uses to perform administrative tasks.
+                    """)
             )
 
         _input['dirmgr_pass'] = utils.ask_question(
                 _("Directory Manager password"),
                 default=utils.generate_password(),
-                password=True
+                password=True,
+                confirm=True
             )
 
         _input['userid'] = utils.ask_question(_("User"), default="nobody")
@@ -185,16 +204,37 @@ ServerAdminPwd = %(admin_pass)s
                 "directory server service."))
 
     if ask_questions:
+        print >> sys.stderr, utils.multiline_message(
+                _("""
+                        Please supply a Cyrus Administrator password. This
+                        password is used by Kolab to execute administrative
+                        tasks in Cyrus IMAP. You may also need the password
+                        yourself to troubleshoot Cyrus IMAP and/or perform
+                        other administrative tasks against Cyrus IMAP directly.
+                    """)
+            )
+
         _input['cyrus_admin_pass'] = utils.ask_question(
                 _("Cyrus Administrator password"),
                 default=utils.generate_password(),
-                password=True
+                password=True,
+                confirm=True
+            )
+
+        print >> sys.stderr, utils.multiline_message(
+                _("""
+                        Please supply a Kolab Service account password. This
+                        account is used by various services such as Postfix,
+                        and Roundcube, as anonymous binds to the LDAP server
+                        will not be allowed.
+                    """)
             )
 
         _input['kolab_service_pass'] = utils.ask_question(
                 _("Kolab Service password"),
                 default=utils.generate_password(),
-                password=True
+                password=True,
+                confirm=True
             )
 
     else:

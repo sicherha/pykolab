@@ -40,10 +40,19 @@ def description():
     return _("Setup Roundcube.")
 
 def execute(*args, **kw):
+    print >> sys.stderr, utils.multiline_message(
+            _("""
+                    Please supply a password for the MySQL user 'roundcube'.
+                    This password will be used by the Roundcube webmail
+                    interface.
+                """)
+        )
+
     mysql_roundcube_password = utils.ask_question(
             _("MySQL roundcube password"),
             default=utils.generate_password(),
-            password=True
+            password=True,
+            confirm=True
         )
 
     conf.mysql_roundcube_password = mysql_roundcube_password
