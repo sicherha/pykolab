@@ -43,6 +43,25 @@ def description():
     return _("Setup the Kolab daemon.")
 
 def execute(*args, **kw):
+    if conf.has_section('example.org'):
+        primary_domain = conf.get('kolab', 'primary_domain')
+
+        if not primary_domain == 'example.org':
+            utils.multiline_message(
+                    _("""
+                            Copying the configuration section for 'example.org' over to
+                            a section applicable to your domain '%s'.
+                        """) % (primary_domain)
+                )
+
+            conf.cfg_parser._sections[primary_domain] = \
+                    conf.cfg_parser._sections['example.org']
+            conf.cfg_parser._sections.pop('example.org')
+
+            fp = open(conf.cli_keywords.config_file, "w+")
+            conf.cfg_parser.write(fp)
+            fp.close()
+
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'kolabd.service'])
         subprocess.call(['systemctl', 'enable', 'kolabd.service'])
