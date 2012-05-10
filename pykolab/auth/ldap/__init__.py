@@ -1090,9 +1090,18 @@ class LDAP(pykolab.base.Base):
 
         self.imap.connect(domain=self.domain)
 
-        if not self.imap.user_mailbox_exists(entry[result_attribute]):
-            folder = self.imap.user_mailbox_create(entry[result_attribute])
-            server = self.imap.user_mailbox_server(folder)
+        if entry.has_key(result_attribute) and not entry.has_key(result_attribute) == None:
+            if not self.imap.user_mailbox_exists(entry[result_attribute]):
+                folder = self.imap.user_mailbox_create(entry[result_attribute])
+                server = self.imap.user_mailbox_server(folder)
+
+        else:
+            log.warning(
+                    _("Kolab user %s does not have a result attribute %r") % (
+                            entry['id'],
+                            result_attribute
+                        )
+                )
 
     def _disconnect(self):
         self._unbind()
