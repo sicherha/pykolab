@@ -123,6 +123,33 @@ def generate_password():
 
     return output
 
+def multiline_message(message):
+    _msg = ""
+
+    column_width = 80
+
+    # First, replace all occurences of "\n"
+    message = message.replace("    ", "")
+    message = message.replace("\n", " ")
+
+    lines = []
+    line_length = 0
+
+    line = ""
+    for word in message.split():
+        if (len(line) + len(word)) > column_width:
+            lines.append(line)
+            line = word
+        else:
+            if line == "":
+                line = word
+            else:
+                line += " %s" % (word)
+
+    lines.append(line)
+
+    return "\n".join(lines)
+
 def normalize(_object):
     if type(_object) == list:
         result = []
