@@ -1426,7 +1426,7 @@ class LDAP(pykolab.base.Base):
                 for key in rcpt_addrs.keys():
                     entry[key] = rcpt_addrs[key]
 
-                #cache.get_entry(self.domain, entry)
+                cache.get_entry(self.domain, entry)
 
                 self.imap.connect(domain=self.domain)
 
