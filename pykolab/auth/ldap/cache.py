@@ -118,9 +118,10 @@ def get_entry(domain, entry):
         db.commit()
         _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
     else:
-        if not _entry.last_change.strtime("%Y%m%d%H%M%SZ") == entry['modifytimestamp']:
+        if not _entry.last_change.strftime("%Y%m%d%H%M%SZ") == entry['modifytimestamp']:
             log.debug(_("Updating timestamp for cache entry %r") % (entry['id']), level=8)
-            entry.last_change = entry['modifytimestamp']
+            last_change = datetime.datetime.strptime(entry['modifytimestamp'], "%Y%m%d%H%M%SZ")
+            _entry.last_change = last_change
             db.commit()
             _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
 
