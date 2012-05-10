@@ -188,6 +188,7 @@ result_attribute = mail
         fp.close()
 
     postfix_main_settings = {
+            "inet_interfaces": "all",
             "local_recipient_maps": "ldap:/etc/postfix/ldap/local_recipient_maps.cf",
             "mydestination": "ldap:/etc/postfix/ldap/mydestination.cf",
             "transport_maps": "ldap:/etc/postfix/ldap/transport_maps.cf",
