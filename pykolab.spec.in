@@ -281,7 +281,7 @@ rm -rf %{buildroot}
 
 %files -n kolab-cli
 %defattr(-,root,root,-)
-%{_bindir}/*
+%exclude %{_bindir}/kolab-test
 %{_sbindir}/kolab
 %{_sbindir}/kolab-conf
 %{_sbindir}/setup-kolab
