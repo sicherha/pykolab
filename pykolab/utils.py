@@ -24,7 +24,7 @@ import sys
 from pykolab import constants
 from pykolab.translate import _
 
-def ask_question(question, default="", password=False):
+def ask_question(question, default="", password=False, confirm=False):
     """
         Ask a question on stderr.
 
@@ -45,6 +45,26 @@ def ask_question(question, default="", password=False):
             answer = raw_input("%s: " % (question))
         else:
             answer = raw_input("%s [%s]: " % (question, default))
+
+    if not answer == "" and not default == "":
+        if confirm:
+            answer_confirm = None
+            answer_confirmed = False
+            while not answer_confirmed:
+                if default == "":
+                    answer_confirm = raw_input("Confirm %s: " % (question))
+                else:
+                    answer_confirm = raw_input("Confirm %s [%s]: " % (question, default))
+
+                if not answer_confirm == answer:
+                    print >> sys.stderr, _("Incorrect confirmation. " + \
+                            "Please try again.")
+                    if default == "":
+                        answer = raw_input("%s: " % (question))
+                    else:
+                        answer = raw_input("%s [%s]: " % (question, default))
+                else:
+                    answer_confirmed = True
 
     if answer == "":
         return default
