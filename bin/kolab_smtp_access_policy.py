@@ -48,8 +48,7 @@ except:
 from sqlalchemy.schema import Index
 from sqlalchemy.schema import UniqueConstraint
 
-sys.path.append('..')
-sys.path.append('../..')
+sys.path = ['..'] + sys.path
 
 import pykolab
 
@@ -67,7 +66,7 @@ log.remove_stdout_handler()
 
 conf = pykolab.getConf()
 
-auth = Auth()
+auth = None
 
 #
 # Caching routines using SQLAlchemy.
@@ -444,11 +443,6 @@ class PolicyRequest(object):
                 # If unauthenticated is allowed, I have nothing to do here.
                 return True
 
-        search_attrs = conf.get_list(
-                'kolab_smtp_access_policy',
-                'address_search_attrs'
-            )
-
         # If we have an sasl_username, find the user object in the
         # authentication database, along with the attributes we are
         # interested in.
@@ -459,8 +453,7 @@ class PolicyRequest(object):
                 self.sasl_domain = conf.get('kolab', 'primary_domain')
 
         self.sasl_user = {
-                'dn': auth.find_user(
-                        search_attrs,
+                'dn': auth.find_recipient(
                         self.sasl_username,
                         domain=self.sasl_domain
                     )
@@ -483,7 +476,10 @@ class PolicyRequest(object):
                         )
                 )
 
-        attrs = search_attrs
+        attrs = conf.get_list(self.sasl_domain, 'auth_attributes')
+        if attrs == None:
+            attrs = conf.get_list(conf.get('kolab', 'auth_mechanism'), 'auth_attributes')
+
         attrs.extend(
                 [
                         'kolabAllowSMTPRecipient',
@@ -735,39 +731,17 @@ class PolicyRequest(object):
 
             return True
 
-        search_attrs = conf.get_list(
-                'kolab_smtp_access_policy',
-                'address_search_attrs'
-            )
-
-        user = {
-                'dn': auth.find_user(
-                        search_attrs,
+        recipient = {
+                'dn': auth.find_recipient(
                         normalize_address(recipient),
                         domain=sasl_domain,
-                        # TODO: Get the filter from the configuration.
-                        additional_filter="(&(objectclass=" + \
-                            "kolabinetorgperson)%(search_filter)s)"
                     )
             }
-
-        group = {
-                'dn': auth.find_group(
-                        search_attrs,
-                        normalize_address(recipient),
-                        domain=sasl_domain,
-                        # TODO: Get the filter from the configuration.
-                        additional_filter="(&(|(objectclass=" + \
-                            "groupofuniquenames)(objectclass=" + \
-                            "groupofurls))%(search_filter)s)"
-                    )
-            }
-
 
         # We have gotten an invalid recipient. We need to catch this case,
         # because testing can input invalid recipients, and so can faulty
         # applications, or misconfigured servers.
-        if not user['dn'] and not group['dn']:
+        if not recipient['dn']:
             if not conf.allow_unauthenticated:
                 cache_update(
                         function='verify_recipient',
@@ -792,17 +766,10 @@ class PolicyRequest(object):
                 log.debug(_("Could not find this user, accepting"), level=8)
                 return True
 
-        if not user['dn'] == False:
-            recipient_policy = auth.get_user_attribute(
+        if not recipient['dn'] == False:
+            recipient_policy = auth.get_entry_attribute(
                     sasl_domain,
-                    user,
-                    'kolabAllowSMTPSender'
-                )
-
-        if not group['dn'] == False:
-            recipient_policy = auth.get_group_attribute(
-                    sasl_domain,
-                    group,
+                    recipient,
                     'kolabAllowSMTPSender'
                 )
 
@@ -1320,6 +1287,8 @@ if __name__ == "__main__":
                             help    = _("Allow unauthenticated senders."))
 
     conf.finalize_conf()
+
+    auth = Auth()
 
     cache = cache_init()
 

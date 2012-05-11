@@ -277,13 +277,15 @@ class LDAP(pykolab.base.Base):
             Get multiple attributes for an entry.
         """
 
+        print entry_id
         entry_dn = self.entry_dn(entry_id)
+        print entry_dn
 
         _search = self.ldap.search_ext(
                 entry_dn,
                 ldap.SCOPE_BASE,
-                '(objectclass=*)',
-                [ 'dn' ] + attributes
+                filterstr='(objectclass=*)',
+                attrlist=[ 'dn' ] + attributes
             )
 
         (
@@ -311,6 +313,8 @@ class LDAP(pykolab.base.Base):
             Specify an additional entry_id to exclude to exclude matches against
             the current entry.
         """
+
+        self._bind()
 
         if not exclude_entry_id == None:
             __filter_prefix = "(&"

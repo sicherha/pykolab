@@ -177,11 +177,19 @@ class Auth(pykolab.base.Base):
 
         self._auth._disconnect()
 
-    def find_recipient(self, address):
+    def find_recipient(self, address, domain=None):
         """
             Find one or more entries corresponding to the recipient address.
         """
-        return self._auth.find_recipient(address)
+        if not domain == None:
+            self.connect(domain=domain)
+
+        result = self._auth.find_recipient(address)
+
+        if isinstance(result, list) and len(result) == 1:
+            return result[0]
+        else:
+            return result
 
     def find_user(self, attr, value, **kw):
         return self._auth._find_user(attr, value, domain=domain, **kw)
@@ -225,11 +233,14 @@ class Auth(pykolab.base.Base):
     def domain_default_quota(self, domain):
         return self._auth._domain_default_quota(domain)
 
+    def get_entry_attribute(self, domain, entry, attribute):
+        return self._auth.get_entry_attribute(entry, attribute)
+
     def get_user_attribute(self, domain, user, attribute):
-        return self._auth._get_user_attribute(user, attribute)
+        return self._auth.get_entry_attribute(user, attribute)
 
     def get_user_attributes(self, domain, user, attributes):
-        return self._auth._get_user_attributes(user, attributes)
+        return self._auth.get_entry_attributes(user, attributes)
 
     def search_mail_address(self, domain, mail_address):
         return self._auth._search_mail_address(domain, mail_address)
