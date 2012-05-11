@@ -46,23 +46,37 @@ def ask_question(question, default="", password=False, confirm=False):
         else:
             answer = raw_input("%s [%s]: " % (question, default))
 
-    if not answer == "" and not default == "":
+    if not answer == "":
         if confirm:
             answer_confirm = None
             answer_confirmed = False
             while not answer_confirmed:
-                if default == "":
-                    answer_confirm = raw_input("Confirm %s: " % (question))
+                if password:
+                    if default == "":
+                        answer = getpass.getpass(_("Confirm %s: ") % (question))
+                    else:
+                        answer = getpass.getpass(_("Confirm %s [%s]: ") % (question, default))
                 else:
-                    answer_confirm = raw_input("Confirm %s [%s]: " % (question, default))
+                    if default == "":
+                        answer = raw_input(_("Confirm %s: ") % (question))
+                    else:
+                        answer = raw_input(_("Confirm %s [%s]: ") % (question, default))
 
                 if not answer_confirm == answer:
                     print >> sys.stderr, _("Incorrect confirmation. " + \
                             "Please try again.")
-                    if default == "":
-                        answer = raw_input("%s: " % (question))
+
+                    if password:
+                        if default == "":
+                            answer = getpass.getpass(_("Confirm %s: ") % (question))
+                        else:
+                            answer = getpass.getpass(_("Confirm %s [%s]: ") % (question, default))
                     else:
-                        answer = raw_input("%s [%s]: " % (question, default))
+                        if default == "":
+                            answer = raw_input(_("Confirm %s: ") % (question))
+                        else:
+                            answer = raw_input(_("Confirm %s [%s]: ") % (question, default))
+
                 else:
                     answer_confirmed = True
 
