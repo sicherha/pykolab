@@ -162,7 +162,7 @@ def multiline_message(message):
 
     lines.append(line)
 
-    return "\n".join(lines)
+    return "\n%s\n" % ("\n".join(lines))
 
 def normalize(_object):
     if type(_object) == list:
