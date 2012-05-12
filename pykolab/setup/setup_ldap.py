@@ -120,6 +120,57 @@ def execute(*args, **kw):
 
     _input['rootdn'] = utils.standard_root_dn(_input['domain'])
 
+    if ask_questions:
+        print >> sys.stderr, utils.multiline_message(
+                _("""
+                        This setup procedure plans to set up Kolab Groupware for
+                        the following domain name space. This domain name is
+                        obtained from the reverse DNS entry on your network
+                        interface. Please confirm this is the appropriate domain
+                        name space.
+                    """)
+            )
+
+        answer = utils.ask_confirmation("%s" % (_input['domain']))
+
+        if not answer:
+            positive_answer = False
+            while not positive_answer:
+                _input['domain'] = utils.ask_question(_("Domain name to use"))
+                if not _input['domain'] == None and not _input['domain'] == "":
+                    positive_answer = True
+                else:
+                    print >> sys.stderr, utils.multiline_message(
+                            _("""
+                                    Invalid input. Please try again.
+                                """)
+                        )
+
+        _input['nodotdomain'] = _input['domain'].replace('.','_')
+        _input['rootdn'] = utils.standard_root_dn(_input['domain'])
+
+        print >> sys.stderr, utils.multiline_message(
+                _("""
+                        The standard root dn we composed for you follows. Please
+                        confirm this is the root dn you wish to use.
+                    """)
+            )
+
+        answer = utils.ask_confirmation("%s" % (_input['rootdn']))
+
+        if not answer:
+            positive_answer = False
+            while not positive_answer:
+                _input['rootdn'] = utils.ask_question(_("Root DN to use"))
+                if not _input['rootdn'] == None and not _input['rootdn'] == "":
+                    positive_answer = True
+                else:
+                    print >> sys.stderr, utils.multiline_message(
+                            _("""
+                                    Invalid input. Please try again.
+                                """)
+                        )
+
     data = """
 [General]
 FullMachineName = %(fqdn)s
@@ -174,6 +225,10 @@ ServerAdminPwd = %(admin_pass)s
 
     log.debug(_("Setup DS stderr:"), level=8)
     log.debug(stderrdata, level=8)
+
+    # TODO: Fails when ran a second time.
+
+    # TODO: When fail, fail gracefully.
 
     # Find the kolab schema. It's installed as %doc in the kolab-schema package.
     # TODO: Chown nobody, nobody, chmod 440
