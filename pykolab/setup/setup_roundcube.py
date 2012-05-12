@@ -18,7 +18,10 @@
 #
 
 from Cheetah.Template import Template
+import hashlib
 import os
+import random
+import re
 import subprocess
 import sys
 
@@ -58,6 +61,15 @@ def execute(*args, **kw):
     conf.mysql_roundcube_password = mysql_roundcube_password
 
     rc_settings = {
+            'des_key': re.sub(
+                    r'[^a-zA-Z0-9]',
+                    "",
+                    "%s%s" % (
+                            hashlib.md5("%s" % random.random()).digest().encode("base64"),
+                            hashlib.md5("%s" % random.random()).digest().encode("base64")
+                        )
+                )[:25],
+
             'imap_admin_login': conf.get('cyrus-imapd', 'admin_login'),
             'imap_admin_password': conf.get('cyrus-imapd', 'admin_password'),
             'ldap_base_dn': conf.get('ldap', 'base_dn'),
