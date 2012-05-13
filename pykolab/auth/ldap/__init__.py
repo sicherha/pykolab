@@ -684,6 +684,11 @@ class LDAP(pykolab.base.Base):
         for attribute in attrs.keys():
             if entry.has_key(attribute) and entry[attribute] == None:
                 modlist.append((ldap.MOD_ADD, attribute, attrs[attribute]))
+            elif entry.has_key(attribute) and not entry[attribute] == None:
+                if attrs[attribute] == None:
+                    modlist.append((ldap.MOD_DELETE, attribute, entry[attribute]))
+                else:
+                    modlist.append((ldap.MOD_REPLACE, attribute, attrs[attribute]))
 
         dn = entry_dn
         self.ldap.modify_s(dn, modlist)
