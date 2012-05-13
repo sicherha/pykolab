@@ -236,6 +236,9 @@ class Auth(pykolab.base.Base):
     def get_entry_attribute(self, domain, entry, attribute):
         return self._auth.get_entry_attribute(entry, attribute)
 
+    def get_entry_attributes(self, domain, entry, attribute):
+        return self._auth.get_entry_attributes(entry, attribute)
+
     def get_user_attribute(self, domain, user, attribute):
         return self._auth.get_entry_attribute(user, attribute)
 
