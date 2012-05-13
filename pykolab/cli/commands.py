@@ -165,11 +165,13 @@ def register(cmd_name, func, group=None, description=None, aliases=[]):
     if callable(func):
         if group == None:
             commands[cmd_name] = {
+                    'cmd_name': cmd_name,
                     'function': func,
                     'description': description
                 }
         else:
             commands[group][cmd_name] = {
+                    'cmd_name': cmd_name,
                     'function': func,
                     'description': description
                 }
