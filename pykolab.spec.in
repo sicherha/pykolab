@@ -263,7 +263,6 @@ rm -rf %{buildroot}
 %{python_sitelib}/pykolab/plugins/defaultfolders
 %{python_sitelib}/pykolab/plugins/dynamicquota
 %{python_sitelib}/pykolab/plugins/recipientpolicy
-%exclude %{python_sitelib}/pykolab/tests/
 %{python_sitelib}/kolab/
 %{python_sitelib}/cyruslib.py*
 %dir %{_localstatedir}/lib/kolab/
