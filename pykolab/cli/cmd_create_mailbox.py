@@ -17,10 +17,13 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import sys
+
 import commands
 
 import pykolab
 
+from pykolab.imap import IMAP
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.cli')
@@ -29,12 +32,36 @@ conf = pykolab.getConf()
 def __init__():
     commands.register('create_mailbox', execute, description=description(), aliases='cm')
 
+def cli_options():
+    my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
+    my_option_group.add_option( '--metadata',
+                                dest    = "metadata",
+                                action  = "store",
+                                default = None,
+                                help    = _("Set metadata for folder to ANNOTATION=VALUE"))
+
 def description():
     return """Create a mailbox or sub-folder of an existing mailbox."""
 
 def execute(*args, **kw):
-    mailbox = conf.cli_args.pop(0)
+    try:
+        mailbox = conf.cli_args.pop(0)
+    except IndexError, errmsg:
+        log.error(_("Invalid argument"))
+        sys.exit(1)
 
+    if not conf.metadata == None:
+        if len(conf.metadata.split('=')) == 2:
+            annotation = conf.metadata.split('=')[0]
+            annotation_value = conf.metadata.split('=')[1]
+        else:
+            log.error(_("Invalid argument for metadata"))
+            sys.exit(1)
+
+    imap = IMAP()
     imap.connect()
     imap.cm(mailbox)
+
+    if not conf.metadata == None:
+        imap.setannotation(mailbox, conf.metadata.split('=')[0], conf.metadata.split('=')[1])
 
