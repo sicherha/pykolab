@@ -17,10 +17,13 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import sys
+
 import commands
 
 import pykolab
 
+from pykolab.imap import IMAP
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.cli')
@@ -42,6 +45,8 @@ def execute(*args, **kw):
     except IndexError, e:
         print >> sys.stderr, _("No mailbox specified")
         sys.exit(1)
+
+    imap = IMAP()
 
     imap.connect()
     delete_folders = imap.lm(delete_folder)
