@@ -121,10 +121,11 @@ def execute(cmd_name, *args, **kw):
             pass
 
     else:
+        command_name = commands[cmd_name]['cmd_name']
         try:
-            exec("from cmd_%s import cli_options as %s_cli_options" % (cmd_name,cmd_name))
-            exec("%s_cli_options()" % (cmd_name))
-        except ImportError, e:
+            exec("from cmd_%s import cli_options as %s_cli_options" % (command_name,command_name))
+            exec("%s_cli_options()" % (command_name))
+        except ImportError, errmsg:
             pass
 
     conf.finalize_conf()
@@ -179,6 +180,7 @@ def register(cmd_name, func, group=None, description=None, aliases=[]):
 
         for alias in aliases:
             commands[alias] = {
+                    'cmd_name': cmd_name,
                     'function': func,
                     'description': _("Alias for %s") % (cmd_name)
                 }
