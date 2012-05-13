@@ -3,14 +3,17 @@ import json
 import httplib
 import sys
 
-sys.path.append('../..')
+import pykolab
 
 from pykolab import utils
 
+log = pykolab.getLogger('pykolab.wap_client')
+conf = pykolab.getConf()
+
 API_HOSTNAME = "localhost"
-API_PORT = "80"
 API_SCHEME = "http"
-API_BASE = "/kolab-webadmin/api"
+API_PORT = 80
+API_BASE = "/kolab-webadmin/api/"
 
 session_id = None
 
@@ -22,11 +25,20 @@ from request import request
 def authenticate(username=None, password=None):
     global session_id
 
+    conf_username = conf.get('ldap', 'service_bind_dn')
+    conf_password = conf.get('ldap', 'service_bind_pw')
+
     if username == None:
-        username = utils.ask_question("Login", "cn=Directory Manager")
+        username = utils.ask_question("Login", default=conf_username)
+
+    if username == conf_username:
+        password = conf_password
+
+    if username == conf.get('ldap', 'bind_dn'):
+        password = conf.get('ldap', 'bind_pw')
 
     if password == None:
-        password = utils.ask_question("Password", password=True)
+        password = utils.ask_question("Password", default=conf_password, password=True)
 
     params = json.dumps(
             {
@@ -123,8 +135,6 @@ def get_user_input():
             'user_type_id': user_type_id
         }
 
-    print user_type_info
-
     for attribute in user_type_info['form_fields'].keys():
         params[attribute] = utils.ask_question(attribute)
 
@@ -178,17 +188,12 @@ def request(method, api_uri, params=None, headers={}):
     response = conn.getresponse()
     data = response.read()
 
-    print method, api_uri, params
-    print data
-
     try:
         response_data = json.loads(data)
     except ValueError, e:
         # Some data is not JSON
-        print "Response data is not JSON"
+        log.error(_("Response data is not JSON"))
         sys.exit(1)
-
-    print response_data
 
     if response_data['status'] == "OK":
         del response_data['status']
@@ -329,8 +334,6 @@ def role_info(params=None):
         params = {
                 'role': role
             }
-
-    print role
 
     role = request('GET', 'role.info?role=%s' % (params['role'].keys()[0]))
 
