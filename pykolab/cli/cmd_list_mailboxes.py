@@ -21,15 +21,19 @@ import commands
 
 import pykolab
 
+from pykolab.imap import IMAP
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
 def __init__():
-    commands.register('list_mailboxes', execute, description="List mailboxes.\n" + \
+    commands.register('list_mailboxes', execute, description=description(), aliases='lm')
+
+def description():
+    return "List mailboxes.\n" + \
         "%-28s" % ('') + \
-        "Use wildcards '*' and '%' for more control.\n")
+        "Use wildcards '*' and '%' for more control.\n"
 
 def cli_options():
     my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
@@ -43,17 +47,32 @@ def execute(*args, **kw):
     """
         List mailboxes
     """
-    try:
-        searches = [ conf.cli_args.pop(1) ]
-    except IndexError, e:
-        #searches = [ 'DELETED/*', 'shared/*', 'user/*' ]
+
+    searches = []
+
+    # See if conf.cli_args components make sense.
+    for arg in conf.cli_args:
+        if arg == '*':
+            searches.append(arg)
+        if arg.startswith('user'):
+            searches.append(arg)
+        if arg.startswith('shared'):
+            searches.append(arg)
+        if arg.startswith('DELETED'):
+            searches.append(arg)
+        if arg.startswith('news'):
+            searches.append(arg)
+
+    if len(searches) == 0:
         searches = [ '' ]
 
+    imap = IMAP()
     imap.connect()
 
     folders = []
 
     for search in searches:
+        log.debug(_("Appending folder search for %r") % (search), level=8)
         folders.extend(imap.lm(search))
 
     for folder in folders:
