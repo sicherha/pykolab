@@ -62,7 +62,7 @@ domain = ldap:/etc/postfix/ldap/mydestination.cf
 bind_dn = %(service_bind_dn)s
 bind_pw = %(service_bind_pw)s
 
-query_filter = (|(&(|(mail=%%s)(alias=%%s))%(kolab_user_filter)s)%(kolab_group_filter)s)
+query_filter = (&(|(mail=%%s)(alias=%%s))(|%(kolab_user_filter)s%(kolab_group_filter)s))
 result_attribute = mail
 """ % {
                         "base_dn": conf.get('ldap', 'base_dn'),
