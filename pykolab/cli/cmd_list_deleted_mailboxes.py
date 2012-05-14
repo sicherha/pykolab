@@ -21,6 +21,7 @@ import commands
 
 import pykolab
 
+from pykolab.imap import IMAP
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.cli')
@@ -33,6 +34,7 @@ def execute(*args, **kw):
     """
         List deleted mailboxes
     """
+    imap = IMAP()
     imap.connect()
     folders = imap.lm("DELETED/*")
     print "Deleted folders:"
