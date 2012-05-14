@@ -528,10 +528,10 @@ class Conf(object):
                     return _dict[key]
                 else:
                     log.warning(_("Option does not exist in defaults."))
-                    return _("Not available")
+                    return None
             else:
                 log.warning(_("Option does not exist in defaults."))
-                return _("Not available")
+                return None
 
     def check_setting_config_file(self, value):
         if os.path.isfile(value):
