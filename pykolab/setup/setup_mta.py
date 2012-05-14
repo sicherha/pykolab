@@ -201,7 +201,7 @@ result_attribute = mail
             "submission_recipient_restrictions": "check_policy_service unix:private/submission_policy, permit_sasl_authenticated, reject",
             "submission_sender_restrictions": "reject_non_fqdn_sender, check_policy_service unix:private/submission_policy, permit_sasl_authenticated, reject",
             "submission_data_restrictions": "check_policy_service unix:private/submission_policy",
-            "content-filter": "smtp-amavis:[127.0.0.1]:10024"
+            "content_filter": "smtp-amavis:[127.0.0.1]:10024"
 
         }
 
