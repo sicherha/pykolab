@@ -36,12 +36,12 @@ def ask_question(question, default="", password=False, confirm=False):
         Usage: pykolab.utils.ask_question("What is the server?", default="localhost")
     """
     if password:
-        if default == "":
+        if default == "" or default == None:
             answer = getpass.getpass("%s: " % (question))
         else:
             answer = getpass.getpass("%s [%s]: " % (question, default))
     else:
-        if default == "":
+        if default == "" or default == None:
             answer = raw_input("%s: " % (question))
         else:
             answer = raw_input("%s [%s]: " % (question, default))
@@ -52,12 +52,12 @@ def ask_question(question, default="", password=False, confirm=False):
             answer_confirmed = False
             while not answer_confirmed:
                 if password:
-                    if default == "":
+                    if default == "" or default == None:
                         answer = getpass.getpass(_("Confirm %s: ") % (question))
                     else:
                         answer = getpass.getpass(_("Confirm %s [%s]: ") % (question, default))
                 else:
-                    if default == "":
+                    if default == "" or default == None:
                         answer = raw_input(_("Confirm %s: ") % (question))
                     else:
                         answer = raw_input(_("Confirm %s [%s]: ") % (question, default))
@@ -67,12 +67,12 @@ def ask_question(question, default="", password=False, confirm=False):
                             "Please try again.")
 
                     if password:
-                        if default == "":
+                        if default == "" or default == None:
                             answer = getpass.getpass(_("Confirm %s: ") % (question))
                         else:
                             answer = getpass.getpass(_("Confirm %s [%s]: ") % (question, default))
                     else:
-                        if default == "":
+                        if default == "" or default == None:
                             answer = raw_input(_("Confirm %s: ") % (question))
                         else:
                             answer = raw_input(_("Confirm %s [%s]: ") % (question, default))
