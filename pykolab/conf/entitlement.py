@@ -137,13 +137,14 @@ class Entitlement(object):
                                 )
 
                         else:
-                            print >> sys.stderr, \
+                            log.error(
                                     _("License file %s not readable!") % (
                                             os.path.join(root, entitlement_file)
                                         )
+                                )
 
             else:
-                print >> sys.stderr, _("No entitlement directory found")
+                log.error(_("No entitlement directory found"))
 
             for entitlement_file in self.entitlement_files:
 
@@ -187,8 +188,8 @@ class Entitlement(object):
                 license.verify_certificate(customer_cert_file)
                 self.entitlement = license.get()
 
-        else:
-            print "Error reading entitlement certificate authority file"
+#        else:
+#            log.error(_("Error reading entitlement certificate authority file"))
 
     def get(self):
         if len(self.entitlement.keys()) == 0:
