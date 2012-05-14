@@ -22,7 +22,6 @@ import commands
 import pykolab
 
 from pykolab.translate import _
-from pykolab import wap_client
 
 log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
@@ -31,21 +30,23 @@ def __init__():
     commands.register('list_domains', execute, description="List Kolab domains.")
 
 def execute(*args, **kw):
+    from pykolab import wap_client
     # Create the authentication object.
     # TODO: Binds with superuser credentials!
     wap_client.authenticate()
     domains = wap_client.domains_list()
 
-    #print "domains:", domains['list']
+    dna = conf.get('ldap', 'domain_name_attribute')
 
     print "%-39s %-40s" % ("Primary Domain Name Space","Secondary Domain Name Space(s)")
 
     # TODO: Take a hint in --quiet, and otherwise print out a nice table
     # with headers and such.
-    for domain_dn in domains['list'].keys():
-        if isinstance(domains['list'][domain_dn]['associateddomain'], list):
-            print domains['list'][domain_dn]['associateddomain'][0]
-            for domain_alias in domains['list'][domain_dn]['associateddomain'][1:]:
-                print "%-39s %-40s" % ('', domain_alias)
-        else:
-            print domains['list'][domain_dn]['associateddomain']
+    if isinstance(domains['list'], dict):
+        for domain_dn in domains['list'].keys():
+            if isinstance(domains['list'][domain_dn][dna], list):
+                print domains['list'][domain_dn][dna][0]
+                for domain_alias in domains['list'][domain_dn][dna][1:]:
+                    print "%-39s %-40s" % ('', domain_alias)
+            else:
+                print domains['list'][domain_dn][dna]
