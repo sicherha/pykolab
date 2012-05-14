@@ -59,7 +59,6 @@ def __init__():
     register('add_group', not_yet_implemented, description="Not yet implemented")
     register('delete_group', not_yet_implemented, description="Not yet implemented")
 
-    register('add_domain', not_yet_implemented, description="Not yet implemented")
     register('delete_domain', not_yet_implemented, description="Not yet implemented")
 
 def list_commands(*args, **kw):
