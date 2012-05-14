@@ -2,18 +2,39 @@
 import json
 import httplib
 import sys
+from urlparse import urlparse
 
 import pykolab
 
 from pykolab import utils
+from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.wap_client')
 conf = pykolab.getConf()
+
+if not hasattr(conf, 'defaults'):
+    conf.finalize_conf()
 
 API_HOSTNAME = "localhost"
 API_SCHEME = "http"
 API_PORT = 80
 API_BASE = "/kolab-webadmin/api/"
+
+kolab_wap_url = conf.get('kolab_wap', 'api_url')
+
+if not kolab_wap_url == None:
+    result = urlparse(kolab_wap_url)
+else:
+    result = None
+
+if hasattr(result, 'hostname'):
+    API_HOSTNAME = result.hostname
+
+if hasattr(result, 'port'):
+    API_PORT = result.port
+
+if hasattr(result, 'path'):
+    API_BASE = result.path
 
 session_id = None
 
@@ -61,14 +82,46 @@ def connect():
 
     return conn
 
+def domain_add(domain, parent=None):
+    params = {
+            'domain': domain,
+        }
+
+    dna = conf.get('ldap', 'domain_name_attribute')
+
+    if not parent == None:
+        domains = domains_list()
+        parent_found = False
+        if isinstance(domains['list'], dict):
+            for _domain in domains['list'].keys():
+                if parent_found:
+                    continue
+
+                if isinstance(domains['list'][_domain][dna], basestring):
+                    if parent == domains['list'][_domain][dna]:
+                        parent_found = True
+                elif isinstance(domains['list'][_domain][dna], list):
+                    if parent in domains['list'][_domain][dna]:
+                        parent_found = True
+
+        if parent_found:
+            params['parent'] = parent
+        else:
+            log.error(_("Invalid parent domain"))
+            return
+
+    params = json.dumps(params)
+
+    return request('POST', 'domain.add', params)
+
+def domain_info(domain):
+    return request('GET', 'domain.info?domain=%s' % (domain))
+
 def domains_capabilities():
     return request('GET', 'domains.capabilities')
 
 def domains_list():
     return request('GET', 'domains.list')
-
-def domain_info(domain):
-    return request('GET', 'domain.info?domain=%s' % (domain))
 
 def get_group_input():
     group_types = group_types_list()
@@ -184,10 +237,13 @@ def request(method, api_uri, params=None, headers={}):
         headers["X-Session-Token"] = session_id
 
     conn = connect()
+    log.debug(_("Requesting %r with params %r") % ("%s/%s" % (API_BASE,api_uri), params), level=8)
     conn.request(method.upper(), "%s/%s" % (API_BASE,api_uri), params, headers)
     response = conn.getresponse()
+
     data = response.read()
 
+    log.debug(_("Got response: %r") % (data), level=8)
     try:
         response_data = json.loads(data)
     except ValueError, e:
