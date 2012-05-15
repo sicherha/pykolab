@@ -248,6 +248,7 @@ rm -rf %{buildroot}
 %files -f pykolab.lang
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING README README.tests
+%doc conf/kolab.conf
 %attr(0640,kolab-n,kolab) %config(noreplace) %{_sysconfdir}/kolab/kolab.conf
 %dir %{python_sitelib}/pykolab/
 %exclude %{python_sitelib}/pykolab/telemetry.*
