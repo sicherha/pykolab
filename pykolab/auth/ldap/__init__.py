@@ -277,9 +277,9 @@ class LDAP(pykolab.base.Base):
             Get multiple attributes for an entry.
         """
 
-        print entry_id
+        #print entry_id
         entry_dn = self.entry_dn(entry_id)
-        print entry_dn
+        #print entry_dn
 
         _search = self.ldap.search_ext(
                 entry_dn,
