@@ -52,15 +52,9 @@ def ask_question(question, default="", password=False, confirm=False):
             answer_confirmed = False
             while not answer_confirmed:
                 if password:
-                    if default == "" or default == None:
-                        answer = getpass.getpass(_("Confirm %s: ") % (question))
-                    else:
-                        answer = getpass.getpass(_("Confirm %s [%s]: ") % (question, default))
+                    answer_confirm = getpass.getpass(_("Confirm %s: ") % (question))
                 else:
-                    if default == "" or default == None:
-                        answer = raw_input(_("Confirm %s: ") % (question))
-                    else:
-                        answer = raw_input(_("Confirm %s [%s]: ") % (question, default))
+                    answer_confirm = raw_input(_("Confirm %s: ") % (question))
 
                 if not answer_confirm == answer:
                     print >> sys.stderr, _("Incorrect confirmation. " + \
@@ -68,14 +62,14 @@ def ask_question(question, default="", password=False, confirm=False):
 
                     if password:
                         if default == "" or default == None:
-                            answer = getpass.getpass(_("Confirm %s: ") % (question))
+                            answer = getpass.getpass(_("%s: ") % (question))
                         else:
-                            answer = getpass.getpass(_("Confirm %s [%s]: ") % (question, default))
+                            answer = getpass.getpass(_("%s [%s]: ") % (question, default))
                     else:
                         if default == "" or default == None:
-                            answer = raw_input(_("Confirm %s: ") % (question))
+                            answer = raw_input(_("%s: ") % (question))
                         else:
-                            answer = raw_input(_("Confirm %s [%s]: ") % (question, default))
+                            answer = raw_input(_("%s [%s]: ") % (question, default))
 
                 else:
                     answer_confirmed = True
@@ -91,12 +85,14 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
         and a "yes" or "no" parsing that can either require an explicit, full
         "yes" or "no", or take the default or any YyNn answer.
     """
+    default_answer = None
+
     if default in [ "y", "Y" ]:
         default_answer = True
         default_no = "n"
         default_yes = "Y"
     elif default in [ "n", "N" ]:
-        default_answer = True
+        default_answer = False
         default_no = "N"
         default_yes = "y"
     else:
@@ -110,20 +106,20 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
         answer = raw_input("%s [%s/%s]: " % (question,default_yes,default_no))
         # Parse answer and set back to False if not appropriate
         if all_inclusive_no:
+            if answer == "" and not default_answer == None:
+                return default_answer
+            elif answer in [ "y", "Y", "yes" ]:
+                return True
+            elif answer in [ "n", "N", "no" ]:
+                return False
+            else:
+                answer = False
+                print >> sys.stderr, _("Please answer 'yes' or 'no'.")
+        else:
             if not answer in [ "y", "Y", "yes" ]:
                 return False
             else:
                 return True
-        else:
-            if answer in [ "y", "Y", "yes" ]:
-                return True
-            elif answer in [ "n", "N", "no" ]:
-                return False
-            elif answer == "" and not default_answer == None:
-                return default_answer
-            else:
-                answer = False
-                print >> sys.stderr, _("Please answer 'yes' or 'no'.")
 
 def generate_password():
     import subprocess
