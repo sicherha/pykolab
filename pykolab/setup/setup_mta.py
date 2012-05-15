@@ -251,5 +251,21 @@ result_attribute = mail
 
     subprocess.call(['/etc/pki/tls/certs/make-dummy-cert', '/etc/pki/tls/private/localhost.pem'])
 
-    subprocess.call(['service', 'postfix', 'restart'])
+    if os.path.isfile('/bin/systemctl'):
+        subprocess.call(['systemctl', 'restart', 'postfix.service'])
+        subprocess.call(['systemctl', 'enable', 'postfix.service'])
+        subprocess.call(['systemctl', 'restart', 'amavisd.service'])
+        subprocess.call(['systemctl', 'enable', 'amavisd.service'])
+        subprocess.call(['systemctl', 'restart', 'clamd.amavisd.service'])
+        subprocess.call(['systemctl', 'enable', 'clamd.amavisd.service'])
+    elif os.path.isfile('/sbin/service'):
+        subprocess.call(['service', 'postfix', 'restart'])
+        subprocess.call(['chkconfig', 'postfix', 'on'])
+        subprocess.call(['service', 'amavisd', 'restart'])
+        subprocess.call(['chkconfig', 'amavisd', 'on'])
+        subprocess.call(['service', 'clamd.amavisd', 'restart'])
+        subprocess.call(['chkconfig', 'clamd.amavisd', 'on'])
+    else:
+        log.error(_("Could not start and configure to start on boot, the " + \
+                "postfix, clamav.amavisd and amavisd services."))
 
