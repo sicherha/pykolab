@@ -68,7 +68,7 @@ def execute(*args, **kw):
                             hashlib.md5("%s" % random.random()).digest().encode("base64"),
                             hashlib.md5("%s" % random.random()).digest().encode("base64")
                         )
-                )[:25],
+                )[:24],
 
             'imap_admin_login': conf.get('cyrus-imapd', 'admin_login'),
             'imap_admin_password': conf.get('cyrus-imapd', 'admin_password'),
