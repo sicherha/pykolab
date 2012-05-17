@@ -21,6 +21,7 @@ from Cheetah.Template import Template
 import os
 import subprocess
 import sys
+import time
 
 import components
 
@@ -84,6 +85,8 @@ def execute(*args, **kw):
             fp = open('/etc/z-push/%s' % (want_file), 'w')
             fp.write(t.__str__())
             fp.close()
+
+    time.sleep(2)
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['/bin/systemctl', 'restart', 'httpd.service'])

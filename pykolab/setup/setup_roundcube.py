@@ -24,6 +24,7 @@ import random
 import re
 import subprocess
 import sys
+import time
 
 import components
 
@@ -169,6 +170,8 @@ def execute(*args, **kw):
     p2 = subprocess.Popen(['mysql', '--defaults-file=/tmp/kolab-setup-my.cnf'], stdin=p1.stdout)
     p1.stdout.close()
     p2.communicate()
+
+    time.sleep(2)
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['/bin/systemctl', 'restart', 'httpd.service'])
