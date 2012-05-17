@@ -20,7 +20,9 @@
     The Kolab daemon.
 """
 
+import grp
 import os
+import pwd
 import shutil
 import sys
 import time
@@ -45,17 +47,42 @@ class KolabDaemon(object):
 
         daemon_group = conf.add_cli_parser_option_group(_("Daemon Options"))
 
-        daemon_group.add_option(  "--fork",
-                                dest    = "fork_mode",
-                                action  = "store_true",
-                                default = False,
-                                help    = _("Fork to the background."))
+        daemon_group.add_option(
+                "--fork",
+                dest    = "fork_mode",
+                action  = "store_true",
+                default = False,
+                help    = _("Fork to the background.")
+            )
 
-        daemon_group.add_option( "-p", "--pid-file",
-                                dest    = "pidfile",
-                                action  = "store",
-                                default = "/var/run/kolabd/kolabd.pid",
-                                help    = _("Path to the PID file to use."))
+        daemon_group.add_option(
+                "-p",
+                "--pid-file",
+                dest    = "pidfile",
+                action  = "store",
+                default = "/var/run/kolabd/kolabd.pid",
+                help    = _("Path to the PID file to use.")
+            )
+
+        daemon_group.add_option(
+                "-u",
+                "--user",
+                dest    = "process_username",
+                action  = "store",
+                default = "kolab",
+                help    = _("Run as user USERNAME"),
+                metavar = "USERNAME"
+            )
+
+        daemon_group.add_option(
+                "-g",
+                "--group",
+                dest    = "process_groupname",
+                action  = "store",
+                default = "kolab",
+                help    = _("Run as group GROUPNAME"),
+                metavar = "GROUPNAME"
+            )
 
         conf.finalize_conf()
 
@@ -63,6 +90,75 @@ class KolabDaemon(object):
         """Run Forest, RUN!"""
 
         exitcode = 0
+
+        try:
+            (ruid, euid, suid) = os.getresuid()
+            (rgid, egid, sgid) = os.getresgid()
+
+            if ruid == 0:
+                # Means we can setreuid() / setregid() / setgroups()
+                if egid == 0:
+                    # Get group entry details
+                    try:
+                        (
+                                group_name,
+                                group_password,
+                                group_gid,
+                                group_members
+                            ) = grp.getgrnam(conf.process_groupname)
+
+                    except KeyError:
+                        print >> sys.stderr, _("Group %s does not exist") % (
+                                conf.process_groupname
+                            )
+
+                        sys.exit(1)
+
+                    # Set real and effective group if not the same as current.
+                    if not group_gid == egid:
+                        log.debug(
+                                _("Switching real and effective group id to %d") % (
+                                        group_gid
+                                    ),
+                                level=8
+                            )
+
+                        os.setregid(group_gid, group_gid)
+
+                if euid == 0:
+                    # Means we haven't switched yet.
+                    try:
+                        (
+                                user_name,
+                                user_password,
+                                user_uid,
+                                user_gid,
+                                user_gecos,
+                                user_homedir,
+                                user_shell
+                            ) = pwd.getpwnam(conf.process_username)
+
+                    except KeyError:
+                        print >> sys.stderr, _("User %s does not exist") % (
+                                conf.process_username
+                            )
+
+                        sys.exit(1)
+
+
+                    # Set real and effective user if not the same as current.
+                    if not user_uid == euid:
+                        log.debug(
+                                _("Switching real and effective user id to %d") % (
+                                        user_uid
+                                    ),
+                                level=8
+                            )
+
+                        os.setreuid(user_uid, user_uid)
+
+        except:
+            log.error(_("Could not change real and effective uid and/or gid"))
 
         try:
             pid = 1
