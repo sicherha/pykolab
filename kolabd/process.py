@@ -29,7 +29,12 @@ conf = pykolab.getConf()
 class KolabdProcess(multiprocessing.Process):
     def __init__(self, domain):
         self.domain = domain
-        multiprocessing.Process.__init__(self, target=self.synchronize, args=(domain,))
+        multiprocessing.Process.__init__(
+                self,
+                target=self.synchronize,
+                args=(domain,),
+                name="Kolab(%s)" % domain
+            )
 
     def synchronize(self, domain):
         auth = Auth(domain)
