@@ -170,7 +170,7 @@ domain = ldap:/etc/postfix/ldap/mydestination.cf
 bind_dn = %(service_bind_dn)s
 bind_pw = %(service_bind_pw)s
 
-search_filter = (&(|(mail=%%s)(alias=%%s))(objectclass=kolabinetorgperson))
+query_filter = (&(|(mail=%%s)(alias=%%s))(objectclass=kolabinetorgperson))
 result_attribute = mail
 """ % {
                         "base_dn": conf.get('ldap', 'base_dn'),
