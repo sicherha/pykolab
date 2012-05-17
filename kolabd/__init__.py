@@ -241,7 +241,13 @@ class KolabDaemon(object):
             if len(removed_domains) == 0 and len(added_domains) == 0:
                 time.sleep(600)
 
-            log.debug(_("added domains: %r, removed domains: %r") % (added_domains, removed_domains), level=8)
+            log.debug(
+                    _("added domains: %r, removed domains: %r") % (
+                            added_domains,
+                            removed_domains
+                        ),
+                    level=8
+                )
 
             for domain in added_domains:
                 domain_auth[domain] = Process(domain)
