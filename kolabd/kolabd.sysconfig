@@ -3,3 +3,4 @@
 # See kolabd --help for more flags.
 #
 FLAGS="--fork -l warning"
+DAEMONOPTS="--user kolab"

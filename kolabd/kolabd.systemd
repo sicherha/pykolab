@@ -5,6 +5,8 @@ After=syslog.target network.target
 [Service]
 Type=forking
 PIDFile=/var/run/kolabd/kolabd.pid
+User=kolab
+Group=kolab
 EnvironmentFile=/etc/sysconfig/kolabd
 ExecStart=/usr/sbin/kolabd $FLAGS
 ExecReload=/bin/kill -HUP $MAINPID
