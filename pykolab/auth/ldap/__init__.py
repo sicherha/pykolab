@@ -629,6 +629,9 @@ class LDAP(pykolab.base.Base):
 
                 secondary_mail_addresses.append(__secondary_mail)
 
+            log.debug(_("Recipient policy composed the following set of secondary " + \
+                    "email addresses: %r") % (secondary_mail_addresses), level=8)
+
             if not secondary_mail_addresses == None:
                 secondary_mail_addresses = list(set(secondary_mail_addresses))
                 # Avoid duplicates
@@ -1019,6 +1022,9 @@ class LDAP(pykolab.base.Base):
         """
         pass
 
+    def _change_none_None(self, entry, change):
+        pass
+
     def _change_none_role(self, entry, change):
         """
             A role entry as part of the initial search result set.
@@ -1283,7 +1289,7 @@ class LDAP(pykolab.base.Base):
             Compose a filter using the relevant settings from configuration.
         """
         _filter = "(|"
-        for _type in ['user', 'group', 'sharedfolder']:
+        for _type in ['user', 'group', 'resource', 'sharedfolder']:
             __filter = self.config_get('kolab_%s_filter' % (_type))
             if __filter == None:
                 __filter = self.config_get('%s_filter' % (_type))
