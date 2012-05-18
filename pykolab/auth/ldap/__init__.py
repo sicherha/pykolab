@@ -949,7 +949,7 @@ class LDAP(pykolab.base.Base):
 
         cache_entry = cache.get_entry(self.domain, entry)
         if not cache_entry == None:
-            old_canon_attr = cache_entry['result_attribute']
+            old_canon_attr = cache_entry.result_attribute
 
         # See if we have to trigger the recipient policy. Only really applies to
         # situations in which the result_attribute is used in the old or in the
