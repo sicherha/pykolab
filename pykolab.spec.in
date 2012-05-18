@@ -267,8 +267,8 @@ rm -rf %{buildroot}
 %{python_sitelib}/pykolab/plugins/recipientpolicy
 %{python_sitelib}/kolab/
 %{python_sitelib}/cyruslib.py*
-%dir %{_localstatedir}/lib/kolab/
-%dir %{_localstatedir}/log/kolab/
+%attr(0775,kolab,kolab-n) %dir %{_localstatedir}/lib/kolab/
+%attr(0775,kolab,kolab-n) %dir %{_localstatedir}/log/kolab/
 
 %files telemetry
 %defattr(-,root,root,-)
