@@ -694,7 +694,8 @@ class LDAP(pykolab.base.Base):
                     modlist.append((ldap.MOD_REPLACE, attribute, attrs[attribute]))
 
         dn = entry_dn
-        self.ldap.modify_s(dn, modlist)
+        if len(modlist) > 0:
+            self.ldap.modify_s(dn, modlist)
 
     def synchronize(self):
         """
