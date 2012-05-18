@@ -62,6 +62,7 @@ def execute(*args, **kw):
             "ldap_member_method": "attribute",
             "ldap_member_attribute": "nsrole",
             "admins": conf.get('cyrus-imap', 'admin_login'),
+            "postuser": "shared",
         }
 
     template_file = None
