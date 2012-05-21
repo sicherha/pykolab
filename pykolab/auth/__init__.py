@@ -191,11 +191,19 @@ class Auth(pykolab.base.Base):
         else:
             return result
 
-    def find_user(self, attr, value, **kw):
-        return self._auth._find_user(attr, value, domain=domain, **kw)
+    def find_resource(self, address):
+        """
+            Find one or more resources corresponding to the recipient address.
+        """
+        result = self._auth.find_resource(address)
 
-    def search_users(self, attr, value, **kw):
-        return self._auth._search_users(attr, value, domain=domain, **kw)
+        if isinstance(result, list) and len(result) == 1:
+            return result[0]
+        else:
+            return result
+
+    def find_user(self, attr, value, **kw):
+        return self._auth._find_user(attr, value, **kw)
 
     def list_domains(self):
         """
@@ -247,6 +255,9 @@ class Auth(pykolab.base.Base):
 
     def search_mail_address(self, domain, mail_address):
         return self._auth._search_mail_address(domain, mail_address)
+
+    def search_users(self, attr, value, **kw):
+        return self._auth._search_users(attr, value, **kw)
 
     def set_entry_attribute(self, domain, entry, attribute):
         return self._auth.set_entry_attribute(entry, attribute)
