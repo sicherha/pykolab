@@ -218,17 +218,34 @@ class IMAP(object):
         """
 
         folder_name = "shared%s%s" % (self.imap.separator, folder_path)
-        log.info(_("Creating new shared folder %s") %(folder_path))
+
+        # Correct folder_path being supplied with "shared/shared/" for example
+        if folder_name.startswith("shared%s" % (self.imap.separator) * 2):
+            folder_name = folder_name[7:]
+
+        log.info(_("Creating new shared folder %s") %(folder_name))
         self.create_folder(folder_name, server)
 
     def shared_folder_exists(self, folder_path):
         """
             Check if a shared mailbox exists.
         """
-        return self.has_folder('shared%s%s' % (self.imap.separator, folder_path))
+        folder_name = 'shared%s%s' % (self.imap.separator, folder_path)
+
+        # Correct folder_path being supplied with "shared/shared/" for example
+        if folder_name.startswith("shared%s" % (self.imap.separator) * 2):
+            folder_name = folder_name[7:]
+
+        return self.has_folder(folder_name)
 
     def shared_folder_set_type(self, folder_path, folder_type):
-        self.imap._setannotation('shared%s%s' % (self.imap.separator, folder_path), '/vendor/kolab/folder-type', folder_type)
+        folder_name = 'shared%s%s' % (self.imap.separator, folder_path)
+
+        # Correct folder_path being supplied with "shared/shared/" for example
+        if folder_name.startswith("shared%s" % (self.imap.separator) * 2):
+            folder_name = folder_name[7:]
+
+        self.imap._setannotation(folder_name, '/vendor/kolab/folder-type', folder_type)
 
     def shared_mailbox_create(self, mailbox_base_name, server=None):
         """
@@ -236,6 +253,11 @@ class IMAP(object):
         """
 
         folder_name = "shared%s%s" % (self.imap.separator, mailbox_base_name)
+
+        # Correct folder_path being supplied with "shared/shared/" for example
+        if folder_name.startswith("shared%s" % (self.imap.separator) * 2):
+            folder_name = folder_name[7:]
+
         log.info(_("Creating new shared folder %s") %(mailbox_base_name))
         self.create_folder(folder_name, server)
 
@@ -243,7 +265,13 @@ class IMAP(object):
         """
             Check if a shared mailbox exists.
         """
-        return self.has_folder('shared%s%s' %(self.imap.separator, mailbox_base_name))
+        folder_name = "shared%s%s" % (self.imap.separator, mailbox_base_name)
+
+        # Correct folder_path being supplied with "shared/shared/" for example
+        if folder_name.startswith("shared%s" % (self.imap.separator) * 2):
+            folder_name = folder_name[7:]
+
+        return self.has_folder(folder_name)
 
     def user_mailbox_create(self, mailbox_base_name, server=None):
         """
