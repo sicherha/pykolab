@@ -277,6 +277,8 @@ class LDAP(pykolab.base.Base):
             Get multiple attributes for an entry.
         """
 
+        self._bind()
+
         #print entry_id
         entry_dn = self.entry_dn(entry_id)
         #print entry_dn
@@ -353,6 +355,74 @@ class LDAP(pykolab.base.Base):
 
         _results = self.ldap.search_s(
                 self.config_get('base_dn'),
+                scope=ldap.SCOPE_SUBTREE,
+                filterstr=_filter,
+                attrlist=result_attributes,
+                attrsonly=True
+            )
+
+        _entry_dns = []
+
+        for _result in _results:
+            (_entry_id, _entry_attrs) = _result
+            _entry_dns.append(_entry_id)
+
+        return _entry_dns
+
+    def find_resource(self, address="*", exclude_entry_id=None):
+        """
+            Given an address string or list of addresses, find one or more valid
+            resources.
+
+            Specify an additional entry_id to exclude to exclude matches.
+        """
+
+        self._bind()
+
+        if not exclude_entry_id == None:
+            __filter_prefix = "(&"
+            __filter_suffix = "(!(%s=%s)))" % (
+                    self.config_get('unique_attribute'),
+                    exclude_entry_id
+                )
+
+        else:
+            __filter_prefix = ""
+            __filter_suffix = ""
+
+        resource_filter = self.config_get('resource_filter')
+        if not resource_filter == None:
+            __filter_prefix = "(&%s" % resource_filter
+            __filter_suffix = ")"
+
+        resource_base_dn = self.config_get('resource_base_dn')
+
+        recipient_address_attrs = self.config_get_list("mail_attributes")
+
+        result_attributes = recipient_address_attrs
+        result_attributes.append(self.config_get('unique_attribute'))
+
+        _filter = "(|"
+
+        for recipient_address_attr in recipient_address_attrs:
+            if isinstance(address, basestring):
+                _filter += "(%s=%s)" % (recipient_address_attr, address)
+            else:
+                for _address in address:
+                    _filter += "(%s=%s)" % (recipient_address_attr, _address)
+
+        _filter += ")"
+
+        _filter = "%s%s%s" % (__filter_prefix,_filter,__filter_suffix)
+
+
+        log.debug(_("Finding resource with filter %r") % (_filter), level=8)
+
+        if len(_filter) <= 6:
+            return None
+
+        _results = self.ldap.search_s(
+                resource_base_dn,
                 scope=ldap.SCOPE_SUBTREE,
                 filterstr=_filter,
                 attrlist=result_attributes,
