@@ -61,3 +61,6 @@ pykolab_setup_PYTHON = \
 	setup/setup_zpush.py \
 	setup/__init__.py
 
+pykolab_xmldir = $(pythondir)/$(PACKAGE)/xml
+pykolab_xml_PYTHON = \
+	$(wildcard xml/*.py)
