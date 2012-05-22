@@ -41,15 +41,19 @@ conf = pykolab.getConf()
 mybasepath = '/var/spool/pykolab/wallace/optout/'
 
 def __init__():
-    if not os.path.isdir(mybasepath):
-        os.makedirs(mybasepath)
-
     modules.register('optout', execute, description=description())
 
 def description():
     return """Consult the opt-out service."""
 
 def execute(*args, **kw):
+    if not os.path.isdir(mybasepath):
+        os.makedirs(mybasepath)
+
+    for stage in ['incoming', 'ACCEPT', 'REJECT', 'HOLD', 'DEFER' ]:
+        if not os.path.isdir(os.path.join(mybasepath, stage)):
+            os.makedirs(os.path.join(mybasepath, stage))
+
     # TODO: Test for correct call.
     filepath = args[0]
 
