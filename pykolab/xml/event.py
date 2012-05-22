@@ -1,5 +1,7 @@
 import datetime
 import icalendar
+from icalendar import vDatetime
+from icalendar import vText
 import kolabformat
 import time
 
@@ -71,33 +73,45 @@ class Event(object):
         for attr in list(set(event.singletons)):
             if hasattr(self, 'get_ical_%s' % (attr.lower())):
                 exec("retval = self.get_ical_%s()" % (attr.lower()))
+
+                #print "as_string_itip()", attr, retval, type(retval)
+
                 if not retval == None and not retval == "":
+                    print attr.lower()
                     event.add(attr.lower(), retval)
 
             elif hasattr(self, 'get_%s' % (attr.lower())):
                 exec("retval = self.get_%s()" % (attr.lower()))
+
+                #print "as_string_itip()", attr, retval
+
                 if not retval == None and not retval == "":
-                    event.add(attr.lower(), retval)
+                    event.add(attr.lower(), retval, encode=0)
 
             #else:
-                #print "no function for", attr.lower()
+                #print "(single) no function for", attr.lower()
 
         # NOTE: Make sure to list(set()) or duplicates may arise
         for attr in list(set(event.multiple)):
             if hasattr(self, 'get_ical_%s' % (attr.lower())):
                 exec("retval = self.get_ical_%s()" % (attr.lower()))
+
+                print "as_string_itip()", attr, retval
+
                 if isinstance(retval, list) and not len(retval) == 0:
                     for _retval in retval:
-                        event.add(attr.lower(), _retval)
+                        #print _retval.params
+                        event.add(attr.lower(), _retval, encode=0)
 
             elif hasattr(self, 'get_%s' % (attr.lower())):
                 exec("retval = self.get_%s()" % (attr.lower()))
+                print attr, retval
                 if isinstance(retval, list) and not len(retval) == 0:
                     for _retval in retval:
-                        event.add(attr.lower(), _retval)
+                        event.add(attr.lower(), _retval, encode=0)
 
             #else:
-                #print "no function for", attr.lower()
+                #print "(multiple) no function for", attr.lower()
 
         #event.add('attendee', self.get_attendees())
 
@@ -132,26 +146,20 @@ class Event(object):
         # to fail substitution.
         for attr in list(set(ical_event.required)):
             if ical_event.has_key(attr):
-                if hasattr(self, 'set_ical_%s' % (attr.lower())):
-                    exec("self.set_ical_%s(%r)" % (attr.lower(),ical_event.decoded(attr)))
-                else:
-                    print attr, "exists but no function exists"
+                self.set_from_ical(attr.lower(), ical_event[attr])
 
         # NOTE: Make sure to list(set()) or duplicates may arise
         for attr in list(set(ical_event.singletons)):
             if ical_event.has_key(attr):
-                if hasattr(self, 'set_ical_%s' % (attr.lower())):
-                    exec("self.set_ical_%s(%r)" % (attr.lower(),ical_event.decoded(attr)))
-                else:
-                    print attr, "exists but no function exists"
+                self.set_from_ical(attr.lower(), ical_event[attr])
 
         # NOTE: Make sure to list(set()) or duplicates may arise
         for attr in list(set(ical_event.multiple)):
             if ical_event.has_key(attr):
-                if hasattr(self, 'set_ical_%s' % (attr.lower())):
-                    exec("self.set_ical_%s(%r)" % (attr.lower(),ical_event.decoded(attr)))
-                else:
-                    print attr, "exists but no function exists"
+                #if attr == "ATTENDEE":
+                    #print ical_event.decoded(attr)
+
+                self.set_from_ical(attr.lower(), ical_event[attr])
 
     def get_attendee_participant_status(self, attendee):
         return attendee.get_participant_status()
@@ -251,12 +259,14 @@ class Event(object):
             elif partstat == kolabformat.PartDelegated:
                 _partstat = "DELEGATED"
 
-            _attendee = "RSVP=%s" % _rsvp
-            _attendee += ";PARTSTAT=%s" % _partstat
-            _attendee += ";ROLE=%s" % _role
-            _attendee += ";MAILTO:%s" % contact.email()
+            _attendee = icalendar.vCalAddress("MAILTO:%s" % contact.email())
+            _attendee.params['RSVP'] = icalendar.vText(_rsvp)
+            _attendee.params['PARTSTAT'] = icalendar.vText(_partstat)
+            _attendee.params['ROLE'] = icalendar.vText(_role)
 
             attendees.append(_attendee)
+
+        #print "get_ical_attendees()", attendees
 
         return attendees
 
@@ -279,20 +289,28 @@ class Event(object):
         return self.get_start()
 
     def get_ical_organizer(self):
-        organizer = self.get_organizer()
-        name = organizer.name()
+        contact = self.get_organizer()
+        organizer = icalendar.vCalAddress("MAILTO:%s" % contact.email())
+        name = contact.name()
 
-        if not name:
-            return "mailto:%s" % (organizer.email())
-        else:
-            return "CN=%s:mailto:%s" %(name, organizer.email())
+        if not name == None and not name == "":
+            organizer.params["CN"] = icalendar.vText(name)
+
+        return organizer
 
     def get_ical_status(self):
         status = self.event.status()
 
-        for key in self.status_map.keys():
-            if status == self.status_map[key]:
-                return key
+        #print "get_ical_status()", status
+        #print self.status_map.keys()
+        #print self.status_map.values()
+        if status in self.status_map.keys():
+            return status
+
+        if status in self.status_map.values():
+            return [k for k, v in self.status_map.iteritems() if v == status][0]
+
+        #print "get_ical_status()", status
 
     def get_organizer(self):
         organizer = self.event.organizer()
@@ -303,6 +321,7 @@ class Event(object):
         return self.event.priority()
 
     def get_start(self):
+        #print "get_start()"
         _datetime = self.event.start()
 
         (
@@ -416,42 +435,63 @@ class Event(object):
                 kolabformat.cDateTime(year, month, day, hour, minute, second)
             )
 
+    def set_from_ical(self, attr, value):
+        if attr == "dtend":
+            self.set_ical_dtend(value.dt)
+        elif attr == "dtstart":
+            self.set_ical_dtstart(value.dt)
+        elif attr == "status":
+            self.set_ical_status(value)
+        elif attr == "summary":
+            self.set_ical_summary(value)
+        elif attr == "priority":
+            self.set_ical_priority(value)
+        elif attr == "attendee":
+            self.set_ical_attendee(value)
+        elif attr == "organizer":
+            self.set_ical_organizer(value)
+        elif attr == "uid":
+            self.set_ical_uid(value)
+
+        else:
+            print "WARNING, no function for", attr
+
     def set_ical_attendee(self, _attendee):
         log.debug(_("set attendees from ical: %r") % (_attendee), level=9)
 
+        if isinstance(_attendee, basestring):
+            _attendee = [_attendee]
+
         if isinstance(_attendee, list):
             for attendee in _attendee:
-                #print attendee
-                rsvp = False
-                role = None
-                cn = None
-                partstat = None
-                address = None
-                for param in attendee.split(';'):
-                    if (len(param.split('=')) > 1):
-                        exec("%s = %r" % (param.split('=')[0].lower(), param.split('=')[1]))
-                        #print "%s = %r" % (param.split('=')[0].lower(), param.split('=')[1])
-                if (len(attendee.split(':')) > 1):
-                    address = attendee.split(':')[-1]
-                    #print address
+                address = str(attendee).split(':')[-1]
 
-                self.add_attendee(address, name=cn, rsvp=rsvp, role=role, participant_status=partstat)
-        else:
-            #print attendee
-            rsvp = False
-            role = None
-            cn = None
-            partstat = None
-            address = None
-            for param in _attendee.split(';'):
-                if (len(param.split('=')) > 1):
-                    exec("%s = %r" % (param.split('=')[0].lower(), param.split('=')[1]))
-                    #print "%s = %r" % (param.split('=')[0].lower(), param.split('=')[1])
-            if (len(_attendee.split(':')) > 1):
-                address = _attendee.split(':')[-1]
-                #print address
+                if hasattr(attendee, 'params'):
+                    params = attendee.params
+                else:
+                    params = {}
 
-            self.add_attendee(address, name=cn, rsvp=rsvp, role=role, participant_status=partstat)
+                if params.has_key('CN'):
+                    name = params['CN']
+                else:
+                    name = None
+
+                if params.has_key('ROLE'):
+                    role = params['ROLE']
+                else:
+                    role = None
+
+                if params.has_key('PARTSTAT'):
+                    partstat = params['PARTSTAT']
+                else:
+                    partstat = None
+
+                if params.has_key('RSVP'):
+                    rsvp = params['RSVP']
+                else:
+                    rsvp = None
+
+                self.add_attendee(address, name=name, rsvp=rsvp, role=role, participant_status=partstat)
 
     def set_ical_dtend(self, dtend):
         self.set_end(dtend)
@@ -463,23 +503,26 @@ class Event(object):
         self.set_start(dtstart)
 
     def set_ical_organizer(self, organizer):
-        cn = None
-        address = None
-        #print organizer
-        for param in organizer.split(':'):
-            if (len(param.split('=')) > 1):
-                exec("%s = %r" % (param.split('=')[0].lower(), param.split('=')[1]))
-                #print "%s = %r" % (param.split('=')[0].lower(), param.split('=')[1])
-        if (len(organizer.split(':')) > 1):
-            address = organizer.split(':')[-1]
-            #print address
+        address = str(organizer).split(':')[-1]
 
-        self.set_organizer(address, name=cn)
+        cn = None
+
+        if hasattr(organizer, 'params'):
+            params = organizer.params
+        else:
+            params = {}
+
+        if params.has_key('CN'):
+            cn = params['CN']
+
+        self.set_organizer(str(address), name=cn)
 
     def set_ical_priority(self, priority):
         self.set_priority(priority)
 
     def set_ical_status(self, status):
+        #print "set_ical_status()", status
+
         # TODO: See which ones are actually valid for iTip
         if status == "UNDEFINED":
             _status = kolabformat.StatusUndefined

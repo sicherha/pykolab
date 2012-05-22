@@ -23,6 +23,9 @@ class ContactReference(kolabformat.ContactReference):
     def get_name(self):
         return self.name()
 
+    def set_cn(self, value):
+        self.setName(value)
+
     def set_email(self, email):
         kolabformat.ContactReference.__init__(self, email)
 

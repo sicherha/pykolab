@@ -120,7 +120,7 @@ def execute(*args, **kw):
     if not len(itip_events) > 0:
         log.info(
                 _("Message is not an iTip message or does not contain any " + \
-                    "iTip.")
+                    "(valid) iTip.")
             )
 
         accept(filepath)
@@ -200,7 +200,7 @@ def execute(*args, **kw):
             if event_message.is_multipart():
                 for part in event_message.walk():
                     if part.get_content_type() == "application/calendar+xml":
-                        payload = part.get_payload()
+                        payload = part.get_payload(decode=True)
                         event = pykolab.xml.event_from_string(payload)
 
                         for itip in itip_events:
@@ -209,34 +209,36 @@ def execute(*args, **kw):
                             log.debug(_("  event %r end: %r") % (event.get_uid(),event.get_end()), level=9)
 
                             _es = event.get_start()
-                            _is = itip['start']
+                            _is = itip['start'].dt
 
-                            if type(_es) == 'datetime.date':
+                            if type(_es) == 'datetime.date' or not hasattr(_es, 'hour'):
                                 log.debug(_("_es is datetime.date"))
-                                if type(_is) == 'datetime.datetime':
-                                    _is = datetime.date(_is.year, _is.month, _is.day)
-                                else:
-                                    pass
-                            else:
-                                log.debug(_("_es is datetime.datetime"))
-                                if type(_is) == 'datetime.date':
-                                    log.debug(_("_is is datetime.date"))
-                                    _es = datetime.date(_es.year, _es.month, _es.day)
+                                _es = datetime.datetime(_es.year, _es.month, _es.day, 0, 0, 0)
+
+                            if type(_is) == 'datetime.date' or not hasattr(_is, 'hour'):
+                                log.debug(_("_is is datetime.date"))
+                                _is = datetime.datetime(_is.year, _is.month, _is.day, 0, 0, 0)
 
                             _ee = event.get_end()
-                            _ie = itip['end']
-                            if type(_ee) == 'datetime.date':
-                                if type(_ie) == 'datetime.datetime':
-                                    _ie = datetime.date(_ie.year, _ie.month, _ie.day)
-                                else:
-                                    pass
-                            else:
-                                if type(_ie) == 'datetime.date':
-                                    _ee = datetime.date(_ee.year, _ee.month, _ee.day)
+                            _ie = itip['end'].dt
+
+                            if type(_ee) == 'datetime.date' or not hasattr(_ee, 'hour'):
+                                log.debug(_("_ee is datetime.date"))
+                                _ee = datetime.datetime(_ee.year, _ee.month, _ee.day, 0, 0, 0)
+
+                            if type(_ie) == 'datetime.date' or not hasattr(_ie, 'hour'):
+                                log.debug(_("_ie is datetime.date"))
+                                _ie = datetime.datetime(_ie.year, _ie.month, _ie.day, 0, 0, 0)
+
+                            log.debug(_("Raw event and itip data:"))
+                            log.debug(_("_es: %r") %(_es))
+                            log.debug(_("_is: %r") %(_is))
+                            log.debug(_("_ee: %r") %(_ee))
+                            log.debug(_("_ie: %r") %(_ie))
 
                             if _es < _is:
                                 if _es <= _ie:
-                                    if _ie <= _is:
+                                    if _ee <= _is:
                                         conflict = False
                                     else:
                                         log.debug(_("Event %r ends later than invitation") % (event.get_uid()), level=9)
@@ -373,9 +375,7 @@ def itip_events_from_message(message):
                         cal = icalendar.Calendar.from_string(itip_payload)
                     else:
                         log.error(_("Could not read iTip from message."))
-                        accept(filepath)
-
-                        return
+                        return []
 
                     for c in cal.walk():
                         itip = {}
@@ -391,17 +391,22 @@ def itip_events_from_message(message):
                             # - TODO: recurrence rules (if any)
                             #   Where are these stored actually?
                             #
-                            itip['start'] = c.decoded('dtstart')
                             if c.has_key('dtend'):
-                                itip['end'] = c.decoded('dtend')
+                                itip['start'] = c['dtstart']
+                            else:
+                                log.error(_("iTip event without a start"))
+                                return []
+
+                            if c.has_key('dtend'):
+                                itip['end'] = c['dtend']
                             if c.has_key('duration'):
-                                itip['duration'] = c.decoded('duration')
-                            itip['organizer'] = c.decoded('organizer')
-                            itip['attendees'] = c.decoded('attendee')
+                                itip['duration'] = c['duration']
+                            itip['organizer'] = c['organizer']
+                            itip['attendees'] = c['attendee']
                             if c.has_key('resources'):
-                                itip['resources'] = c.decoded('resources')
+                                itip['resources'] = c['resources']
                             itip['raw'] = itip_payload
-                            itip['xml'] = event_from_ical(c.__str__())
+                            itip['xml'] = event_from_ical(c.to_ical())
                             itip_events.append(itip)
                 else:
                     log.error(
