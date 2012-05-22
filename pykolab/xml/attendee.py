@@ -3,7 +3,7 @@ import kolabformat
 from contact_reference import ContactReference
 
 class Attendee(kolabformat.Attendee):
-    partstat_map = {
+    participant_status_map = {
             "NEEDS-ACTION": kolabformat.PartNeedsAction,
             "ACCEPTED": kolabformat.PartAccepted,
             "DECLINED": kolabformat.PartDeclined,
@@ -48,8 +48,18 @@ class Attendee(kolabformat.Attendee):
         if not participant_status == None:
             self.set_participant_status(participant_status)
 
+    def get_email(self):
+        return self.email
+
+    def get_name(self):
+        return self.contact().name()
+
+    def get_participant_status(self):
+        return self.partStat()
+
     def set_participant_status(self, participant_status):
         if self.participant_status_map.has_key(participant_status):
+            #print "Setting participant status for %r to %r" %(str(self), participant_status)
             self.setPartStat(self.participant_status_map[participant_status])
 
     def set_role(self, role):
