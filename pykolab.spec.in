@@ -47,6 +47,18 @@ Requires:           kolab-cli = %{version}-%{release}
 Cyrus IMAP Telemetry logging handling capabilities for Kolab Groupware
 
 ##
+## Kolab XML
+##
+%package xml
+Summary:            Kolab XML format wrapper for %{name}
+Group:              Applications/System
+Requires:           %{name} = %{version}-%{release}
+Requires:           libkolabxml >= 0.5
+
+%description xml
+Kolab Format XML bindings wrapper for %{name}
+
+##
 ## Kolab CLI
 ##
 %package -n kolab-cli
@@ -109,6 +121,8 @@ Group:              Applications/System
 Requires:           %{name} = %{version}-%{release}
 Requires:           python-sqlalchemy
 Requires:           MySQL-python
+Requires:           python-icalendar >= 3.0
+Requires:           %{name}-xml = %{version}-%{release}
 
 %description -n wallace
 This is the Kolab Content Filter, with plugins
@@ -277,6 +291,12 @@ rm -rf %{buildroot}
 #%{python_sitelib}/pykolab/cli/commandgroups/telemetry.py
 %{python_sitelib}/pykolab/telemetry.*
 %{python_sitelib}/pykolab/cli/telemetry/
+
+%files xml
+%dir %{python_sitelib}/pykolab/xml
+%{python_sitelib}/pykolab/xml/*.py
+%{python_sitelib}/pykolab/xml/*.pyc
+%{python_sitelib}/pykolab/xml/*.pyo
 
 %files -n kolab-cli
 %defattr(-,root,root,-)
