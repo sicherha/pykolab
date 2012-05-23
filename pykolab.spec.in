@@ -261,7 +261,12 @@ if [ $1 = 0 ]; then
 fi
 
 %check
+# RHEL's python unittest does not have assertIsInstance()
+%if 0%{?rhel} > 1
+nosetests -v tests/ ||:
+%else
 nosetests -v tests/
+%endif
 
 %clean
 rm -rf %{buildroot}
