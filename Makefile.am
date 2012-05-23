@@ -32,6 +32,7 @@ EXTRA_DIST = \
 	pykolab.spec \
 	pykolab.spec.in \
 	pylint.log \
+	$(wildcard tests/*.py) \
 	$(PYTHON_FILES)
 
 SUBDIRS = \
