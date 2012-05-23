@@ -40,7 +40,6 @@ class Event(object):
             self.from_ical(from_ical)
 
     def add_attendee(self, email, name=None, rsvp=False, role=None, participant_status=None):
-        log.debug(_("adding attendee with email address %r") % (email), level=9)
         attendee = Attendee(email, name, rsvp, role, participant_status)
         self._attendees.append(attendee)
         self.event.setAttendees(self._attendees)
@@ -73,60 +72,27 @@ class Event(object):
         for attr in list(set(event.singletons)):
             if hasattr(self, 'get_ical_%s' % (attr.lower())):
                 exec("retval = self.get_ical_%s()" % (attr.lower()))
-
-                #print "as_string_itip()", attr, retval, type(retval)
-
                 if not retval == None and not retval == "":
-                    print attr.lower()
                     event.add(attr.lower(), retval)
 
             elif hasattr(self, 'get_%s' % (attr.lower())):
                 exec("retval = self.get_%s()" % (attr.lower()))
-
-                #print "as_string_itip()", attr, retval
-
                 if not retval == None and not retval == "":
                     event.add(attr.lower(), retval, encode=0)
-
-            #else:
-                #print "(single) no function for", attr.lower()
 
         # NOTE: Make sure to list(set()) or duplicates may arise
         for attr in list(set(event.multiple)):
             if hasattr(self, 'get_ical_%s' % (attr.lower())):
                 exec("retval = self.get_ical_%s()" % (attr.lower()))
-
-                print "as_string_itip()", attr, retval
-
                 if isinstance(retval, list) and not len(retval) == 0:
                     for _retval in retval:
-                        #print _retval.params
                         event.add(attr.lower(), _retval, encode=0)
 
             elif hasattr(self, 'get_%s' % (attr.lower())):
                 exec("retval = self.get_%s()" % (attr.lower()))
-                print attr, retval
                 if isinstance(retval, list) and not len(retval) == 0:
                     for _retval in retval:
                         event.add(attr.lower(), _retval, encode=0)
-
-            #else:
-                #print "(multiple) no function for", attr.lower()
-
-        #event.add('attendee', self.get_attendees())
-
-        #BEGIN:VEVENT
-        #DESCRIPTION:Project XYZ Review Meeting
-        #CATEGORIES:MEETING
-        #CLASS:PUBLIC
-        #CREATED:19980309T130000Z
-        #SUMMARY:XYZ Project Review
-        #DTSTART;TZID=US-Eastern:19980312T083000
-        #DTEND;TZID=US-Eastern:19980312T093000
-        #LOCATION:1CP Conference Room 4350
-        #END:VEVENT
-
-        #event['description'] =
 
         cal.add_component(event)
 
@@ -156,13 +122,41 @@ class Event(object):
         # NOTE: Make sure to list(set()) or duplicates may arise
         for attr in list(set(ical_event.multiple)):
             if ical_event.has_key(attr):
-                #if attr == "ATTENDEE":
-                    #print ical_event.decoded(attr)
-
                 self.set_from_ical(attr.lower(), ical_event[attr])
 
     def get_attendee_participant_status(self, attendee):
         return attendee.get_participant_status()
+
+    def get_attendee(self, attendee):
+        if isinstance(attendee, basestring):
+            if attendee in [x.get_email() for x in self.get_attendees()]:
+                attendee = self.get_attendee_by_email(attendee)
+
+            elif attendee in [x.get_name() for x in self.get_attendees()]:
+                attendee = self.get_attendee_by_name(attendee)
+
+            else:
+                raise ValueError, _("No attendee with email or name %r") %(attendee)
+
+            return attendee
+
+        elif isinstance(attendee, Attendee):
+            return attendee
+
+        else:
+            raise ValueError, _("Invalid argument value attendee %r, must be basestring or Attendee") % (attendee)
+
+    def get_attendee_by_email(self, email):
+        if email in [x.get_email() for x in self.get_attendees()]:
+            return [x for x in self.get_attendees() if x.get_email() == email][0]
+
+        raise ValueError, _("No attendee with email %r") %(email)
+
+    def get_attendee_by_name(self, name):
+        if name in [x.get_name() for x in self.get_attendees()]:
+            return [x for x in self.get_attendees() if x.get_name() == name][0]
+
+        raise ValueError, _("No attendee with name %r") %(name)
 
     def get_attendees(self):
         return self._attendees
@@ -220,53 +214,58 @@ class Event(object):
 
         attendees = []
         for attendee in self.get_attendees():
-            contact = attendee.contact()
-            rsvp = attendee.rsvp()
-            role = attendee.role()
-            partstat = attendee.partStat()
+            email = attendee.get_email()
+            name = attendee.get_name()
+            rsvp = attendee.get_rsvp()
+            role = attendee.get_role()
+            partstat = attendee.get_partStat()
+            cutype = attendee.get_cutype()
 
-            if rsvp:
-                _rsvp = "TRUE"
+            if rsvp in attendee.rsvp_map.keys():
+                _rsvp = rsvp
+            elif rsvp in attendee.rsvp_map.values():
+                _rsvp = [k for k, v in attendee.rsvp_map.iteritems() if v == rsvp][0]
             else:
-                _rsvp = "FALSE"
+                _rsvp = None
 
-            #Required = _kolabformat.Required
-            #Chair = _kolabformat.Chair
-            #Optional = _kolabformat.Optional
-            #NonParticipant = _kolabformat.NonParticipant
-
-            # TODO: Check the role strings for validity
-            # TODO^2: Use map
-            if role == kolabformat.Required:
-                _role = "REQ-PARTICIPANT"
-            elif role == kolabformat.Chair:
-                _role = "CHAIR"
-            elif role == kolabformat.Optional:
-                _role = "OPTIONAL"
-            elif role == kolabformat.NonParticipant:
-                _role = "NON-PARTICIPANT"
+            if role in attendee.role_map.keys():
+                _role = role
+            elif role in attendee.role_map.values():
+                _role = [k for k, v in attendee.role_map.iteritems() if v == role][0]
             else:
-                _role = "OPTIONAL"
+                _role = None
 
-            if partstat == kolabformat.PartNeedsAction:
-                _partstat = "NEEDS-ACTION"
-            elif partstat == kolabformat.PartAccepted:
-                _partstat = "ACCEPTED"
-            elif partstat == kolabformat.PartDeclined:
-                _partstat = "DECLINED"
-            elif partstat == kolabformat.PartTentative:
-                _partstat = "TENTATIVE"
-            elif partstat == kolabformat.PartDelegated:
-                _partstat = "DELEGATED"
+            if partstat in attendee.participant_status_map.keys():
+                _partstat = partstat
+            elif partstat in attendee.participant_status_map.values():
+                _partstat = [k for k, v in attendee.participant_status_map.iteritems() if v == partstat][0]
+            else:
+                _partstat = None
 
-            _attendee = icalendar.vCalAddress("MAILTO:%s" % contact.email())
-            _attendee.params['RSVP'] = icalendar.vText(_rsvp)
-            _attendee.params['PARTSTAT'] = icalendar.vText(_partstat)
-            _attendee.params['ROLE'] = icalendar.vText(_role)
+            if cutype in attendee.cutype_map.keys():
+                _cutype = cutype
+            elif cutype in attendee.cutype_map.values():
+                _cutype = [k for k, v in attendee.cutype_map.iteritems() if v == cutype][0]
+            else:
+                _cutype = None
+
+            _attendee = icalendar.vCalAddress("MAILTO:%s" % email)
+            if not name == None and not name == "":
+                _attendee.params['CN'] = icalendar.vText(name)
+
+            if not _rsvp == None:
+                _attendee.params['RSVP'] = icalendar.vText(_rsvp)
+
+            if not _role == None:
+                _attendee.params['ROLE'] = icalendar.vText(_role)
+
+            if not _partstat == None:
+                _attendee.params['PARTSTAT'] = icalendar.vText(_partstat)
+
+            if not _cutype == None:
+                _attendee.params['CUTYPE'] = icalendar.vText(_cutype)
 
             attendees.append(_attendee)
-
-        #print "get_ical_attendees()", attendees
 
         return attendees
 
@@ -301,27 +300,20 @@ class Event(object):
     def get_ical_status(self):
         status = self.event.status()
 
-        #print "get_ical_status()", status
-        #print self.status_map.keys()
-        #print self.status_map.values()
         if status in self.status_map.keys():
             return status
 
         if status in self.status_map.values():
             return [k for k, v in self.status_map.iteritems() if v == status][0]
 
-        #print "get_ical_status()", status
-
     def get_organizer(self):
         organizer = self.event.organizer()
-        #print organizer
         return organizer
 
     def get_priority(self):
         return self.event.priority()
 
     def get_start(self):
-        #print "get_start()"
         _datetime = self.event.start()
 
         (
@@ -360,6 +352,15 @@ class Event(object):
             return kolabformat.getSerializedUID()
 
     def set_attendee_participant_status(self, attendee, status):
+        """
+            Set the participant status of an attendee to status.
+
+            As the attendee arg, pass an email address or name, for this
+            function to obtain the attendee object by searching the list of
+            attendees for this event.
+        """
+        attendee = self.get_attendee(attendee)
+
         attendee.set_participant_status(status)
         self.event.setAttendees(self._attendees)
 
@@ -409,6 +410,16 @@ class Event(object):
             )
 
     def set_end(self, _datetime):
+        valid_datetime = False
+        if isinstance(_datetime, datetime.date):
+            valid_datetime = True
+
+        if isinstance(_datetime, datetime.datetime):
+            valid_datetime = True
+
+        if not valid_datetime:
+            raise InvalidEventDateError, _("Event end needs datetime.date or datetime.datetime instance")
+
         (
                 year,
                 month,
@@ -457,8 +468,6 @@ class Event(object):
             print "WARNING, no function for", attr
 
     def set_ical_attendee(self, _attendee):
-        log.debug(_("set attendees from ical: %r") % (_attendee), level=9)
-
         if isinstance(_attendee, basestring):
             _attendee = [_attendee]
 
@@ -521,31 +530,12 @@ class Event(object):
         self.set_priority(priority)
 
     def set_ical_status(self, status):
-        #print "set_ical_status()", status
-
-        # TODO: See which ones are actually valid for iTip
-        if status == "UNDEFINED":
-            _status = kolabformat.StatusUndefined
-        elif status == "NEEDS-ACTION":
-            _status = kolabformat.StatusNeedsAction
-        elif status == "COMPLETED":
-            _status = kolabformat.StatusCompleted
-        elif status == "INPROCESS":
-            _status = kolabformat.StatusInProcess
-        elif status == "CANCELLED":
-            _status = kolabformat.StatusCancelled
-        elif status == "TENTATIVE":
-            _status = kolabformat.StatusTentative
-        elif status == "CONFIRMED":
-            _status = kolabformat.StatusConfirmed
-        elif status == "DRAFT":
-            _status = kolabformat.StatusDraft
-        elif status == "FINAL":
-            _status = kolabformat.StatusFinal
+        if status in self.status_map.keys():
+            self.event.setStatus(self.status_map[status])
+        elif status in self.status_map.values():
+            self.event.setStatus(status)
         else:
-            _status = kolabformat.StatusUndefined
-
-        self.event.setStatus(_status)
+            raise ValueError, _("Invalid status %r") % (status)
 
     def set_ical_summary(self, summary):
         self.set_summary(str(summary))
@@ -564,6 +554,16 @@ class Event(object):
         self.event.setPriority(priority)
 
     def set_start(self, _datetime):
+        valid_datetime = False
+        if isinstance(_datetime, datetime.date):
+            valid_datetime = True
+
+        if isinstance(_datetime, datetime.datetime):
+            valid_datetime = True
+
+        if not valid_datetime:
+            raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance")
+
         (
                 year,
                 month,
@@ -603,7 +603,14 @@ class Event(object):
         self.event.setUid(str(uid))
 
     def __str__(self):
-        return kolabformat.writeEvent(self.event)
+        event_xml = kolabformat.writeEvent(self.event)
+
+        error = kolabformat.error()
+
+        if error == None or not error:
+            return event_xml
+        else:
+            raise EventIntegrityError, kolabformat.errorMessage()
 
     def to_message(self):
         from email.MIMEMultipart import MIMEMultipart
@@ -661,12 +668,8 @@ class Event(object):
 
         msg_from = None
 
-        log.debug(_("MESSAGE ITIP method %r") % (method), level=9)
-
         if method == "REPLY":
             msg['To'] = self.get_organizer().email()
-
-            log.debug(_("IN ITIP MESSAGE REPLY: %r") % (msg['To']), level=9)
 
             attendees = self.get_attendees()
 
@@ -706,8 +709,6 @@ class Event(object):
                 msg_from = '"%s" <%s>' % (name, email)
 
 
-        log.debug(_("Message sender: %r") % (msg_from), level=9)
-
         if msg_from == None:
             log.error(_("No sender specified"))
 
@@ -733,14 +734,17 @@ class Event(object):
 
         msg.attach(part)
 
-        print msg.as_string()
-
         return msg
 
 class EventIntegrityError(Exception):
     def __init__(self, message):
         Exception.__init__(self, message)
 
+class InvalidEventDateError(Exception):
+    def __init__(self, message):
+        Exception.__init__(self, message)
+
 class InvalidEventStatusError(Exception):
     def __init__(self, message):
         Exception.__init__(self, message)
+
