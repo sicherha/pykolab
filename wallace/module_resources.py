@@ -37,6 +37,7 @@ import modules
 import pykolab
 
 from pykolab.auth import Auth
+from pykolab.conf import Conf
 from pykolab.imap import IMAP
 from pykolab.xml import event_from_ical
 from pykolab.xml import event_from_string
@@ -54,7 +55,12 @@ def __init__():
     modules.register('resources', execute, description=description())
 
 def accept(filepath):
-    new_filepath = os.path.join(mybasepath, 'ACCEPT', os.path.basename(filepath))
+    new_filepath = os.path.join(
+            mybasepath,
+            'ACCEPT',
+            os.path.basename(filepath)
+        )
+
     os.rename(filepath, new_filepath)
     filepath = new_filepath
     exec('modules.cb_action_ACCEPT(%r, %r)' % ('resources',filepath))
@@ -107,7 +113,12 @@ def execute(*args, **kw):
             return
     else:
         # Move to incoming
-        new_filepath = os.path.join(mybasepath, 'incoming', os.path.basename(filepath))
+        new_filepath = os.path.join(
+                mybasepath,
+                'incoming',
+                os.path.basename(filepath)
+            )
+
         os.rename(filepath, new_filepath)
         filepath = new_filepath
 
@@ -155,7 +166,12 @@ def execute(*args, **kw):
             if resource_attrs.has_key('uniquemember'):
                 resources[resource_record] = resource_attrs
                 for uniquemember in resource_attrs['uniquemember']:
-                    resource_attrs = auth.get_entry_attributes(None, uniquemember, ['*'])
+                    resource_attrs = auth.get_entry_attributes(
+                            None,
+                            uniquemember,
+                            ['*']
+                        )
+
                     if 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
                         resources[uniquemember] = resource_attrs
                         resources[uniquemember]['memberof'] = resource_record
@@ -168,6 +184,8 @@ def execute(*args, **kw):
     # conflict.
     #
     # Store the (first) conflicting event(s) alongside the resource information.
+    start = time.time()
+
     for resource in resources.keys():
         if not resources[resource].has_key('kolabtargetfolder'):
             continue
@@ -177,7 +195,10 @@ def execute(*args, **kw):
         resources[resource]['conflict'] = False
         resources[resource]['conflicting_events'] = []
 
-        log.debug(_("Checking events in resource folder %r") % (mailbox), level=8)
+        log.debug(
+                _("Checking events in resource folder %r") % (mailbox),
+                level=8
+            )
 
         try:
             imap.imap.m.select(mailbox)
@@ -187,12 +208,18 @@ def execute(*args, **kw):
 
         typ, data = imap.imap.m.search(None, 'ALL')
 
+        num_messages = len(data[0].split())
+
         for num in data[0].split():
             # For efficiency, makes the routine non-deterministic
             if resources[resource]['conflict']:
                 continue
 
-            log.debug(_("Fetching message UID %r from folder %r") %(num, mailbox), level=9)
+            log.debug(
+                    _("Fetching message UID %r from folder %r") % (num, mailbox),
+                    level=9
+                )
+
             typ, data = imap.imap.m.fetch(num, '(RFC822)')
 
             event_message = message_from_string(data[0][1])
@@ -204,71 +231,78 @@ def execute(*args, **kw):
                         event = pykolab.xml.event_from_string(payload)
 
                         for itip in itip_events:
-                            log.debug(_("comparing %r to event %r (%r message UID %r)") % (itip, event.get_uid(), mailbox, num), level=9)
-                            log.debug(_("  event %r start: %r") % (event.get_uid(),event.get_start()), level=9)
-                            log.debug(_("  event %r end: %r") % (event.get_uid(),event.get_end()), level=9)
-
                             _es = event.get_start()
                             _is = itip['start'].dt
 
                             if type(_es) == 'datetime.date' or not hasattr(_es, 'hour'):
-                                log.debug(_("_es is datetime.date"))
-                                _es = datetime.datetime(_es.year, _es.month, _es.day, 0, 0, 0)
+                                _es = datetime.datetime(
+                                        _es.year, _es.month, _es.day, 0, 0, 0
+                                    )
 
                             if type(_is) == 'datetime.date' or not hasattr(_is, 'hour'):
-                                log.debug(_("_is is datetime.date"))
-                                _is = datetime.datetime(_is.year, _is.month, _is.day, 0, 0, 0)
+                                _is = datetime.datetime(
+                                        _is.year, _is.month, _is.day, 0, 0, 0
+                                    )
 
                             _ee = event.get_end()
                             _ie = itip['end'].dt
 
                             if type(_ee) == 'datetime.date' or not hasattr(_ee, 'hour'):
-                                log.debug(_("_ee is datetime.date"))
-                                _ee = datetime.datetime(_ee.year, _ee.month, _ee.day, 0, 0, 0)
+                                _ee = datetime.datetime(
+                                        _ee.year, _ee.month, _ee.day, 0, 0, 0
+                                    )
 
                             if type(_ie) == 'datetime.date' or not hasattr(_ie, 'hour'):
-                                log.debug(_("_ie is datetime.date"))
-                                _ie = datetime.datetime(_ie.year, _ie.month, _ie.day, 0, 0, 0)
-
-                            log.debug(_("Raw event and itip data:"))
-                            log.debug(_("_es: %r") %(_es))
-                            log.debug(_("_is: %r") %(_is))
-                            log.debug(_("_ee: %r") %(_ee))
-                            log.debug(_("_ie: %r") %(_ie))
+                                _ie = datetime.datetime(
+                                        _ie.year, _ie.month, _ie.day, 0, 0, 0
+                                    )
 
                             if _es < _is:
                                 if _es <= _ie:
                                     if _ee <= _is:
                                         conflict = False
                                     else:
-                                        log.debug(_("Event %r ends later than invitation") % (event.get_uid()), level=9)
                                         conflict = True
                                 else:
-                                    log.debug(_("Event %r starts before invitation ends") % (event.get_uid()), level=9)
                                     conflict = True
                             elif _es == _is:
-                                log.debug(_("Event %r and invitation start at the same time") % (event.get_uid()), level=9)
                                 conflict = True
                             else: # _es > _is
                                 if _es <= _ie:
-                                    log.debug(_("Event %r starts before invitation ends") % (event.get_uid()), level=9)
                                     conflict = True
                                 else:
                                     conflict = False
 
                             if conflict:
-                                log.debug(_("Conflict with event %r") % (event.get_uid()), level=8)
+                                log.info(
+                                        _("Event %r conflicts with event " + \
+                                            "%r") % (
+                                                itip['xml'].get_uid(),
+                                                event.get_uid()
+                                            )
+                                    )
+
                                 resources[resource]['conflicting_events'].append(event)
                                 resources[resource]['conflict'] = True
 
-        log.debug(_("Resource status information: %r") % (resources[resource]), level=8)
+    end = time.time()
 
+    log.debug(
+            _("start: %r, end: %r, total: %r, messages: %r") % (
+                    start, end, (end-start), num_messages
+                ),
+            level=1
+        )
 
     for resource in resources.keys():
         log.debug(_("Polling for resource %r") % (resource), level=9)
 
         if not resources.has_key(resource):
-            log.debug(_("Resource %r has been popped from the list") % (resource), level=9)
+            log.debug(
+                    _("Resource %r has been popped from the list") % (resource),
+                    level=9
+                )
+
             continue
 
         if not resources[resource].has_key('conflicting_events'):
@@ -280,9 +314,14 @@ def execute(*args, **kw):
             for itip_event in itip_events:
                 # Now we have the event that was conflicting
                 if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
-                    itip_event['xml'].set_attendee_participant_status([a for a in itip_event['xml'].get_attendees() if a.get_email() == resources[resource]['mail']][0], "DECLINED")
+                    itip_event['xml'].set_attendee_participant_status(
+                            [a for a in itip_event['xml'].get_attendees() if a.get_email() == resources[resource]['mail']][0],
+                            "DECLINED"
+                        )
 
                     send_response(resources[resource]['mail'], itip_events)
+                    # TODO: Accept the message to the other attendees
+
                 else:
                     # This must have been a resource collection originally.
                     # We have inserted the reference to the original resource
@@ -303,6 +342,7 @@ def execute(*args, **kw):
                             )
 
                         send_response(original_resource['mail'], itip_events)
+                        # TODO: Accept the message to the other attendees
 
         else:
             # No conflicts, go accept
@@ -313,8 +353,19 @@ def execute(*args, **kw):
                             "ACCEPTED"
                         )
 
-                    log.debug(_("Adding event to %r") % (resources[resource]['kolabtargetfolder']), level=9)
-                    imap.imap.m.append(resources[resource]['kolabtargetfolder'], None, None, itip_event['xml'].to_message().as_string())
+                    log.debug(
+                            _("Adding event to %r") % (
+                                    resources[resource]['kolabtargetfolder']
+                                ),
+                            level=9
+                        )
+
+                    imap.imap.m.append(
+                            resources[resource]['kolabtargetfolder'],
+                            None,
+                            None,
+                            itip_event['xml'].to_message().as_string()
+                        )
 
                     send_response(resources[resource]['mail'], itip_events)
 
@@ -337,8 +388,19 @@ def execute(*args, **kw):
                                 "ACCEPTED"
                             )
 
-                        log.debug(_("Adding event to %r") % (_target_resource['kolabtargetfolder']), level=9)
-                        imap.imap.m.append(_target_resource['kolabtargetfolder'], None, None, itip_event['xml'].to_message().as_string())
+                        log.debug(
+                                _("Adding event to %r") % (
+                                        _target_resource['kolabtargetfolder']
+                                    ),
+                                level=9
+                            )
+
+                        imap.imap.m.append(
+                                _target_resource['kolabtargetfolder'],
+                                None,
+                                None,
+                                itip_event['xml'].to_message().as_string()
+                            )
 
                         send_response(original_resource['mail'], itip_events)
 
@@ -460,20 +522,42 @@ def resource_records_from_itip_events(itip_events):
     attendees = [x.split(':')[-1] for x in attendees_raw]
 
     for attendee in attendees:
-        log.debug(_("Checking if attendee %r is a resource (collection)") % (attendee), level=8)
+        log.debug(
+                _("Checking if attendee %r is a resource (collection)") % (
+                        attendee
+                    ),
+                level=8
+            )
+
         _resource_records = auth.find_resource(attendee)
 
         if isinstance(_resource_records, list):
             if len(_resource_records) == 0:
-                log.debug(_("No resource (collection) records found for %r") % (attendee), level=9)
+                log.debug(
+                        _("No resource (collection) records found for %r") % (
+                                attendee
+                            ),
+                        level=9
+                    )
+
             else:
-                log.debug(_("Resource record(s): %r") % (_resource_records), level=8)
+                log.debug(
+                        _("Resource record(s): %r") % (_resource_records),
+                        level=8
+                    )
+
                 resource_records.extend(_resource_records)
         elif isinstance(_resource_records, basestring):
+            log.debug(
+                    _("Resource record: %r") % (_resource_records),
+                    level=8
+                )
+
             resource_records.append(_resource_records)
-            log.debug(_("Resource record: %r") % (_resource_records), level=8)
         else:
-            log.warning(_("Resource reservation made but no resource records found"))
+            log.warning(
+                    _("Resource reservation made but no resource records found")
+                )
 
     # TODO: Escape the non-implementation of the free-form, undefined RESOURCES
     # list(s) in iTip. We don't know how to handle this yet!
@@ -489,21 +573,45 @@ def resource_records_from_itip_events(itip_events):
     #
     resources = [x.split(':')[-1] for x in resources_raw]
     for resource in resources:
-        log.debug(_("Checking if resource %r is a resource (collection)") % (resource), level=8)
+        log.debug(
+                _("Checking if resource %r is a resource (collection)") % (
+                        resource
+                    ),
+                level=8
+            )
+
         _resource_records = auth.find_resource(resource)
         if isinstance(_resource_records, list):
             if len(_resource_records) == 0:
-                log.debug(_("No resource (collection) records found for %r") % (resource), level=8)
+                log.debug(
+                        _("No resource (collection) records found for %r") % (
+                                resource
+                            ),
+                        level=8
+                    )
+
             else:
-                log.debug(_("Resource record(s): %r") % (_resource_records), level=8)
+                log.debug(
+                        _("Resource record(s): %r") % (_resource_records),
+                        level=8
+                    )
+
                 resource_records.extend(_resource_records)
         elif isinstance(_resource_records, basestring):
             resource_records.append(_resource_records)
             log.debug(_("Resource record: %r") % (_resource_records), level=8)
         else:
-            log.warning(_("Resource reservation made but no resource records found"))
+            log.warning(
+                    _("Resource reservation made but no resource records found")
+                )
 
-    log.debug(_("The following resources are being referred to in the iTip: %r") % (resource_records), level=8)
+    log.debug(
+            _("The following resources are being referred to in the " + \
+                "iTip: %r") % (
+                    resource_records
+                ),
+            level=8
+        )
 
     return resource_records
 
@@ -516,7 +624,7 @@ def send_response(from_address, itip_events):
 
     for itip_event in itip_events:
         attendee = [a for a in itip_event['xml'].get_attendees() if a.get_email() == from_address][0]
-        participant_status = itip_event['xml'].get_attendee_participant_status(attendee)
+        participant_status = itip_event['xml'].get_ical_attendee_participant_status(attendee)
         message = itip_event['xml'].to_message_itip(from_address, method="REPLY", participant_status=participant_status)
         smtp.sendmail(message['From'], message['To'], message.as_string())
     smtp.quit()
