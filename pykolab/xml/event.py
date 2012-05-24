@@ -4,6 +4,7 @@ from icalendar import vDatetime
 from icalendar import vText
 import kolabformat
 import time
+import uuid
 
 import pykolab
 from pykolab import constants
@@ -39,7 +40,9 @@ class Event(object):
         else:
             self.from_ical(from_ical)
 
-    def add_attendee(self, email, name=None, rsvp=False, role=None, participant_status=None):
+        self.uid = self.get_uid()
+
+    def add_attendee(self, email, name=None, rsvp=False, role=None, participant_status=None, cutype="INDIVIDUAL"):
         attendee = Attendee(email, name, rsvp, role, participant_status)
         self._attendees.append(attendee)
         self.event.setAttendees(self._attendees)
@@ -100,6 +103,35 @@ class Event(object):
             return cal.to_ical()
         elif hasattr(cal, 'as_string'):
             return cal.as_string()
+
+    def delegate(self, delegators, delegatees):
+        if not isinstance(delegators, list):
+            delegators = [delegators]
+
+        if not isinstance(delegatees, list):
+            delegatees = [delegatees]
+
+        _delegators = []
+        for delegator in delegators:
+            _delegators.append(self.get_attendee(delegator))
+
+        _delegatees = []
+
+        for delegatee in delegatees:
+            try:
+                _delegatees.append(self.get_attendee(delegatee))
+            except:
+                # TODO: An iTip needs to be sent out to the new attendee
+                self.add_attendee(delegatee)
+                _delegatees.append(self.get_attendee(delegatee))
+
+        for delegator in _delegators:
+            delegator.delegate_to(_delegatees)
+
+        for delegatee in _delegatees:
+            delegatee.delegate_from(_delegators)
+
+        self.event.setAttendees(self._attendees)
 
     def from_ical(self, ical):
         self.event = kolabformat.Event()
@@ -218,7 +250,7 @@ class Event(object):
             name = attendee.get_name()
             rsvp = attendee.get_rsvp()
             role = attendee.get_role()
-            partstat = attendee.get_partStat()
+            partstat = attendee.get_participant_status()
             cutype = attendee.get_cutype()
 
             if rsvp in attendee.rsvp_map.keys():
@@ -268,6 +300,16 @@ class Event(object):
             attendees.append(_attendee)
 
         return attendees
+
+    def get_ical_attendee_participant_status(self, attendee):
+        attendee = self.get_attendee(attendee)
+
+        if attendee.get_participant_status() in attendee.participant_status_map.keys():
+            return attendee.get_participant_status()
+        elif attendee.get_participant_status() in attendee.participant_status_map.values():
+            return [k for k, v in attendee.participant_status_map.iteritems() if v == attendee.get_participant_status()][0]
+        else:
+            raise ValueError, _("Invalid participant status")
 
     def get_ical_created(self):
         return self.get_created()
@@ -348,8 +390,8 @@ class Event(object):
         if not uid == '':
             return uid
         else:
-            self.__str__()
-            return kolabformat.getSerializedUID()
+            self.set_uid(uuid.uuid4())
+            return self.get_uid()
 
     def set_attendee_participant_status(self, attendee, status):
         """
@@ -669,6 +711,7 @@ class Event(object):
         msg_from = None
 
         if method == "REPLY":
+            # TODO: Make user friendly name <email>
             msg['To'] = self.get_organizer().email()
 
             attendees = self.get_attendees()
@@ -716,6 +759,7 @@ class Event(object):
 
         msg['Date'] = formatdate(localtime=True)
 
+        # TODO: Should allow for localization
         text = utils.multiline_message("""
                     This is a response to one of your event requests.
             """)
@@ -725,7 +769,8 @@ class Event(object):
         part = MIMEBase('text', "calendar")
         part.set_charset('UTF-8')
 
-        msg["Subject"] = "Response to invitation"
+        # TODO: Should allow for localization
+        msg["Subject"] = "Meeting Request %s" % (participant_status)
 
         part.set_payload(self.as_string_itip(method=method))
 
