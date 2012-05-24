@@ -88,12 +88,13 @@ class Attendee(kolabformat.Attendee):
         self.setDelegatedFrom(list(set(crefs)))
 
     def delegate_to(self, delegatees):
+        self.set_participant_status("DELEGATED")
+
         crefs = []
         if not isinstance(delegatees, list):
             delegatees = [delegatees]
 
         for delegatee in delegatees:
-
             if not isinstance(delegatee, Attendee):
                 raise ValueError, _("Not a valid attendee")
             else:
