@@ -38,22 +38,18 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual([x.get_email() for x in self.event.get_attendees()], ["john@doe.org", "jane@doe.org"])
 
     def test_007_get_attendee_by_email(self):
-        attendee = self.event.get_attendee_by_email("jane@doe.org")
-        self.assertIsInstance(attendee, Attendee)
+        self.assertIsInstance(self.event.get_attendee_by_email("jane@doe.org"), Attendee)
+        self.assertIsInstance(self.event.get_attendee("jane@doe.org"), Attendee)
 
-        attendee = self.event.get_attendee("jane@doe.org")
-        self.assertIsInstance(attendee, Attendee)
-
+    def test_007_get_nonexistent_attendee_by_email(self):
         self.assertRaises(ValueError, self.event.get_attendee_by_email, "nosuchattendee@invalid.domain")
         self.assertRaises(ValueError, self.event.get_attendee, "nosuchattendee@invalid.domain")
 
     def test_008_get_attendee_by_name(self):
-        attendee = self.event.get_attendee_by_name("Doe, Jane")
-        self.assertIsInstance(attendee, Attendee)
+        self.assertIsInstance(self.event.get_attendee_by_name("Doe, Jane"), Attendee)
+        self.assertIsInstance(self.event.get_attendee("Doe, Jane"), Attendee)
 
-        attendee = self.event.get_attendee("Doe, Jane")
-        self.assertIsInstance(attendee, Attendee)
-
+    def test_008_get_nonexistent_attendee_by_name(self):
         self.assertRaises(ValueError, self.event.get_attendee_by_name, "Houdini, Harry")
         self.assertRaises(ValueError, self.event.get_attendee, "Houdini, Harry")
 
@@ -65,6 +61,17 @@ class TestEventXML(unittest.TestCase):
 
     def test_011_attendee_equality(self):
         self.assertEqual(self.event.get_attendee("jane@doe.org").get_email(), "jane@doe.org")
+
+    def test_012_delegate_new_attendee(self):
+        self.event.delegate("jane@doe.org", "max@imum.com")
+
+    def test_013_delegatee_is_now_attendee(self):
+        self.assertIsInstance(self.event.get_attendee("max@imum.com"), Attendee)
+
+    def test_014_delegate_attendee_adds(self):
+        self.assertEqual(len(self.event.get_attendee("jane@doe.org").get_delegated_to()), 1)
+        self.event.delegate("jane@doe.org", "john@doe.org")
+        self.assertEqual(len(self.event.get_attendee("jane@doe.org").get_delegated_to()), 2)
 
 if __name__ == '__main__':
     unittest.main()
