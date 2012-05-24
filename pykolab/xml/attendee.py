@@ -68,6 +68,53 @@ class Attendee(kolabformat.Attendee):
         if not cutype == None:
             self.set_cutype(cutype)
 
+    def delegate_from(self, delegators):
+        crefs = []
+
+        if not isinstance(delegators, list):
+            delegators = [delegators]
+
+        for delegator in delegators:
+            if not isinstance(delegator, Attendee):
+                raise ValueError, _("Not a valid attendee")
+            else:
+                crefs.append(delegator.contactreference)
+
+        if len(crefs) == 0:
+            raise ValueError, _("No valid delegator references found")
+        else:
+            crefs += self.get_delegated_from()
+
+        self.setDelegatedFrom(list(set(crefs)))
+
+    def delegate_to(self, delegatees):
+        crefs = []
+        if not isinstance(delegatees, list):
+            delegatees = [delegatees]
+
+        for delegatee in delegatees:
+
+            if not isinstance(delegatee, Attendee):
+                raise ValueError, _("Not a valid attendee")
+            else:
+                crefs.append(delegatee.contactreference)
+
+        if len(crefs) == 0:
+            raise ValueError, _("No valid delegatee references found")
+        else:
+            crefs += self.get_delegated_to()
+
+        self.setDelegatedTo(list(set(crefs)))
+
+    def get_cutype(self):
+        return self.cutype()
+
+    def get_delegated_from(self):
+        return self.delegatedFrom()
+
+    def get_delegated_to(self):
+        return self.delegatedTo()
+
     def get_email(self):
         return self.contactreference.get_email()
 
@@ -76,6 +123,12 @@ class Attendee(kolabformat.Attendee):
 
     def get_participant_status(self):
         return self.partStat()
+
+    def get_role(self):
+        return self.role()
+
+    def get_rsvp(self):
+        return self.rsvp()
 
     def set_cutype(self, cutype):
         if cutype in self.cutype_map.keys():
