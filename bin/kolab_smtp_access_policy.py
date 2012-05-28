@@ -1222,12 +1222,18 @@ def read_request_input():
         containing the request.
     """
 
+    start_time = time.time()
+
     log.debug(_("Starting to loop for new request"))
 
     policy_request = {}
 
     end_of_request = False
     while not end_of_request:
+        if (time.time()-start_time) >= conf.timeout:
+            log.warning(_("Timeout for policy request reading exceeded"))
+            sys.exit(1)
+
         request_line = sys.stdin.readline()
         if request_line.strip() == '':
             if policy_request.has_key('request'):
@@ -1267,6 +1273,12 @@ if __name__ == "__main__":
     access_policy_group = conf.add_cli_parser_option_group(
             _("Access Policy Options")
         )
+
+    access_policy_group.add_option(  "--timeout",
+                            dest    = "timeout",
+                            action  = "store",
+                            default = 10,
+                            help    = _("SMTP Policy request timeout."))
 
     access_policy_group.add_option(  "--verify-recipient",
                             dest    = "verify_recipient",
