@@ -254,12 +254,16 @@ class WallaceDaemon(object):
         exitcode = 0
 
         try:
-            (ruid, euid, suid) = os.getresuid()
-            (rgid, egid, sgid) = os.getresgid()
+            try:
+                (ruid, euid, suid) = os.getresuid()
+                (rgid, egid, sgid) = os.getresgid()
+            except AttributeError, errmsg:
+                ruid = os.getuid()
+                rgid = os.getgid()
 
             if ruid == 0:
                 # Means we can setreuid() / setregid() / setgroups()
-                if egid == 0:
+                if rgid == 0:
                     # Get group entry details
                     try:
                         (
@@ -277,7 +281,7 @@ class WallaceDaemon(object):
                         sys.exit(1)
 
                     # Set real and effective group if not the same as current.
-                    if not group_gid == egid:
+                    if not group_gid == rgid:
                         log.debug(
                                 _("Switching real and effective group id to %d") % (
                                         group_gid
@@ -287,7 +291,7 @@ class WallaceDaemon(object):
 
                         os.setregid(group_gid, group_gid)
 
-                if euid == 0:
+                if ruid == 0:
                     # Means we haven't switched yet.
                     try:
                         (
@@ -309,7 +313,7 @@ class WallaceDaemon(object):
 
 
                     # Set real and effective user if not the same as current.
-                    if not user_uid == euid:
+                    if not user_uid == ruid:
                         log.debug(
                                 _("Switching real and effective user id to %d") % (
                                         user_uid

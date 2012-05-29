@@ -92,8 +92,13 @@ class Logger(logging.Logger):
             fhandle.close()
 
         # Make sure (read: attempt to change) the permissions
-        (ruid, euid, suid) = os.getresuid()
-        (rgid, egid, sgid) = os.getresgid()
+        try:
+            (ruid, euid, suid) = os.getresuid()
+            (rgid, egid, sgid) = os.getresgid()
+        except AttributeError, errmsg:
+            ruid = os.getuid()
+            rgid = os.getgid()
+
         if ruid == 0 or rgid == 0:
             try:
                 os.chown(
