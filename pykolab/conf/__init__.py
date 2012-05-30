@@ -290,7 +290,7 @@ class Conf(object):
         runtime_group.add_option(   "--logfile",
                                     dest    = "logfile",
                                     action  = "store",
-                                    default = "/var/log/kolabd/kolabd.log",
+                                    default = "/var/log/kolab/pykolab.log",
                                     help    = _("Log file to use"))
 
         runtime_group.add_option(   "-q", "--quiet",
