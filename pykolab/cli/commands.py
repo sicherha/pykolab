@@ -43,7 +43,11 @@ def __init__():
                 module_name = filename.replace('.py','')
                 cmd_name = module_name.replace('cmd_', '')
                 #print "exec(\"from %s import __init__ as %s_register\"" % (module_name,cmd_name)
-                exec("from %s import __init__ as %s_register" % (module_name,cmd_name))
+                try:
+                    exec("from %s import __init__ as %s_register" % (module_name,cmd_name))
+                except ImportError, errmsg:
+                    pass
+
                 exec("%s_register()" % (cmd_name))
 
         for dirname in dirnames:
