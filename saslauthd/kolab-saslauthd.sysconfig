@@ -1,0 +1,5 @@
+# Configuration file for the Kolab SASL Autentication daemon.
+#
+# See kolab-saslauthd --help for more flags.
+#
+FLAGS="--fork -l warning"
