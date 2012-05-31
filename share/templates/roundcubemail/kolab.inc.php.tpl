@@ -5,7 +5,7 @@
 \$rcmail_config['kolab']['ldap']['phpdn'] = '$ldap_service_bind_dn';
 \$rcmail_config['kolab']['ldap']['phppw'] = '$ldap_service_bind_pw';
 
-\$rcmail_config['kolab']['freebusy']['server'] = 'https://' . \$_SERVER["HTTP_HOST"] . '/freebusy';
+\$rcmail_config['kolab']['freebusy']['server'] = 'http://' . \$_SERVER["HTTP_HOST"] . '/freebusy';
 
 \$rcmail_config['kolab']['imap']['secure'] = true;
 \$rcmail_config['kolab']['imap']['namespaces'] = array(
