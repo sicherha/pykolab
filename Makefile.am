@@ -172,6 +172,9 @@ binary:
 		kolabd.py
 	cd src/kolabd/; $(MAKE)
 
+check:
+	nosetests -v tests/
+
 clean:
 	rm -rf src/*; mkdir -p src/
 	find -type f -name "*.pyo" -o -name "*.pyc" -delete
