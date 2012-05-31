@@ -84,13 +84,6 @@ class Logger(logging.Logger):
         else:
             self.logfile = '/var/log/kolab/pykolab.log'
 
-        # Make sure the log file exists
-        fhandle = file(self.logfile, 'a')
-        try:
-            os.utime(self.logfile, None)
-        finally:
-            fhandle.close()
-
         # Make sure (read: attempt to change) the permissions
         try:
             (ruid, euid, suid) = os.getresuid()
@@ -113,17 +106,28 @@ class Logger(logging.Logger):
                                 self.logfile
                             )
 
+        # Make sure the log file exists
         try:
-            filelog_handler = logging.FileHandler(filename=self.logfile)
-            filelog_handler.setFormatter(plaintextformatter)
-        except IOError, e:
-            print >> sys.stderr, _("Cannot log to file %s: %s") % (self.logfile, e)
-
-        if not len(self.handlers) > 1:
+            fhandle = file(self.logfile, 'a')
             try:
-                self.addHandler(filelog_handler)
-            except:
-                pass
+                os.utime(self.logfile, None)
+            finally:
+                fhandle.close()
+
+            try:
+                filelog_handler = logging.FileHandler(filename=self.logfile)
+                filelog_handler.setFormatter(plaintextformatter)
+            except IOError, e:
+                print >> sys.stderr, _("Cannot log to file %s: %s") % (self.logfile, e)
+
+            if not len(self.handlers) > 1:
+                try:
+                    self.addHandler(filelog_handler)
+                except:
+                    pass
+
+        except IOError, errmsg:
+            pass
 
     def remove_stdout_handler(self):
         if not self.fork:
