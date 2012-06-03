@@ -731,12 +731,23 @@ class PolicyRequest(object):
 
             return True
 
-        recipient = {
-                'dn': auth.find_recipient(
-                        normalize_address(recipient),
-                        domain=sasl_domain,
-                    )
-            }
+        recipients = auth.find_recipient(
+                normalize_address(recipient),
+                domain=sasl_domain,
+            )
+
+        if isinstance(recipients, list) and len(recipients) > 1:
+            log.info(
+                    _("This recipient address is related to multiple " + \
+                        "object entries and the SMTP Access Policy can " + \
+                        "therefore not restrict message flow")
+                )
+
+            return True
+        elif isinstance(recipients, basestring):
+            recipient = {
+                    'dn': recipients
+                }
 
         # We have gotten an invalid recipient. We need to catch this case,
         # because testing can input invalid recipients, and so can faulty
