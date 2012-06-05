@@ -80,7 +80,7 @@ def execute(*args, **kw):
     data = """
 [mysql]
 user=root
-password=%s
+password='%s'
 """ % (mysql_root_password)
 
     fp = open('/tmp/kolab-setup-my.cnf', 'w')
