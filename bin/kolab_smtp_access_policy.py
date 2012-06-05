@@ -516,13 +516,23 @@ class PolicyRequest(object):
         if self.sender == self.sasl_username:
             return
 
-        self.sender_user = {
-                'dn': auth.find_user(
-                        search_attrs,
-                        self.sender,
-                        domain=self.sender_domain
-                    )
-            }
+        sender_users = auth.find_recipient(
+                self.sender,
+                domain=self.sender_domain
+            )
+
+        if isinstance(sender_users, list):
+            if len(sender_users) > 1:
+                # More then one sender user with this recipient address.
+                # TODO: check each of the sender users found.
+                self.sender_user = { 'dn': sender_users[0] }
+            elif len(sender_users) == 1:
+                self.sender_user = { 'dn': sender_users }
+            else:
+                self.sender_user = { 'dn': False }
+
+        elif isinstance(sender_users, basestring):
+            self.sender_user = { 'dn': sender_users }
 
         if not self.sender_user['dn']:
             cache_update(
