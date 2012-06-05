@@ -1253,7 +1253,7 @@ def read_request_input():
     while not end_of_request:
         if (time.time()-start_time) >= conf.timeout:
             log.warning(_("Timeout for policy request reading exceeded"))
-            sys.exit(1)
+            sys.exit(0)
 
         request_line = sys.stdin.readline()
         if request_line.strip() == '':
