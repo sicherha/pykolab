@@ -410,10 +410,15 @@ class PolicyRequest(object):
             John.Doe@example.org (mail) for example could be sending with
             envelope sender jdoe@example.org (mailAlternateAddress, alias).
         """
-        search_attrs = conf.get_list(
-                'kolab_smtp_access_policy',
-                'address_search_attrs'
-            )
+        search_attrs = conf.get_list(self.sasl_domain, 'mail_attributes')
+
+        if search_attrs == None or \
+                (isinstance(search_attrs, list) and len(search_attrs) == 0):
+
+            search_attrs = conf.get_list(
+                    conf.get('kolab', 'auth_mechanism'),
+                    'mail_attributes'
+                )
 
         # Catch a user using one of its own alias addresses.
         for search_attr in search_attrs:
@@ -452,12 +457,19 @@ class PolicyRequest(object):
             else:
                 self.sasl_domain = conf.get('kolab', 'primary_domain')
 
-        self.sasl_user = {
-                'dn': auth.find_recipient(
-                        self.sasl_username,
-                        domain=self.sasl_domain
-                    )
-            }
+        sasl_users = auth.find_recipient(
+                self.sasl_username,
+                domain=self.sasl_domain
+            )
+
+        if isinstance(sasl_users, list):
+            if len(sasl_users) == 0:
+                log.error(_("Could not find recipient"))
+                return False
+            else:
+                self.sasl_user = { 'dn': sasl_users[0] }
+        elif isinstance(sasl_users, basestring):
+            self.sasl_user = { 'dn': sasl_users }
 
         if not self.sasl_user['dn']:
             # Got a final answer here, do the caching thing.
@@ -472,13 +484,29 @@ class PolicyRequest(object):
 
             reject(
                     _("Could not find envelope sender user %s") % (
-                        self.sasl_username
+                            self.sasl_username
                         )
                 )
 
         attrs = conf.get_list(self.sasl_domain, 'auth_attributes')
-        if attrs == None:
-            attrs = conf.get_list(conf.get('kolab', 'auth_mechanism'), 'auth_attributes')
+
+        if attrs == None or (isinstance(attrs, list) and len(attrs) == 0):
+            attrs = conf.get_list(
+                    conf.get('kolab', 'auth_mechanism'),
+                    'auth_attributes'
+                )
+
+        mail_attrs = conf.get_list(self.sasl_domain, 'mail_attributes')
+        if mail_attrs == None or \
+                (isinstance(mail_attrs, list) and len(mail_attrs) == 0):
+
+            mail_attrs = conf.get_list(
+                    conf.get('kolab', 'auth_mechanism'),
+                    'mail_attributes'
+                )
+
+        if not mail_attrs == None:
+            attrs.extend(mail_attrs)
 
         attrs.extend(
                 [
@@ -486,6 +514,8 @@ class PolicyRequest(object):
                         'kolabAllowSMTPSender'
                     ]
             )
+
+        attrs = list(set(attrs))
 
         user_attrs = auth.get_user_attributes(
                 self.sasl_domain,
@@ -495,17 +525,19 @@ class PolicyRequest(object):
 
         user_attrs['dn'] = self.sasl_user['dn']
         self.sasl_user = utils.normalize(user_attrs)
+        log.debug(
+                _("Obtained authenticated user details for %r: %r") % (
+                        self.sasl_user['dn'],
+                        self.sasl_user.keys()
+                    ),
+                level=8
+            )
 
     def verify_delegate(self):
         """
             Verify whether the authenticated user is a delegate of the envelope
             sender.
         """
-
-        search_attrs = conf.get_list(
-                'kolab_smtp_access_policy',
-                'address_search_attrs'
-            )
 
         if self.sender_domain == None:
             if len(self.sender.split('@')) > 1:
@@ -514,7 +546,14 @@ class PolicyRequest(object):
                 self.sender_domain = conf.get('kolab', 'primary_domain')
 
         if self.sender == self.sasl_username:
-            return
+            return True
+
+        search_attrs = conf.get_list(self.sender_domain, 'mail_attributes')
+        if search_attrs == None:
+            search_attrs = conf.get_list(
+                    conf.get('kolab', 'auth_mechanism'),
+                    'mail_attributes'
+                )
 
         sender_users = auth.find_recipient(
                 self.sender,
@@ -564,11 +603,6 @@ class PolicyRequest(object):
         user_attrs['dn'] = self.sender_user['dn']
         self.sender_user = utils.normalize(user_attrs)
 
-        search_attrs = conf.get_list(
-                'kolab_smtp_access_policy',
-                'address_search_attrs'
-            )
-
         if not self.sender_user.has_key('kolabdelegate'):
             reject(
                     _("%s is unauthorized to send on behalf of %s") % (
@@ -614,15 +648,19 @@ class PolicyRequest(object):
             # See if we can match the value of the envelope sender delegates to
             # the actual sender sasl_username
             if self.sasl_user == None:
-                sasl_user = {
-                        'dn': auth.find_user(
-                                # TODO: Use the configured cyrus-sasl result
-                                # attribute.
-                                search_attrs,
-                                self.sasl_username,
-                                domain=self.sasl_domain
-                            )
-                    }
+                sasl_users = auth.find_recipient(
+                        self.sasl_username,
+                        domain=self.sasl_domain
+                    )
+
+                if isinstance(sasl_users, list):
+                    if len(sasl_users) == 0:
+                        log.error(_("Could not find recipient"))
+                        return False
+                    else:
+                        self.sasl_user = { 'dn': sasl_users[0] }
+                elif isinstance(sasl_users, basestring):
+                    self.sasl_user = { 'dn': sasl_users }
 
             # Possible values for the kolabDelegate attribute are:
             # a 'uid', a 'dn'.
