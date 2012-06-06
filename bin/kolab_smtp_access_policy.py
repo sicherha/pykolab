@@ -784,14 +784,27 @@ class PolicyRequest(object):
                 domain=sasl_domain,
             )
 
-        if isinstance(recipients, list) and len(recipients) > 1:
-            log.info(
-                    _("This recipient address is related to multiple " + \
-                        "object entries and the SMTP Access Policy can " + \
-                        "therefore not restrict message flow")
-                )
+        if isinstance(recipients, list):
+            if len(recipients) > 1:
+                log.info(
+                        _("This recipient address is related to multiple " + \
+                            "object entries and the SMTP Access Policy can " + \
+                            "therefore not restrict message flow")
+                    )
+                return True
+            elif len(recipients) == 1:
+                recipient = { 'dn': recipients[0] }
+            else:
+                log.debug(
+                        _("Recipient address %r not found. Allowing since " + \
+                            "the MTA was configured to accept the recipient.") % (
+                                normalize_address(recipient)
+                            ),
+                        level=3
+                    )
 
-            return True
+                return True
+
         elif isinstance(recipients, basestring):
             recipient = {
                     'dn': recipients
