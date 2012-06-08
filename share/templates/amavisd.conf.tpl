@@ -12,46 +12,46 @@ use strict;
 
 # @bypass_virus_checks_maps = (1);  # controls running of anti-virus code
 # @bypass_spam_checks_maps  = (1);  # controls running of anti-spam code
-# $bypass_decode_parts = 1;         # controls running of decoders&dearchivers
+# \$bypass_decode_parts = 1;         # controls running of decoders&dearchivers
 
-$max_servers = 2;            # num of pre-forked children (2..30 is common), -m
-$daemon_user  = 'amavis';     # (no default;  customary: vscan or amavis), -u
-$daemon_group = 'amavis';     # (no default;  customary: vscan or amavis), -g
+\$max_servers = 2;            # num of pre-forked children (2..30 is common), -m
+\$daemon_user  = 'amavis';     # (no default;  customary: vscan or amavis), -u
+\$daemon_group = 'amavis';     # (no default;  customary: vscan or amavis), -g
 
-$mydomain = 'example.com';   # a convenient default for other settings
+\$mydomain = 'example.com';   # a convenient default for other settings
 
-$MYHOME = '/var/spool/amavisd';   # a convenient default for other settings, -H
-$TEMPBASE = "$MYHOME/tmp";   # working directory, needs to exist, -T
-$ENV{TMPDIR} = $TEMPBASE;    # environment variable TMPDIR, used by SA, etc.
-$QUARANTINEDIR = undef;      # -Q
-# $quarantine_subdir_levels = 1;  # add level of subdirs to disperse quarantine
-# $release_format = 'resend';     # 'attach', 'plain', 'resend'
-# $report_format  = 'arf';        # 'attach', 'plain', 'resend', 'arf'
+\$MYHOME = '/var/spool/amavisd';   # a convenient default for other settings, -H
+\$TEMPBASE = "\$MYHOME/tmp";   # working directory, needs to exist, -T
+\$ENV{TMPDIR} = \$TEMPBASE;    # environment variable TMPDIR, used by SA, etc.
+\$QUARANTINEDIR = undef;      # -Q
+# \$quarantine_subdir_levels = 1;  # add level of subdirs to disperse quarantine
+# \$release_format = 'resend';     # 'attach', 'plain', 'resend'
+# \$report_format  = 'arf';        # 'attach', 'plain', 'resend', 'arf'
 
-# $daemon_chroot_dir = $MYHOME;   # chroot directory or undef, -R
+# \$daemon_chroot_dir = \$MYHOME;   # chroot directory or undef, -R
 
-$db_home   = "$MYHOME/db";        # dir for bdb nanny/cache/snmp databases, -D
-# $helpers_home = "$MYHOME/var";  # working directory for SpamAssassin, -S
-$lock_file = "/var/run/amavisd/amavisd.lock";  # -L
-$pid_file  = "/var/run/amavisd/amavisd.pid";   # -P
-#NOTE: create directories $MYHOME/tmp, $MYHOME/var, $MYHOME/db manually
+\$db_home   = "\$MYHOME/db";        # dir for bdb nanny/cache/snmp databases, -D
+# \$helpers_home = "\$MYHOME/var";  # working directory for SpamAssassin, -S
+\$lock_file = "/var/run/amavisd/amavisd.lock";  # -L
+\$pid_file  = "/var/run/amavisd/amavisd.pid";   # -P
+#NOTE: create directories \$MYHOME/tmp, \$MYHOME/var, \$MYHOME/db manually
 
-$log_level = 9;              # verbosity 0..5, -d
-$log_recip_templ = undef;    # disable by-recipient level-0 log entries
-$DO_SYSLOG = 1;              # log via syslogd (preferred)
-$syslog_facility = 'mail';   # Syslog facility as a string
+\$log_level = 9;              # verbosity 0..5, -d
+\$log_recip_templ = undef;    # disable by-recipient level-0 log entries
+\$DO_SYSLOG = 1;              # log via syslogd (preferred)
+\$syslog_facility = 'mail';   # Syslog facility as a string
            # e.g.: mail, daemon, user, local0, ... local7
-$syslog_priority = 'debug';  # Syslog base (minimal) priority as a string,
+\$syslog_priority = 'debug';  # Syslog base (minimal) priority as a string,
            # choose from: emerg, alert, crit, err, warning, notice, info, debug
 
-$enable_db = 1;              # enable use of BerkeleyDB/libdb (SNMP and nanny)
-$enable_global_cache = 1;    # enable use of libdb-based cache if $enable_db=1
-$nanny_details_level = 2;    # nanny verbosity: 1: traditional, 2: detailed
-$enable_dkim_verification = 1;  # enable DKIM signatures verification
-$enable_dkim_signing = 1;    # load DKIM signing code, keys defined by dkim_key
+\$enable_db = 1;              # enable use of BerkeleyDB/libdb (SNMP and nanny)
+\$enable_global_cache = 1;    # enable use of libdb-based cache if \$enable_db=1
+\$nanny_details_level = 2;    # nanny verbosity: 1: traditional, 2: detailed
+\$enable_dkim_verification = 1;  # enable DKIM signatures verification
+\$enable_dkim_signing = 1;    # load DKIM signing code, keys defined by dkim_key
 
-$enable_ldap = 1;
-$default_ldap = {
+\$enable_ldap = 1;
+\$default_ldap = {
 		hostname => [ 'localhost' ],
 		version => 3,
 		timeout => 5,
@@ -62,32 +62,32 @@ $default_ldap = {
 		bind_password => 'Welcome2KolabSystems'
 	};
 
-@local_domains_maps = ( [".$mydomain"] );  # list of all local domains
+@local_domains_maps = ( [".\$mydomain"] );  # list of all local domains
 
 @mynetworks = qw( 127.0.0.0/8 [::1] [FE80::]/10 [FEC0::]/10
                   10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 );
 
-$unix_socketname = "$MYHOME/amavisd.sock";  # amavisd-release or amavis-milter
-               # option(s) -p overrides $inet_socket_port and $unix_socketname
+\$unix_socketname = "\$MYHOME/amavisd.sock";  # amavisd-release or amavis-milter
+               # option(s) -p overrides \$inet_socket_port and \$unix_socketname
 
-$inet_socket_port = 10024;   # listen on this local TCP port(s)
-# $inet_socket_port = [10024,10026];  # listen on multiple TCP ports
+\$inet_socket_port = 10024;   # listen on this local TCP port(s)
+# \$inet_socket_port = [10024,10026];  # listen on multiple TCP ports
 
-$policy_bank{'MYNETS'} = {   # mail originating from @mynetworks
+\$policy_bank{'MYNETS'} = {   # mail originating from @mynetworks
   originating => 1,  # is true in MYNETS by default, but let's make it explicit
   os_fingerprint_method => undef,  # don't query p0f for internal clients
 };
 
 # it is up to MTA to re-route mail from authenticated roaming users or
 # from internal hosts to a dedicated TCP port (such as 10026) for filtering
-$interface_policy{'10026'} = 'ORIGINATING';
+\$interface_policy{'10026'} = 'ORIGINATING';
 
-$policy_bank{'ORIGINATING'} = {  # mail supposedly originating from our users
+\$policy_bank{'ORIGINATING'} = {  # mail supposedly originating from our users
   originating => 1,  # declare that mail was submitted by our smtp client
   allow_disclaimers => 1,  # enables disclaimer insertion if available
   # notify administrator of locally originating malware
-  virus_admin_maps => ["virusalert\@$mydomain"],
-  spam_admin_maps  => ["virusalert\@$mydomain"],
+  virus_admin_maps => ["virusalert\@\$mydomain"],
+  spam_admin_maps  => ["virusalert\@\$mydomain"],
   warnbadhsender   => 1,
   # forward to a smtpd service providing DKIM signing service
   forward_method => 'smtp:[127.0.0.1]:10027',
@@ -97,82 +97,82 @@ $policy_bank{'ORIGINATING'} = {  # mail supposedly originating from our users
   terminate_dsn_on_notify_success => 0,  # don't remove NOTIFY=SUCCESS option
 };
 
-$interface_policy{'SOCK'} = 'AM.PDP-SOCK'; # only applies with $unix_socketname
+\$interface_policy{'SOCK'} = 'AM.PDP-SOCK'; # only applies with \$unix_socketname
 
 # Use with amavis-release over a socket or with Petr Rehor's amavis-milter.c
 # (with amavis-milter.c from this package or old amavis.c client use 'AM.CL'):
-$policy_bank{'AM.PDP-SOCK'} = {
+\$policy_bank{'AM.PDP-SOCK'} = {
   protocol => 'AM.PDP',
   auth_required_release => 0,  # do not require secret_id for amavisd-release
 };
 
-$sa_tag_level_deflt  = -10;  # add spam info headers if at, or above that level
-$sa_tag2_level_deflt = 6.2;  # add 'spam detected' headers at that level
-$sa_kill_level_deflt = 6.9;  # triggers spam evasive actions (e.g. blocks mail)
-$sa_dsn_cutoff_level = 10;   # spam level beyond which a DSN is not sent
-$sa_crediblefrom_dsn_cutoff_level = 18; # likewise, but for a likely valid From
-# $sa_quarantine_cutoff_level = 25; # spam level beyond which quarantine is off
-$penpals_bonus_score = 8;    # (no effect without a @storage_sql_dsn database)
-$penpals_threshold_high = $sa_kill_level_deflt;  # don't waste time on hi spam
-$bounce_killer_score = 100;  # spam score points to add for joe-jobbed bounces
+\$sa_tag_level_deflt  = -10;  # add spam info headers if at, or above that level
+\$sa_tag2_level_deflt = 6.2;  # add 'spam detected' headers at that level
+\$sa_kill_level_deflt = 6.9;  # triggers spam evasive actions (e.g. blocks mail)
+\$sa_dsn_cutoff_level = 10;   # spam level beyond which a DSN is not sent
+\$sa_crediblefrom_dsn_cutoff_level = 18; # likewise, but for a likely valid From
+# \$sa_quarantine_cutoff_level = 25; # spam level beyond which quarantine is off
+\$penpals_bonus_score = 8;    # (no effect without a @storage_sql_dsn database)
+\$penpals_threshold_high = \$sa_kill_level_deflt;  # don't waste time on hi spam
+\$bounce_killer_score = 100;  # spam score points to add for joe-jobbed bounces
 
-$sa_mail_body_size_limit = 400*1024; # don't waste time on SA if mail is larger
-$sa_local_tests_only = 0;    # only tests which do not require internet access?
+\$sa_mail_body_size_limit = 400*1024; # don't waste time on SA if mail is larger
+\$sa_local_tests_only = 0;    # only tests which do not require internet access?
 
 # @lookup_sql_dsn =
 #   ( ['DBI:mysql:database=mail;host=127.0.0.1;port=3306', 'user1', 'passwd1'],
 #     ['DBI:mysql:database=mail;host=host2', 'username2', 'password2'],
-#     ["DBI:SQLite:dbname=$MYHOME/sql/mail_prefs.sqlite", '', ''] );
+#     ["DBI:SQLite:dbname=\$MYHOME/sql/mail_prefs.sqlite", '', ''] );
 # @storage_sql_dsn = @lookup_sql_dsn;  # none, same, or separate database
 
-# $timestamp_fmt_mysql = 1; # if using MySQL *and* msgs.time_iso is TIMESTAMP;
+# \$timestamp_fmt_mysql = 1; # if using MySQL *and* msgs.time_iso is TIMESTAMP;
 #   defaults to 0, which is good for non-MySQL or if msgs.time_iso is CHAR(16)
 
-$virus_admin               = undef;                    # notifications recip.
+\$virus_admin               = undef;                    # notifications recip.
 
-$mailfrom_notify_admin     = undef;                    # notifications sender
-$mailfrom_notify_recip     = undef;                    # notifications sender
-$mailfrom_notify_spamadmin = undef;                    # notifications sender
-$mailfrom_to_quarantine = ''; # null return path; uses original sender if undef
+\$mailfrom_notify_admin     = undef;                    # notifications sender
+\$mailfrom_notify_recip     = undef;                    # notifications sender
+\$mailfrom_notify_spamadmin = undef;                    # notifications sender
+\$mailfrom_to_quarantine = ''; # null return path; uses original sender if undef
 
 @addr_extension_virus_maps      = ('virus');
 @addr_extension_banned_maps     = ('banned');
 @addr_extension_spam_maps       = ('spam');
 @addr_extension_bad_header_maps = ('badh');
-# $recipient_delimiter = '+';  # undef disables address extensions altogether
+# \$recipient_delimiter = '+';  # undef disables address extensions altogether
 # when enabling addr extensions do also Postfix/main.cf: recipient_delimiter=+
 
-$path = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin:/usr/bin:/bin';
-# $dspam = 'dspam';
+\$path = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin:/usr/bin:/bin';
+# \$dspam = 'dspam';
 
-$MAXLEVELS = 14;
-$MAXFILES = 1500;
-$MIN_EXPANSION_QUOTA =      100*1024;  # bytes  (default undef, not enforced)
-$MAX_EXPANSION_QUOTA = 300*1024*1024;  # bytes  (default undef, not enforced)
+\$MAXLEVELS = 14;
+\$MAXFILES = 1500;
+\$MIN_EXPANSION_QUOTA =      100*1024;  # bytes  (default undef, not enforced)
+\$MAX_EXPANSION_QUOTA = 300*1024*1024;  # bytes  (default undef, not enforced)
 
-$sa_spam_subject_tag = '***SPAM*** ';
-$defang_virus  = 1;  # MIME-wrap passed infected mail
-$defang_banned = 1;  # MIME-wrap passed mail containing banned name
+\$sa_spam_subject_tag = '***SPAM*** ';
+\$defang_virus  = 1;  # MIME-wrap passed infected mail
+\$defang_banned = 1;  # MIME-wrap passed mail containing banned name
 # for defanging bad headers only turn on certain minor contents categories:
-$defang_by_ccat{+CC_BADH.",3"} = 1;  # NUL or CR character in header
-$defang_by_ccat{+CC_BADH.",5"} = 1;  # header line longer than 998 characters
-$defang_by_ccat{+CC_BADH.",6"} = 1;  # header field syntax error
+\$defang_by_ccat{+CC_BADH.",3"} = 1;  # NUL or CR character in header
+\$defang_by_ccat{+CC_BADH.",5"} = 1;  # header line longer than 998 characters
+\$defang_by_ccat{+CC_BADH.",6"} = 1;  # header field syntax error
 
 
 # OTHER MORE COMMON SETTINGS (defaults may suffice):
 
-# $myhostname = 'host.example.com';  # must be a fully-qualified domain name!
+# \$myhostname = 'host.example.com';  # must be a fully-qualified domain name!
 
-# $notify_method  = 'smtp:[127.0.0.1]:10025';
-# $forward_method = 'smtp:[127.0.0.1]:10025';  # set to undef with milter!
+# \$notify_method  = 'smtp:[127.0.0.1]:10025';
+# \$forward_method = 'smtp:[127.0.0.1]:10025';  # set to undef with milter!
 
-$final_virus_destiny      = D_DISCARD;
-$final_banned_destiny     = D_BOUNCE;
-$final_spam_destiny       = D_DISCARD;
-$final_bad_header_destiny = D_BOUNCE;
-# $bad_header_quarantine_method = undef;
+\$final_virus_destiny      = D_DISCARD;
+\$final_banned_destiny     = D_BOUNCE;
+\$final_spam_destiny       = D_DISCARD;
+\$final_bad_header_destiny = D_BOUNCE;
+# \$bad_header_quarantine_method = undef;
 
-# $os_fingerprint_method = 'p0f:*:2345';  # to query p0f-analyzer.pl
+# \$os_fingerprint_method = 'p0f:*:2345';  # to query p0f-analyzer.pl
 
 ## hierarchy by which a final setting is chosen:
 ##   policy bank (based on port or IP address) -> *_by_ccat
@@ -182,8 +182,8 @@ $final_bad_header_destiny = D_BOUNCE;
 
 # SOME OTHER VARIABLES WORTH CONSIDERING (see amavisd.conf-default for all)
 
-# $warnbadhsender,
-# $warnvirusrecip, $warnbannedrecip, $warnbadhrecip, (or @warn*recip_maps)
+# \$warnbadhsender,
+# \$warnvirusrecip, \$warnbannedrecip, \$warnbadhrecip, (or @warn*recip_maps)
 #
 # @bypass_virus_checks_maps, @bypass_spam_checks_maps,
 # @bypass_banned_checks_maps, @bypass_header_checks_maps,
@@ -193,67 +193,67 @@ $final_bad_header_destiny = D_BOUNCE;
 #
 # @blacklist_sender_maps, @score_sender_maps,
 #
-# $clean_quarantine_method, $virus_quarantine_to, $banned_quarantine_to,
-# $bad_header_quarantine_to, $spam_quarantine_to,
+# \$clean_quarantine_method, \$virus_quarantine_to, \$banned_quarantine_to,
+# \$bad_header_quarantine_to, \$spam_quarantine_to,
 #
-# $defang_bad_header, $defang_undecipherable, $defang_spam
+# \$defang_bad_header, \$defang_undecipherable, \$defang_spam
 
 
 # REMAINING IMPORTANT VARIABLES ARE LISTED HERE BECAUSE OF LONGER ASSIGNMENTS
 
 @keep_decoded_original_maps = (new_RE(
-  qr'^MAIL$',   # retain full original message for virus checking
-  qr'^MAIL-UNDECIPHERABLE$', # recheck full mail if it contains undecipherables
+  qr'^MAIL\$',   # retain full original message for virus checking
+  qr'^MAIL-UNDECIPHERABLE\$', # recheck full mail if it contains undecipherables
   qr'^(ASCII(?! cpio)|text|uuencoded|xxencoded|binhex)'i,
 # qr'^Zip archive data',     # don't trust Archive::Zip
 ));
 
 
-# for $banned_namepath_re (a new-style of banned table) see amavisd.conf-sample
+# for \$banned_namepath_re (a new-style of banned table) see amavisd.conf-sample
 
-$banned_filename_re = new_RE(
+\$banned_filename_re = new_RE(
 
 ### BLOCKED ANYWHERE
-# qr'^UNDECIPHERABLE$',  # is or contains any undecipherable components
-  qr'^\.(exe-ms|dll)$',                   # banned file(1) types, rudimentary
-# qr'^\.(exe|lha|tnef|cab|dll)$',         # banned file(1) types
+# qr'^UNDECIPHERABLE\$',  # is or contains any undecipherable components
+  qr'^\.(exe-ms|dll)\$',                   # banned file(1) types, rudimentary
+# qr'^\.(exe|lha|tnef|cab|dll)\$',         # banned file(1) types
 
 ### BLOCK THE FOLLOWING, EXCEPT WITHIN UNIX ARCHIVES:
-# [ qr'^\.(gz|bz2)$'             => 0 ],  # allow any in gzip or bzip2
-  [ qr'^\.(rpm|cpio|tar)$'       => 0 ],  # allow any in Unix-type archives
+# [ qr'^\.(gz|bz2)\$'             => 0 ],  # allow any in gzip or bzip2
+  [ qr'^\.(rpm|cpio|tar)\$'       => 0 ],  # allow any in Unix-type archives
 
-  qr'.\.(pif|scr)$'i,                     # banned extensions - rudimentary
-# qr'^\.zip$',                            # block zip type
+  qr'.\.(pif|scr)\$'i,                     # banned extensions - rudimentary
+# qr'^\.zip\$',                            # block zip type
 
 ### BLOCK THE FOLLOWING, EXCEPT WITHIN ARCHIVES:
-# [ qr'^\.(zip|rar|arc|arj|zoo)$'=> 0 ],  # allow any within these archives
+# [ qr'^\.(zip|rar|arc|arj|zoo)\$'=> 0 ],  # allow any within these archives
 
-  qr'^application/x-msdownload$'i,        # block these MIME types
-  qr'^application/x-msdos-program$'i,
-  qr'^application/hta$'i,
+  qr'^application/x-msdownload\$'i,        # block these MIME types
+  qr'^application/x-msdos-program\$'i,
+  qr'^application/hta\$'i,
 
-# qr'^message/partial$'i,         # rfc2046 MIME type
-# qr'^message/external-body$'i,   # rfc2046 MIME type
+# qr'^message/partial\$'i,         # rfc2046 MIME type
+# qr'^message/external-body\$'i,   # rfc2046 MIME type
 
-# qr'^(application/x-msmetafile|image/x-wmf)$'i,  # Windows Metafile MIME type
-# qr'^\.wmf$',                            # Windows Metafile file(1) type
+# qr'^(application/x-msmetafile|image/x-wmf)\$'i,  # Windows Metafile MIME type
+# qr'^\.wmf\$',                            # Windows Metafile file(1) type
 
   # block certain double extensions in filenames
-  qr'\.[^./]*[A-Za-z][^./]*\.\s*(exe|vbs|pif|scr|bat|cmd|com|cpl|dll)[.\s]*$'i,
+  qr'\.[^./]*[A-Za-z][^./]*\.\s*(exe|vbs|pif|scr|bat|cmd|com|cpl|dll)[.\s]*\$'i,
 
 # qr'\{[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}\}?'i, # Class ID CLSID, strict
 # qr'\{[0-9a-z]{4,}(-[0-9a-z]{4,}){0,7}\}?'i, # Class ID extension CLSID, loose
 
-  qr'.\.(exe|vbs|pif|scr|cpl)$'i,             # banned extension - basic
-# qr'.\.(exe|vbs|pif|scr|cpl|bat|cmd|com)$'i, # banned extension - basic+cmd
+  qr'.\.(exe|vbs|pif|scr|cpl)\$'i,             # banned extension - basic
+# qr'.\.(exe|vbs|pif|scr|cpl|bat|cmd|com)\$'i, # banned extension - basic+cmd
 # qr'.\.(ade|adp|app|bas|bat|chm|cmd|com|cpl|crt|emf|exe|fxp|grp|hlp|hta|
 #        inf|ins|isp|js|jse|lnk|mda|mdb|mde|mdw|mdt|mdz|msc|msi|msp|mst|
 #        ops|pcd|pif|prg|reg|scr|sct|shb|shs|vb|vbe|vbs|
-#        wmf|wsc|wsf|wsh)$'ix,  # banned ext - long
-# qr'.\.(ani|cur|ico)$'i,                 # banned cursors and icons filename
-# qr'^\.ani$',                            # banned animated cursor file(1) type
+#        wmf|wsc|wsf|wsh)\$'ix,  # banned ext - long
+# qr'.\.(ani|cur|ico)\$'i,                 # banned cursors and icons filename
+# qr'^\.ani\$',                            # banned animated cursor file(1) type
 
-# qr'.\.(mim|b64|bhx|hqx|xxe|uu|uue)$'i,  # banned extension - WinZip vulnerab.
+# qr'.\.(mim|b64|bhx|hqx|xxe|uu|uue)\$'i,  # banned extension - WinZip vulnerab.
 );
 # See http://support.microsoft.com/default.aspx?scid=kb;EN-US;q262631
 # and http://www.cknow.com/vtutor/vtextensions.htm
@@ -365,8 +365,8 @@ $banned_filename_re = new_RE(
 # ### http://www.clanfield.info/sophie/ (http://www.vanja.com/tools/sophie/)
 # ['Sophie',
 #   \&ask_daemon, ["{}/\n", '/var/run/sophie'],
-#   qr/(?x)^ 0+ ( : | [\000\r\n]* $)/m,  qr/(?x)^ 1 ( : | [\000\r\n]* $)/m,
-#   qr/(?x)^ [-+]? \d+ : (.*?) [\000\r\n]* $/m ],
+#   qr/(?x)^ 0+ ( : | [\000\r\n]* \$)/m,  qr/(?x)^ 1 ( : | [\000\r\n]* \$)/m,
+#   qr/(?x)^ [-+]? \d+ : (.*?) [\000\r\n]* \$/m ],
 
 # ### http://www.csupomona.edu/~henson/www/projects/SAVI-Perl/
 # ['Sophos SAVI', \&sophos_savi ],
@@ -374,13 +374,13 @@ $banned_filename_re = new_RE(
 # ### http://www.clamav.net/
 ['ClamAV-clamd',
   \&ask_daemon, ["CONTSCAN {}\n", "/var/spool/amavisd/clamd.sock"],
-  qr/\bOK$/m, qr/\bFOUND$/m,
-  qr/^.*?: (?!Infected Archive)(.*) FOUND$/m ],
+  qr/\bOK\$/m, qr/\bFOUND\$/m,
+  qr/^.*?: (?!Infected Archive)(.*) FOUND\$/m ],
 # # NOTE: run clamd under the same user as amavisd, or run it under its own
 # #   uid such as clamav, add user clamav to the amavis group, and then add
 # #   AllowSupplementaryGroups to clamd.conf;
 # # NOTE: match socket name (LocalSocket) in clamav.conf to the socket name in
-# #   this entry; when running chrooted one may prefer socket "$MYHOME/clamd".
+# #   this entry; when running chrooted one may prefer socket "\$MYHOME/clamd".
 
 # ### http://www.clamav.net/ and CPAN  (memory-hungry! clamd is preferred)
 # # note that Mail::ClamAV requires perl to be build with threading!
@@ -394,8 +394,8 @@ $banned_filename_re = new_RE(
 # ### http://www.vanja.com/tools/trophie/
 # ['Trophie',
 #   \&ask_daemon, ["{}/\n", '/var/run/trophie'],
-#   qr/(?x)^ 0+ ( : | [\000\r\n]* $)/m,  qr/(?x)^ 1 ( : | [\000\r\n]* $)/m,
-#   qr/(?x)^ [-+]? \d+ : (.*?) [\000\r\n]* $/m ],
+#   qr/(?x)^ 0+ ( : | [\000\r\n]* \$)/m,  qr/(?x)^ 1 ( : | [\000\r\n]* \$)/m,
+#   qr/(?x)^ [-+]? \d+ : (.*?) [\000\r\n]* \$/m ],
 
 # ### http://www.grisoft.com/
 # ['AVG Anti-Virus',
@@ -425,7 +425,7 @@ $banned_filename_re = new_RE(
 #   [pack('N',1).  # DRWEBD_SCAN_CMD
 #    pack('N',0x00280001).   # DONT_CHANGEMAIL, IS_MAIL, RETURN_VIRUSES
 #    pack('N',     # path length
-#      length("$TEMPBASE/amavis-yyyymmddTHHMMSS-xxxxx/parts/pxxx")).
+#      length("\$TEMPBASE/amavis-yyyymmddTHHMMSS-xxxxx/parts/pxxx")).
 #    '{}/*'.       # path
 #    pack('N',0).  # content size
 #    pack('N',0),
@@ -439,7 +439,7 @@ $banned_filename_re = new_RE(
 #   qr/\A.{12}(?:infected with )?([^\x00]+)\x00/sm,
 # ],
 # # NOTE: If using amavis-milter, change length to:
-# # length("$TEMPBASE/amavis-milter-xxxxxxxxxxxxxx/parts/pxxx").
+# # length("\$TEMPBASE/amavis-milter-xxxxxxxxxxxxxx/parts/pxxx").
 
   ### http://www.kaspersky.com/  (kav4mailservers)
   ['KasperskyLab AVP - aveclient',
@@ -456,8 +456,8 @@ $banned_filename_re = new_RE(
   ['KasperskyLab AntiViral Toolkit Pro (AVP)', ['avp'],
     '-* -P -B -Y -O- {}', [0,3,6,8], [2,4],    # any use for -A -K   ?
     qr/infected: (.+)/m,
-    sub {chdir('/opt/AVP') or die "Can't chdir to AVP: $!"},
-    sub {chdir($TEMPBASE) or die "Can't chdir back to $TEMPBASE $!"},
+    sub {chdir('/opt/AVP') or die "Can't chdir to AVP: \$!"},
+    sub {chdir(\$TEMPBASE) or die "Can't chdir back to \$TEMPBASE \$!"},
   ],
 
   ### The kavdaemon and AVPDaemonClient have been removed from Kasperky
@@ -467,30 +467,30 @@ $banned_filename_re = new_RE(
       '/opt/AVP/AvpDaemonClient', 'AvpDaemonClient',
       '/opt/AVP/AvpTeamDream',    'AvpTeamDream',
       '/opt/AVP/avpdc', 'avpdc' ],
-    "-f=$TEMPBASE {}", [0,8], [3,4,5,6], qr/infected: ([^\r\n]+)/m ],
+    "-f=\$TEMPBASE {}", [0,8], [3,4,5,6], qr/infected: ([^\r\n]+)/m ],
     # change the startup-script in /etc/init.d/kavd to:
     #   DPARMS="-* -Y -dl -f=/var/amavis /var/amavis"
     #   (or perhaps:   DPARMS="-I0 -Y -* /var/amavis" )
-    # adjusting /var/amavis above to match your $TEMPBASE.
+    # adjusting /var/amavis above to match your \$TEMPBASE.
     # The '-f=/var/amavis' is needed if not running it as root, so it
     # can find, read, and write its pid file, etc., see 'man kavdaemon'.
     # defUnix.prf: there must be an entry "*/var/amavis" (or whatever
-    #   directory $TEMPBASE specifies) in the 'Names=' section.
+    #   directory \$TEMPBASE specifies) in the 'Names=' section.
     # cd /opt/AVP/DaemonClients; configure; cd Sample; make
     # cp AvpDaemonClient /opt/AVP/
-    # su - vscan -c "${PREFIX}/kavdaemon ${DPARMS}"
+    # su - vscan -c "\${PREFIX}/kavdaemon \${DPARMS}"
 
   ### http://www.centralcommand.com/
   ['CentralCommand Vexira (new) vascan',
     ['vascan','/usr/lib/Vexira/vascan'],
-    "-a s --timeout=60 --temp=$TEMPBASE -y $QUARANTINEDIR ".
+    "-a s --timeout=60 --temp=\$TEMPBASE -y \$QUARANTINEDIR ".
     "--log=/var/log/vascan.log {}",
     [0,3], [1,2,5],
     qr/(?x)^\s* (?:virus|iworm|macro|mutant|sequence|trojan)\ found:\ ( [^\]\s']+ )\ \.\.\.\ /m ],
     # Adjust the path of the binary and the virus database as needed.
     # 'vascan' does not allow to have the temp directory to be the same as
     # the quarantine directory, and the quarantine option can not be disabled.
-    # If $QUARANTINEDIR is not used, then another directory must be specified
+    # If \$QUARANTINEDIR is not used, then another directory must be specified
     # to appease 'vascan'. Move status 3 to the second list if password
     # protected files are to be considered infected.
 
@@ -511,7 +511,7 @@ $banned_filename_re = new_RE(
   ### http://www.symantec.com/
   ['Symantec CarrierScan via Symantec CommandLineScanner',
     'cscmdline', '-a scan -i 1 -v -s 127.0.0.1:7777 {}',
-    qr/^Files Infected:\s+0$/m, qr/^Infected\b/m,
+    qr/^Files Infected:\s+0\$/m, qr/^Infected\b/m,
     qr/^(?:Info|Virus Name):\s+(.+)/m ],
 
   ### http://www.symantec.com/
@@ -609,7 +609,7 @@ $banned_filename_re = new_RE(
 
   ### http://www.norman.com/products_nvc.shtml
   ['Norman Virus Control v5 / Linux', 'nvcc',
-    '-c -l:0 -s -u -temp:$TEMPBASE {}', [0,10,11], [1,2,14],
+    '-c -l:0 -s -u -temp:\$TEMPBASE {}', [0,10,11], [1,2,14],
     qr/(?i).* virus in .* -> \'(.+)\'/m ],
 
   ### http://www.pandasoftware.com/
@@ -646,8 +646,8 @@ $banned_filename_re = new_RE(
         \ the\ (.+)\ (?:virus|trojan)  |
         \ (?:virus|trojan)\ or\ variant\ ([^ ]+)  |
         :\ (.+)\ NOT\ a\ virus)/m,
-  # sub {$ENV{LD_PRELOAD}='/lib/libc.so.6'},
-  # sub {delete $ENV{LD_PRELOAD}},
+  # sub {\$ENV{LD_PRELOAD}='/lib/libc.so.6'},
+  # sub {delete \$ENV{LD_PRELOAD}},
   ],
   # NOTE1: with RH9: force the dynamic linker to look at /lib/libc.so.6 before
   # anything else by setting environment variable LD_PRELOAD=/lib/libc.so.6
@@ -657,7 +657,7 @@ $banned_filename_re = new_RE(
 
   ### http://www.virusbuster.hu/en/
   ['VirusBuster', ['vbuster', 'vbengcl'],
-    "{} -ss -i '*' -log=$MYHOME/vbuster.log", [0], [1],
+    "{} -ss -i '*' -log=\$MYHOME/vbuster.log", [0], [1],
     qr/: '(.*)' - Virus/m ],
   # VirusBuster Ltd. does not support the daemon version for the workstation
   # engine (vbuster-eng-1.12-linux-i386-libc6.tgz) any longer. The names of
@@ -674,7 +674,7 @@ $banned_filename_re = new_RE(
   ### http://www.cyber.com/
   ['CyberSoft VFind', 'vfind',
     '--vexit {}/*', [0], [23], qr/##==>>>> VIRUS ID: CVDL (.+)/m,
-  # sub {$ENV{VSTK_HOME}='/usr/lib/vstk'},
+  # sub {\$ENV{VSTK_HOME}='/usr/lib/vstk'},
   ],
 
   ### http://www.avast.com/
@@ -689,13 +689,13 @@ $banned_filename_re = new_RE(
   ['BitDefender', 'bdscan',  # new version
     '--action=ignore --no-list {}', qr/^Infected files\s*:\s*0+(?!\d)/m,
     qr/^(?:Infected files|Identified viruses|Suspect files)\s*:\s*0*[1-9]/m,
-    qr/(?:suspected|infected)\s*:\s*(.*)(?:\033|$)/m ],
+    qr/(?:suspected|infected)\s*:\s*(.*)(?:\033|\$)/m ],
 
   ### http://www.bitdefender.com/
   ['BitDefender', 'bdc',  # old version
     '--arc --mail {}', qr/^Infected files *:0+(?!\d)/m,
     qr/^(?:Infected files|Identified viruses|Suspect files) *:0*[1-9]/m,
-    qr/(?:suspected|infected): (.*)(?:\033|$)/m ],
+    qr/(?:suspected|infected): (.*)(?:\033|\$)/m ],
   # consider also: --all --nowarn --alev=15 --flev=15.  The --all argument may
   # not apply to your version of bdc, check documentation and see 'bdc --help'
 
@@ -707,20 +707,20 @@ $banned_filename_re = new_RE(
 # ### a generic SMTP-client interface to a SMTP-based virus scanner
 # ['av_smtp', \&ask_av_smtp,
 #   ['{}', 'smtp:[127.0.0.1]:5525', 'dummy@localhost'],
-#   qr/^2/, qr/^5/, qr/^\s*(.*?)\s*$/m ],
+#   qr/^2/, qr/^5/, qr/^\s*(.*?)\s*\$/m ],
 
 # ['File::Scan', sub {Amavis::AV::ask_av(sub{
-#   use File::Scan; my($fn)=@_;
-#   my($f)=File::Scan->new(max_txt_size=>0, max_bin_size=>0);
-#   my($vname) = $f->scan($fn);
-#   $f->error ? (2,"Error: ".$f->error)
-#   : ($vname ne '') ? (1,"$vname FOUND") : (0,"Clean")}, @_) },
-#   ["{}/*"], [0], [1], qr/^(.*) FOUND$/m ],
+#   use File::Scan; my(\$fn)=@_;
+#   my(\$f)=File::Scan->new(max_txt_size=>0, max_bin_size=>0);
+#   my(\$vname) = \$f->scan(\$fn);
+#   \$f->error ? (2,"Error: ".\$f->error)
+#   : (\$vname ne '') ? (1,"\$vname FOUND") : (0,"Clean")}, @_) },
+#   ["{}/*"], [0], [1], qr/^(.*) FOUND\$/m ],
 
 # ### fully-fledged checker for JPEG marker segments of invalid length
 # ['check-jpeg',
 #   sub { use JpegTester (); Amavis::AV::ask_av(\&JpegTester::test_jpeg, @_) },
-#   ["{}/*"], undef, [1], qr/^(bad jpeg: .*)$/m ],
+#   ["{}/*"], undef, [1], qr/^(bad jpeg: .*)\$/m ],
 # # NOTE: place file JpegTester.pm somewhere where Perl can find it,
 # #       for example in /usr/local/lib/perl5/site_perl
 
@@ -731,8 +731,8 @@ $banned_filename_re = new_RE(
 
   ### http://www.clamav.net/   - backs up clamd or Mail::ClamAV
   ['ClamAV-clamscan', 'clamscan',
-    "--stdout --no-summary -r --tempdir=$TEMPBASE {}",
-    [0], qr/:.*\sFOUND$/m, qr/^.*?: (?!Infected Archive)(.*) FOUND$/m ],
+    "--stdout --no-summary -r --tempdir=\$TEMPBASE {}",
+    [0], qr/:.*\sFOUND\$/m, qr/^.*?: (?!Infected Archive)(.*) FOUND\$/m ],
 
   ### http://www.f-prot.com/   - backs up F-Prot Daemon, V6
   ['F-PROT Antivirus for UNIX', ['fpscan'],
@@ -743,7 +743,7 @@ $banned_filename_re = new_RE(
   ### http://www.f-prot.com/   - backs up F-Prot Daemon (old)
   ['FRISK F-Prot Antivirus', ['f-prot','f-prot.sh'],
     '-dumb -archive -packed {}', [0,8], [3,6],   # or: [0], [3,6,8],
-    qr/(?:Infection:|security risk named) (.+)|\s+contains\s+(.+)$/m ],
+    qr/(?:Infection:|security risk named) (.+)|\s+contains\s+(.+)\$/m ],
 
   ### http://www.trendmicro.com/   - backs up Trophie
   ['Trend Micro FileScanner', ['/etc/iscan/vscan','vscan'],
@@ -753,7 +753,7 @@ $banned_filename_re = new_RE(
   ['drweb - DrWeb Antivirus',  # security LHA hole in Dr.Web 4.33 and earlier
     ['/usr/local/drweb/drweb', '/opt/drweb/drweb', 'drweb'],
     '-path={} -al -go -ot -cn -upn -ok-',
-    [0,32], [1,9,33], qr' infected (?:with|by)(?: virus)? (.*)$'m ],
+    [0,32], [1,9,33], qr' infected (?:with|by)(?: virus)? (.*)\$'m ],
 
    ### http://www.kaspersky.com/
    ['Kaspersky Antivirus v5.5',
@@ -762,8 +762,8 @@ $banned_filename_re = new_RE(
       '/opt/kav/5.5/kav4mailservers/bin/kavscanner', 'kavscanner'],
      '-i0 -xn -xp -mn -R -ePASBME {}/*', [0,10,15], [5,20,21,25],
      qr/(?:INFECTED|WARNING|SUSPICION|SUSPICIOUS) (.*)/m,
-#    sub {chdir('/opt/kav/bin') or die "Can't chdir to kav: $!"},
-#    sub {chdir($TEMPBASE) or die "Can't chdir back to $TEMPBASE $!"},
+#    sub {chdir('/opt/kav/bin') or die "Can't chdir to kav: \$!"},
+#    sub {chdir(\$TEMPBASE) or die "Can't chdir back to \$TEMPBASE \$!"},
    ],
 
 # Commented out because the name 'sweep' clashes with Debian and FreeBSD
