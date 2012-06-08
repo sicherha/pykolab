@@ -249,7 +249,37 @@ result_attribute = mail
         log.error(_("Could not write out Postfix configuration file /etc/postfix/master.cf"))
         return
 
-    subprocess.call(['/etc/pki/tls/certs/make-dummy-cert', '/etc/pki/tls/private/localhost.pem'])
+    amavisd_settings = {
+            'ldap_server': 'localhost',
+            'ldap_bind_dn': conf.get('ldap', 'service_bind_dn'),
+            'ldap_bind_pw': conf.get('ldap', 'service_bind_pw'),
+            'primary_domain': conf.get('kolab', 'primary_domain'),
+            'ldap_filter': "(|(mail=%m)(alias=%m))",
+            'ldap_base_dn': conf.get('ldap', 'base_dn'),
+        }
+
+    template_file = None
+
+    if os.path.isfile('/etc/kolab/templates/amavisd.conf.tpl'):
+        template_file = '/etc/kolab/templates/amavisd.conf.tpl'
+    elif os.path.isfile('/usr/share/kolab/templates/amavisd.conf.tpl'):
+        template_file = '/usr/share/kolab/templates/amavisd.conf.tpl'
+    elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'amavisd.conf.tpl'))):
+        template_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'amavisd.conf.tpl'))
+
+    if not template_file == None:
+        fp = open(template_file, 'r')
+        template_definition = fp.read()
+        fp.close()
+
+        t = Template(template_definition, searchList=[amavisd_settings])
+        fp = open('/etc/amavisd/amavisd.conf', 'w')
+        fp.write(t.__str__())
+        fp.close()
+
+    else:
+        log.error(_("Could not write out Amavis configuration file /etc/amavisd/amavisd.conf"))
+        return
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'postfix.service'])
