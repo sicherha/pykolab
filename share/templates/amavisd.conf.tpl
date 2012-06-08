@@ -18,7 +18,7 @@ use strict;
 \$daemon_user  = 'amavis';     # (no default;  customary: vscan or amavis), -u
 \$daemon_group = 'amavis';     # (no default;  customary: vscan or amavis), -g
 
-\$mydomain = 'example.com';   # a convenient default for other settings
+\$mydomain = '$primary_domain';   # a convenient default for other settings
 
 \$MYHOME = '/var/spool/amavisd';   # a convenient default for other settings, -H
 \$TEMPBASE = "\$MYHOME/tmp";   # working directory, needs to exist, -T
@@ -56,10 +56,10 @@ use strict;
 		version => 3,
 		timeout => 5,
 		tls => 0,
-		base => 'dc=example,dc=org',
-		query_filter => '(|(mail=%m)(alias=%m))',
-		bind_dn => 'uid=kolab-service,ou=Special Users,dc=example,dc=org',
-		bind_password => 'Welcome2KolabSystems'
+		base => '$ldap_base_dn',
+		query_filter => '$ldap_filter',
+		bind_dn => '$ldap_bind_dn',
+		bind_password => '$ldap_bind_pw'
 	};
 
 @local_domains_maps = ( [".\$mydomain"] );  # list of all local domains
