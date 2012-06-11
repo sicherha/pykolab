@@ -818,50 +818,18 @@ class LDAP(pykolab.base.Base):
             except ldap.INVALID_CREDENTIALS:
                 log.error(_("Invalid bind credentials"))
 
-    def _change_add_user(self, entry, change):
-        """
-            An entry of type user was added.
-        """
-        mailserver_attribute = self.config_get('mailserver_attribute')
-        if mailserver_attribute == None:
-            mailserver_attribute = 'mailhost'
-
-        result_attribute = conf.get('cyrus-sasl', 'result_attribute')
-
-        if not entry.has_key(mailserver_attribute):
-            entry[mailserver_attribute] = \
-                self.get_entry_attribute(entry, mailserver_attribute)
-
-        rcpt_addrs = self.recipient_policy(entry)
-        for key in rcpt_addrs:
-            entry[key] = rcpt_addrs[key]
-
-        if not entry.has_key(result_attribute):
-            return
-
-        if entry[result_attribute] == None:
-            return
-
-        cache.get_entry(self.domain, entry)
-
-        self.imap.connect(domain=self.domain)
-
-        if not self.imap.user_mailbox_exists(entry[result_attribute]):
-            folder = self.imap.user_mailbox_create(
-                    entry[result_attribute],
-                    entry[mailserver_attribute]
-                )
-        else:
-            folder = "user%s%s" % (self.imap.separator,entry[result_attribute])
-
-        server = self.imap.user_mailbox_server(folder)
-
-        if not entry[mailserver_attribute] == server:
-            self.set_entry_attribute(entry, mailserver_attribute, server)
-
     def _change_add_group(self, entry, change):
         """
             An entry of type group was added.
+
+            The Kolab daemon has little to do for this type of action on this
+            type of entry.
+        """
+        pass
+
+    def _change_add_resource(self, entry, change):
+        """
+            An entry of type resource was added.
 
             The Kolab daemon has little to do for this type of action on this
             type of entry.
@@ -932,6 +900,47 @@ class LDAP(pykolab.base.Base):
 
         #if server == None:
             #self.entry_set_attribute(mailserver_attribute, server)
+
+    def _change_add_user(self, entry, change):
+        """
+            An entry of type user was added.
+        """
+        mailserver_attribute = self.config_get('mailserver_attribute')
+        if mailserver_attribute == None:
+            mailserver_attribute = 'mailhost'
+
+        result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+
+        if not entry.has_key(mailserver_attribute):
+            entry[mailserver_attribute] = \
+                self.get_entry_attribute(entry, mailserver_attribute)
+
+        rcpt_addrs = self.recipient_policy(entry)
+        for key in rcpt_addrs:
+            entry[key] = rcpt_addrs[key]
+
+        if not entry.has_key(result_attribute):
+            return
+
+        if entry[result_attribute] == None:
+            return
+
+        cache.get_entry(self.domain, entry)
+
+        self.imap.connect(domain=self.domain)
+
+        if not self.imap.user_mailbox_exists(entry[result_attribute]):
+            folder = self.imap.user_mailbox_create(
+                    entry[result_attribute],
+                    entry[mailserver_attribute]
+                )
+        else:
+            folder = "user%s%s" % (self.imap.separator,entry[result_attribute])
+
+        server = self.imap.user_mailbox_server(folder)
+
+        if not entry[mailserver_attribute] == server:
+            self.set_entry_attribute(entry, mailserver_attribute, server)
 
     def _change_delete_group(self, entry, change):
         """
