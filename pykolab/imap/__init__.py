@@ -734,18 +734,6 @@ class IMAP(object):
 
         return folders
 
-    def synchronize(self, users=[], primary_domain=None, secondary_domains=[]):
-        self.connect(domain=primary_domain)
-        self.users.extend(users)
-
-        self.move_user_folders(users, domain=primary_domain)
-
-        self.inbox_folders.extend(self.create_user_folders(users, primary_domain, secondary_domains))
-
-        self.set_user_folder_quota(users, primary_domain, secondary_domains, self.inbox_folders)
-
-        self.set_user_mailhost(users, primary_domain, secondary_domains, self.inbox_folders)
-
     def lm(self, *args, **kw):
         return self.imap.lm(*args, **kw)
 
