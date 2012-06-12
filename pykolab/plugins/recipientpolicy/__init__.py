@@ -61,6 +61,15 @@ class KolabRecipientpolicy(object):
         elif not user_attrs['domain'] == kw['primary_domain']:
             user_attrs['domain'] = kw['primary_domain']
 
+        if not user_attrs.has_key('preferredlanguage'):
+            default_locale = conf.get(user_attrs['domain'], 'default_locale')
+            if default_locale == None:
+                default_locale = conf.get(user_attrs['domain'], 'default_locale')
+            if default_locale == None:
+                default_locale = 'en_US'
+
+            user_attrs['preferredlanguage'] = default_locale
+
         try:
             mail = kw['primary_mail'] % user_attrs
             mail = utils.translate(mail, user_attrs['preferredlanguage'])
@@ -90,6 +99,15 @@ class KolabRecipientpolicy(object):
             user_attrs['domain'] = kw['primary_domain']
         elif not user_attrs['domain'] == kw['primary_domain']:
             user_attrs['domain'] = kw['primary_domain']
+
+        if not user_attrs.has_key('preferredlanguage'):
+            default_locale = conf.get(user_attrs['domain'], 'default_locale')
+            if default_locale == None:
+                default_locale = conf.get(user_attrs['domain'], 'default_locale')
+            if default_locale == None:
+                default_locale = 'en_US'
+
+            user_attrs['preferredlanguage'] = default_locale
 
         try:
             exec("alternative_mail_routines = %s" % kw['secondary_mail'])
