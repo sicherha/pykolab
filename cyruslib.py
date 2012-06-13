@@ -586,6 +586,27 @@ class CYRUS:
             self.__verbose( '[GETQUOTA %s] BAD: Error while parsing results' % mailbox )
             return 0, 0
 
+    def lqr(self, mailbox):
+        """List Quota Root"""
+        self.__prepare('GETQUOTAROOT', mailbox)
+        res, msg = self.__docommand("getquotaroot", self.decode(mailbox))
+        (_mailbox, _root) = msg[0][0].split()
+
+        match = re_q0.match(msg[1][0])
+        if match:
+            self.__verbose( '[GETQUOTAROOT %s] QUOTAROOT (Unlimited)' % mailbox )
+            return _root, 0, 0
+
+        match = re_q.match(msg[1][0])
+        try:
+            used = int(match.group(2))
+            quota = int(match.group(3))
+            self.__verbose( '[GETQUOTAROOT %s] %s: QUOTA (%d/%d)' % (mailbox, res, used, quota) )
+            return _root, used, quota
+        except:
+            self.__verbose( '[GETQUOTAROOT %s] BAD: Error while parsing results' % mailbox )
+            return _root, 0, 0
+
     def sq(self, mailbox, limit):
         """Set Quota"""
         self.__prepare('SETQUOTA', mailbox)
