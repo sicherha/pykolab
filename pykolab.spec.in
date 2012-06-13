@@ -31,6 +31,8 @@ BuildRequires:      python-ldap
 BuildRequires:      python-nose
 Requires:           kolab-cli = %{version}-%{release}
 Requires:           python-ldap >= 2.4
+Requires:           python-pyasn1
+Requires:           python-pyasn1-modules
 Requires(pre):      /usr/sbin/useradd
 Requires(pre):      /usr/sbin/usermod
 Requires(pre):      /usr/sbin/groupadd
