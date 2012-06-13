@@ -503,6 +503,9 @@ class IMAP(object):
             else:
                 log.debug(_("Value for user is not a dictionary"), level=8)
 
+    def set_quota(self, folder, quota):
+        self.imap._setquota(folder, quota)
+
     def set_user_folder_quota(self, users=[], primary_domain=None, secondary_domain=[], folders=[]):
         """
 
@@ -698,7 +701,10 @@ class IMAP(object):
         self.imap.dm(mailfolder_path)
 
     def get_quota(self, mailfolder_path):
-        return self.lq(mailfolder_path)
+        try:
+            return self.lq(mailfolder_path)
+        except:
+            return
 
     def get_quota_root(self, mailfolder_path):
         return self.lqr(mailfolder_path)
