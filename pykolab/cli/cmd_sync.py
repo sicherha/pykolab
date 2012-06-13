@@ -19,8 +19,10 @@
 
 import commands
 
+import time
 import pykolab
 
+from pykolab.auth import Auth
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.cli')
@@ -30,6 +32,7 @@ def __init__():
     commands.register('sync', execute, description="Synchronize Kolab Users with IMAP.")
 
 def execute(*args, **kw):
+    auth = Auth()
     log.debug(_("Listing domains..."), level=5)
     start_time = time.time()
     domains = auth.list_domains()
@@ -48,7 +51,7 @@ def execute(*args, **kw):
         log.debug(_("Running for domain %s") % (primary_domain), level=8)
         auth.connect(primary_domain)
         start_time = time.time()
-        auth.synchronize(primary_domain, secondary_domains)
+        auth.synchronize()
         end_time = time.time()
 
         log.info(_("Synchronizing users for %s took %d seconds")
