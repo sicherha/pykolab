@@ -32,6 +32,7 @@ import time
 import traceback
 
 import pykolab
+from pykolab import utils
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.wallace')

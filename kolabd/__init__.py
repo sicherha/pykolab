@@ -32,6 +32,7 @@ import pykolab
 
 from pykolab.auth import Auth
 from pykolab import constants
+from pykolab import utils
 from pykolab.translate import _
 
 from process import KolabdProcess as Process

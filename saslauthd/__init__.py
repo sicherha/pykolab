@@ -35,6 +35,7 @@ import traceback
 
 import pykolab
 
+from pykolab import utils
 from pykolab.auth import Auth
 from pykolab.constants import *
 from pykolab.translate import _
