@@ -122,7 +122,9 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
                 return True
 
 def ensure_directory(_dir, _user='root', _group='root'):
-    os.makedirs(_dir)
+    if not os.path.isdir(_dir):
+        os.makedirs(_dir)
+
     try:
         try:
             (ruid, euid, suid) = os.getresuid()
@@ -182,17 +184,15 @@ def ensure_directory(_dir, _user='root', _group='root'):
 
                 # Set real and effective user if not the same as current.
                 if not user_uid == ruid:
-                    log.debug(
-                            _("Switching real and effective user id to %d") % (
-                                    user_uid
-                                ),
-                            level=8
-                        )
+                    print >> sys.stderr, \
+                        _("Switching real and effective user id to %d") % (
+                                user_uid
+                            )
 
                     os.chown(_dir, user_uid, -1)
 
     except:
-        log.error(_("Could not change the permissions on %s") % (_dir))
+        print >> sys.stderr, _("Could not change the permissions on %s") % (_dir)
 
 def generate_password():
     import subprocess
