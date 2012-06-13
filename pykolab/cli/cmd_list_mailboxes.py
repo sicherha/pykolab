@@ -41,7 +41,7 @@ def cli_options():
                                 dest    = "raw",
                                 action  = "store_true",
                                 default = False,
-                                help    = _("Display raw UTF-7 folder names"))
+                                help    = _("Display raw IMAP UTF-7 folder names"))
 
 def execute(*args, **kw):
     """
