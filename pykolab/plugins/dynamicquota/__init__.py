@@ -40,51 +40,42 @@ class KolabDynamicquota(object):
             The arguments passed to the 'set_user_folder_quota' hook:
 
             - used (integer, in KB)
-            - current quota (integer, in KB)
-            - quota (integer, in KB)
-            - user
+            - imap_quota (current imap quota obtained from IMAP, integer, in KB)
+            - ldap_quota (current LDAP quota obtained from LDAP, integer, in KB)
+            - default_quota (integer, in KB)
+
+            Returns:
+
+            - None - an error has occurred and this plugin doesn't care.
+            - Negative 1 - remove quota.
+            - Zero - Absolute 0.
+            - Positive Integer - set new quota.
         """
 
-        for keyword in [ 'used', 'current_quota', 'new_quota', 'default_quota' ]:
+        for keyword in [ 'used', 'imap_quota', 'ldap_quota', 'default_quota' ]:
             if not kw.has_key(keyword):
-                log.warning(_("No keyword %s passed to set_user_folder_quota") % (keyword))
-                return 0
+                log.warning(
+                        _("No keyword %s passed to set_user_folder_quota") % (
+                                keyword
+                            )
+                    )
+
+                return
             else:
                 try:
-                    kw[keyword] = (int)(kw[keyword])
+                    if not kw[keyword] == None:
+                        kw[keyword] = (int)(kw[keyword])
+
                 except:
                     log.error(_("Quota '%s' not an integer!") % (keyword))
-                    return 0
+                    return
 
         # Escape the user without quota
-        if kw['new_quota'] == 0:
-            # Unless default quota is set
-            if kw['default_quota'] > 0:
-                log.info(_("The new quota was set to 0, but default quota > 0, returning default quota"))
-                return kw['default_quota']
-
-            return 0
-
-        # Make your adjustments here, for example:
-        #
-        # - increase the quota by 10% if the currently used storage size
-        #   is over 90%
-
-        if kw['new_quota'] < int(float(kw['used']) * 1.1):
-            _new_quota = int(float(kw['used']) * 1.1)
-        elif kw['new_quota'] > int(float(kw['used']) * 1.1):
-            # TODO: If the current quota in IMAP had been set to 0, but we want to apply quota, and
-            # 0 is current_quota, 90% of that is still 0...
-            _new_quota = int(float(kw['current_quota']) * 0.9)
-
-        if kw['new_quota'] == 0:
-            if kw['default_quota'] > _new_quota:
-                log.info(_("The default quota is larger then the calculated new quota, using the default quota"))
-                return kw['default_quota']
-
-            else:
-                new_quota = _new_quota
+        if kw['ldap_quota'] == None:
+            return kw['default_quota']
+        elif kw['ldap_quota'] == -1:
+            return -1
+        elif kw['ldap_quota'] > 0:
+            return kw['ldap_quota']
         else:
-            new_quota = kw['new_quota']
-
-        return new_quota
+            return kw['default_quota']
