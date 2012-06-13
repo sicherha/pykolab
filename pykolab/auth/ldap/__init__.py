@@ -792,6 +792,21 @@ class LDAP(pykolab.base.Base):
                 callback=self._synchronize_callback,
             )
 
+    def user_quota(self, entry_id, folder):
+        quota_attribute = self.config_get('quota_attribute')
+
+        if quota_attribute == None:
+            return
+
+        self._bind()
+
+        entry_dn = self.entry_dn(entry_id)
+
+        current_ldap_quota = self.get_entry_attribute(entry_dn, quota_attribute)
+        current_imap_quota = self.imap.get_quota(folder)
+
+        default_quota = self.config_get('default_quota')
+
     ###
     ### API depth level increasing!
     ###
@@ -941,6 +956,8 @@ class LDAP(pykolab.base.Base):
 
         if not entry[mailserver_attribute] == server:
             self.set_entry_attribute(entry, mailserver_attribute, server)
+
+        self.user_quota(entry, folder)
 
     def _change_delete_group(self, entry, change):
         """
