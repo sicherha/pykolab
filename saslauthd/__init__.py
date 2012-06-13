@@ -60,6 +60,12 @@ class SASLAuthDaemon(object):
 
         conf.finalize_conf()
 
+        utils.ensure_directory(
+                os.path.dirname(conf.pidfile),
+                conf.process_username,
+                conf.process_groupname
+            )
+
         self.thread_count = 0
 
     def run(self):
@@ -115,6 +121,12 @@ class SASLAuthDaemon(object):
         import struct
 
         s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+
+        utils.ensure_directory(
+                '/var/run/saslauthd/',
+                conf.process_username,
+                conf.process_groupname
+            )
 
         # TODO: The saslauthd socket path could be a setting.
         try:

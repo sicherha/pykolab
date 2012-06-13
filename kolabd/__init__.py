@@ -91,6 +91,12 @@ class KolabDaemon(object):
 
         exitcode = 0
 
+        utils.ensure_directory(
+                os.path.dirname(conf.pidfile),
+                conf.process_username,
+                conf.process_groupname
+            )
+
         try:
             try:
                 (ruid, euid, suid) = os.getresuid()

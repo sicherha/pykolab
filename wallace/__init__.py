@@ -116,6 +116,12 @@ class WallaceDaemon(object):
 
         conf.finalize_conf()
 
+        utils.ensure_directory(
+                os.path.dirname(conf.pidfile),
+                conf.process_username,
+                conf.process_groupname
+            )
+
         import modules
         modules.__init__()
 
