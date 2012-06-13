@@ -300,12 +300,18 @@ class IMAP(object):
                         )
 
                     if not additional_folders == None:
-                        self.user_mailbox_create_additional_folders(mailbox_base_name, additional_folders)
+                        self.user_mailbox_create_additional_folders(
+                                mailbox_base_name,
+                                additional_folders
+                            )
 
         return folder_name
 
     def user_mailbox_create_additional_folders(self, folder, additional_folders):
-        log.debug(_("Creating additional folders for user %s") % (folder), level=8)
+        log.debug(
+                _("Creating additional folders for user %s") % (folder),
+                level=8
+            )
 
         for additional_folder in additional_folders.keys():
             _add_folder = {}
@@ -396,6 +402,9 @@ class IMAP(object):
             Check if a user mailbox exists.
         """
         return self.has_folder('user%s%s' %(self.imap.separator, mailbox_base_name))
+
+    def user_mailbox_quota(self, mailbox_quota):
+        pass
 
     def user_mailbox_rename(self, old_name, new_name):
         old_name = "user%s%s" % (self.imap.separator,old_name)
@@ -688,6 +697,12 @@ class IMAP(object):
 
         self.imap.dm(mailfolder_path)
 
+    def get_quota(self, mailfolder_path):
+        return self.lq(mailfolder_path)
+
+    def get_quota_root(self, mailfolder_path):
+        return self.lqr(mailfolder_path)
+
     def list_user_folders(self, primary_domain=None, secondary_domains=[]):
         """
             List the INBOX folders in the IMAP backend. Returns a list of unique
@@ -736,6 +751,12 @@ class IMAP(object):
 
     def lm(self, *args, **kw):
         return self.imap.lm(*args, **kw)
+
+    def lq(self, *args, **kw):
+        return self.imap.lq(*args, **kw)
+
+    def lqr(self, *args, **kw):
+        return self.imap.lqr(*args, **kw)
 
     def undelete_mailfolder(self, *args, **kw):
         self.imap.undelete_mailfolder(*args, **kw)
