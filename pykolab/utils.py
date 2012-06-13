@@ -121,6 +121,79 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
             else:
                 return True
 
+def ensure_directory(_dir, _user='root', _group='root'):
+    os.makedirs(_dir)
+    try:
+        try:
+            (ruid, euid, suid) = os.getresuid()
+            (rgid, egid, sgid) = os.getresgid()
+        except AttributeError, errmsg:
+            ruid = os.getuid()
+            rgid = os.getgid()
+
+        if ruid == 0:
+            # Means we can setreuid() / setregid() / setgroups()
+            if rgid == 0:
+                # Get group entry details
+                try:
+                    (
+                            group_name,
+                            group_password,
+                            group_gid,
+                            group_members
+                        ) = grp.getgrnam(_group)
+
+                except KeyError:
+                    print >> sys.stderr, _("Group %s does not exist") % (
+                            _group
+                        )
+
+                    sys.exit(1)
+
+                # Set real and effective group if not the same as current.
+                if not group_gid == rgid:
+                    log.debug(
+                            _("Switching real and effective group id to %d") % (
+                                    group_gid
+                                ),
+                            level=8
+                        )
+
+                    os.chown(_dir, -1, group_gid)
+
+            if ruid == 0:
+                # Means we haven't switched yet.
+                try:
+                    (
+                            user_name,
+                            user_password,
+                            user_uid,
+                            user_gid,
+                            user_gecos,
+                            user_homedir,
+                            user_shell
+                        ) = pwd.getpwnam(_user)
+
+                except KeyError:
+                    print >> sys.stderr, _("User %s does not exist") % (_user)
+
+                    sys.exit(1)
+
+
+                # Set real and effective user if not the same as current.
+                if not user_uid == ruid:
+                    log.debug(
+                            _("Switching real and effective user id to %d") % (
+                                    user_uid
+                                ),
+                            level=8
+                        )
+
+                    os.chown(_dir, user_uid, -1)
+
+    except:
+        log.error(_("Could not change the permissions on %s") % (_dir))
+
 def generate_password():
     import subprocess
 
