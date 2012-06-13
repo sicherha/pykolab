@@ -572,11 +572,11 @@ class CYRUS:
         match = re_q0.match(msg[0])
         if match:
             self.__verbose( '[GETQUOTA %s] QUOTA (Unlimited)' % mailbox )
-            return 0, 0
+            return None, None
         match = re_q.match(msg[0])
         if match is None:
             self.__verbose( '[GETQUOTA %s] BAD: RegExp not matched, please report' % mailbox )
-            return 0, 0
+            return None, None
         try:
             used = int(match.group(2))
             quota = int(match.group(3))
@@ -584,7 +584,7 @@ class CYRUS:
             return used, quota
         except:
             self.__verbose( '[GETQUOTA %s] BAD: Error while parsing results' % mailbox )
-            return 0, 0
+            return None, None
 
     def lqr(self, mailbox):
         """List Quota Root"""
@@ -595,7 +595,7 @@ class CYRUS:
         match = re_q0.match(msg[1][0])
         if match:
             self.__verbose( '[GETQUOTAROOT %s] QUOTAROOT (Unlimited)' % mailbox )
-            return _root, 0, 0
+            return _root, None, None
 
         match = re_q.match(msg[1][0])
         try:
@@ -605,7 +605,7 @@ class CYRUS:
             return _root, used, quota
         except:
             self.__verbose( '[GETQUOTAROOT %s] BAD: Error while parsing results' % mailbox )
-            return _root, 0, 0
+            return _root, None, None
 
     def sq(self, mailbox, limit):
         """Set Quota"""
