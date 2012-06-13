@@ -24,6 +24,7 @@ from urlparse import urlparse
 
 import pykolab
 
+from pykolab.imap import IMAP
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.imap')
@@ -89,6 +90,37 @@ class Cyrus(cyruslib.CYRUS):
 
     def __del__(self):
         pass
+
+    def connect(self, uri):
+        """
+            Dummy connect function that checks if the server that we want to
+            connect to is actually the server we are connected to.
+
+            Uses pykolab.imap.IMAP.connect() in the background.
+        """
+        port = None
+
+        result = urlparse(uri)
+
+        if hasattr(result, 'hostname'):
+            scheme = result.scheme
+            hostname = result.hostname
+            port = result.port
+        else:
+            scheme = uri.split(':')[0]
+            (hostname, port) = uri.split('/')[2].split(':')
+
+        if not port:
+            if scheme == 'imap':
+                port = 143
+            else:
+                port = 993
+
+        if hostname == self.server:
+            return
+
+        imap = IMAP()
+        imap.connect(uri=uri)
 
     def login(self, *args, **kw):
         """
@@ -166,7 +198,7 @@ class Cyrus(cyruslib.CYRUS):
         #print "server:", server
         self.connect(self.uri.replace(self.server,server))
 
-        log.debug(_("Setting quota for INBOX folder %s to %s") % (mailfolder,quota), level=8)
+        log.debug(_("Setting quota for folder %s to %s") % (mailfolder,quota), level=8)
         try:
             self.m.setquota(mailfolder, quota)
         except:
