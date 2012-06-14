@@ -355,7 +355,10 @@ def translate(mystring, locale_name='en_US'):
     import locale
     import subprocess
 
-    (locale_name,locale_charset) = locale.normalize(locale_name).split('.')
+    if len(locale.normalize(locale_name).split('.')) > 1:
+        (locale_name,locale_charset) = locale.normalize(locale_name).split('.')
+    else:
+        locale_charset = 'utf-8'
 
     locale.setlocale(locale.LC_ALL, (locale_name,locale_charset))
 
