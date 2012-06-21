@@ -328,6 +328,10 @@ rm -rf %{buildroot}
 %{python_sitelib}/pykolab/setup/*.py
 %{python_sitelib}/pykolab/setup/*.pyc
 %{python_sitelib}/pykolab/setup/*.pyo
+%dir %{python_sitelib}/pykolab/wap_client/
+%{python_sitelib}/pykolab/wap_client/*.py
+%{python_sitelib}/pykolab/wap_client/*.pyc
+%{python_sitelib}/pykolab/wap_client/*.pyo
 
 %files -n kolab-saslauthd
 %defattr(-,root,root,-)

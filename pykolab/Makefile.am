@@ -61,6 +61,10 @@ pykolab_setup_PYTHON = \
 	setup/setup_zpush.py \
 	setup/__init__.py
 
+pykolab_wapclientdir = $(pythondir)/$(PACKAGE)/wap_client
+pykolab_wapclient_PYTHON = \
+	$(wildcard wap_client/*.py)
+
 pykolab_xmldir = $(pythondir)/$(PACKAGE)/xml
 pykolab_xml_PYTHON = \
 	$(wildcard xml/*.py)
