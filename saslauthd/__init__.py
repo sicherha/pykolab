@@ -159,8 +159,16 @@ class SASLAuthDaemon(object):
                 end = start + 2
                 login.append(value)
 
-            auth = Auth()
+            if len(login) == 4:
+                realm = login[3]
+            elif len(login[0].split('@')) > 1:
+                realm = login[0].split('@')[1]
+            else:
+                realm = conf.get('kolab', 'primary_domain')
+
+            auth = Auth(domain=realm)
             auth.connect()
+
             if auth.authenticate(login):
                 clientsocket.send(struct.pack("!H2s", 2, "OK"))
             else:
