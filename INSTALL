@@ -1,0 +1,12 @@
+== Build Requirements ==
+
+* autoconf
+* automake
+* gcc
+* glib2-devel
+* intltool
+* rpm-build
+
+* python-icalendar
+* python-kolabformat
+* python-nose
