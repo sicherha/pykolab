@@ -86,6 +86,7 @@ Summary:            Kolab SASL Authentication Daemon
 Group:              Applications/System
 BuildRequires:      intltool, gettext, python
 Requires:           %{name} = %{version}-%{release}
+Requires:           cyrus-sasl
 Requires:           cyrus-sasl-plain
 
 %description -n kolab-saslauthd
