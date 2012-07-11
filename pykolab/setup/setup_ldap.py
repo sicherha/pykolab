@@ -354,6 +354,32 @@ ServerAdminPwd = %(admin_pass)s
     # Do the actual synchronous add-operation to the ldapserver
     auth._auth.ldap.add_s(dn, ldif)
 
+    dn = 'ou=Resources,%s' % (_input['rootdn'])
+
+    # A dict to help build the "body" of the object
+    attrs = {}
+    attrs['objectclass'] = ['top','organizationalunit']
+    attrs['ou'] = "Resources"
+
+    # Convert our dict to nice syntax for the add-function using modlist-module
+    ldif = ldap.modlist.addModlist(attrs)
+
+    # Do the actual synchronous add-operation to the ldapserver
+    auth._auth.ldap.add_s(dn, ldif)
+
+    dn = 'ou=Shared Folders,%s' % (_input['rootdn'])
+
+    # A dict to help build the "body" of the object
+    attrs = {}
+    attrs['objectclass'] = ['top','organizationalunit']
+    attrs['ou'] = "Shared Folders"
+
+    # Convert our dict to nice syntax for the add-function using modlist-module
+    ldif = ldap.modlist.addModlist(attrs)
+
+    # Do the actual synchronous add-operation to the ldapserver
+    auth._auth.ldap.add_s(dn, ldif)
+
     log.info(_("Writing out cn=kolab,cn=config"))
 
     dn = 'cn=kolab,cn=config'
