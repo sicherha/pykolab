@@ -18,7 +18,9 @@
 #
 
 import getpass
+import grp
 import os
+import pwd
 import sys
 
 from pykolab import constants
@@ -154,13 +156,6 @@ def ensure_directory(_dir, _user='root', _group='root'):
 
                 # Set real and effective group if not the same as current.
                 if not group_gid == rgid:
-                    log.debug(
-                            _("Switching real and effective group id to %d") % (
-                                    group_gid
-                                ),
-                            level=8
-                        )
-
                     os.chown(_dir, -1, group_gid)
 
             if ruid == 0:
@@ -184,11 +179,6 @@ def ensure_directory(_dir, _user='root', _group='root'):
 
                 # Set real and effective user if not the same as current.
                 if not user_uid == ruid:
-                    print >> sys.stderr, \
-                        _("Switching real and effective user id to %d") % (
-                                user_uid
-                            )
-
                     os.chown(_dir, user_uid, -1)
 
     except:
