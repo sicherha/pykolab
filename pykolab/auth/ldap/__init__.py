@@ -735,6 +735,21 @@ class LDAP(pykolab.base.Base):
 
         return entry_modifications
 
+    def search_entry_by_attribute(self, attr, value, **kw):
+        self._bind()
+
+        _filter = "(%s=%s)" % (attr, value)
+
+        return self._search(
+                self.config_get('base_dn'),
+                filterstr=_filter,
+                attrlist=[
+                        '*',
+                    ],
+                override_search='_regular_search'
+            )
+
+
     def set_entry_attribute(self, entry_id, attribute, value):
         log.debug(_("Setting entry attribute %r to %r for %r") % (attribute, value, entry_id), level=9)
         self.set_entry_attributes(entry_id, { attribute: value })

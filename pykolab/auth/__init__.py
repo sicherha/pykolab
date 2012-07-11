@@ -253,11 +253,11 @@ class Auth(pykolab.base.Base):
     def get_user_attributes(self, domain, user, attributes):
         return self._auth.get_entry_attributes(user, attributes)
 
+    def search_entry_by_attribute(self, attr, value, **kw):
+        return self._auth.search_entry_by_attribute(attr, value, **kw)
+
     def search_mail_address(self, domain, mail_address):
         return self._auth._search_mail_address(domain, mail_address)
-
-    def search_users(self, attr, value, **kw):
-        return self._auth._search_users(attr, value, **kw)
 
     def set_entry_attribute(self, domain, entry, attribute):
         return self._auth.set_entry_attribute(entry, attribute)
