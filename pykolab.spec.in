@@ -246,9 +246,9 @@ if [ $1 -eq  1 ] ; then
 %endif
 else
 %if 0%{?fedora} >= 15
-    /sbin/service wallace condrestart
-%else
     /bin/systemctl reload-or-try-restart wallace.service
+%else
+    /sbin/service wallace condrestart
 %endif
 fi
 
