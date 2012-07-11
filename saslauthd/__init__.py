@@ -59,6 +59,26 @@ class SASLAuthDaemon(object):
                                 default = "/var/run/kolab-saslauthd/kolab-saslauthd.pid",
                                 help    = _("Path to the PID file to use."))
 
+        daemon_group.add_option(
+                "-u",
+                "--user",
+                dest    = "process_username",
+                action  = "store",
+                default = "kolab",
+                help    = _("Run as user USERNAME"),
+                metavar = "USERNAME"
+            )
+
+        daemon_group.add_option(
+                "-g",
+                "--group",
+                dest    = "process_groupname",
+                action  = "store",
+                default = "kolab",
+                help    = _("Run as group GROUPNAME"),
+                metavar = "GROUPNAME"
+            )
+
         conf.finalize_conf()
 
         utils.ensure_directory(
