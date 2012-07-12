@@ -47,17 +47,22 @@ class SASLAuthDaemon(object):
     def __init__(self):
         daemon_group = conf.add_cli_parser_option_group(_("Daemon Options"))
 
-        daemon_group.add_option(  "--fork",
-                                dest    = "fork_mode",
-                                action  = "store_true",
-                                default = False,
-                                help    = _("Fork to the background."))
+        daemon_group.add_option(
+                "--fork",
+                dest    = "fork_mode",
+                action  = "store_true",
+                default = False,
+                help    = _("Fork to the background.")
+            )
 
-        daemon_group.add_option( "-p", "--pid-file",
-                                dest    = "pidfile",
-                                action  = "store",
-                                default = "/var/run/kolab-saslauthd/kolab-saslauthd.pid",
-                                help    = _("Path to the PID file to use."))
+        daemon_group.add_option(
+                "-p",
+                "--pid-file",
+                dest    = "pidfile",
+                action  = "store",
+                default = "/var/run/kolab-saslauthd/kolab-saslauthd.pid",
+                help    = _("Path to the PID file to use.")
+            )
 
         daemon_group.add_option(
                 "-u",
