@@ -348,6 +348,34 @@ class Event(object):
         if status in self.status_map.values():
             return [k for k, v in self.status_map.iteritems() if v == status][0]
 
+    def get_lastmodified(self):
+        try:
+            _datetime = self.event.lastModified()
+            if retval == None or retval == "":
+                self.__str__()
+        except:
+            self.__str__()
+
+        _datetime = self.event.lastModified()
+
+        (
+                year,
+                month,
+                day,
+                hour,
+                minute,
+                second
+            ) = (
+                    _datetime.year(),
+                    _datetime.month(),
+                    _datetime.day(),
+                    _datetime.hour(),
+                    _datetime.minute(),
+                    _datetime.second()
+                )
+
+        return datetime.datetime(year, month, day, hour, minute, second)
+
     def get_organizer(self):
         organizer = self.event.organizer()
         return organizer
@@ -584,6 +612,45 @@ class Event(object):
 
     def set_ical_uid(self, uid):
         self.set_uid(str(uid))
+
+    def set_lastmodified(self, _datetime=None):
+        valid_datetime = False
+        if isinstance(_datetime, datetime.date):
+            valid_datetime = True
+
+        if isinstance(_datetime, datetime.datetime):
+            valid_datetime = True
+
+        if _datetime == None:
+            valid_datetime = True
+            _datetime = datetime.datetime.now()
+
+        if not valid_datetime:
+            raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance")
+
+        (
+                year,
+                month,
+                day,
+            ) = (
+                    _datetime.year,
+                    _datetime.month,
+                    _datetime.day,
+                )
+        if hasattr(_datetime, 'hour'):
+            (
+                    hour,
+                    minute,
+                    second
+                ) = (
+                        _datetime.hour,
+                        _datetime.minute,
+                        _datetime.second
+                    )
+        else:
+            (hour, minute, second) = (0,0,0)
+
+        self.event.setLastModified(kolabformat.cDateTime(year, month, day, hour, minute, second))
 
     def set_organizer(self, email, name=None):
         contactreference = ContactReference(email)
