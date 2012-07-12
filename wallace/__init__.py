@@ -376,6 +376,9 @@ class WallaceDaemon(object):
 
     def write_pid(self):
         pid = os.getpid()
-        fp = open(conf.pidfile,'w')
-        fp.write("%d\n" % (pid))
-        fp.close()
+        if os.access(os.path.dirname(conf.pidfile), os.W_OK):
+            fp = open(conf.pidfile,'w')
+            fp.write("%d\n" % (pid))
+            fp.close()
+        else:
+            print >> sys.stderr, _("Could not write pid file %s") % (conf.pidfile)
