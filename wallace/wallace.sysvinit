@@ -21,6 +21,8 @@
 
 # Source our configuration file for these variables.
 FLAGS="--fork -l warning"
+USER="kolab"
+GROUP="kolab"
 
 if [ -f /etc/sysconfig/wallace ] ; then
     . /etc/sysconfig/wallace
@@ -33,7 +35,10 @@ RETVAL=0
 prog=wallace
 path=/usr/sbin/wallaced
 lockfile=/var/lock/subsys/$prog
-pidfile=/var/run/wallace/wallaced.pid
+pidfile=/var/run/wallaced/wallaced.pid
+
+[ ! -d "$(dirname ${pidfile})" ] && mkdir -p $(dirname ${pidfile})
+chown ${USER}:${GROUP} $(dirname ${pidfile})
 
 start() {
     [ -x $path ] || exit 5
