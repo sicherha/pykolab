@@ -133,7 +133,10 @@ class WallaceDaemon(object):
             self.modules.append('resources')
 
     def do_wallace(self):
-        self.pool = multiprocessing.Pool(max_threads, worker_process, (), 1)
+        if version.StrictVersion(sys.version[:3]) >= version.StrictVersion("2.7"):
+            self.pool = multiprocessing.Pool(max_threads, worker_process, (), 1)
+        else:
+            self.pool = multiprocessing.Pool(max_threads, worker_process, ())
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -335,16 +338,17 @@ class WallaceDaemon(object):
 
         try:
             pid = 1
+
             if conf.fork_mode:
-                self.thread_count += 1
-                self.write_pid()
-                self.set_signal_handlers()
                 pid = os.fork()
 
             if pid == 0:
                 log.remove_stdout_handler()
-
-            self.do_wallace()
+                self.write_pid()
+                self.set_signal_handlers()
+                self.do_wallace()
+            elif not conf.fork_mode:
+                self.do_wallace()
 
         except SystemExit, e:
             exitcode = e
