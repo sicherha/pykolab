@@ -21,6 +21,7 @@ import datetime
 import icalendar
 import json
 import os
+import pytz
 import random
 import tempfile
 import time
@@ -41,6 +42,7 @@ from pykolab.conf import Conf
 from pykolab.imap import IMAP
 from pykolab.xml import event_from_ical
 from pykolab.xml import event_from_string
+from pykolab.xml import to_dt
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.wallace')
@@ -231,31 +233,12 @@ def execute(*args, **kw):
                         event = pykolab.xml.event_from_string(payload)
 
                         for itip in itip_events:
-                            _es = event.get_start()
-                            _is = itip['start'].dt
+                            _es = to_dt(event.get_start())
+                            _is = to_dt(itip['start'].dt)
 
-                            if type(_es) == 'datetime.date' or not hasattr(_es, 'hour'):
-                                _es = datetime.datetime(
-                                        _es.year, _es.month, _es.day, 0, 0, 0
-                                    )
+                            _ee = to_dt(event.get_end())
+                            _ie = to_dt(itip['end'].dt)
 
-                            if type(_is) == 'datetime.date' or not hasattr(_is, 'hour'):
-                                _is = datetime.datetime(
-                                        _is.year, _is.month, _is.day, 0, 0, 0
-                                    )
-
-                            _ee = event.get_end()
-                            _ie = itip['end'].dt
-
-                            if type(_ee) == 'datetime.date' or not hasattr(_ee, 'hour'):
-                                _ee = datetime.datetime(
-                                        _ee.year, _ee.month, _ee.day, 0, 0, 0
-                                    )
-
-                            if type(_ie) == 'datetime.date' or not hasattr(_ie, 'hour'):
-                                _ie = datetime.datetime(
-                                        _ie.year, _ie.month, _ie.day, 0, 0, 0
-                                    )
 
                             if _es < _is:
                                 if _es <= _ie:
@@ -360,6 +343,7 @@ def execute(*args, **kw):
                             level=9
                         )
 
+                    imap.imap.m.setacl(resources[resource]['kolabtargetfolder'], "cyrus-admin", "lrswipkxtecda")
                     imap.imap.m.append(
                             resources[resource]['kolabtargetfolder'],
                             None,
@@ -395,6 +379,7 @@ def execute(*args, **kw):
                                 level=9
                             )
 
+                        imap.imap.m.setacl(_target_resource['kolabtargetfolder'], "cyrus-admin", "lrswipkxtecda")
                         imap.imap.m.append(
                                 _target_resource['kolabtargetfolder'],
                                 None,
