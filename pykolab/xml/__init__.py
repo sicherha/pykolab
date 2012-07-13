@@ -10,6 +10,8 @@ from event import InvalidEventDateError
 from event import event_from_ical
 from event import event_from_string
 
+from utils import to_dt
+
 __all__ = [
         "Attendee",
         "Contact",
@@ -17,6 +19,7 @@ __all__ = [
         "Event",
         "event_from_ical",
         "event_from_string",
+        "to_dt",
     ]
 
 errors = [
