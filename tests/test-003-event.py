@@ -1,4 +1,6 @@
 import datetime
+import pytz
+import sys
 import unittest
 
 from pykolab.xml import Attendee
@@ -14,7 +16,7 @@ class TestEventXML(unittest.TestCase):
         self.assertRaises(EventIntegrityError, self.event.__str__)
 
     def test_001_minimal(self):
-        self.event.set_start(datetime.datetime.now())
+        self.event.set_start(datetime.datetime.now(pytz.timezone("Europe/London")))
         self.assertIsInstance(self.event.get_start(), datetime.datetime)
         self.assertIsInstance(self.event.__str__(), basestring)
 
@@ -72,6 +74,26 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(len(self.event.get_attendee("jane@doe.org").get_delegated_to()), 1)
         self.event.delegate("jane@doe.org", "john@doe.org")
         self.assertEqual(len(self.event.get_attendee("jane@doe.org").get_delegated_to()), 2)
+
+    def test_015_timezone(self):
+        _tz = self.event.get_start()
+        self.assertIsInstance(_tz.tzinfo, datetime.tzinfo)
+
+    def test_016_start_with_timezone(self):
+        _start = datetime.datetime(2012, 05, 23, 11, 58, 00, tzinfo=pytz.timezone("Europe/Zurich"))
+        _start_utc = _start.astimezone(pytz.utc)
+        self.assertEqual(_start.__str__(), "2012-05-23 11:58:00+01:00")
+        self.assertEqual(_start_utc.__str__(), "2012-05-23 10:58:00+00:00")
+        self.event.set_start(_start)
+        self.assertIsInstance(_start.tzinfo, datetime.tzinfo)
+        self.assertEqual(_start.tzinfo, pytz.timezone("Europe/Zurich"))
+
+    def test_017_allday_without_timezone(self):
+        _start = datetime.date(2012, 05, 23)
+        self.assertEqual(_start.__str__(), "2012-05-23")
+        self.event.set_start(_start)
+        self.assertEqual(hasattr(_start,'tzinfo'), False)
+        self.assertEqual(self.event.get_start().__str__(), "2012-05-23")
 
 if __name__ == '__main__':
     unittest.main()

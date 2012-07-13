@@ -3,6 +3,7 @@ import icalendar
 from icalendar import vDatetime
 from icalendar import vText
 import kolabformat
+import pytz
 import time
 import uuid
 
@@ -390,19 +391,36 @@ class Event(object):
                 year,
                 month,
                 day,
-                hour,
-                minute,
-                second
             ) = (
                     _datetime.year(),
                     _datetime.month(),
                     _datetime.day(),
-                    _datetime.hour(),
-                    _datetime.minute(),
-                    _datetime.second()
                 )
 
-        return datetime.datetime(year, month, day, hour, minute, second)
+        if not _datetime.hour() == None and not _datetime.hour() < 0:
+            (
+                    hour,
+                    minute,
+                    second
+                ) = (
+                        _datetime.hour(),
+                        _datetime.minute(),
+                        _datetime.second()
+                    )
+
+        _timezone = _datetime.timezone()
+
+        if _timezone == '':
+            _timezone = pytz.utc
+        elif _timezone == None:
+            _timezone = pytz.utc
+        else:
+            _timezone = pytz.timezone(_timezone)
+
+        if _datetime.hour() == None or _datetime.hour() < 0:
+            return datetime.date(year, month, day)
+        else:
+            return datetime.datetime(year, month, day, hour, minute, second, tzinfo=_timezone)
 
     def get_status(self):
         status = self.event.status()
@@ -485,6 +503,10 @@ class Event(object):
             valid_datetime = True
 
         if isinstance(_datetime, datetime.datetime):
+            # If no timezone information is passed on, make it UTC
+            if _datetime.tzinfo == None:
+                _datetime = _datetime.replace(tzinfo=pytz.utc)
+
             valid_datetime = True
 
         if not valid_datetime:
@@ -509,12 +531,14 @@ class Event(object):
                         _datetime.minute,
                         _datetime.second
                     )
+            _cdatetime = kolabformat.cDateTime(year, month, day, hour, minute, second)
         else:
-            (hour, minute, second) = (0,0,0)
+            _cdatetime = kolabformat.cDateTime(year, month, day)
 
-        self.event.setEnd(
-                kolabformat.cDateTime(year, month, day, hour, minute, second)
-            )
+        if hasattr(_datetime, "tzinfo"):
+            _cdatetime.setTimezone(_datetime.tzinfo.__str__())
+
+        self.event.setEnd(_cdatetime)
 
     def set_from_ical(self, attr, value):
         if attr == "dtend":
@@ -663,11 +687,16 @@ class Event(object):
         self.event.setPriority(priority)
 
     def set_start(self, _datetime):
+
         valid_datetime = False
         if isinstance(_datetime, datetime.date):
             valid_datetime = True
 
         if isinstance(_datetime, datetime.datetime):
+            # If no timezone information is passed on, make it UTC
+            if _datetime.tzinfo == None:
+                _datetime = _datetime.replace(tzinfo=pytz.utc)
+
             valid_datetime = True
 
         if not valid_datetime:
@@ -692,10 +721,14 @@ class Event(object):
                         _datetime.minute,
                         _datetime.second
                     )
+            _cdatetime = kolabformat.cDateTime(year, month, day, hour, minute, second)
         else:
-            (hour, minute, second) = (0,0,0)
+            _cdatetime = kolabformat.cDateTime(year, month, day)
 
-        self.event.setStart(kolabformat.cDateTime(year, month, day, hour, minute, second))
+        if hasattr(_datetime, "tzinfo"):
+            _cdatetime.setTimezone(_datetime.tzinfo.__str__())
+
+        self.event.setStart(_cdatetime)
 
     def set_status(self, status):
         if status in self.status_map.keys():
