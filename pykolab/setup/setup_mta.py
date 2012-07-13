@@ -49,6 +49,8 @@ def execute(*args, **kw):
     if user_filter == None:
         user_filter = conf.get('ldap','user_filter')
 
+    resource_filter = conf.get('ldap', 'resource_filter')
+
     files = {
             "/etc/postfix/ldap/local_recipient_maps.cf": """
 server_host = localhost
@@ -62,7 +64,7 @@ domain = ldap:/etc/postfix/ldap/mydestination.cf
 bind_dn = %(service_bind_dn)s
 bind_pw = %(service_bind_pw)s
 
-query_filter = (&(|(mail=%%s)(alias=%%s))(|%(kolab_user_filter)s%(kolab_group_filter)s))
+query_filter = (&(|(mail=%%s)(alias=%%s))(|%(kolab_user_filter)s%(kolab_group_filter)s%(resource_filter)s))
 result_attribute = mail
 """ % {
                         "base_dn": conf.get('ldap', 'base_dn'),
@@ -70,6 +72,7 @@ result_attribute = mail
                         "service_bind_pw": conf.get('ldap', 'service_bind_pw'),
                         "kolab_user_filter": user_filter,
                         "kolab_group_filter": group_filter,
+                        "resource_filter": resource_filter,
                     },
             "/etc/postfix/ldap/mydestination.cf": """
 server_host = localhost
