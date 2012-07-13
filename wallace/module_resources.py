@@ -478,7 +478,7 @@ def itip_events_from_message(message):
                         )
 
     else:
-        log.error(_("Non-multipart iTip messages are not accepted"))
+        log.debug(_("Message is not an iTip message (non-multipart message)"), level=5)
 
     return itip_events
 
