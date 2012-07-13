@@ -27,7 +27,7 @@ class TestEventXML(unittest.TestCase):
     def test_001_minimal(self):
         self.event.set_start(datetime.datetime.now(pytz.timezone("Europe/London")))
         self.assertIsInstance(self.event.get_start(), datetime.datetime)
-        self.assertIsInstance(self.event.__str__(), basestring)
+        self.assertIsInstance(self.event.__str__(), str)
 
     def test_002_attendees_list(self):
         self.assertIsInstance(self.event.get_attendees(), list)

@@ -16,7 +16,7 @@ class TestEventXML(unittest.TestCase):
                 raise AssertionError, "%s != %s" % (type(_value), _type)
 
     def test_001_minimal(self):
-        self.assertIsInstance(self.contact_reference.__str__(), basestring)
+        self.assertIsInstance(self.contact_reference.__str__(), str)
 
     def test_002_empty_name(self):
         self.assertEqual(self.contact_reference.get_name(), "")
