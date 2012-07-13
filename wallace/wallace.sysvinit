@@ -32,7 +32,7 @@ RETVAL=0
 
 # Set up some common variables before we launch into what might be
 # considered boilerplate by now.
-prog=wallace
+prog=wallaced
 path=/usr/sbin/wallaced
 lockfile=/var/lock/subsys/$prog
 pidfile=/var/run/wallaced/wallaced.pid
