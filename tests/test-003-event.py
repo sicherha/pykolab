@@ -12,6 +12,15 @@ from pykolab.xml import InvalidEventDateError
 class TestEventXML(unittest.TestCase):
     event = Event()
 
+    def assertIsInstance(self, _value, _type):
+        if hasattr(unittest.TestCase, 'assertIsInstance'):
+            return unittest.TestCase.assertIsInstance(self, _value, _type)
+        else:
+            if (type(_value)) == _type:
+                return True
+            else:
+                raise AssertionError, "%s != %s" % (type(_value), _type)
+
     def test_000_no_start_date(self):
         self.assertRaises(EventIntegrityError, self.event.__str__)
 
