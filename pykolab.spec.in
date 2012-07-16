@@ -377,8 +377,8 @@ rm -rf %{buildroot}
 %{_sysconfdir}/sysconfig/wallace
 %{_sbindir}/wallaced
 %{python_sitelib}/wallace
-%attr(%{kolab_user},%{kolab_group},0700) %dir %{_var}/spool/pykolab
-%attr(%{kolab_user},%{kolab_group},0700) %dir %{_var}/spool/pykolab/wallace
+%attr(0700,%{kolab_user},%{kolab_group}) %dir %{_var}/spool/pykolab
+%attr(0700,%{kolab_user},%{kolab_group}) %dir %{_var}/spool/pykolab/wallace
 
 %changelog
 * @DATESTAMP@ Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com> @VERSION@-@RELEASE@
