@@ -350,7 +350,10 @@ def translate(mystring, locale_name='en_US'):
     else:
         locale_charset = 'utf-8'
 
-    locale.setlocale(locale.LC_ALL, (locale_name,locale_charset))
+    try:
+        locale.setlocale(locale.LC_ALL, (locale_name,locale_charset))
+    except Error, errmsg:
+        pass
 
     command = [ '/usr/bin/iconv',
                 '-f', 'UTF-8',
