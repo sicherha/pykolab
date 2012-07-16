@@ -132,7 +132,7 @@ smtp-amavis     unix    -   -   n   -       3   smtp
     -o max_use=20
 
 #
-# Listener to re-inject email from Amavsid into Postfix
+# Listener to re-inject email from Amavisd into Postfix
 #
 127.0.0.1:10025 inet    n   -   n   -       100 smtpd
     -o content_filter=
