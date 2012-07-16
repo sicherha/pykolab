@@ -64,7 +64,7 @@ class KolabRecipientpolicy(object):
         if not user_attrs.has_key('preferredlanguage'):
             default_locale = conf.get(user_attrs['domain'], 'default_locale')
             if default_locale == None:
-                default_locale = conf.get(user_attrs['domain'], 'default_locale')
+                default_locale = conf.get('kolab', 'default_locale')
             if default_locale == None:
                 default_locale = 'en_US'
 
