@@ -187,7 +187,9 @@ install-exec-local:
 		$(DESTDIR)/$(sysconfdir)/kolab \
 		$(DESTDIR)/$(libexecdir)/postfix \
 		$(DESTDIR)/$(localstatedir)/lib/kolab \
-		$(DESTDIR)/$(localstatedir)/log/kolab
+		$(DESTDIR)/$(localstatedir)/log/kolab \
+		$(DESTDIR)/$(localstatedir)/spool/pykolab/wallace
+
 if ENTERPRISE
 	mkdir -p $(DESTDIR)/$(sysconfdir)/kolab/entitlement.d
 endif
