@@ -291,6 +291,8 @@ result_attribute = mail
         subprocess.call(['systemctl', 'enable', 'amavisd.service'])
         subprocess.call(['systemctl', 'restart', 'clamd.amavisd.service'])
         subprocess.call(['systemctl', 'enable', 'clamd.amavisd.service'])
+        subprocess.call(['systemctl', 'restart', 'wallace.service'])
+        subprocess.call(['systemctl', 'enable', 'wallace.service'])
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['service', 'postfix', 'restart'])
         subprocess.call(['chkconfig', 'postfix', 'on'])
@@ -298,6 +300,8 @@ result_attribute = mail
         subprocess.call(['chkconfig', 'amavisd', 'on'])
         subprocess.call(['service', 'clamd.amavisd', 'restart'])
         subprocess.call(['chkconfig', 'clamd.amavisd', 'on'])
+        subprocess.call(['service', 'wallace', 'restart'])
+        subprocess.call(['chkconfig', 'wallace', 'on'])
     else:
         log.error(_("Could not start and configure to start on boot, the " + \
                 "postfix, clamav.amavisd and amavisd services."))
