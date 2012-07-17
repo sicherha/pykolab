@@ -253,6 +253,8 @@ class Event(object):
             role = attendee.get_role()
             partstat = attendee.get_participant_status()
             cutype = attendee.get_cutype()
+            delegators = attendee.get_delegated_from()
+            delegatees = attendee.get_delegated_to()
 
             if rsvp in attendee.rsvp_map.keys():
                 _rsvp = rsvp
@@ -297,6 +299,12 @@ class Event(object):
 
             if not _cutype == None:
                 _attendee.params['CUTYPE'] = icalendar.vText(_cutype)
+
+            if not delegators == None and len(delegators) > 0:
+                _attendee.params['DELEGATED-FROM'] = icalendar.vText(delegators[0].email())
+
+            if not delegatees == None and len(delegatees) > 0:
+                _attendee.params['DELEGATED-TO'] = icalendar.vText(delegatees[0].email())
 
             attendees.append(_attendee)
 
@@ -834,8 +842,8 @@ class Event(object):
 
             if msg_from == None:
                 organizer = self.get_organizer()
-                email = organizer.get_email()
-                name = organizer.get_name()
+                email = organizer.email()
+                name = organizer.name()
                 if email == from_address:
                     if not name:
                         msg_from = email
