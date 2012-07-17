@@ -274,7 +274,6 @@ def execute(*args, **kw):
                             _ee = to_dt(event.get_end())
                             _ie = to_dt(itip['end'].dt)
 
-
                             if _es < _is:
                                 if _es <= _ie:
                                     if _ee <= _is:
@@ -386,7 +385,7 @@ def execute(*args, **kw):
                             itip_event['xml'].to_message().as_string()
                         )
 
-                    send_response(resources[resource]['mail'], itip_events)
+                    send_response(resources[resource]['mail'], itip_event)
 
                 else:
                     # This must have been a resource collection originally.
@@ -395,15 +394,29 @@ def execute(*args, **kw):
                     if resources[resource].has_key('memberof'):
                         original_resource = resources[resources[resource]['memberof']]
 
+                        # Randomly selects a target resource from the resource
+                        # collection.
                         _target_resource = resources[original_resource['uniquemember'][random.randint(0,(len(original_resource['uniquemember'])-1))]]
 
-                        # unset all
+                        # Remove all resources from the collection.
                         for _r in original_resource['uniquemember']:
                             del resources[_r]
 
                     if original_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
+                        #
+                        # Delegate:
+                        #
+                        # - delegator: the original resource collection
+                        # - delegatee: the target resource
+                        #
+
+                        itip_event['xml'].delegate(
+                                original_resource['mail'],
+                                _target_resource['mail']
+                            )
+
                         itip_event['xml'].set_attendee_participant_status(
-                                [a for a in itip_event['xml'].get_attendees() if a.get_email() == original_resource['mail']][0],
+                                [a for a in itip_event['xml'].get_attendees() if a.get_email() == _target_resource['mail']][0],
                                 "ACCEPTED"
                             )
 
@@ -414,6 +427,8 @@ def execute(*args, **kw):
                                 level=9
                             )
 
+                        # TODO: The Cyrus IMAP (or Dovecot) Administrator login
+                        # name comes from configuration.
                         imap.imap.m.setacl(_target_resource['kolabtargetfolder'], "cyrus-admin", "lrswipkxtecda")
                         imap.imap.m.append(
                                 _target_resource['kolabtargetfolder'],
@@ -422,7 +437,7 @@ def execute(*args, **kw):
                                 itip_event['xml'].to_message().as_string()
                             )
 
-                        send_response(original_resource['mail'], itip_events)
+                        send_response(original_resource['mail'], itip_event)
 
     # Disconnect IMAP or we lock the mailbox almost constantly
     imap.disconnect()
@@ -478,6 +493,8 @@ def itip_events_from_message(message):
 
                 for c in cal.walk():
                     if c.name == "VEVENT":
+                        itip = {}
+
                         # From the event, take the following properties:
                         #
                         # - start
@@ -717,9 +734,26 @@ def send_response(from_address, itip_events):
     if conf.debuglevel > 8:
         smtp.set_debuglevel(True)
 
+    if isinstance(itip_events, dict):
+        itip_events = [ itip_events ]
+
     for itip_event in itip_events:
         attendee = [a for a in itip_event['xml'].get_attendees() if a.get_email() == from_address][0]
         participant_status = itip_event['xml'].get_ical_attendee_participant_status(attendee)
+
+        if participant_status == "DELEGATED":
+            # Extra actions to take
+            delegator = [a for a in itip_event['xml'].get_attendees() if a.get_email() == from_address][0]
+            delegatee = [a for a in itip_event['xml'].get_attendees() if from_address in [b.email() for b in a.get_delegated_from()]][0]
+
+            itip_event['xml'].event.setAttendees([ delegator, delegatee ])
+
+            message = itip_event['xml'].to_message_itip(delegatee.get_email(), method="REPLY", participant_status=itip_event['xml'].get_ical_attendee_participant_status(delegatee))
+            smtp.sendmail(message['From'], message['To'], message.as_string())
+
+        itip_event['xml'].event.setAttendees([a for a in itip_event['xml'].get_attendees() if a.get_email() == from_address])
+
         message = itip_event['xml'].to_message_itip(from_address, method="REPLY", participant_status=participant_status)
         smtp.sendmail(message['From'], message['To'], message.as_string())
+
     smtp.quit()

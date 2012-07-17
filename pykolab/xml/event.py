@@ -225,19 +225,36 @@ class Event(object):
                 year,
                 month,
                 day,
-                hour,
-                minute,
-                second
             ) = (
                     _datetime.year(),
                     _datetime.month(),
                     _datetime.day(),
-                    _datetime.hour(),
-                    _datetime.minute(),
-                    _datetime.second()
                 )
 
-        return datetime.datetime(year, month, day, hour, minute, second)
+        if not _datetime.hour() == None and not _datetime.hour() < 0:
+            (
+                    hour,
+                    minute,
+                    second
+                ) = (
+                        _datetime.hour(),
+                        _datetime.minute(),
+                        _datetime.second()
+                    )
+
+        _timezone = _datetime.timezone()
+
+        if _timezone == '':
+            _timezone = pytz.utc
+        elif _timezone == None:
+            _timezone = pytz.utc
+        else:
+            _timezone = pytz.timezone(_timezone)
+
+        if _datetime.hour() == None or _datetime.hour() < 0:
+            return datetime.date(year, month, day)
+        else:
+            return datetime.datetime(year, month, day, hour, minute, second, tzinfo=_timezone)
 
     def get_ical_attendee(self):
         # TODO: Formatting, aye? See also the example snippet:
@@ -253,6 +270,8 @@ class Event(object):
             role = attendee.get_role()
             partstat = attendee.get_participant_status()
             cutype = attendee.get_cutype()
+            delegators = attendee.get_delegated_from()
+            delegatees = attendee.get_delegated_to()
 
             if rsvp in attendee.rsvp_map.keys():
                 _rsvp = rsvp
@@ -297,6 +316,12 @@ class Event(object):
 
             if not _cutype == None:
                 _attendee.params['CUTYPE'] = icalendar.vText(_cutype)
+
+            if not delegators == None and len(delegators) > 0:
+                _attendee.params['DELEGATED-FROM'] = icalendar.vText(delegators[0].email())
+
+            if not delegatees == None and len(delegatees) > 0:
+                _attendee.params['DELEGATED-TO'] = icalendar.vText(delegatees[0].email())
 
             attendees.append(_attendee)
 
@@ -816,6 +841,7 @@ class Event(object):
 
             attendees = self.get_attendees()
 
+            # TODO: There's an exception here for delegation (partstat DELEGATED)
             for attendee in attendees:
                 if attendee.get_email() == from_address:
                     # Only the attendee is supposed to be listed in a reply
@@ -834,8 +860,8 @@ class Event(object):
 
             if msg_from == None:
                 organizer = self.get_organizer()
-                email = organizer.get_email()
-                name = organizer.get_name()
+                email = organizer.email()
+                name = organizer.name()
                 if email == from_address:
                     if not name:
                         msg_from = email
@@ -851,9 +877,11 @@ class Event(object):
             else:
                 msg_from = '"%s" <%s>' % (name, email)
 
-
         if msg_from == None:
-            log.error(_("No sender specified"))
+            if from_address == None:
+                log.error(_("No sender specified"))
+            else:
+                msg_from = from_address
 
         msg['From'] = msg_from
 
