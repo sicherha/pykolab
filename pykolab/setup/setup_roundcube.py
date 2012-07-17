@@ -71,8 +71,8 @@ def execute(*args, **kw):
                         )
                 )[:24],
 
-            'imap_admin_login': conf.get('cyrus-imapd', 'admin_login'),
-            'imap_admin_password': conf.get('cyrus-imapd', 'admin_password'),
+            'imap_admin_login': conf.get('cyrus-imap', 'admin_login'),
+            'imap_admin_password': conf.get('cyrus-imap', 'admin_password'),
             'ldap_base_dn': conf.get('ldap', 'base_dn'),
             'ldap_group_base_dn': conf.get('ldap', 'group_base_dn'),
             'ldap_group_filter': conf.get('ldap', 'group_filter'),
