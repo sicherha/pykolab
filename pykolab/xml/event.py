@@ -225,19 +225,36 @@ class Event(object):
                 year,
                 month,
                 day,
-                hour,
-                minute,
-                second
             ) = (
                     _datetime.year(),
                     _datetime.month(),
                     _datetime.day(),
-                    _datetime.hour(),
-                    _datetime.minute(),
-                    _datetime.second()
                 )
 
-        return datetime.datetime(year, month, day, hour, minute, second)
+        if not _datetime.hour() == None and not _datetime.hour() < 0:
+            (
+                    hour,
+                    minute,
+                    second
+                ) = (
+                        _datetime.hour(),
+                        _datetime.minute(),
+                        _datetime.second()
+                    )
+
+        _timezone = _datetime.timezone()
+
+        if _timezone == '':
+            _timezone = pytz.utc
+        elif _timezone == None:
+            _timezone = pytz.utc
+        else:
+            _timezone = pytz.timezone(_timezone)
+
+        if _datetime.hour() == None or _datetime.hour() < 0:
+            return datetime.date(year, month, day)
+        else:
+            return datetime.datetime(year, month, day, hour, minute, second, tzinfo=_timezone)
 
     def get_ical_attendee(self):
         # TODO: Formatting, aye? See also the example snippet:
