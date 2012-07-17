@@ -824,6 +824,7 @@ class Event(object):
 
             attendees = self.get_attendees()
 
+            # TODO: There's an exception here for delegation (partstat DELEGATED)
             for attendee in attendees:
                 if attendee.get_email() == from_address:
                     # Only the attendee is supposed to be listed in a reply
@@ -859,9 +860,11 @@ class Event(object):
             else:
                 msg_from = '"%s" <%s>' % (name, email)
 
-
         if msg_from == None:
-            log.error(_("No sender specified"))
+            if from_address == None:
+                log.error(_("No sender specified"))
+            else:
+                msg_from = from_address
 
         msg['From'] = msg_from
 
