@@ -126,6 +126,9 @@ def execute(*args, **kw):
 
     message = message_from_file(open(filepath, 'r'))
 
+    any_itips = False
+    any_resources = False
+
     # An iTip message may contain multiple events. Later on, test if the message
     # is an iTip message by checking the length of this list.
     itip_events = itip_events_from_message(message)
@@ -136,19 +139,51 @@ def execute(*args, **kw):
                     "(valid) iTip.")
             )
 
-        accept(filepath)
-        return
-
     else:
+        any_itips = True
+
         log.debug(
                 _("iTip events attached to this message contain the " + \
                     "following information: %r") % (itip_events),
                 level=9
             )
 
-    # See if a resource is actually being allocated
-    if len([x['resources'] for x in itip_events if x.has_key('resources')]) == 0:
-        if len([x['attendees'] for x in itip_events if x.has_key('attendees')]) == 0:
+    if any_itips:
+        # See if any iTip actually allocates a resource.
+        if len([x['resources'] for x in itip_events if x.has_key('resources')]) == 0:
+            if len([x['attendees'] for x in itip_events if x.has_key('attendees')]) == 0:
+                any_resources = False
+            else:
+                any_resources = True
+        else:
+            any_resources = False
+    else:
+        recipients = {
+                "To": getaddresses(message.get_all('To', [])),
+                "Cc": getaddresses(message.get_all('Cc', []))
+                # TODO: Are those all recipient addresses?
+            }
+        log.debug("Recipients: %r" % recipients)
+
+        for recipient in recipients['Cc'] + recipients['To']:
+            if not len(resource_record_from_email_address(recipient[1])) == 0:
+                any_resources = True
+
+    if any_resources:
+        if not any_itips:
+            log.debug(_("Not an iTip message, but sent to resource nonetheless. Reject message"), level=5)
+            reject(filepath)
+            return
+        else:
+            # Continue. Resources and iTips. We like.
+            pass
+    else:
+        if not any_itips:
+            log.debug(_("No itips, no resources, pass along"), level=5)
+            accept(filepath)
+            return
+        else:
+            log.debug(_("iTips, but no resources, pass along"), level=5)
             accept(filepath)
             return
 
@@ -400,72 +435,147 @@ def itip_events_from_message(message):
         Obtain the iTip payload from email.message <message>
     """
 
+    # Placeholder for any itip_events found in the message.
     itip_events = []
+
+    # iTip methods we are actually interested in. Other methods will be ignored.
+    itip_methods = [ "REQUEST", "REPLY", "ADD", "CANCEL" ]
 
     # TODO: Are all iTip messages multipart? RFC 6047, section 2.4 states "A
     # MIME body part containing content information that conforms to this
     # document MUST have (...)" but does not state whether an iTip message must
     # therefore also be multipart.
     if message.is_multipart():
+
         # Check each part
         for part in message.walk():
+
             # The iTip part MUST be Content-Type: text/calendar (RFC 6047,
             # section 2.4)
             if part.get_content_type() == "text/calendar":
-
-                if part.get_param('method') == "REQUEST":
-                    # Python iCalendar prior to 3.0 uses "from_string".
-                    itip_payload = part.get_payload(decode=True)
-                    if hasattr(icalendar.Calendar, 'from_ical'):
-                        cal = icalendar.Calendar.from_ical(itip_payload)
-                    elif hasattr(icalendar.Calendar, 'from_string'):
-                        cal = icalendar.Calendar.from_string(itip_payload)
-                    else:
-                        log.error(_("Could not read iTip from message."))
-                        return []
-
-                    for c in cal.walk():
-                        itip = {}
-                        if c.name == "VEVENT":
-                            # From the event, take the following properties:
-                            #
-                            # - start
-                            # - end (if any)
-                            # - duration (if any)
-                            # - organizer
-                            # - attendees (if any)
-                            # - resources (if any)
-                            # - TODO: recurrence rules (if any)
-                            #   Where are these stored actually?
-                            #
-                            if c.has_key('dtend'):
-                                itip['start'] = c['dtstart']
-                            else:
-                                log.error(_("iTip event without a start"))
-                                return []
-
-                            if c.has_key('dtend'):
-                                itip['end'] = c['dtend']
-                            if c.has_key('duration'):
-                                itip['duration'] = c['duration']
-                            itip['organizer'] = c['organizer']
-                            itip['attendees'] = c['attendee']
-                            if c.has_key('resources'):
-                                itip['resources'] = c['resources']
-                            itip['raw'] = itip_payload
-                            itip['xml'] = event_from_ical(c.to_ical())
-                            itip_events.append(itip)
-                else:
+                if not part.get_param('method') in itip_methods:
                     log.error(
-                            _("Method %r not yet implemented") % (
+                            _("Method %r not really interesting for us.") % (
                                     part.get_param('method')
                                 )
                         )
 
-    else:
+                # Get the itip_payload
+                itip_payload = part.get_payload(decode=True)
+
+                log.debug(_("Raw iTip payload: %s") % (itip_payload))
+
+                # Python iCalendar prior to 3.0 uses "from_string".
+                if hasattr(icalendar.Calendar, 'from_ical'):
+                    cal = icalendar.Calendar.from_ical(itip_payload)
+                elif hasattr(icalendar.Calendar, 'from_string'):
+                    cal = icalendar.Calendar.from_string(itip_payload)
+
+                # If we can't read it, we're out
+                else:
+                    log.error(_("Could not read iTip from message."))
+                    return []
+
+                for c in cal.walk():
+                    if c.name == "VEVENT":
+                        # From the event, take the following properties:
+                        #
+                        # - start
+                        # - end (if any)
+                        # - duration (if any)
+                        # - organizer
+                        # - attendees (if any)
+                        # - resources (if any)
+                        # - TODO: recurrence rules (if any)
+                        #   Where are these stored actually?
+                        #
+
+                        if c.has_key('dtstart'):
+                            itip['start'] = c['dtstart']
+                        else:
+                            log.error(_("iTip event without a start"))
+                            continue
+
+                        if c.has_key('dtend'):
+                            itip['end'] = c['dtend']
+
+                        if c.has_key('duration'):
+                            itip['duration'] = c['duration']
+
+                        itip['organizer'] = c['organizer']
+
+                        itip['attendees'] = c['attendee']
+
+                        if c.has_key('resources'):
+                            itip['resources'] = c['resources']
+
+                        itip['raw'] = itip_payload
+                        itip['xml'] = event_from_ical(c.to_ical())
+
+                        itip_events.append(itip)
+
+                    # end if c.name == "VEVENT"
+
+                # end for c in cal.walk()
+
+            # end if part.get_content_type() == "text/calendar"
+
+        # end for part in message.walk()
+
+    else: # if message.is_multipart()
         log.debug(_("Message is not an iTip message (non-multipart message)"), level=5)
 
     return itip_events
+
+def reject(filepath):
+    new_filepath = os.path.join(
+            mybasepath,
+            'REJECT',
+            os.path.basename(filepath)
+        )
+
+    os.rename(filepath, new_filepath)
+    filepath = new_filepath
+    exec('modules.cb_action_REJECT(%r, %r)' % ('resources',filepath))
+
+def resource_record_from_email_address(email_address):
+    auth = Auth()
+    auth.connect()
+    resource_records = []
+
+    log.debug(
+            _("Checking if email address %r belongs to a resource (collection)") % (
+                    email_address
+                ),
+            level=8
+        )
+
+    resource_records = auth.find_resource(email_address)
+
+    if isinstance(resource_records, list):
+        if len(resource_records) == 0:
+            log.debug(
+                    _("No resource (collection) records found for %r") % (
+                            email_address
+                        ),
+                    level=9
+                )
+
+        else:
+            log.debug(
+                    _("Resource record(s): %r") % (resource_records),
+                    level=8
+                )
+
+    elif isinstance(resource_records, basestring):
+        log.debug(
+                _("Resource record: %r") % (resource_records),
+                level=8
+            )
+
+        resource_records = [ resource_records ]
+
+    return resource_records
 
 def resource_records_from_itip_events(itip_events):
     """
