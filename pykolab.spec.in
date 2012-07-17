@@ -59,7 +59,7 @@ Cyrus IMAP Telemetry logging handling capabilities for Kolab Groupware
 Summary:            Kolab XML format wrapper for %{name}
 Group:              Applications/System
 Requires:           %{name} = %{version}-%{release}
-Requires:           libkolabxml >= 0.5
+Requires:           python-kolabformat >= 0.5
 
 %description xml
 Kolab Format XML bindings wrapper for %{name}
