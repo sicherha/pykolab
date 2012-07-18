@@ -41,9 +41,8 @@ session_id = None
 conn = None
 
 from connect import connect
-from request import request
 
-def authenticate(username=None, password=None):
+def authenticate(username=None, password=None, domain=None):
     global session_id
 
     conf_username = conf.get('ldap', 'service_bind_dn')
@@ -61,10 +60,14 @@ def authenticate(username=None, password=None):
     if password == None:
         password = utils.ask_question("Password", default=conf_password, password=True)
 
+    if domain == None:
+        domain = conf.get('kolab', 'primary_domain')
+
     params = json.dumps(
             {
                     'username': username,
-                    'password': password
+                    'password': password,
+                    'domain': domain
                 }
         )
 
@@ -122,6 +125,11 @@ def domains_capabilities():
 
 def domains_list():
     return request('GET', 'domains.list')
+
+def form_value_generate(params):
+    params = json.dumps(params)
+
+    return request('POST', 'form_value.generate', params)
 
 def get_group_input():
     group_types = group_types_list()
@@ -231,6 +239,15 @@ def groups_list():
     return request('GET', 'groups.list')
 
 def request(method, api_uri, params=None, headers={}):
+    response_data = request_raw(method, api_uri, params, headers)
+
+    if response_data['status'] == "OK":
+        del response_data['status']
+        return response_data['result']
+    else:
+        return response_data['result']
+
+def request_raw(method, api_uri, params=None, headers={}):
     global session_id
 
     if not session_id == None:
@@ -249,13 +266,8 @@ def request(method, api_uri, params=None, headers={}):
     except ValueError, e:
         # Some data is not JSON
         log.error(_("Response data is not JSON"))
-        sys.exit(1)
 
-    if response_data['status'] == "OK":
-        del response_data['status']
-        return response_data['result']
-    else:
-        return response_data['result']
+    return response_data
 
 def role_capabilities():
     return request('GET', 'role.capabilities')
@@ -410,8 +422,9 @@ def user_form_value_generate_userpassword(*args, **kw):
     result = form_value_generate_password()
     return { 'userpassword': result['password'] }
 
-def user_info():
-    user = utils.ask_question("User email address")
+def user_info(user=None):
+    if user == None:
+        user = utils.ask_question("User email address")
     user = request('GET', 'user.info?user=%s' % (user))
     return user
 
