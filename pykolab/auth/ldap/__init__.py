@@ -1069,6 +1069,7 @@ class LDAP(pykolab.base.Base):
             the entry was - user, group, role or sharedfolder.
         """
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+
         if not entry.has_key(result_attribute):
             return None
 
@@ -1078,7 +1079,7 @@ class LDAP(pykolab.base.Base):
         success = True
         for _type in ['user','group','role','sharedfolder']:
             try:
-                eval("_change_delete_%s(entry, change)" % (_type))
+                eval("self._change_delete_%s(entry, change)" % (_type))
             except:
                 success = False
 
@@ -1089,7 +1090,6 @@ class LDAP(pykolab.base.Base):
         """
             An entry of type user was deleted.
         """
-
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
         if not entry.has_key(result_attribute):
