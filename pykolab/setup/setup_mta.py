@@ -252,6 +252,9 @@ result_attribute = mail
         log.error(_("Could not write out Postfix configuration file /etc/postfix/master.cf"))
         return
 
+    if os.path.isfile('/etc/pki/tls/certs/make-dummy-cert') and not os.path.isfile('/etc/pki/tls/private/localhost.pem'):
+        subprocess.call(['/etc/pki/tls/certs/make-dummy-cert', '/etc/pki/tls/private/localhost.pem'])
+
     amavisd_settings = {
             'ldap_server': 'localhost',
             'ldap_bind_dn': conf.get('ldap', 'service_bind_dn'),
