@@ -21,7 +21,7 @@
 import sys
 
 # For development purposes
-sys.path.extend(['.', '..'])
+sys.path = [ '.' ] + sys.path
 
 from pykolab.translate import _
 
