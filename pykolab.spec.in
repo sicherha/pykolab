@@ -266,9 +266,9 @@ fi
 %check
 # RHEL's python unittest does not have assertIsInstance()
 %if 0%{?rhel} > 1
-nosetests -v tests/ ||:
+nosetests -v tests/unit/ ||:
 %else
-nosetests -v tests/
+nosetests -v tests/unit/
 %endif
 
 %clean
