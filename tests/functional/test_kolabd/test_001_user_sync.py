@@ -3,19 +3,14 @@ import unittest
 
 import pykolab
 from pykolab import wap_client
+from pykolab.auth import Auth
 from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
 
-class TestUserAdd(unittest.TestCase):
+class TestKolabDaemon(unittest.TestCase):
     @classmethod
     def setup_class(self, *args, **kw):
-        conf.finalize_conf(fatal=False)
-
-        self.login = conf.get('ldap', 'bind_dn')
-        self.password = conf.get('ldap', 'bind_pw')
-        self.domain = conf.get('kolab', 'primary_domain')
-
         self.user = {
                 'local': 'john.doe',
                 'domain': 'example.org'
@@ -24,7 +19,20 @@ class TestUserAdd(unittest.TestCase):
         from tests.functional.user_add import user_add
         user_add("John", "Doe")
 
-    def test_001_inbox_created(self):
+    def test_001_user_recipient_policy(self):
+        auth = Auth()
+        auth.connect()
+        recipient = auth.find_recipient("%(local)s@%(domain)s" % (self.user))
+        if hasattr(self, 'assertIsInstance'):
+            self.assertIsInstance(recipient, str)
+
+        self.assertEqual(recipient, "uid=doe,ou=People,dc=example,dc=org")
+
+        result = wap_client.user_info(recipient)
+        self.assertEqual(result['mail'], 'john.doe@example.org')
+        self.assertEqual(result['alias'], ['doe@example.org', 'j.doe@example.org'])
+
+    def test_002_user_mailbox_created(self):
         time.sleep(2)
         imap = IMAP()
         imap.connect()
@@ -32,7 +40,7 @@ class TestUserAdd(unittest.TestCase):
         folders = imap.lm('user/%(local)s@%(domain)s' % (self.user))
         self.assertEqual(len(folders), 1)
 
-    def test_002_autocreate_folders_created(self):
+    def test_003_user_additional_folders_created(self):
         time.sleep(2)
         imap = IMAP()
         imap.connect()
@@ -41,12 +49,9 @@ class TestUserAdd(unittest.TestCase):
 
         folders = imap.lm('user/%(local)s/*@%(domain)s' % (self.user))
 
-        print folders
-        print ac_folders.keys()
-
         self.assertEqual(len(folders), len(ac_folders.keys()))
 
-    def test_003_folder_types_set(self):
+    def test_004_user_folder_annotations_set(self):
         imap = IMAP()
         imap.connect()
 
@@ -68,34 +73,25 @@ class TestUserAdd(unittest.TestCase):
                         self.assertTrue(annotation[annotation.keys().pop()].has_key(_annotation))
                         self.assertEqual(_annotation_value, annotation[annotation.keys().pop()][_annotation])
 
-    @classmethod
-    def teardown_class(self):
-        time.sleep(2)
-
-        res_attr = conf.get('cyrus-sasl', 'result_attribute')
-
-        exec("ac_folders = %s" % (conf.get_raw(conf.get('kolab', 'primary_domain'), 'autocreate_folders')))
-        expected_number_of_folders = len(ac_folders.keys()) + 1
-
-        users = []
-
-        result = wap_client.users_list()
-        for user in result['list'].keys():
-            user_info = wap_client.user_info(user)
-            users.append(user_info)
-            result = wap_client.user_delete({'user': user})
-
+    def test_005_user_subscriptions(self):
         imap = IMAP()
-        imap.connect()
+        imap.connect(login=False)
+        login = conf.get('cyrus-imap', 'admin_login')
+        password = conf.get('cyrus-imap', 'admin_password')
+        imap.login_plain(login, password, 'john.doe@example.org')
 
-        for user in users:
-            if len(user[res_attr].split('@')) > 1:
-                localpart = user[res_attr].split('@')[0]
-                domain = user[res_attr].split('@')[1]
+        folders = imap.lm()
+        self.assertTrue("INBOX" in folders)
 
-            folders = []
-            folders.extend(imap.lm('user/%s' % (user[res_attr])))
-            folders.extend(imap.lm('user/%s/*@%s' % (localpart,domain)))
+        #folders = imap.imap.lsub()
+        #self.assertTrue("Calendar" in folders)
 
-            # Expect folders length to be 0
+    def test_011_resource_add(self):
+        pass
+
+    def test_012_resource_mailbox_created(self):
+        pass
+
+    def test_013_resource_mailbox_annotation(self):
+        pass
 

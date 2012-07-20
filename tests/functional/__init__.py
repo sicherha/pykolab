@@ -1,1 +1,4 @@
-from user_add import user_add
+import sys
+
+def setup_module():
+    sys.path = ['.'] + sys.path
