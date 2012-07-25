@@ -264,4 +264,7 @@
 
     \$rcmail_config['htmleditor'] = 0;
 
+    include_once("/etc/roundcubemail/kolab_auth.inc.php");
+    \$rcmail_config['kolab_cache'] = true;
+
 ?>
