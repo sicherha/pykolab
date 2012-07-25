@@ -782,8 +782,12 @@ class LDAP(pykolab.base.Base):
                     modlist.append((ldap.MOD_REPLACE, attribute, attrs[attribute]))
 
         dn = entry_dn
+
         if len(modlist) > 0:
-            self.ldap.modify_s(dn, modlist)
+            try:
+                self.ldap.modify_s(dn, modlist)
+            except:
+                log.error(_("Could not update dn %r") % (dn))
 
     def synchronize(self):
         """
@@ -909,6 +913,9 @@ class LDAP(pykolab.base.Base):
             The Kolab daemon has little to do for this type of action on this
             type of entry.
         """
+        pass
+
+    def _change_add_None(self, *args, **kw):
         pass
 
     def _change_add_resource(self, entry, change):
@@ -1657,8 +1664,12 @@ class LDAP(pykolab.base.Base):
                 # This entry was in the start result set
                 eval("self._change_none_%s(entry, change_dict)" % (entry['type']))
             else:
-                change = psearch.CHANGE_TYPES_STR[change_dict['change_type']]
-                change = change.lower()
+                if isinstance(change_dict['change_type'], int):
+                    change = psearch.CHANGE_TYPES_STR[change_dict['change_type']]
+                    change = change.lower()
+                else:
+                    change = change_dict['change_type']
+
                 eval(
                         "self._change_%s_%s(entry, change_dict)" % (
                                 change,
@@ -1667,32 +1678,44 @@ class LDAP(pykolab.base.Base):
                     )
 
         # Typical for Paged Results Control
-        elif kw.has_key('user') and isinstance(kw['user'], list):
-            for entry_dn,entry_attrs in kw['user']:
+        elif kw.has_key('entry') and isinstance(kw['entry'], list):
+            for entry_dn,entry_attrs in kw['entry']:
                 entry = { 'dn': entry_dn }
+                entry_attrs = utils.normalize(entry_attrs)
                 for attr in entry_attrs.keys():
                     entry[attr.lower()] = entry_attrs[attr]
 
                 unique_attr = self.config_get('unique_attribute')
                 entry['id'] = entry[unique_attr]
 
-                result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+                try:
+                    entry['type'] = self._entry_type(entry)
+                except:
+                    entry['type'] = "unknown"
 
-                rcpt_addrs = self.recipient_policy(entry)
+                log.debug(_("Entry type: %s") % (entry['type']), level=8)
 
-                for key in rcpt_addrs.keys():
-                    entry[key] = rcpt_addrs[key]
+                eval("self._change_none_%s(entry, None)" % (entry['type']))
 
-                cache.get_entry(self.domain, entry)
-
-                self.imap.connect(domain=self.domain)
-
-                if not self.imap.user_mailbox_exists(entry[result_attribute]):
-                    folder = self.imap.user_mailbox_create(
-                            entry[result_attribute]
-                        )
-
-                    server = self.imap.user_mailbox_server(folder)
+#                result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+#
+#                rcpt_addrs = self.recipient_policy(entry)
+#
+#                log.debug(_("Recipient Addresses: %r") % (rcpt_addrs), level=9)
+#
+#                for key in rcpt_addrs.keys():
+#                    entry[key] = rcpt_addrs[key]
+#
+#                cache.get_entry(self.domain, entry)
+#
+#                self.imap.connect(domain=self.domain)
+#
+#                if not self.imap.user_mailbox_exists(entry[result_attribute]):
+#                    folder = self.imap.user_mailbox_create(
+#                            entry[result_attribute]
+#                        )
+#
+#                    server = self.imap.user_mailbox_server(folder)
 
     def _unbind(self):
         """
@@ -1848,7 +1871,7 @@ class LDAP(pykolab.base.Base):
                 break
 
             if callback:
-                callback(user=_result_data)
+                callback(entry=_result_data)
 
             _results.extend(_result_data)
             if (pages % 2) == 0:
@@ -1911,20 +1934,24 @@ class LDAP(pykolab.base.Base):
             secondary_domains=[]
         ):
 
+        import ldapurl
         import syncrepl
 
+        ldap_url = ldapurl.LDAPUrl(self.config_get('ldap_uri'))
+
         ldap_sync_conn = syncrepl.DNSync(
-                '/var/lib/pykolab/syncrepl.db',
+                '/var/lib/kolab/syncrepl_%s.db' % (self.domain),
                 ldap_url.initializeUrl(),
-                trace_level=ldapmodule_trace_level,
-                trace_file=ldapmodule_trace_file
+                trace_level=2,
+                callback=self._synchronize_callback
             )
 
         msgid = ldap_sync_conn.syncrepl_search(
                 base_dn,
                 scope,
                 mode='refreshAndPersist',
-                filterstr=filterstr
+                filterstr=filterstr,
+                attrlist=attrlist,
             )
 
         try:
