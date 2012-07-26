@@ -102,6 +102,7 @@
             'listcommands',
             'managesieve',
             'newmail_notifier',
+            'odfviewer',
 //            'owncloud',
             'password',
 
@@ -109,6 +110,7 @@
     //        'quickrules',
 
             'redundant_attachments',
+            'tasklist',
             'threading_as_default',
             // contextmenu must be after kolab_addressbook (#444)
             'contextmenu',
@@ -265,6 +267,7 @@
     \$rcmail_config['htmleditor'] = 0;
 
     include_once("/etc/roundcubemail/kolab_auth.inc.php");
+
     \$rcmail_config['kolab_cache'] = true;
 
 ?>
