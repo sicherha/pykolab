@@ -25,6 +25,8 @@ URL:                http://kolab.org/
 Source0:            http://files.kolab.org/releases/%{name}-%{version}.tar.gz
 BuildRoot:          %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch:          noarch
+BuildRequires:      gcc
+BuildRequires:      glib2-devel
 BuildRequires:      python-icalendar
 BuildRequires:      python-kolabformat
 BuildRequires:      python-ldap
