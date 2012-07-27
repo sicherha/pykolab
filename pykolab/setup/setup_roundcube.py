@@ -151,6 +151,13 @@ def execute(*args, **kw):
                 if not schema_filepath in schema_files:
                     schema_files.append(schema_filepath)
 
+    for root, directories, filenames in os.walk('/usr/share/roundcubemail/plugins/libkolab/'):
+        for filename in filenames:
+            if filename.startswith('mysql') and filename.endswith('.sql'):
+                schema_filepath = os.path.join(root,filename)
+                if not schema_filepath in schema_files:
+                    schema_files.append(schema_filepath)
+
     p1 = subprocess.Popen(['echo', 'create database roundcube;'], stdout=subprocess.PIPE)
     p2 = subprocess.Popen(['mysql', '--defaults-file=/tmp/kolab-setup-my.cnf'], stdin=p1.stdout)
     p1.stdout.close()
