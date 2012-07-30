@@ -225,6 +225,7 @@
                     'scope'                     => 'sub',
                     'filter'                    => '(objectClass=inetOrgPerson)',
                     'vlv'                       => false,
+                    'vlv_search'                => false,
                     'fuzzy_search'              => true,
                     'sizelimit'                 => '0',
                     'timelimit'                 => '0',
@@ -258,6 +259,8 @@
     \$rcmail_config['autocomplete_addressbooks'] = Array(
             'kolab_addressbook'
         );
+
+    \$rcmail_config['autocomplete_single'] = true;
 
     \$rcmail_config['htmleditor'] = 0;
 
