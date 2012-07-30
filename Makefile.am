@@ -15,7 +15,6 @@ PYTHON_FILES = \
 	conf.py \
 	kolab.py \
 	kolabd.py \
-	kolabtest.py \
 	saslauthd.py \
 	setup-kolab.py \
 	wallace.py
