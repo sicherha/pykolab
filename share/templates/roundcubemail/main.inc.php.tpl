@@ -93,22 +93,17 @@
             'compose_addressbook',
             'http_authentication',
             'jqueryui',
+            'kolab_activesync',
             'kolab_addressbook',
             'kolab_auth',
             'kolab_core',
             'kolab_config',
             'kolab_folders',
-            'kolab_zpush',
             'listcommands',
             'managesieve',
             'newmail_notifier',
             'odfviewer',
-//            'owncloud',
             'password',
-
-    // Depends on sieverules
-    //        'quickrules',
-
             'redundant_attachments',
             'tasklist',
             'threading_as_default',
