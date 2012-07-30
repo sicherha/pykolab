@@ -15,8 +15,6 @@ declare -a tasks
 
 dists[${#dists[@]}]='f16';  dist_tags[${#dist_tags[@]}]='fc16'; product_series[${#product_series[@]}]="3.0"
 dists[${#dists[@]}]='f17';  dist_tags[${#dist_tags[@]}]='fc17'; product_series[${#product_series[@]}]="3.0"
-dists[${#dists[@]}]='el5';  dist_tags[${#dist_tags[@]}]='el5';  product_series[${#product_series[@]}]="2.4"
-dists[${#dists[@]}]='el6';  dist_tags[${#dist_tags[@]}]='el6';  product_series[${#product_series[@]}]="2.4"
 dists[${#dists[@]}]='el6';  dist_tags[${#dist_tags[@]}]='el6';  product_series[${#product_series[@]}]="3.0"
 
 autoreconf -v && ./configure && make dist || exit 1
