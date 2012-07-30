@@ -32,6 +32,8 @@ EXTRA_DIST = \
 	pykolab.spec.in \
 	pylint.log \
 	$(wildcard tests/*.py) \
+	$(wildcard tests/*/*.py) \
+	$(wildcard tests/*/*/*.py) \
 	$(PYTHON_FILES)
 
 SUBDIRS = \
@@ -55,7 +57,6 @@ pylint:
 		conf.py \
 		kolabd.py \
 		kolab.py \
-		kolabtest.py \
 		saslauthd.py \
 		setup-kolab.py \
 		wallace.py \
@@ -197,7 +198,6 @@ endif
 	$(INSTALL) -p -m 755 kolabd.py $(DESTDIR)/$(sbindir)/kolabd
 	$(INSTALL) -p -m 755 saslauthd.py $(DESTDIR)/$(sbindir)/kolab-saslauthd
 	$(INSTALL) -p -m 755 wallace.py $(DESTDIR)/$(sbindir)/wallaced
-	$(INSTALL) -p -m 755 kolabtest.py $(DESTDIR)/$(bindir)/kolab-test
 	$(INSTALL) -p -m 755 setup-kolab.py $(DESTDIR)/$(sbindir)/setup-kolab
 	$(INSTALL) -p -m 644 cyruslib.py $(DESTDIR)/$(pythondir)
 	$(INSTALL) -p -m 755 bin/kolab_parse_telemetry.py $(DESTDIR)/$(sbindir)/kolab_parse_telemetry
