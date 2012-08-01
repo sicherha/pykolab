@@ -93,6 +93,14 @@ def execute(*args, **kw):
                 confirm=True
             )
 
+        print >> sys.stderr, utils.multiline_message(
+                _("""
+                        Please choose the system user and group the service
+                        should use to run under. These should be existing,
+                        unprivileged, local system POSIX accounts with no shell.
+                    """)
+            )
+
         _input['userid'] = utils.ask_question(_("User"), default="nobody")
         _input['group'] = utils.ask_question(_("Group"), default="nobody")
 
@@ -101,6 +109,8 @@ def execute(*args, **kw):
         _input['dirmgr_pass'] = conf.get('ldap', 'bind_pw')
         _input['userid'] = "nobody"
         _input['group'] = "nobody"
+
+    # TODO: Verify the user and group exist.
 
     # TODO: This takes the system fqdn, domainname and hostname, rather then
     # the desired fqdn, domainname and hostname.
@@ -170,6 +180,8 @@ def execute(*args, **kw):
                                     Invalid input. Please try again.
                                 """)
                         )
+
+    # TODO: Loudly complain if the fqdn does not resolve back to this system.
 
     data = """
 [General]
