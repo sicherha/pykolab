@@ -50,6 +50,14 @@ def cli_options():
             help    = _("Specify FQDN (overriding defaults).")
         )
 
+    ldap_group.add_option(
+            "--allow-anonymous",
+            dest    = "anonymous",
+            action  = "store_true",
+            default = False,
+            help    = _("Allow anonymous binds (default: no).")
+        )
+
 def description():
     return _("Setup LDAP.")
 
@@ -347,6 +355,10 @@ ServerAdminPwd = %(admin_pass)s
     attrs['surname'] = "Service"
     attrs['cn'] = "Kolab Service"
     attrs['userPassword'] = _input['kolab_service_pass']
+    attrs['nslookthroughlimit'] = -1
+    attrs['nssizelimit'] = -1
+    attrs['nstimelimit'] = -1
+    attrs['nsidletimeout'] = -1
 
     # Convert our dict to nice syntax for the add-function using modlist-module
     ldif = ldap.modlist.addModlist(attrs)
@@ -418,11 +430,12 @@ ServerAdminPwd = %(admin_pass)s
     ldif = ldap.modlist.addModlist(attrs)
     auth._auth.ldap.add_s(dn, ldif)
 
-    log.info(_("Disabling anonymous binds"))
-    dn = "cn=config"
-    modlist = []
-    modlist.append((ldap.MOD_REPLACE, "nsslapd-allow-anonymous-access", "off"))
-    auth._auth.ldap.modify_s(dn, modlist)
+    if not conf.anonymous:
+        log.info(_("Disabling anonymous binds"))
+        dn = "cn=config"
+        modlist = []
+        modlist.append((ldap.MOD_REPLACE, "nsslapd-allow-anonymous-access", "off"))
+        auth._auth.ldap.modify_s(dn, modlist)
 
     # TODO: Ensure the uid attribute is unique
     # TODO^2: Consider renaming the general "attribute uniqueness to "uid attribute uniqueness"
