@@ -367,10 +367,10 @@ ServerAdminPwd = %(admin_pass)s
     attrs['surname'] = "Service"
     attrs['cn'] = "Kolab Service"
     attrs['userPassword'] = _input['kolab_service_pass']
-    attrs['nslookthroughlimit'] = -1
-    attrs['nssizelimit'] = -1
-    attrs['nstimelimit'] = -1
-    attrs['nsidletimeout'] = -1
+    attrs['nslookthroughlimit'] = '-1'
+    attrs['nssizelimit'] = '-1'
+    attrs['nstimelimit'] = '-1'
+    attrs['nsidletimeout'] = '-1'
 
     # Convert our dict to nice syntax for the add-function using modlist-module
     ldif = ldap.modlist.addModlist(attrs)
