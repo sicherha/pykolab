@@ -128,6 +128,7 @@ def execute(*args, **kw):
 
     any_itips = False
     any_resources = False
+    possibly_any_resources = True
 
     # An iTip message may contain multiple events. Later on, test if the message
     # is an iTip message by checking the length of this list.
@@ -152,12 +153,11 @@ def execute(*args, **kw):
         # See if any iTip actually allocates a resource.
         if len([x['resources'] for x in itip_events if x.has_key('resources')]) == 0:
             if len([x['attendees'] for x in itip_events if x.has_key('attendees')]) == 0:
-                any_resources = False
-            else:
-                any_resources = True
+                possibly_any_resources = False
         else:
-            any_resources = False
-    else:
+            possibly_any_resources = False
+
+    if possibly_any_resources:
         recipients = {
                 "To": getaddresses(message.get_all('To', [])),
                 "Cc": getaddresses(message.get_all('Cc', []))
