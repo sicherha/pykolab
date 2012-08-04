@@ -57,6 +57,7 @@ pykolab_setup_PYTHON = \
 	setup/setup_ldap.py \
 	setup/setup_mta.py \
 	setup/setup_mysql.py \
+	setup/setup_php.py \
 	setup/setup_roundcube.py \
 	setup/setup_zpush.py \
 	setup/__init__.py
