@@ -583,9 +583,6 @@ class Event(object):
         elif attr == "uid":
             self.set_ical_uid(value)
 
-        else:
-            print "WARNING, no function for", attr
-
     def set_ical_attendee(self, _attendee):
         if isinstance(_attendee, basestring):
             _attendee = [_attendee]
