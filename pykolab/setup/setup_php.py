@@ -45,7 +45,7 @@ def cli_options():
             "--timezone",
             dest    = "timezone",
             action  = "store",
-            default = "UTC",
+            default = None,
             help    = _("Specify the timezone for PHP.")
         )
 
@@ -53,6 +53,17 @@ def description():
     return _("Setup PHP.")
 
 def execute(*args, **kw):
+    print >> sys.stderr, utils.multiline_message(
+            _("""
+                    Please supply the timezone PHP should be using.
+                """)
+        )
+
+    conf.timezone = utils.ask_question(
+            _("Timezone ID"),
+            default="UTC"
+        )
+
     myaugeas = Augeas()
 
     setting_base = '/files/etc/php.ini/'
