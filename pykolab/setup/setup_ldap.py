@@ -443,6 +443,7 @@ ServerAdminPwd = %(admin_pass)s
     attrs = {}
     attrs['objectclass'] = ['top','domainrelatedobject']
     attrs['associateddomain'] = '%s' % (_input['domain'])
+    attrs['aci'] = '(targetattr = "*") (version 3.0;acl "Read Access for %(domain)s Users";allow (read,compare,search)(userdn = "ldap:///%(rootdn)s??sub?(objectclass=*)");)' % (_input)
 
     # Add inetdomainbasedn in case the configured root dn is not the same as the
     # standard root dn for the domain name configured
