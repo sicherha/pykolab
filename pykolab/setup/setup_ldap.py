@@ -230,6 +230,14 @@ ServerAdminPwd = %(admin_pass)s
             '--file=%s' % (filename)
         ]
 
+    print >> sys.stderr, utils.multiline_message(
+            _("""
+                    Setup is now going to set up the 389 Directory Server. This
+                    may take a little while (during which period there is no
+                    output and no progress indication).
+                """)
+        )
+
     log.info(_("Setting up 389 Directory Server"))
 
     setup_389 = subprocess.Popen(
@@ -239,6 +247,8 @@ ServerAdminPwd = %(admin_pass)s
         )
 
     (stdoutdata, stderrdata) = setup_389.communicate()
+
+    # TODO: Get the return code and display output if not successful.
 
     log.debug(_("Setup DS stdout:"), level=8)
     log.debug(stdoutdata, level=8)
