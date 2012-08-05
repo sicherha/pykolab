@@ -212,6 +212,42 @@ class IMAP(object):
         else:
             raise AttributeError, _("%r has no attribute %s") % (self,name)
 
+    def namespaces(self):
+        """
+            Obtain the namespaces.
+
+            Returns a tuple of:
+
+                (str(personal) [, str(other users) [, list(shared)]])
+        """
+
+        _personal = None
+        _other_users = None
+        _shared = None
+
+        (_response, _namespaces) = self.imap.m.namespace()
+
+        if len(_namespaces) == 1:
+            _namespaces = _namespaces[0]
+
+        _namespaces = re.split(r"\)\)\s\(\(", _namespaces)
+
+        _other_users = [
+                ''.join(_namespaces[1].replace('((','').replace('))','').split()[-1])
+            ]
+
+        if len(_namespaces) >= 3:
+            _shared = []
+            _shared.append(' '.join(_namespaces[2].replace('((','').replace('))','').split()[:-1]))
+
+        if len(_namespaces) >= 2:
+            _other_users = ' '.join(_namespaces[1].replace('((','').replace('))','').split()[:-1])
+
+        if len(_namespaces) >= 1:
+            _personal = _namespaces[0].replace('((','').replace('))','').split()[0]
+
+        return (_personal, _other_users, _shared)
+
     def shared_folder_create(self, folder_path, server=None):
         """
             Create a shared folder.
@@ -384,8 +420,30 @@ class IMAP(object):
         self.connect(login=False)
         self.login_plain(admin_login, admin_password, folder)
 
-        for _folder in self.lm("%s/*%s" % (folder_name.split('@')[0],domain_suffix)):
-            self.subscribe(_folder)
+        _tests = []
+
+        # Subscribe only to personal folders
+        (personal, other, shared) = self.namespaces()
+
+        if not other == None:
+            _tests.append(other)
+
+        if not shared == None:
+            for _shared in shared:
+                _tests.append(_shared)
+
+        for _folder in self.lm():
+            _subscribe = True
+
+            for _test in _tests:
+                if not _subscribe:
+                    continue
+
+                if _folder.startswith(_test):
+                    _subscribe = False
+
+            if _subscribe:
+                self.subscribe(_folder)
 
         self.logout()
 
