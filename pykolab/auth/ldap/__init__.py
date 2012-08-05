@@ -704,15 +704,44 @@ class LDAP(pykolab.base.Base):
             log.debug(_("Recipient policy composed the following set of secondary " + \
                     "email addresses: %r") % (secondary_mail_addresses), level=8)
 
+
             if not secondary_mail_addresses == None:
+                log.debug(
+                        _("Secondary mail addresses that we want is not None: %r") % (
+                                secondary_mail_addresses
+                            ),
+                        level=9
+                    )
+
                 secondary_mail_addresses = list(set(secondary_mail_addresses))
+
                 # Avoid duplicates
                 while primary_mail_address in secondary_mail_addresses:
+                    log.debug(
+                            _("Avoiding the duplication of the primary mail " + \
+                                    "address %r in the list of secondary mail " + \
+                                    "addresses") % (primary_mail_address),
+                            level=9
+                        )
+
                     secondary_mail_addresses.pop(
                             secondary_mail_addresses.index(primary_mail_address)
                         )
 
+                log.debug(
+                        _("Entry is getting secondary mail addresses: %r") % (
+                                secondary_mail_addresses
+                            ),
+                        level=9
+                    )
+
                 if not entry.has_key(secondary_mail_attribute):
+                    log.debug(
+                            _("Entry did not have any secondary mail " + \
+                                    "addresses in %r") % (secondary_mail_attribute),
+                            level=9
+                        )
+
                     if not len(secondary_mail_addresses) == 0:
                         self.set_entry_attribute(
                                 entry,
@@ -722,6 +751,9 @@ class LDAP(pykolab.base.Base):
 
                         entry_modifications[secondary_mail_attribute] = secondary_mail_addresses
                 else:
+                    if isinstance(entry[secondary_mail_attribute], basestring):
+                        entry[secondary_mail_attribute] = list(set([entry[secondary_mail_attribute]]))
+
                     if not secondary_mail_addresses == entry[secondary_mail_attribute]:
                         self.set_entry_attribute(
                                 entry,
