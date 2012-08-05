@@ -236,6 +236,7 @@
                             'prefix'            => 'title',
                             'email:primary'     => 'mail',
                             'email:alias'       => 'alias',
+                            'email:personal'    => 'mailalternateaddress',
                             'phone:main'        => 'telephoneNumber',
                             'phone:work'        => 'alternateTelephoneNumber',
                             'phone:mobile'      => 'mobile',
