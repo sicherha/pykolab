@@ -32,6 +32,8 @@ components = {}
 component_groups = {}
 executed_components = []
 
+components_included_in_cli = []
+
 finalize_conf_ok = None
 
 def __init__():
@@ -117,6 +119,11 @@ def _list_components(*args, **kw):
     return _components
 
 def cli_options_from_component(component_name, *args, **kw):
+    global components_included_in_cli
+
+    if component_name in components_included_in_cli:
+        return
+
     if components[component_name].has_key('group'):
         group = components[component_name]['group']
         component_name = components[component_name]['component_name']
@@ -132,6 +139,8 @@ def cli_options_from_component(component_name, *args, **kw):
             exec("%s_cli_options()" % (component_name))
         except ImportError, e:
             pass
+
+    components_included_in_cli.append(component_name)
 
 def execute(component_name, *args, **kw):
     if component_name == '':
