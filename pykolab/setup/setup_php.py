@@ -53,16 +53,17 @@ def description():
     return _("Setup PHP.")
 
 def execute(*args, **kw):
-    print >> sys.stderr, utils.multiline_message(
-            _("""
-                    Please supply the timezone PHP should be using.
-                """)
-        )
+    if conf.timezone == None:
+        print >> sys.stderr, utils.multiline_message(
+                _("""
+                        Please supply the timezone PHP should be using.
+                    """)
+            )
 
-    conf.timezone = utils.ask_question(
-            _("Timezone ID"),
-            default="UTC"
-        )
+        conf.timezone = utils.ask_question(
+                _("Timezone ID"),
+                default="UTC"
+            )
 
     myaugeas = Augeas()
 
@@ -74,7 +75,7 @@ def execute(*args, **kw):
     if current_value == None:
         insert_paths = myaugeas.match('/files/etc/php.ini/Date/*')
         insert_path = insert_paths[(len(insert_paths)-1)]
-        myaugeas.insert(insert_path, setting_key, False)
+        myaugeas.insert(insert_path, 'date.timezone', False)
 
     log.debug(_("Setting key %r to %r") % ('Date/date.timezone', conf.timezone), level=8)
     myaugeas.set(setting, conf.timezone)
