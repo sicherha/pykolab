@@ -137,13 +137,16 @@ class LDAP(pykolab.base.Base):
             login[3] preserves the originally specified realm.
         """
 
-        log.debug(
-                _("Attempting to authenticate user %s in realm %s") % (
-                        login,
-                        realm
-                    ),
-                level=8
-            )
+        try:
+            log.debug(
+                    _("Attempting to authenticate user %s in realm %s") % (
+                            login[0],
+                            realm
+                        ),
+                    level=8
+                )
+        except:
+            pass
 
         self.connect()
         self._bind()
@@ -186,10 +189,13 @@ class LDAP(pykolab.base.Base):
             self.ldap.simple_bind_s(entry_dn, login[1])
             retval = True
         except:
-            log.debug(
-                    _("Failed to authenticate as user %s") % (entry_dn),
-                    level=8
-                )
+            try:
+                log.debug(
+                        _("Failed to authenticate as user %s") % (login[0]),
+                        level=8
+                    )
+            except:
+                pass
 
             retval = False
 
