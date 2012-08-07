@@ -248,6 +248,13 @@ class IMAP(object):
 
         return (_personal, _other_users, _shared)
 
+    def set_acl(self, folder, identifier, acl):
+        """
+            Set an ACL entry on a folder.
+        """
+
+        self.imap.sam(folder, identifier, acl)
+
     def shared_folder_create(self, folder_path, server=None):
         """
             Create a shared folder.
@@ -766,6 +773,12 @@ class IMAP(object):
 
     def get_quota_root(self, mailfolder_path):
         return self.lqr(mailfolder_path)
+
+    def list_acls(self, folder):
+        """
+            List the ACL entries on a folder
+        """
+        return self.imap.lam(folder)
 
     def list_user_folders(self, primary_domain=None, secondary_domains=[]):
         """
