@@ -26,7 +26,10 @@ Source0:            http://files.kolab.org/releases/%{name}-%{version}.tar.gz
 BuildRoot:          %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch:          noarch
 BuildRequires:      gcc
+BuildRequires:      gettext
 BuildRequires:      glib2-devel
+BuildRequires:      intltool
+BuildRequires:      python
 BuildRequires:      python-icalendar
 BuildRequires:      python-kolabformat
 BuildRequires:      python-ldap
@@ -72,7 +75,6 @@ Kolab Format XML bindings wrapper for %{name}
 %package -n kolab-cli
 Summary:            Kolab CLI components
 Group:              Applications/System
-BuildRequires:      intltool, gettext, python
 Requires:           %{name} = %{version}-%{release}
 Requires:           python-augeas
 Requires:           python-cheetah
@@ -86,7 +88,6 @@ Kolab CLI utilities
 %package -n kolab-saslauthd
 Summary:            Kolab SASL Authentication Daemon
 Group:              Applications/System
-BuildRequires:      intltool, gettext, python
 Requires:           %{name} = %{version}-%{release}
 Requires:           cyrus-sasl
 Requires:           cyrus-sasl-plain
@@ -100,7 +101,6 @@ Kolab SASL Authentication Daemon for multi-domain, multi-authn database deployme
 %package -n kolab-server
 Summary:            Kolab Server implemented in Python
 Group:              Applications/System
-BuildRequires:      intltool, gettext, python
 Requires:           %{name} = %{version}-%{release}
 
 %description -n kolab-server
@@ -112,7 +112,6 @@ Kolab Server implemented in Python
 %package -n postfix-kolab
 Summary:            Kolab SMTP Access Policy for Postfix
 Group:              Applications/System
-BuildRequires:      intltool, gettext, python
 Requires:           postfix
 Requires:           %{name} = %{version}-%{release}
 Requires:           python-sqlalchemy
