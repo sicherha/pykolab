@@ -212,6 +212,13 @@ class IMAP(object):
         else:
             raise AttributeError, _("%r has no attribute %s") % (self,name)
 
+    def get_metadata(self, folder):
+        """
+            Obtain all metadata entries on a folder
+        """
+
+        return self.imap.getannotation(folder, '*')
+
     def namespaces(self):
         """
             Obtain the namespaces.
@@ -254,6 +261,49 @@ class IMAP(object):
         """
 
         self.imap.sam(folder, identifier, acl)
+
+    def set_metadata(self, folder, metadata_path, metadata_value, shared=True):
+        """
+            Set a metadata entry on a folder
+        """
+
+        if metadata_path.startswith('/shared/'):
+            shared = True
+
+        if metadata_path.startswith('/shared/'):
+            metadata_path = metadata_path.replace('/shared/', '/')
+        elif metadata_path.startswith('/private/'):
+            shared = False
+            metadata_path = metadata_path.replace('/private/', '/')
+
+        backend = conf.get('kolab', 'imap_backend')
+
+        if not self.domain == None:
+            if conf.has_section(self.domain) and conf.has_option(self.domain, 'imap_backend'):
+                backend = conf.get(self.domain, 'imap_backend')
+
+        if not shared:
+            log.warning(_("Private annotations need to be set using the appropriate user account."))
+
+        admin_login = conf.get(backend, 'admin_login')
+
+        admin_acl = None
+
+        acls = self.list_acls(folder)
+        if acls.has_key(admin_login):
+            admin_acl = acls[admin_login]
+
+        if admin_acl == None:
+            self.set_acl(folder, admin_login, 'lrsipwa')
+        elif not 'w' in admin_acl:
+            self.set_acl(folder, admin_login, '%sw' % (admin_acl))
+
+        self.imap._setannotation(folder, metadata_path, metadata_value, shared)
+
+        if admin_acl == None:
+            self.set_acl(folder, admin_login, '')
+        elif not 'w' in admin_acl:
+            self.set_acl(folder, admin_login, admin_acl)
 
     def shared_folder_create(self, folder_path, server=None):
         """

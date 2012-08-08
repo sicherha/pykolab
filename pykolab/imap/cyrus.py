@@ -81,6 +81,7 @@ class Cyrus(cyruslib.CYRUS):
 
         if conf.debuglevel > 8:
             self.VERBOSE = True
+            self.m.debug = 5
 
         # Initialize our variables
         self.separator = self.SEP
@@ -217,7 +218,7 @@ class Cyrus(cyruslib.CYRUS):
     def _getannotation(self, *args, **kw):
         return self.getannotation(*args, **kw)
 
-    def _setannotation(self, mailfolder, annotation, value):
+    def _setannotation(self, mailfolder, annotation, value, shared=False):
         """
             Login to the actual backend server, then set annotation.
         """
@@ -228,7 +229,7 @@ class Cyrus(cyruslib.CYRUS):
         #if annotation.startswith('/private'):
 
         try:
-            self.setannotation(mailfolder, annotation, value)
+            self.setannotation(mailfolder, annotation, value, shared)
         except cyruslib.CYRUSError, e:
             log.error(_("Could not set annotation %r on mail folder %r: %r") % (annotation,mailfolder,e))
 
