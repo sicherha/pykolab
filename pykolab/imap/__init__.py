@@ -533,7 +533,7 @@ class IMAP(object):
             try:
                 self.imap.rename(old_name,new_name)
             except:
-                log.error(_("Could not rename INBOX folder %s to %s") % (oldname,new_name))
+                log.error(_("Could not rename INBOX folder %s to %s") % (old_name,new_name))
         else:
             log.warning(_("Moving INBOX folder %s won't succeed as target folder %s already exists") % (old_name,new_name))
 
