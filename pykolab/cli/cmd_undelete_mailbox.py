@@ -27,7 +27,10 @@ log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
 def __init__():
-    commands.register('undelete_mailbox', execute, description="Recover mailboxes previously deleted.")
+    commands.register('undelete_mailbox', execute, description=description())
+
+def description(*args, **kw):
+    return _("Recover mailboxes previously deleted.")
 
 def execute(*args, **kw):
     """

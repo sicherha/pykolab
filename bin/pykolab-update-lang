@@ -17,14 +17,18 @@ find . -type f -name "*.py" -o -name "*.py.in" | \
     done
 
 cd po/
+
 intltool-update --pot --gettext-package=pykolab
+
 if [ "$1" == "po" ]; then
     for lang_file in `ls -1 *.po`; do
         lang=$(echo ${lang_file} | cut -f1 -d'.')
+        tx pull -f -l ${lang}
         intltool-update -d ${lang}
-        msginit --no-translator --locale=${lang} --input=pykolab.pot --output=${lang_file}
-        msgmerge -U ${lang_file} pykolab.pot
-    done
-    
+    done    
 fi
+
+echo "Push the new .pot file back to transifex"
+
+tx push -s
 cd ..

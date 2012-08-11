@@ -1,21 +1,21 @@
-# German translations for pykolab package.
-# Copyright (C) 2012 THE pykolab'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the pykolab package.
-# Automatically generated, 2012.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
 #
+# Translators:
 msgid ""
 msgstr ""
-"Project-Id-Version: pykolab 0.5.3\n"
+"Project-Id-Version: pykolab\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-08-11 14:28+0100\n"
-"PO-Revision-Date: 2012-08-11 14:28+0100\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"POT-Creation-Date: 2012-08-11 14:48+0100\n"
+"PO-Revision-Date: 2012-08-11 13:02+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: ../bin/kolab_smtp_access_policy.py:206
 #, python-format
@@ -784,6 +784,10 @@ msgstr ""
 #: ../pykolab/cli/cmd_sync.py:57
 #, python-format
 msgid "Synchronizing users for %s took %d seconds"
+msgstr ""
+
+#: ../pykolab/cli/cmd_undelete_mailbox.py:33
+msgid "Recover mailboxes previously deleted."
 msgstr ""
 
 #. This is a nested command
