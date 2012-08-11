@@ -16,6 +16,7 @@ config.log
 config.status
 configure
 po/*.gmo
+po/*.mo
 po/POTFILES
 pykolab/constants.py
 pykolab-[0-9]*.*/
