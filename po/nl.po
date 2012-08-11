@@ -1,72 +1,73 @@
-# Dutch translations for pykolab package.
-# Copyright (C) 2012 THE pykolab'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the pykolab package.
-# Automatically generated, 2012.
-#
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# 
+# Translators:
+# Jeroen van Meeuwen <vanmeeuwen@kolabsys.com>, 2012.
 msgid ""
 msgstr ""
-"Project-Id-Version: pykolab 0.5.3\n"
+"Project-Id-Version: pykolab\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-08-11 14:28+0100\n"
-"PO-Revision-Date: 2012-08-11 14:28+0100\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"Language: nl\n"
+"POT-Creation-Date: 2012-08-11 13:47+0100\n"
+"PO-Revision-Date: 2012-08-11 13:27+0000\n"
+"Last-Translator: Jeroen van Meeuwen <vanmeeuwen@kolabsys.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: nl\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: ../bin/kolab_smtp_access_policy.py:206
 #, python-format
 msgid "Adding policy request to instance %s"
-msgstr ""
+msgstr "Bezig policy verzoek toe te voegen aan %s"
 
 #: ../bin/kolab_smtp_access_policy.py:446
 msgid "Unauthorized access not allowed"
-msgstr ""
+msgstr "Niet geautoriseerde toegang niet toegestaan"
 
 #: ../bin/kolab_smtp_access_policy.py:467
 #: ../bin/kolab_smtp_access_policy.py:658
 msgid "Could not find recipient"
-msgstr ""
+msgstr "Kan ontvanger niet vinden"
 
 #: ../bin/kolab_smtp_access_policy.py:486
 #: ../bin/kolab_smtp_access_policy.py:586
 #, python-format
 msgid "Could not find envelope sender user %s"
-msgstr ""
+msgstr "Kan envelope zender gebruiker %s niet vinden"
 
 #: ../bin/kolab_smtp_access_policy.py:529
 #, python-format
 msgid "Obtained authenticated user details for %r: %r"
-msgstr ""
+msgstr "Gebruikers details voor geauthentificeerde gebruiker %r verkregen: %r"
 
 #: ../bin/kolab_smtp_access_policy.py:608
 #, python-format
 msgid "%s is unauthorized to send on behalf of %s"
-msgstr ""
+msgstr "Het is %s niet toegestaan te versturen namens %s"
 
 #: ../bin/kolab_smtp_access_policy.py:618
 #, python-format
 msgid "User %s attempted to use envelope sender address %s "
-msgstr ""
+msgstr "Gebruiker %s probeerde zender adres %s te gebruiken"
 
 #: ../bin/kolab_smtp_access_policy.py:682
 #: ../bin/kolab_smtp_access_policy.py:693
 #, python-format
 msgid "Found user %s to be a delegate user of %s"
-msgstr ""
+msgstr "Gebruiker %s als delegatie gebruiker van %s gevonden"
 
 #: ../bin/kolab_smtp_access_policy.py:717
 #, python-format
 msgid "Verifying authenticated sender '%(sender)s' with "
-msgstr ""
+msgstr "Verificatie van geauthentificeerde gebruiker '%(sender)s' met"
 
 #: ../bin/kolab_smtp_access_policy.py:722
 #, python-format
 msgid "Verifying unauthenticated sender '%(sender)s' "
-msgstr ""
+msgstr "Niet geauthentificeerde gebruiker '%(sender)s' aan het verifieren"
 
 #: ../bin/kolab_smtp_access_policy.py:739
 #, python-format
@@ -81,7 +82,7 @@ msgstr ""
 #: ../bin/kolab_smtp_access_policy.py:766
 #, python-format
 msgid "Domain %s is a primary domain"
-msgstr ""
+msgstr "Domein %s is een primair domein"
 
 #: ../bin/kolab_smtp_access_policy.py:774
 #, python-format
@@ -99,17 +100,17 @@ msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:827
 msgid "Invalid recipient"
-msgstr ""
+msgstr "Ongeldige ontvanger"
 
 #: ../bin/kolab_smtp_access_policy.py:838
 msgid "Could not find this user, accepting"
-msgstr ""
+msgstr "Kan deze gebruiker niet vinden, accepteren"
 
 #: ../bin/kolab_smtp_access_policy.py:901
 #: ../bin/kolab_smtp_access_policy.py:954
 #, python-format
 msgid "Sender %s is not allowed to send to "
-msgstr ""
+msgstr "Het is zender %s niet toegestaan te versturen naar"
 
 #: ../bin/kolab_smtp_access_policy.py:941
 #, python-format
@@ -118,11 +119,11 @@ msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:970
 msgid "Sender uses unauthorized envelope sender address"
-msgstr ""
+msgstr "Verstuurder gebruikt een niet geauthorizeerd envelope zender adres"
 
 #: ../bin/kolab_smtp_access_policy.py:987
 msgid "Could not verify sender"
-msgstr ""
+msgstr "Kan de verstuurder niet verifieren"
 
 #: ../bin/kolab_smtp_access_policy.py:994
 msgid "Verifying whether sender is allowed to send to "
@@ -131,7 +132,7 @@ msgstr ""
 #: ../bin/kolab_smtp_access_policy.py:1008
 #, python-format
 msgid "Result is %r"
-msgstr ""
+msgstr "Het resultaat is %r"
 
 #: ../bin/kolab_smtp_access_policy.py:1013
 msgid "No recipient policy restrictions exist for this sender"
@@ -332,7 +333,7 @@ msgstr ""
 #: ../kolabd/__init__.py:223 ../pykolab/auth/ldap/__init__.py:1591
 #: ../pykolab/cli/cmd_sync.py:36
 msgid "Listing domains..."
-msgstr ""
+msgstr "Lijst van domeinen verkrijgen..."
 
 #: ../kolabd/__init__.py:256
 #, python-format
@@ -627,11 +628,11 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_add_domain.py:42
 msgid "Add domain as alias for DOMAIN"
-msgstr ""
+msgstr "Voeg DOMAIN toe als alias voor domein"
 
 #: ../pykolab/cli/cmd_add_domain.py:47
 msgid "Add a new domain or domain alias."
-msgstr ""
+msgstr "Voeg een nieuw domein, of een alias voor een bestaand domein toe"
 
 #: ../pykolab/cli/cmd_add_domain.py:55
 msgid "Could not find credentials with sufficient permissions"
@@ -639,11 +640,11 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_add_domain.py:80 ../pykolab/wap_client/__init__.py:113
 msgid "Invalid parent domain"
-msgstr ""
+msgstr "Ongeldig domein"
 
 #: ../pykolab/cli/cmd_add_domain.py:86
 msgid "Domain name"
-msgstr ""
+msgstr "Domein naam"
 
 #: ../pykolab/cli/cmd_create_mailbox.py:41
 msgid "Set metadata for folder to ANNOTATION=VALUE"
@@ -683,7 +684,7 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_delete_mailbox.py:46
 msgid "No mailbox specified"
-msgstr ""
+msgstr "Geen mailbox gespecificeerd"
 
 #: ../pykolab/cli/cmd_export_mailbox.py:38
 msgid "All folders this user has access to"
@@ -738,11 +739,11 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_rename_mailbox.py:48
 msgid "No target mailbox name specified"
-msgstr ""
+msgstr "Geen doel mailbox naam gespecificeerd"
 
 #: ../pykolab/cli/cmd_rename_mailbox.py:50
 msgid "No source mailbox name specified"
-msgstr ""
+msgstr "Geen bron mailbox naam gespecificeerd"
 
 #: ../pykolab/cli/cmd_rename_mailbox.py:62
 #, python-format
@@ -774,7 +775,7 @@ msgstr ""
 #: ../pykolab/cli/cmd_sync.py:41
 #, python-format
 msgid "Found %d domains in %d seconds"
-msgstr ""
+msgstr "%d domeinen gevonden in %d seconden"
 
 #: ../pykolab/cli/cmd_sync.py:51
 #, python-format
@@ -997,8 +998,8 @@ msgstr ""
 
 #: ../pykolab/conf/__init__.py:551
 msgid ""
-"WARNING: A negative debug level value does not make this program be any more "
-"silent."
+"WARNING: A negative debug level value does not make this program be any more"
+" silent."
 msgstr ""
 
 #: ../pykolab/conf/__init__.py:557
@@ -1191,7 +1192,7 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:376
 #, python-format
 msgid "Creating new mailbox for user %s"
-msgstr ""
+msgstr "Nieuwe mailbox voor gebruiker %s aan het creeren"
 
 #: ../pykolab/imap/__init__.py:405
 #, python-format
@@ -1201,7 +1202,7 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:429
 #, python-format
 msgid "Mailbox already exists: %s"
-msgstr ""
+msgstr "Mailbox bestaat reeds: %s"
 
 #: ../pykolab/imap/__init__.py:472
 msgid "Subscribing user to the additional folders"
@@ -1219,7 +1220,8 @@ msgstr ""
 
 #: ../pykolab/imap/__init__.py:538 ../pykolab/imap/__init__.py:615
 #, python-format
-msgid "Moving INBOX folder %s won't succeed as target folder %s already exists"
+msgid ""
+"Moving INBOX folder %s won't succeed as target folder %s already exists"
 msgstr ""
 
 #: ../pykolab/imap/__init__.py:551
@@ -1437,10 +1439,8 @@ msgstr ""
 #: ../pykolab/setup/setup_freebusy.py:55
 msgid ""
 "\n"
-"                        Please supply the MySQL password for the "
-"'roundcube'\n"
-"                        user. You have supplied this password earlier, and "
-"it is\n"
+"                        Please supply the MySQL password for the 'roundcube'\n"
+"                        user. You have supplied this password earlier, and it is\n"
 "                        available from the database URI setting in\n"
 "                        /etc/roundcubemail/db.inc.php.\n"
 "                    "
@@ -1487,8 +1487,7 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"                            Copying the configuration section for 'example."
-"org' over to\n"
+"                            Copying the configuration section for 'example.org' over to\n"
 "                            a section applicable to your domain '%s'.\n"
 "                        "
 msgstr ""
@@ -1512,10 +1511,8 @@ msgstr ""
 #: ../pykolab/setup/setup_ldap.py:74
 msgid ""
 "\n"
-"                        Please supply a password for the LDAP administrator "
-"user\n"
-"                        'admin', used to login to the graphical console of "
-"389\n"
+"                        Please supply a password for the LDAP administrator user\n"
+"                        'admin', used to login to the graphical console of 389\n"
 "                        Directory server.\n"
 "                    "
 msgstr ""
@@ -1527,12 +1524,9 @@ msgstr ""
 #: ../pykolab/setup/setup_ldap.py:89
 msgid ""
 "\n"
-"                        Please supply a password for the LDAP Directory "
-"Manager\n"
-"                        user, which is the administrator user you will be "
-"using\n"
-"                        to at least initially log in to the Web Admin, and "
-"that\n"
+"                        Please supply a password for the LDAP Directory Manager\n"
+"                        user, which is the administrator user you will be using\n"
+"                        to at least initially log in to the Web Admin, and that\n"
 "                        Kolab uses to perform administrative tasks.\n"
 "                    "
 msgstr ""
@@ -1546,8 +1540,7 @@ msgid ""
 "\n"
 "                        Please choose the system user and group the service\n"
 "                        should use to run under. These should be existing,\n"
-"                        unprivileged, local system POSIX accounts with no "
-"shell.\n"
+"                        unprivileged, local system POSIX accounts with no shell.\n"
 "                    "
 msgstr ""
 
@@ -1562,20 +1555,17 @@ msgstr ""
 #: ../pykolab/setup/setup_ldap.py:143
 msgid ""
 "\n"
-"                        This setup procedure plans to set up Kolab Groupware "
-"for\n"
-"                        the following domain name space. This domain name "
-"is\n"
+"                        This setup procedure plans to set up Kolab Groupware for\n"
+"                        the following domain name space. This domain name is\n"
 "                        obtained from the reverse DNS entry on your network\n"
-"                        interface. Please confirm this is the appropriate "
-"domain\n"
+"                        interface. Please confirm this is the appropriate domain\n"
 "                        name space.\n"
 "                    "
 msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:157
 msgid "Domain name to use"
-msgstr ""
+msgstr "Domein naam te gebruiken"
 
 #: ../pykolab/setup/setup_ldap.py:162 ../pykolab/setup/setup_ldap.py:187
 msgid ""
@@ -1587,8 +1577,7 @@ msgstr ""
 #: ../pykolab/setup/setup_ldap.py:171
 msgid ""
 "\n"
-"                        The standard root dn we composed for you follows. "
-"Please\n"
+"                        The standard root dn we composed for you follows. Please\n"
 "                        confirm this is the root dn you wish to use.\n"
 "                    "
 msgstr ""
@@ -1600,10 +1589,8 @@ msgstr ""
 #: ../pykolab/setup/setup_ldap.py:234
 msgid ""
 "\n"
-"                    Setup is now going to set up the 389 Directory Server. "
-"This\n"
-"                    may take a little while (during which period there is "
-"no\n"
+"                    Setup is now going to set up the 389 Directory Server. This\n"
+"                    may take a little while (during which period there is no\n"
 "                    output and no progress indication).\n"
 "                "
 msgstr ""
@@ -1632,8 +1619,7 @@ msgid ""
 "                        password is used by Kolab to execute administrative\n"
 "                        tasks in Cyrus IMAP. You may also need the password\n"
 "                        yourself to troubleshoot Cyrus IMAP and/or perform\n"
-"                        other administrative tasks against Cyrus IMAP "
-"directly.\n"
+"                        other administrative tasks against Cyrus IMAP directly.\n"
 "                    "
 msgstr ""
 
@@ -1644,12 +1630,9 @@ msgstr ""
 #: ../pykolab/setup/setup_ldap.py:310
 msgid ""
 "\n"
-"                        Please supply a Kolab Service account password. "
-"This\n"
-"                        account is used by various services such as "
-"Postfix,\n"
-"                        and Roundcube, as anonymous binds to the LDAP "
-"server\n"
+"                        Please supply a Kolab Service account password. This\n"
+"                        account is used by various services such as Postfix,\n"
+"                        and Roundcube, as anonymous binds to the LDAP server\n"
 "                        will not be allowed.\n"
 "                    "
 msgstr ""
@@ -1682,7 +1665,8 @@ msgid "Disabling anonymous binds"
 msgstr ""
 
 #. TODO: Ensure the uid attribute is unique
-#. TODO^2: Consider renaming the general "attribute uniqueness to "uid attribute uniqueness"
+#. TODO^2: Consider renaming the general "attribute uniqueness to "uid
+#. attribute uniqueness"
 #: ../pykolab/setup/setup_ldap.py:465
 msgid "Enabling attribute uniqueness plugin"
 msgstr ""
@@ -1720,7 +1704,8 @@ msgid "Could not write out Postfix configuration file /etc/postfix/master.cf"
 msgstr ""
 
 #: ../pykolab/setup/setup_mta.py:287
-msgid "Could not write out Amavis configuration file /etc/amavisd/amavisd.conf"
+msgid ""
+"Could not write out Amavis configuration file /etc/amavisd/amavisd.conf"
 msgstr ""
 
 #: ../pykolab/setup/setup_mysql.py:39
@@ -1730,15 +1715,11 @@ msgstr ""
 #: ../pykolab/setup/setup_mysql.py:53
 msgid ""
 "\n"
-"                    Please supply a root password for MySQL. This password "
-"will\n"
-"                    be the administrative user for this MySQL server, and "
-"it\n"
+"                    Please supply a root password for MySQL. This password will\n"
+"                    be the administrative user for this MySQL server, and it\n"
 "                    should be kept a secret. After this setup process has\n"
-"                    completed, Kolab is going to discard and forget about "
-"this\n"
-"                    password, but you will need it for administrative tasks "
-"in\n"
+"                    completed, Kolab is going to discard and forget about this\n"
+"                    password, but you will need it for administrative tasks in\n"
 "                    MySQL.\n"
 "                "
 msgstr ""
@@ -1750,10 +1731,8 @@ msgstr ""
 #: ../pykolab/setup/setup_mysql.py:103
 msgid ""
 "\n"
-"                        Please supply a password for the MySQL user "
-"'kolab'.\n"
-"                        This password will be used by Kolab services, such "
-"as\n"
+"                        Please supply a password for the MySQL user 'kolab'.\n"
+"                        This password will be used by Kolab services, such as\n"
 "                        the Web Administration Panel.\n"
 "                    "
 msgstr ""
@@ -1792,8 +1771,7 @@ msgstr ""
 #: ../pykolab/setup/setup_roundcube.py:48
 msgid ""
 "\n"
-"                    Please supply a password for the MySQL user "
-"'roundcube'.\n"
+"                    Please supply a password for the MySQL user 'roundcube'.\n"
 "                    This password will be used by the Roundcube webmail\n"
 "                    interface.\n"
 "                "
@@ -1953,7 +1931,8 @@ msgid "No sender specified"
 msgstr ""
 
 #: ../saslauthd/__init__.py:126 ../saslauthd/__init__.py:134
-msgid "Traceback occurred, please report a bug at http://bugzilla.kolabsys.com"
+msgid ""
+"Traceback occurred, please report a bug at http://bugzilla.kolabsys.com"
 msgstr ""
 
 #: ../wallace/__init__.py:61
@@ -2061,7 +2040,7 @@ msgstr ""
 #: ../wallace/module_resources.py:243
 #, python-format
 msgid "Mailbox for resource %r doesn't exist"
-msgstr ""
+msgstr "Mailbox voor resource %r bestaat niet"
 
 #: ../wallace/module_resources.py:256
 #, python-format
