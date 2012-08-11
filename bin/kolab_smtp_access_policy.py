@@ -615,8 +615,7 @@ class PolicyRequest(object):
             # No delegates for this sender could be found. The user is
             # definitely NOT a delegate of the sender.
             log.warning(
-                _("User %s attempted to use envelope sender address %s " + \
-                    "without authorization") % (
+                _("User %s attempted to use envelope sender address %s without authorization") % (
                             policy_request["sasl_username"],
                             policy_request["sender"]
                         )
@@ -714,13 +713,10 @@ class PolicyRequest(object):
         self.recipient = recipient
 
         if not self.sasl_username == '' and not self.sasl_username == None:
-            log.debug(_("Verifying authenticated sender '%(sender)s' with " + \
-                    "sasl_username '%(sasl_username)s' for recipient " + \
-                    "'%(recipient)s'") % (self.__dict__)
+            log.debug(_("Verifying authenticated sender '%(sender)s' with sasl_username '%(sasl_username)s' for recipient '%(recipient)s'") % (self.__dict__)
                 )
         else:
-            log.debug(_("Verifying unauthenticated sender '%(sender)s' " + \
-                    "for recipient '%(recipient)s'") % (self.__dict__)
+            log.debug(_("Verifying unauthenticated sender '%(sender)s' for recipient '%(recipient)s'") % (self.__dict__)
                 )
 
         recipient_verified = False
@@ -736,9 +732,10 @@ class PolicyRequest(object):
 
             if not records == None and len(records) == 1:
                 log.info(
-                        _("Reproducing verify_recipient(%s, %s) from " + \
-                            "cache, saving you queries, time and thus " + \
-                            "money.") % (self.sender, recipient)
+                        _("Reproducing verify_recipient(%s, %s) from cache") % (
+                                self.sender,
+                                recipient
+                            )
                     )
 
                 return record[0].value
@@ -771,8 +768,7 @@ class PolicyRequest(object):
 
         else:
             log.warning(
-                    _("Checking the recipient for domain %s that is not " + \
-                    "ours. This is probably a configuration error.") % (
+                    _("Checking the recipient for domain %s that is not ours. This is probably a configuration error.") % (
                             sasl_domain
                         )
                 )
@@ -787,17 +783,14 @@ class PolicyRequest(object):
         if isinstance(recipients, list):
             if len(recipients) > 1:
                 log.info(
-                        _("This recipient address is related to multiple " + \
-                            "object entries and the SMTP Access Policy can " + \
-                            "therefore not restrict message flow")
+                        _("This recipient address is related to multiple object entries and the SMTP Access Policy can therefore not restrict message flow")
                     )
                 return True
             elif len(recipients) == 1:
                 recipient = { 'dn': recipients[0] }
             else:
                 log.debug(
-                        _("Recipient address %r not found. Allowing since " + \
-                            "the MTA was configured to accept the recipient.") % (
+                        _("Recipient address %r not found. Allowing since the MTA was configured to accept the recipient.") % (
                                 normalize_address(recipient)
                             ),
                         level=3
@@ -898,8 +891,7 @@ class PolicyRequest(object):
                             recipient_found = True
 
                     if not recipient_found:
-                        reject(_("Sender %s is not allowed to send to " + \
-                                "recipient %s") % (self.sender,recipient))
+                        reject(_("Sender %s is not allowed to send to recipient %s") % (self.sender,recipient))
 
         for recipient in self.recipients:
             recipient_verified = self.verify_recipient(recipient)
@@ -938,8 +930,7 @@ class PolicyRequest(object):
                 )
 
             if not records == None and len(records) == len(self.recipients):
-                log.info(_("Reproducing verify_sender(%r) from cache, " + \
-                        "saving you queries, time and thus money.") % (
+                log.info(_("Reproducing verify_sender(%r) from cache") % (
                                 self.__dict__
                             )
                     )
@@ -951,8 +942,7 @@ class PolicyRequest(object):
                             recipient_found = True
 
                     if recipient_found and not record.value:
-                        reject(_("Sender %s is not allowed to send to " + \
-                                "recipient %s") % (self.sender,recipient))
+                        reject(_("Sender %s is not allowed to send to recipient %s") % (self.sender,recipient))
 
                 return True
 
@@ -991,8 +981,7 @@ class PolicyRequest(object):
                 recipient_policy_user = self.sender_user
 
         log.debug(
-                _("Verifying whether sender is allowed to send to " + \
-                    "recipient using sender policy"),
+                _("Verifying whether sender is allowed to send to recipient using sender policy"),
                 level=8
             )
 
@@ -1034,8 +1023,7 @@ class PolicyRequest(object):
 
                 if not recipient_allowed:
                     reject(
-                            _("Sender %s not allowed to send to recipient " + \
-                                "%s") % (recipient_policy_user['dn'],recipient)
+                            _("Sender %s not allowed to send to recipient %s") % (recipient_policy_user['dn'],recipient)
                         )
 
             sender_verified = True
