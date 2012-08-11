@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pykolab\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-08-11 14:48+0100\n"
-"PO-Revision-Date: 2012-08-11 13:43+0000\n"
+"POT-Creation-Date: 2012-08-11 16:33+0100\n"
+"PO-Revision-Date: 2012-08-11 15:30+0000\n"
 "Last-Translator: Jeroen van Meeuwen <vanmeeuwen@kolabsys.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: nl\n"
@@ -28,7 +28,7 @@ msgid "Unauthorized access not allowed"
 msgstr "Niet geautoriseerde toegang niet toegestaan"
 
 #: ../bin/kolab_smtp_access_policy.py:467
-#: ../bin/kolab_smtp_access_policy.py:658
+#: ../bin/kolab_smtp_access_policy.py:657
 msgid "Could not find recipient"
 msgstr "Kan ontvanger niet vinden"
 
@@ -49,213 +49,224 @@ msgid "%s is unauthorized to send on behalf of %s"
 msgstr "Het is %s niet toegestaan te versturen namens %s"
 
 #: ../bin/kolab_smtp_access_policy.py:618
-#, python-format
-msgid "User %s attempted to use envelope sender address %s "
+#, fuzzy, python-format
+msgid ""
+"User %s attempted to use envelope sender address %s without authorization"
 msgstr "Gebruiker %s probeerde zender adres %s te gebruiken"
 
-#: ../bin/kolab_smtp_access_policy.py:682
-#: ../bin/kolab_smtp_access_policy.py:693
+#: ../bin/kolab_smtp_access_policy.py:681
+#: ../bin/kolab_smtp_access_policy.py:692
 #, python-format
 msgid "Found user %s to be a delegate user of %s"
 msgstr "Gebruiker %s als delegatie gebruiker van %s gevonden"
 
-#: ../bin/kolab_smtp_access_policy.py:717
-#, python-format
-msgid "Verifying authenticated sender '%(sender)s' with "
+#: ../bin/kolab_smtp_access_policy.py:716
+#, fuzzy, python-format
+msgid ""
+"Verifying authenticated sender '%(sender)s' with sasl_username "
+"'%(sasl_username)s' for recipient '%(recipient)s'"
 msgstr "Verificatie van geauthentificeerde gebruiker '%(sender)s' met"
 
-#: ../bin/kolab_smtp_access_policy.py:722
-#, python-format
-msgid "Verifying unauthenticated sender '%(sender)s' "
+#: ../bin/kolab_smtp_access_policy.py:719
+#, fuzzy, python-format
+msgid ""
+"Verifying unauthenticated sender '%(sender)s' for recipient '%(recipient)s'"
 msgstr "Niet geauthentificeerde gebruiker '%(sender)s' aan het verifieren"
 
-#: ../bin/kolab_smtp_access_policy.py:739
+#: ../bin/kolab_smtp_access_policy.py:735
 #, python-format
-msgid "Reproducing verify_recipient(%s, %s) from "
+msgid "Reproducing verify_recipient(%s, %s) from cache"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:756
+#: ../bin/kolab_smtp_access_policy.py:753
 #, python-format
 msgid "Using authentication domain %s instead of %s"
-msgstr ""
+msgstr "Gebruik authenticatie domein %s in plaats van %s"
 
-#: ../bin/kolab_smtp_access_policy.py:766
+#: ../bin/kolab_smtp_access_policy.py:763
 #, python-format
 msgid "Domain %s is a primary domain"
 msgstr "Domein %s is een primair domein"
 
-#: ../bin/kolab_smtp_access_policy.py:774
+#: ../bin/kolab_smtp_access_policy.py:771
 #, python-format
-msgid "Checking the recipient for domain %s that is not "
+msgid ""
+"Checking the recipient for domain %s that is not ours. This is probably a "
+"configuration error."
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:790
-msgid "This recipient address is related to multiple "
+#: ../bin/kolab_smtp_access_policy.py:786
+msgid ""
+"This recipient address is related to multiple object entries and the SMTP "
+"Access Policy can therefore not restrict message flow"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:799
+#: ../bin/kolab_smtp_access_policy.py:793
 #, python-format
-msgid "Recipient address %r not found. Allowing since "
+msgid ""
+"Recipient address %r not found. Allowing since the MTA was configured to "
+"accept the recipient."
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:827
+#: ../bin/kolab_smtp_access_policy.py:820
 msgid "Invalid recipient"
 msgstr "Ongeldige ontvanger"
 
-#: ../bin/kolab_smtp_access_policy.py:838
+#: ../bin/kolab_smtp_access_policy.py:831
 msgid "Could not find this user, accepting"
 msgstr "Kan deze gebruiker niet vinden, accepteren"
 
-#: ../bin/kolab_smtp_access_policy.py:901
-#: ../bin/kolab_smtp_access_policy.py:954
-#, python-format
-msgid "Sender %s is not allowed to send to "
+#: ../bin/kolab_smtp_access_policy.py:894
+#: ../bin/kolab_smtp_access_policy.py:945
+#, fuzzy, python-format
+msgid "Sender %s is not allowed to send to recipient %s"
 msgstr "Het is zender %s niet toegestaan te versturen naar"
 
-#: ../bin/kolab_smtp_access_policy.py:941
+#: ../bin/kolab_smtp_access_policy.py:933
 #, python-format
-msgid "Reproducing verify_sender(%r) from cache, "
+msgid "Reproducing verify_sender(%r) from cache"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:970
+#: ../bin/kolab_smtp_access_policy.py:960
 msgid "Sender uses unauthorized envelope sender address"
 msgstr "Verstuurder gebruikt een niet geauthorizeerd envelope zender adres"
 
-#: ../bin/kolab_smtp_access_policy.py:987
+#: ../bin/kolab_smtp_access_policy.py:977
 msgid "Could not verify sender"
 msgstr "Kan de verstuurder niet verifieren"
 
-#: ../bin/kolab_smtp_access_policy.py:994
-msgid "Verifying whether sender is allowed to send to "
+#: ../bin/kolab_smtp_access_policy.py:984
+msgid ""
+"Verifying whether sender is allowed to send to recipient using sender policy"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1008
+#: ../bin/kolab_smtp_access_policy.py:997
 #, python-format
 msgid "Result is %r"
 msgstr "Het resultaat is %r"
 
-#: ../bin/kolab_smtp_access_policy.py:1013
+#: ../bin/kolab_smtp_access_policy.py:1002
 msgid "No recipient policy restrictions exist for this sender"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1022
+#: ../bin/kolab_smtp_access_policy.py:1011
 msgid "Found a recipient policy to apply for this sender."
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1037
-#, python-format
-msgid "Sender %s not allowed to send to recipient "
-msgstr ""
+#: ../bin/kolab_smtp_access_policy.py:1026
+#, fuzzy, python-format
+msgid "Sender %s not allowed to send to recipient %s"
+msgstr "Het is zender %s niet toegestaan te versturen naar"
 
-#: ../bin/kolab_smtp_access_policy.py:1068
+#: ../bin/kolab_smtp_access_policy.py:1056
 msgid "Cleaning up the cache"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1105
+#: ../bin/kolab_smtp_access_policy.py:1093
 #, python-format
 msgid "Operational Error in caching: %s"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1156
+#: ../bin/kolab_smtp_access_policy.py:1144
 #, python-format
 msgid "Caching the policy result with timestamp %d"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1233
+#: ../bin/kolab_smtp_access_policy.py:1221
 #, python-format
 msgid "Returning action DEFER_IF_PERMIT: %s"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1238
+#: ../bin/kolab_smtp_access_policy.py:1226
 #, python-format
 msgid "Returning action DUNNO: %s"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1243
+#: ../bin/kolab_smtp_access_policy.py:1231
 #, python-format
 msgid "Returning action HOLD: %s"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1248
+#: ../bin/kolab_smtp_access_policy.py:1236
 #, python-format
 msgid "Returning action PERMIT: %s"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1253
+#: ../bin/kolab_smtp_access_policy.py:1241
 #, python-format
 msgid "Returning action REJECT: %s"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1299
+#: ../bin/kolab_smtp_access_policy.py:1287
 msgid "Starting to loop for new request"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1306
+#: ../bin/kolab_smtp_access_policy.py:1294
 msgid "Timeout for policy request reading exceeded"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1312
+#: ../bin/kolab_smtp_access_policy.py:1300
 msgid "End of current request"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1316
+#: ../bin/kolab_smtp_access_policy.py:1304
 #, python-format
 msgid "Getting line: %s"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1320
+#: ../bin/kolab_smtp_access_policy.py:1308
 msgid "Returning request"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1346
+#: ../bin/kolab_smtp_access_policy.py:1334
 msgid "Access Policy Options"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1353
+#: ../bin/kolab_smtp_access_policy.py:1341
 msgid "SMTP Policy request timeout."
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1359
+#: ../bin/kolab_smtp_access_policy.py:1347
 msgid "Verify the recipient access policy."
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1365
+#: ../bin/kolab_smtp_access_policy.py:1353
 msgid "Verify the sender access policy."
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1371
+#: ../bin/kolab_smtp_access_policy.py:1359
 msgid "Allow unauthenticated senders."
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1385
+#: ../bin/kolab_smtp_access_policy.py:1373
 #, python-format
 msgid "Got request instance %s"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1394
+#: ../bin/kolab_smtp_access_policy.py:1382
 #, python-format
 msgid "Request instance %s is in state %s"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1402
+#: ../bin/kolab_smtp_access_policy.py:1390
 #, python-format
 msgid "Request instance %s is not yet in DATA state"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1414
+#: ../bin/kolab_smtp_access_policy.py:1402
 #, python-format
 msgid "Request instance %s reached DATA state"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1432
+#: ../bin/kolab_smtp_access_policy.py:1420
 msgid "Sender access denied"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1434
+#: ../bin/kolab_smtp_access_policy.py:1422
 msgid "Recipient access denied"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1436
+#: ../bin/kolab_smtp_access_policy.py:1424
 msgid "No objections"
 msgstr ""
 
