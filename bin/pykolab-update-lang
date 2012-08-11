@@ -1,6 +1,21 @@
 #!/bin/bash
 
 echo "Updating language files"
+
+> po/POTFILES.in
+> po/POTFILES.skip
+
+find . -type f -name "*.py" -o -name "*.py.in" | \
+    sort | \
+    sed -e 's/^.\///g' | \
+    while read file; do
+        if [ $(git ls-files --error-unmatch "${file}" >/dev/null 2>&1; echo $?) -eq 0 ]; then
+            echo "${file}" >> po/POTFILES.in
+        else
+            echo "${file}" >> po/POTFILES.skip
+        fi
+    done
+
 cd po/
 intltool-update --pot --gettext-package=pykolab
 if [ "$1" == "po" ]; then
