@@ -538,15 +538,12 @@ class IMAP(object):
             log.warning(_("Moving INBOX folder %s won't succeed as target folder %s already exists") % (old_name,new_name))
 
     def user_mailbox_server(self, mailbox):
-        self.connect(domain=self.domain)
         return self.imap.find_mailfolder_server(mailbox)
 
     def has_folder(self, folder):
         """
             Check if the environment has a folder named folder.
         """
-        self.connect(domain=self.domain)
-
         folders = self.imap.lm(folder)
         log.debug(_("Looking for folder '%s', we found folders: %r") % (folder,folders), level=8)
         # Greater then one, this folder may have subfolders.
@@ -596,8 +593,6 @@ class IMAP(object):
     """ Blah functions """
 
     def move_user_folders(self, users=[], domain=None):
-        self.connect(domain=domain)
-
         for user in users:
             if type(user) == dict:
                 if user.has_key('old_mail'):
@@ -627,9 +622,6 @@ class IMAP(object):
             Sets the quota in IMAP using the authentication and authorization
             database 'quota' attribute for the users listed in parameter 'users'
         """
-
-        self.connect(domain=primary_domain)
-
         if conf.has_option(primary_domain, 'quota_attribute'):
             _quota_attr = conf.get(primary_domain, 'quota_attribute')
         else:
@@ -707,8 +699,6 @@ class IMAP(object):
                 self.imap._setquota(folder, quota)
 
     def set_user_mailhost(self, users=[], primary_domain=None, secondary_domain=[], folders=[]):
-        self.connect(domain=primary_domain)
-
         if conf.has_option(primary_domain, 'mailserver_attribute'):
             _mailserver_attr = conf.get(primary_domain, 'mailserver_attribute')
         else:
@@ -756,7 +746,6 @@ class IMAP(object):
                 auth.set_user_attribute(primary_domain, user, _mailserver_attr, _current_mailserver)
 
     def parse_mailfolder(self, mailfolder):
-        self.connect()
         return self.imap.parse_mailfolder(mailfolder)
 
     def expunge_user_folders(self, inbox_folders=None):
@@ -777,8 +766,6 @@ class IMAP(object):
 
                 primary_domain, secondary_domains
         """
-        self.connect()
-
         if inbox_folders == None:
             inbox_folders = []
 
@@ -835,8 +822,6 @@ class IMAP(object):
             List the INBOX folders in the IMAP backend. Returns a list of unique
             base folder names.
         """
-        self.connect(domain=primary_domain)
-
         _folders = self.imap.lm("user/%")
         # TODO: Replace the .* below with a regex representing acceptable DNS
         # domain names.
