@@ -2,7 +2,7 @@
 host = https://www.transifex.net
 type = PO
 
-[pykolab.master]
+[kolab.pykolab]
 file_filter = po/<lang>.po
 source_file = po/pykolab.pot
 source_lang = en_US
