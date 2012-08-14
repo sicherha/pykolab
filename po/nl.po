@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kolab Groupware Solution\n"
 "Report-Msgid-Bugs-To: https://isues.kolab.org/\n"
-"POT-Creation-Date: 2012-08-14 11:58+0100\n"
-"PO-Revision-Date: 2012-08-14 10:58+0000\n"
+"POT-Creation-Date: 2012-08-14 12:22+0100\n"
+"PO-Revision-Date: 2012-08-14 11:19+0000\n"
 "Last-Translator: Jeroen van Meeuwen <vanmeeuwen@kolabsys.com>\n"
 "Language-Team: Dutch (http://www.transifex.com/projects/p/kolab/language/nl/)\n"
 "MIME-Version: 1.0\n"
@@ -331,12 +331,11 @@ msgid "Interrupted by user"
 msgstr "Onderbroken door gebruiker"
 
 #: ../kolabd/__init__.py:197 ../kolabd/__init__.py:208
-#: ../wallace/__init__.py:362 ../wallace/__init__.py:372
 msgid "Traceback occurred, please report a "
 msgstr ""
 
 #: ../kolabd/__init__.py:203 ../saslauthd/__init__.py:130
-#: ../wallace/__init__.py:368
+#: ../wallace/__init__.py:367
 #, python-format
 msgid "Type Error: %s"
 msgstr "Type Fout: %s"
@@ -561,7 +560,7 @@ msgid "About to consider the user quota for %r (used: %r, "
 msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:945
-msgid "Invalid bind credentials"
+msgid "Invalid DN, username and/or password."
 msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:1229
@@ -614,7 +613,7 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:1906
 #, python-format
 msgid "Object %s searched no longer exists"
-msgstr ""
+msgstr "Gezocht object %s bestaat niet meer"
 
 #: ../pykolab/auth/ldap/__init__.py:1916
 #, python-format
@@ -1106,7 +1105,7 @@ msgstr "Geen SMTP klasse gevonden in de smtplib module."
 #: ../pykolab/conf/__init__.py:616
 #, python-format
 msgid "Found you specified a specific set of items to test: %s"
-msgstr ""
+msgstr "Een specifieke set van items om te testen is gespecificeerd: %s"
 
 #: ../pykolab/conf/__init__.py:624
 #, python-format
@@ -1121,7 +1120,7 @@ msgstr ""
 
 #: ../pykolab/constants.py.in:53
 msgid "WARNING"
-msgstr ""
+msgstr "WAARSCHUWING"
 
 #: ../pykolab/constants.py.in:53
 msgid ""
@@ -1131,11 +1130,11 @@ msgstr ""
 
 #: ../pykolab/constants.py.in:72
 msgid "389 Directory Server or Red Hat Directory Server"
-msgstr ""
+msgstr "389 Directory Server of Red Hat Directory Server"
 
 #: ../pykolab/constants.py.in:76 ../pykolab/constants.py.in:80
 msgid "OpenLDAP or compatible"
-msgstr ""
+msgstr "OpenLDAP of compatible"
 
 #: ../pykolab/imap/cyrus.py:79
 #, python-format
@@ -1234,22 +1233,22 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:143
 #, python-format
 msgid "Logging on to Cyrus IMAP server %s"
-msgstr ""
+msgstr "Bezig met inloggen op Cyrus IMAP server %s"
 
 #: ../pykolab/imap/__init__.py:152
 #, python-format
 msgid "Logging on to Dovecot IMAP server %s"
-msgstr ""
+msgstr "Bezig met inloggen op Dovecit IMAP server %s"
 
 #: ../pykolab/imap/__init__.py:161
 #, python-format
 msgid "Logging on to generic IMAP server %s"
-msgstr ""
+msgstr "Bezig met inloggen op generieke IMAP server %s"
 
 #: ../pykolab/imap/__init__.py:179
 #, python-format
 msgid "Reusing existing IMAP server connection to %s"
-msgstr ""
+msgstr "Recycle bestaande connectie naar IMAP server %s"
 
 #: ../pykolab/imap/__init__.py:181
 #, python-format
@@ -1257,129 +1256,129 @@ msgid "Reconnecting to IMAP server %s"
 msgstr ""
 
 #: ../pykolab/imap/__init__.py:197
-msgid "Called imap.disconnect() on a server that "
+msgid "Called imap.disconnect() on a server that we had no connection to."
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:213
+#: ../pykolab/imap/__init__.py:212
 #, python-format
 msgid "%r has no attribute %s"
-msgstr ""
+msgstr "%r heeft geen attribuut %s"
 
-#: ../pykolab/imap/__init__.py:286
+#: ../pykolab/imap/__init__.py:285
 msgid "Private annotations need to be set using the appropriate user account."
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:319 ../pykolab/imap/__init__.py:354
+#: ../pykolab/imap/__init__.py:318 ../pykolab/imap/__init__.py:353
 #, python-format
 msgid "Creating new shared folder %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:376
+#: ../pykolab/imap/__init__.py:375
 #, python-format
 msgid "Creating new mailbox for user %s"
 msgstr "Nieuwe mailbox voor gebruiker %s aan het creeren"
 
-#: ../pykolab/imap/__init__.py:405
+#: ../pykolab/imap/__init__.py:404
 #, python-format
 msgid "Creating additional folders for user %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:429
+#: ../pykolab/imap/__init__.py:428
 #, python-format
 msgid "Mailbox already exists: %s"
 msgstr "Mailbox bestaat reeds: %s"
 
-#: ../pykolab/imap/__init__.py:472
+#: ../pykolab/imap/__init__.py:471
 msgid "Subscribing user to the additional folders"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:532 ../pykolab/imap/__init__.py:606
+#: ../pykolab/imap/__init__.py:531 ../pykolab/imap/__init__.py:605
 #, python-format
 msgid "Renaming INBOX from %s to %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:536
+#: ../pykolab/imap/__init__.py:535
 #, python-format
 msgid "Could not rename INBOX folder %s to %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:538 ../pykolab/imap/__init__.py:610
+#: ../pykolab/imap/__init__.py:537 ../pykolab/imap/__init__.py:609
 #, python-format
 msgid ""
 "Moving INBOX folder %s won't succeed as target folder %s already exists"
-msgstr ""
+msgstr "Het verplaatsen van INBOX map %s zal niet slagen sinds doel map %s reeds bestaat"
 
-#: ../pykolab/imap/__init__.py:548
+#: ../pykolab/imap/__init__.py:547
 #, python-format
 msgid "Looking for folder '%s', we found folders: %r"
-msgstr ""
+msgstr "Zoekende naar map '%s' zijn de volgende mappen gevonden: %r"
 
-#: ../pykolab/imap/__init__.py:571
+#: ../pykolab/imap/__init__.py:570
 #, python-format
 msgid "Setting ACL rights %s for subject %s on folder "
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:582
+#: ../pykolab/imap/__init__.py:581
 #, python-format
 msgid "Removing ACL rights %s for subject %s on folder "
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:603
+#: ../pykolab/imap/__init__.py:602
 #, python-format
 msgid "Found old INBOX folder %s"
-msgstr ""
+msgstr "Oude INBOX map %s gevonden"
 
-#: ../pykolab/imap/__init__.py:612
+#: ../pykolab/imap/__init__.py:611
 #, python-format
 msgid "Did not find old folder user/%s to rename"
-msgstr ""
+msgstr "Oude te hernoemen map user/%s niet gevonden"
 
-#: ../pykolab/imap/__init__.py:614
+#: ../pykolab/imap/__init__.py:613
 msgid "Value for user is not a dictionary"
-msgstr ""
+msgstr "Waarde voor gebruiker is niet een associatieve array"
 
 #. TODO: Go in fact correct the quota.
-#: ../pykolab/imap/__init__.py:674
+#: ../pykolab/imap/__init__.py:673
 #, python-format
 msgid "Cannot get current IMAP quota for folder %s"
-msgstr ""
+msgstr "Kan huidig IMAP quota voor map %s niet verkrijgen"
 
-#: ../pykolab/imap/__init__.py:687
+#: ../pykolab/imap/__init__.py:686
 #, python-format
 msgid "Quota for %s currently is %s"
-msgstr ""
+msgstr "Quota voor %s is op dit moment %s"
 
-#: ../pykolab/imap/__init__.py:693
+#: ../pykolab/imap/__init__.py:692
 #, python-format
 msgid "Adjusting authentication database quota for folder %s to %d"
-msgstr ""
+msgstr "Bijwerken van authenticatie database quota voor map %s to %d"
 
-#: ../pykolab/imap/__init__.py:698
+#: ../pykolab/imap/__init__.py:697
 #, python-format
 msgid "Correcting quota for %s to %s (currently %s)"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:775
+#: ../pykolab/imap/__init__.py:774
 #, python-format
 msgid "Checking folder: %s"
-msgstr ""
+msgstr "Bezig met controleren van map: %s"
 
-#: ../pykolab/imap/__init__.py:780
+#: ../pykolab/imap/__init__.py:779
 #, python-format
 msgid "Folder has no corresponding user (1): %s"
-msgstr ""
+msgstr "Map heeft geen corresponderende gebruiker (1): %s"
 
-#: ../pykolab/imap/__init__.py:783
+#: ../pykolab/imap/__init__.py:782
 #, python-format
 msgid "Folder has no corresponding user (2): %s"
-msgstr ""
+msgstr "Map heeft geen corresponderende gebruiker (2): %s"
 
 #. We got user identifier only
-#: ../pykolab/imap/__init__.py:798
+#: ../pykolab/imap/__init__.py:797
 msgid "Please don't give us just a user identifier"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:801
+#: ../pykolab/imap/__init__.py:800
 #, python-format
 msgid "Deleting folder %s"
 msgstr "Map %s aan het verwijderen"
@@ -1396,7 +1395,7 @@ msgstr ""
 #: ../pykolab/logger.py:121
 #, python-format
 msgid "Cannot log to file %s: %s"
-msgstr ""
+msgstr "Kan niet loggen naar bestand %s: %s"
 
 #: ../pykolab/plugins/defaultfolders/__init__.py:47
 #, python-format
@@ -1420,62 +1419,62 @@ msgstr ""
 #: ../pykolab/plugins/__init__.py:70
 #, python-format
 msgid "ImportError for plugin %s: %s"
-msgstr ""
+msgstr "Import fout voor plugin %s: %s"
 
 #: ../pykolab/plugins/__init__.py:74
 #, python-format
 msgid "RuntimeError for plugin %s: %s"
-msgstr ""
+msgstr "Runtime fout voor plugin %s: %s"
 
 #: ../pykolab/plugins/__init__.py:78
 #, python-format
 msgid "Plugin %s failed to load (%s: %s)"
-msgstr ""
+msgstr "Plugin %s kan niet worden geladen (%s: %s)"
 
 #: ../pykolab/plugins/__init__.py:116 ../pykolab/plugins/__init__.py:118
 #, python-format
 msgid "Cannot set defaults for plugin %s: %s"
-msgstr ""
+msgstr "Kan de standaard waarden voor plugin %s niet zetten: %s"
 
 #: ../pykolab/plugins/__init__.py:120
 #, python-format
 msgid "Cannot set defaults for plugin %s: Unknown Error"
-msgstr ""
+msgstr "Kan de standaard waarden voor plugin %s niet zetten: Onbekende fout"
 
 #: ../pykolab/plugins/__init__.py:123
 #, python-format
 msgid "Not setting defaults for plugin %s: No function 'set_defaults()'"
-msgstr ""
+msgstr "Geen functie 'set_defaults()' voor plugin %s"
 
 #: ../pykolab/plugins/__init__.py:142
 #, python-format
 msgid "Cannot set runtime for plugin %s: %s"
-msgstr ""
+msgstr "Kan de runtime voor plugin %s niet zetten: %s"
 
 #: ../pykolab/plugins/__init__.py:144
 #, python-format
 msgid "Not setting runtime for plugin %s: No function 'set_runtime()'"
-msgstr ""
+msgstr "Geen functie 'set_runtime()' voor plugin %s"
 
 #: ../pykolab/plugins/__init__.py:163 ../pykolab/plugins/__init__.py:165
 #, python-format
 msgid "Cannot add options for plugin %s: %s"
-msgstr ""
+msgstr "Kan de opties voor plugin %s niet toevoegen: %s"
 
 #: ../pykolab/plugins/__init__.py:167
 #, python-format
 msgid "Not adding options for plugin %s: No function 'add_options()'"
-msgstr ""
+msgstr "Geen functie 'add_options()' voor plugin %s"
 
 #: ../pykolab/plugins/__init__.py:187
 #, python-format
 msgid "Cannot check options for plugin %s: %s"
-msgstr ""
+msgstr "Kan de opties voor plugin %s niet controleren: %s"
 
 #: ../pykolab/plugins/__init__.py:189
 #, python-format
 msgid "Not checking options for plugin %s: No function 'check_options()'"
-msgstr ""
+msgstr "Geen functie 'check_options()' voor plugin %s"
 
 #: ../pykolab/plugins/__init__.py:227
 #, python-format
@@ -1485,7 +1484,7 @@ msgstr ""
 #: ../pykolab/plugins/__init__.py:231 ../pykolab/plugins/__init__.py:233
 #, python-format
 msgid "Cannot execute hook %s for plugin %s: %s"
-msgstr ""
+msgstr "Kan hook %s voor plugin %s niet uitvoeren: %s"
 
 #: ../pykolab/plugins/recipientpolicy/__init__.py:79
 msgid "Attribute substitution for 'mail' failed in Recipient Policy"
@@ -1920,7 +1919,7 @@ msgstr ""
 
 #: ../pykolab/utils.py:119
 msgid "Please answer 'yes' or 'no'."
-msgstr ""
+msgstr "Antwoordt aub. 'yes' (ja) of 'no' (nee)."
 
 #: ../pykolab/utils.py:185
 #, python-format
@@ -2016,6 +2015,7 @@ msgid "No sender specified"
 msgstr "Geen afzender gespecificeerd"
 
 #: ../saslauthd/__init__.py:126 ../saslauthd/__init__.py:134
+#: ../wallace/__init__.py:362 ../wallace/__init__.py:371
 msgid ""
 "Traceback occurred, please report a bug at http://bugzilla.kolabsys.com"
 msgstr "Traceback voorgekomen, rapporteer alstublieft een bug op http://bugzilla.kolabsys.com"
@@ -2027,11 +2027,11 @@ msgstr ""
 
 #: ../wallace/__init__.py:80
 msgid "Bind address for Wallace."
-msgstr ""
+msgstr "IP adres voor Wallace."
 
 #: ../wallace/__init__.py:106
 msgid "Port that Wallace is supposed to use."
-msgstr ""
+msgstr "Poort voor Wallace."
 
 #: ../wallace/__init__.py:157
 #, python-format
@@ -2046,7 +2046,7 @@ msgstr "Kan de socket niet afsluiten"
 msgid "Accepted connection"
 msgstr "Connectie geaccepteerd"
 
-#: ../wallace/__init__.py:389
+#: ../wallace/__init__.py:387
 #, python-format
 msgid "Could not write pid file %s"
 msgstr ""
@@ -2248,11 +2248,11 @@ msgstr ""
 #: ../wallace/modules.py:96
 #, python-format
 msgid "Module Group: %s"
-msgstr ""
+msgstr "Module Groep: %s"
 
 #: ../wallace/modules.py:107 ../wallace/modules.py:112
 msgid "No such module."
-msgstr ""
+msgstr "Module bestaat niet"
 
 #: ../wallace/modules.py:118
 #, python-format
@@ -2272,23 +2272,23 @@ msgstr ""
 #: ../wallace/modules.py:132
 #, python-format
 msgid "The time now: %r"
-msgstr ""
+msgstr "De huidige tijd: %r"
 
 #: ../wallace/modules.py:133
 #, python-format
 msgid "The time delta: %r"
-msgstr ""
+msgstr "Verschil in tijd: %r"
 
 #. TODO: Send NDR back to user
 #: ../wallace/modules.py:137
 #, python-format
 msgid "Message in file %s older then 5 days, deleting"
-msgstr ""
+msgstr "Bericht in bestand %s ouder dan 5 dagen, bezig met verwijderen"
 
 #: ../wallace/modules.py:162
 #, python-format
 msgid "Rejecting message in %s (by module %s)"
-msgstr ""
+msgstr "Bericht %s geweigerd (door module %s)"
 
 #: ../wallace/modules.py:180
 #, python-format

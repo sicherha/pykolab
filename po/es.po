@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kolab Groupware Solution\n"
 "Report-Msgid-Bugs-To: https://isues.kolab.org/\n"
-"POT-Creation-Date: 2012-08-14 11:58+0100\n"
-"PO-Revision-Date: 2012-08-14 10:58+0000\n"
+"POT-Creation-Date: 2012-08-14 12:22+0100\n"
+"PO-Revision-Date: 2012-08-14 11:13+0000\n"
 "Last-Translator: Jeroen van Meeuwen <vanmeeuwen@kolabsys.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/projects/p/kolab/language/es/)\n"
 "MIME-Version: 1.0\n"
@@ -331,12 +331,11 @@ msgid "Interrupted by user"
 msgstr "Interrumpido por el usuario"
 
 #: ../kolabd/__init__.py:197 ../kolabd/__init__.py:208
-#: ../wallace/__init__.py:362 ../wallace/__init__.py:372
 msgid "Traceback occurred, please report a "
 msgstr ""
 
 #: ../kolabd/__init__.py:203 ../saslauthd/__init__.py:130
-#: ../wallace/__init__.py:368
+#: ../wallace/__init__.py:367
 #, python-format
 msgid "Type Error: %s"
 msgstr "Tipo de error: %s"
@@ -561,7 +560,7 @@ msgid "About to consider the user quota for %r (used: %r, "
 msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:945
-msgid "Invalid bind credentials"
+msgid "Invalid DN, username and/or password."
 msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:1229
@@ -1257,129 +1256,129 @@ msgid "Reconnecting to IMAP server %s"
 msgstr ""
 
 #: ../pykolab/imap/__init__.py:197
-msgid "Called imap.disconnect() on a server that "
+msgid "Called imap.disconnect() on a server that we had no connection to."
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:213
+#: ../pykolab/imap/__init__.py:212
 #, python-format
 msgid "%r has no attribute %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:286
+#: ../pykolab/imap/__init__.py:285
 msgid "Private annotations need to be set using the appropriate user account."
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:319 ../pykolab/imap/__init__.py:354
+#: ../pykolab/imap/__init__.py:318 ../pykolab/imap/__init__.py:353
 #, python-format
 msgid "Creating new shared folder %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:376
+#: ../pykolab/imap/__init__.py:375
 #, python-format
 msgid "Creating new mailbox for user %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:405
+#: ../pykolab/imap/__init__.py:404
 #, python-format
 msgid "Creating additional folders for user %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:429
+#: ../pykolab/imap/__init__.py:428
 #, python-format
 msgid "Mailbox already exists: %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:472
+#: ../pykolab/imap/__init__.py:471
 msgid "Subscribing user to the additional folders"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:532 ../pykolab/imap/__init__.py:606
+#: ../pykolab/imap/__init__.py:531 ../pykolab/imap/__init__.py:605
 #, python-format
 msgid "Renaming INBOX from %s to %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:536
+#: ../pykolab/imap/__init__.py:535
 #, python-format
 msgid "Could not rename INBOX folder %s to %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:538 ../pykolab/imap/__init__.py:610
+#: ../pykolab/imap/__init__.py:537 ../pykolab/imap/__init__.py:609
 #, python-format
 msgid ""
 "Moving INBOX folder %s won't succeed as target folder %s already exists"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:548
+#: ../pykolab/imap/__init__.py:547
 #, python-format
 msgid "Looking for folder '%s', we found folders: %r"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:571
+#: ../pykolab/imap/__init__.py:570
 #, python-format
 msgid "Setting ACL rights %s for subject %s on folder "
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:582
+#: ../pykolab/imap/__init__.py:581
 #, python-format
 msgid "Removing ACL rights %s for subject %s on folder "
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:603
+#: ../pykolab/imap/__init__.py:602
 #, python-format
 msgid "Found old INBOX folder %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:612
+#: ../pykolab/imap/__init__.py:611
 #, python-format
 msgid "Did not find old folder user/%s to rename"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:614
+#: ../pykolab/imap/__init__.py:613
 msgid "Value for user is not a dictionary"
 msgstr ""
 
 #. TODO: Go in fact correct the quota.
-#: ../pykolab/imap/__init__.py:674
+#: ../pykolab/imap/__init__.py:673
 #, python-format
 msgid "Cannot get current IMAP quota for folder %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:687
+#: ../pykolab/imap/__init__.py:686
 #, python-format
 msgid "Quota for %s currently is %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:693
+#: ../pykolab/imap/__init__.py:692
 #, python-format
 msgid "Adjusting authentication database quota for folder %s to %d"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:698
+#: ../pykolab/imap/__init__.py:697
 #, python-format
 msgid "Correcting quota for %s to %s (currently %s)"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:775
+#: ../pykolab/imap/__init__.py:774
 #, python-format
 msgid "Checking folder: %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:780
+#: ../pykolab/imap/__init__.py:779
 #, python-format
 msgid "Folder has no corresponding user (1): %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:783
+#: ../pykolab/imap/__init__.py:782
 #, python-format
 msgid "Folder has no corresponding user (2): %s"
 msgstr ""
 
 #. We got user identifier only
-#: ../pykolab/imap/__init__.py:798
+#: ../pykolab/imap/__init__.py:797
 msgid "Please don't give us just a user identifier"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:801
+#: ../pykolab/imap/__init__.py:800
 #, python-format
 msgid "Deleting folder %s"
 msgstr "Borrando la carpeta %s"
@@ -2016,6 +2015,7 @@ msgid "No sender specified"
 msgstr ""
 
 #: ../saslauthd/__init__.py:126 ../saslauthd/__init__.py:134
+#: ../wallace/__init__.py:362 ../wallace/__init__.py:371
 msgid ""
 "Traceback occurred, please report a bug at http://bugzilla.kolabsys.com"
 msgstr ""
@@ -2046,7 +2046,7 @@ msgstr ""
 msgid "Accepted connection"
 msgstr ""
 
-#: ../wallace/__init__.py:389
+#: ../wallace/__init__.py:387
 #, python-format
 msgid "Could not write pid file %s"
 msgstr ""
