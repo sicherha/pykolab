@@ -942,7 +942,7 @@ class LDAP(pykolab.base.Base):
                 # - Firewall
                 pass
             except ldap.INVALID_CREDENTIALS:
-                log.error(_("Invalid bind credentials"))
+                log.error(_("Invalid DN, username and/or password."))
 
     def _change_add_group(self, entry, change):
         """
