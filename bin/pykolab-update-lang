@@ -20,15 +20,14 @@ cd po/
 
 intltool-update --pot --gettext-package=pykolab
 
+echo "Push the new .pot file back to transifex"
+tx push -s
+
 if [ "$1" == "po" ]; then
     for lang_file in `ls -1 *.po`; do
         lang=$(echo ${lang_file} | cut -f1 -d'.')
         tx pull -f -l ${lang}
-        intltool-update -d ${lang}
     done    
 fi
 
-echo "Push the new .pot file back to transifex"
-
-tx push -s
 cd ..

@@ -359,8 +359,7 @@ class WallaceDaemon(object):
         except AttributeError, e:
             exitcode = 1
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a " + \
-                "bug at http://bugzilla.kolabsys.com")
+            print >> sys.stderr, _("Traceback occurred, please report a bug at http://bugzilla.kolabsys.com")
 
         except TypeError, e:
             exitcode = 1
@@ -369,8 +368,7 @@ class WallaceDaemon(object):
         except:
             exitcode = 2
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a " + \
-                "bug at http://bugzilla.kolabsys.com")
+            print >> sys.stderr, _("Traceback occurred, please report a bug at http://bugzilla.kolabsys.com")
 
         sys.exit(exitcode)
 

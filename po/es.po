@@ -1,22 +1,21 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Pedro García Rodríguez <pedgarrod@gmail.com>, 2012.
 msgid ""
 msgstr ""
-"Project-Id-Version: pykolab\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-08-13 12:38+0100\n"
-"PO-Revision-Date: 2012-08-13 11:37+0000\n"
+"Project-Id-Version: Kolab Groupware Solution\n"
+"Report-Msgid-Bugs-To: https://isues.kolab.org/\n"
+"POT-Creation-Date: 2012-08-14 11:58+0100\n"
+"PO-Revision-Date: 2012-08-14 10:58+0000\n"
 "Last-Translator: Jeroen van Meeuwen <vanmeeuwen@kolabsys.com>\n"
-"Language-Team: Spanish (http://www.transifex.com/projects/p/pykolab/language/"
-"es/)\n"
-"Language: es\n"
+"Language-Team: Spanish (http://www.transifex.com/projects/p/kolab/language/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: ../bin/kolab_smtp_access_policy.py:206
@@ -329,7 +328,7 @@ msgstr ""
 #: ../kolabd/__init__.py:192 ../saslauthd/__init__.py:122
 #: ../wallace/__init__.py:358
 msgid "Interrupted by user"
-msgstr ""
+msgstr "Interrumpido por el usuario"
 
 #: ../kolabd/__init__.py:197 ../kolabd/__init__.py:208
 #: ../wallace/__init__.py:362 ../wallace/__init__.py:372
@@ -340,21 +339,21 @@ msgstr ""
 #: ../wallace/__init__.py:368
 #, python-format
 msgid "Type Error: %s"
-msgstr ""
+msgstr "Tipo de error: %s"
 
 #: ../kolabd/__init__.py:223 ../pykolab/auth/ldap/__init__.py:1591
 #: ../pykolab/cli/cmd_sync.py:36
 msgid "Listing domains..."
-msgstr ""
+msgstr "Listando dominios..."
 
 #: ../kolabd/__init__.py:256
 #, python-format
 msgid "added domains: %r, removed domains: %r"
-msgstr ""
+msgstr "dominios añadidos: %r, dominios eliminados: %r"
 
 #: ../kolabd.py:31 ../setup-kolab.py:36 ../wallace.py:31
 msgid "Cannot load pykolab/constants.py:"
-msgstr ""
+msgstr "No se puede cargar pykolab/constants.py:"
 
 #: ../pykolab/auth/__init__.py:94
 #, python-format
@@ -421,7 +420,7 @@ msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:211
 msgid "Connecting to LDAP..."
-msgstr ""
+msgstr "Conectado a LDAP..."
 
 #: ../pykolab/auth/ldap/__init__.py:215
 #, python-format
@@ -853,7 +852,7 @@ msgstr ""
 #: ../pykolab/cli/cmd_sync.py:41
 #, python-format
 msgid "Found %d domains in %d seconds"
-msgstr ""
+msgstr "Encontrados %d dominios en %d segundos"
 
 #: ../pykolab/cli/cmd_sync.py:51
 #, python-format
@@ -1042,9 +1041,7 @@ msgstr "No se ha proporcionado ningún comando"
 
 #: ../pykolab/conf/__init__.py:411
 msgid "Insufficient options. Need section, key and value -in that order."
-msgstr ""
-"Opciones insuficientes. Debes proporcionar la sección, la clave y el valor "
-"en este orden."
+msgstr "Opciones insuficientes. Debes proporcionar la sección, la clave y el valor en este orden."
 
 #: ../pykolab/conf/__init__.py:414
 #, python-format
@@ -1082,8 +1079,8 @@ msgstr "El archivo de configuración %s no existe."
 
 #: ../pykolab/conf/__init__.py:551
 msgid ""
-"WARNING: A negative debug level value does not make this program be any more "
-"silent."
+"WARNING: A negative debug level value does not make this program be any more"
+" silent."
 msgstr ""
 
 #: ../pykolab/conf/__init__.py:557
@@ -1117,22 +1114,26 @@ msgid "Selectively selecting: %s"
 msgstr ""
 
 #: ../pykolab/constants.py.in:40
-msgid "PyKolab is a Kolab Systems product. For more information "
+msgid ""
+"PyKolab is a Kolab Systems product. For more information about Kolab or "
+"PyKolab, visit http://www.kolabsys.com"
 msgstr ""
 
-#: ../pykolab/constants.py.in:54
+#: ../pykolab/constants.py.in:53
 msgid "WARNING"
 msgstr ""
 
-#: ../pykolab/constants.py.in:54
-msgid "The Fully Qualified "
+#: ../pykolab/constants.py.in:53
+msgid ""
+"The Fully Qualified Domain Name or FQDN for this system is incorrect. "
+"Falling back to 'localdomain'."
 msgstr ""
 
-#: ../pykolab/constants.py.in:75
+#: ../pykolab/constants.py.in:72
 msgid "389 Directory Server or Red Hat Directory Server"
 msgstr ""
 
-#: ../pykolab/constants.py.in:79 ../pykolab/constants.py.in:83
+#: ../pykolab/constants.py.in:76 ../pykolab/constants.py.in:80
 msgid "OpenLDAP or compatible"
 msgstr ""
 
@@ -1304,7 +1305,8 @@ msgstr ""
 
 #: ../pykolab/imap/__init__.py:538 ../pykolab/imap/__init__.py:610
 #, python-format
-msgid "Moving INBOX folder %s won't succeed as target folder %s already exists"
+msgid ""
+"Moving INBOX folder %s won't succeed as target folder %s already exists"
 msgstr ""
 
 #: ../pykolab/imap/__init__.py:548
@@ -1522,10 +1524,8 @@ msgstr ""
 #: ../pykolab/setup/setup_freebusy.py:55
 msgid ""
 "\n"
-"                        Please supply the MySQL password for the "
-"'roundcube'\n"
-"                        user. You have supplied this password earlier, and "
-"it is\n"
+"                        Please supply the MySQL password for the 'roundcube'\n"
+"                        user. You have supplied this password earlier, and it is\n"
 "                        available from the database URI setting in\n"
 "                        /etc/roundcubemail/db.inc.php.\n"
 "                    "
@@ -1572,8 +1572,7 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"                            Copying the configuration section for 'example."
-"org' over to\n"
+"                            Copying the configuration section for 'example.org' over to\n"
 "                            a section applicable to your domain '%s'.\n"
 "                        "
 msgstr ""
@@ -1597,10 +1596,8 @@ msgstr ""
 #: ../pykolab/setup/setup_ldap.py:74
 msgid ""
 "\n"
-"                        Please supply a password for the LDAP administrator "
-"user\n"
-"                        'admin', used to login to the graphical console of "
-"389\n"
+"                        Please supply a password for the LDAP administrator user\n"
+"                        'admin', used to login to the graphical console of 389\n"
 "                        Directory server.\n"
 "                    "
 msgstr ""
@@ -1612,12 +1609,9 @@ msgstr ""
 #: ../pykolab/setup/setup_ldap.py:89
 msgid ""
 "\n"
-"                        Please supply a password for the LDAP Directory "
-"Manager\n"
-"                        user, which is the administrator user you will be "
-"using\n"
-"                        to at least initially log in to the Web Admin, and "
-"that\n"
+"                        Please supply a password for the LDAP Directory Manager\n"
+"                        user, which is the administrator user you will be using\n"
+"                        to at least initially log in to the Web Admin, and that\n"
 "                        Kolab uses to perform administrative tasks.\n"
 "                    "
 msgstr ""
@@ -1631,8 +1625,7 @@ msgid ""
 "\n"
 "                        Please choose the system user and group the service\n"
 "                        should use to run under. These should be existing,\n"
-"                        unprivileged, local system POSIX accounts with no "
-"shell.\n"
+"                        unprivileged, local system POSIX accounts with no shell.\n"
 "                    "
 msgstr ""
 
@@ -1647,13 +1640,10 @@ msgstr ""
 #: ../pykolab/setup/setup_ldap.py:143
 msgid ""
 "\n"
-"                        This setup procedure plans to set up Kolab Groupware "
-"for\n"
-"                        the following domain name space. This domain name "
-"is\n"
+"                        This setup procedure plans to set up Kolab Groupware for\n"
+"                        the following domain name space. This domain name is\n"
 "                        obtained from the reverse DNS entry on your network\n"
-"                        interface. Please confirm this is the appropriate "
-"domain\n"
+"                        interface. Please confirm this is the appropriate domain\n"
 "                        name space.\n"
 "                    "
 msgstr ""
@@ -1672,8 +1662,7 @@ msgstr ""
 #: ../pykolab/setup/setup_ldap.py:171
 msgid ""
 "\n"
-"                        The standard root dn we composed for you follows. "
-"Please\n"
+"                        The standard root dn we composed for you follows. Please\n"
 "                        confirm this is the root dn you wish to use.\n"
 "                    "
 msgstr ""
@@ -1685,10 +1674,8 @@ msgstr ""
 #: ../pykolab/setup/setup_ldap.py:234
 msgid ""
 "\n"
-"                    Setup is now going to set up the 389 Directory Server. "
-"This\n"
-"                    may take a little while (during which period there is "
-"no\n"
+"                    Setup is now going to set up the 389 Directory Server. This\n"
+"                    may take a little while (during which period there is no\n"
 "                    output and no progress indication).\n"
 "                "
 msgstr ""
@@ -1717,8 +1704,7 @@ msgid ""
 "                        password is used by Kolab to execute administrative\n"
 "                        tasks in Cyrus IMAP. You may also need the password\n"
 "                        yourself to troubleshoot Cyrus IMAP and/or perform\n"
-"                        other administrative tasks against Cyrus IMAP "
-"directly.\n"
+"                        other administrative tasks against Cyrus IMAP directly.\n"
 "                    "
 msgstr ""
 
@@ -1729,12 +1715,9 @@ msgstr ""
 #: ../pykolab/setup/setup_ldap.py:310
 msgid ""
 "\n"
-"                        Please supply a Kolab Service account password. "
-"This\n"
-"                        account is used by various services such as "
-"Postfix,\n"
-"                        and Roundcube, as anonymous binds to the LDAP "
-"server\n"
+"                        Please supply a Kolab Service account password. This\n"
+"                        account is used by various services such as Postfix,\n"
+"                        and Roundcube, as anonymous binds to the LDAP server\n"
 "                        will not be allowed.\n"
 "                    "
 msgstr ""
@@ -1767,7 +1750,8 @@ msgid "Disabling anonymous binds"
 msgstr ""
 
 #. TODO: Ensure the uid attribute is unique
-#. TODO^2: Consider renaming the general "attribute uniqueness to "uid attribute uniqueness"
+#. TODO^2: Consider renaming the general "attribute uniqueness to "uid
+#. attribute uniqueness"
 #: ../pykolab/setup/setup_ldap.py:465
 msgid "Enabling attribute uniqueness plugin"
 msgstr ""
@@ -1805,7 +1789,8 @@ msgid "Could not write out Postfix configuration file /etc/postfix/master.cf"
 msgstr ""
 
 #: ../pykolab/setup/setup_mta.py:287
-msgid "Could not write out Amavis configuration file /etc/amavisd/amavisd.conf"
+msgid ""
+"Could not write out Amavis configuration file /etc/amavisd/amavisd.conf"
 msgstr ""
 
 #: ../pykolab/setup/setup_mysql.py:39
@@ -1815,15 +1800,11 @@ msgstr ""
 #: ../pykolab/setup/setup_mysql.py:53
 msgid ""
 "\n"
-"                    Please supply a root password for MySQL. This password "
-"will\n"
-"                    be the administrative user for this MySQL server, and "
-"it\n"
+"                    Please supply a root password for MySQL. This password will\n"
+"                    be the administrative user for this MySQL server, and it\n"
 "                    should be kept a secret. After this setup process has\n"
-"                    completed, Kolab is going to discard and forget about "
-"this\n"
-"                    password, but you will need it for administrative tasks "
-"in\n"
+"                    completed, Kolab is going to discard and forget about this\n"
+"                    password, but you will need it for administrative tasks in\n"
 "                    MySQL.\n"
 "                "
 msgstr ""
@@ -1835,10 +1816,8 @@ msgstr ""
 #: ../pykolab/setup/setup_mysql.py:103
 msgid ""
 "\n"
-"                        Please supply a password for the MySQL user "
-"'kolab'.\n"
-"                        This password will be used by Kolab services, such "
-"as\n"
+"                        Please supply a password for the MySQL user 'kolab'.\n"
+"                        This password will be used by Kolab services, such as\n"
 "                        the Web Administration Panel.\n"
 "                    "
 msgstr ""
@@ -1877,8 +1856,7 @@ msgstr ""
 #: ../pykolab/setup/setup_roundcube.py:48
 msgid ""
 "\n"
-"                    Please supply a password for the MySQL user "
-"'roundcube'.\n"
+"                    Please supply a password for the MySQL user 'roundcube'.\n"
 "                    This password will be used by the Roundcube webmail\n"
 "                    interface.\n"
 "                "
@@ -1919,7 +1897,7 @@ msgstr ""
 
 #: ../pykolab/telemetry.py:652
 msgid "No database available"
-msgstr ""
+msgstr "Base de datos no disponible"
 
 #: ../pykolab/utils.py:57 ../pykolab/utils.py:59
 #, python-format
@@ -2038,7 +2016,8 @@ msgid "No sender specified"
 msgstr ""
 
 #: ../saslauthd/__init__.py:126 ../saslauthd/__init__.py:134
-msgid "Traceback occurred, please report a bug at http://bugzilla.kolabsys.com"
+msgid ""
+"Traceback occurred, please report a bug at http://bugzilla.kolabsys.com"
 msgstr ""
 
 #: ../wallace/__init__.py:61

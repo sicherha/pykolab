@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pykolab\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-08-13 12:38+0100\n"
+"POT-Creation-Date: 2012-08-14 11:57+0100\n"
 "PO-Revision-Date: 2012-08-11 13:02+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1113,22 +1113,26 @@ msgid "Selectively selecting: %s"
 msgstr ""
 
 #: ../pykolab/constants.py.in:40
-msgid "PyKolab is a Kolab Systems product. For more information "
+msgid ""
+"PyKolab is a Kolab Systems product. For more information about Kolab or "
+"PyKolab, visit http://www.kolabsys.com"
 msgstr ""
 
-#: ../pykolab/constants.py.in:54
+#: ../pykolab/constants.py.in:53
 msgid "WARNING"
 msgstr ""
 
-#: ../pykolab/constants.py.in:54
-msgid "The Fully Qualified "
+#: ../pykolab/constants.py.in:53
+msgid ""
+"The Fully Qualified Domain Name or FQDN for this system is incorrect. "
+"Falling back to 'localdomain'."
 msgstr ""
 
-#: ../pykolab/constants.py.in:75
+#: ../pykolab/constants.py.in:72
 msgid "389 Directory Server or Red Hat Directory Server"
 msgstr ""
 
-#: ../pykolab/constants.py.in:79 ../pykolab/constants.py.in:83
+#: ../pykolab/constants.py.in:76 ../pykolab/constants.py.in:80
 msgid "OpenLDAP or compatible"
 msgstr ""
 
