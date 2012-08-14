@@ -194,8 +194,7 @@ class IMAP(object):
             if self._imap.has_key(server):
                 del self._imap[server]
             else:
-                log.warning(_("Called imap.disconnect() on a server that " + \
-                    "we had no connection to"))
+                log.warning(_("Called imap.disconnect() on a server that we had no connection to."))
 
     def create_folder(self, folder_path, server=None):
         if not server == None:
