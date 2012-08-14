@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pykolab\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-08-11 16:33+0100\n"
+"POT-Creation-Date: 2012-08-13 12:38+0100\n"
 "PO-Revision-Date: 2012-08-11 13:02+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -633,6 +633,7 @@ msgstr ""
 #: ../pykolab/cli/cmd_add_domain.py:36 ../pykolab/cli/cmd_create_mailbox.py:36
 #: ../pykolab/cli/cmd_export_mailbox.py:33
 #: ../pykolab/cli/cmd_list_mailboxes.py:39
+#: ../pykolab/cli/cmd_list_user_subscriptions.py:35
 msgid "CLI Options"
 msgstr ""
 
@@ -654,6 +655,44 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_add_domain.py:86
 msgid "Domain name"
+msgstr ""
+
+#: ../pykolab/cli/cmd_add_user_subscription.py:37
+msgid "Subscribe a user to a folder."
+msgstr ""
+
+#: ../pykolab/cli/cmd_add_user_subscription.py:47
+#: ../pykolab/cli/cmd_add_user_subscription.py:51
+#: ../pykolab/cli/cmd_remove_user_subscription.py:47
+#: ../pykolab/cli/cmd_remove_user_subscription.py:51
+msgid "Folder pattern"
+msgstr ""
+
+#: ../pykolab/cli/cmd_add_user_subscription.py:50
+#: ../pykolab/cli/cmd_list_user_subscriptions.py:56
+#: ../pykolab/cli/cmd_remove_user_subscription.py:50
+msgid "User ID"
+msgstr ""
+
+#: ../pykolab/cli/cmd_add_user_subscription.py:72
+#: ../pykolab/cli/cmd_remove_user_subscription.py:72
+#, python-format
+msgid "Cannot subscribe user to folder %r:"
+msgstr ""
+
+#: ../pykolab/cli/cmd_add_user_subscription.py:73
+#: ../pykolab/cli/cmd_remove_user_subscription.py:73
+msgid "No such folder"
+msgstr ""
+
+#: ../pykolab/cli/cmd_add_user_subscription.py:86
+#, python-format
+msgid "Successfully subscribed user %s to the following folders:"
+msgstr ""
+
+#: ../pykolab/cli/cmd_add_user_subscription.py:92
+#, python-format
+msgid "User %s not subscribed to any folders."
 msgstr ""
 
 #: ../pykolab/cli/cmd_create_mailbox.py:41
@@ -724,6 +763,19 @@ msgstr ""
 msgid "Appending folder search for %r"
 msgstr ""
 
+#: ../pykolab/cli/cmd_list_user_subscriptions.py:40
+msgid "List unsubscribed folders"
+msgstr ""
+
+#: ../pykolab/cli/cmd_list_user_subscriptions.py:43
+msgid "List the folders a user is subscribed to."
+msgstr ""
+
+#: ../pykolab/cli/cmd_list_user_subscriptions.py:88
+#, python-format
+msgid "No unsubscribed folders for user %s"
+msgstr ""
+
 #: ../pykolab/cli/cmd_remove_mailaddress.py:49
 msgid "Invalid or unqualified email address."
 msgstr ""
@@ -745,6 +797,20 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_remove_mailaddress.py:90
 msgid "Found the following recipients:"
+msgstr ""
+
+#: ../pykolab/cli/cmd_remove_user_subscription.py:37
+msgid "Unsubscribe a user from a folder."
+msgstr ""
+
+#: ../pykolab/cli/cmd_remove_user_subscription.py:86
+#, python-format
+msgid "Successfully unsubscribed user %s from the following folders:"
+msgstr ""
+
+#: ../pykolab/cli/cmd_remove_user_subscription.py:92
+#, python-format
+msgid "User %s not be unsubscribed from any folders."
 msgstr ""
 
 #: ../pykolab/cli/cmd_rename_mailbox.py:48
@@ -1222,7 +1288,7 @@ msgstr ""
 msgid "Subscribing user to the additional folders"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:532 ../pykolab/imap/__init__.py:611
+#: ../pykolab/imap/__init__.py:532 ../pykolab/imap/__init__.py:606
 #, python-format
 msgid "Renaming INBOX from %s to %s"
 msgstr ""
@@ -1232,82 +1298,82 @@ msgstr ""
 msgid "Could not rename INBOX folder %s to %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:538 ../pykolab/imap/__init__.py:615
+#: ../pykolab/imap/__init__.py:538 ../pykolab/imap/__init__.py:610
 #, python-format
 msgid "Moving INBOX folder %s won't succeed as target folder %s already exists"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:551
+#: ../pykolab/imap/__init__.py:548
 #, python-format
 msgid "Looking for folder '%s', we found folders: %r"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:574
+#: ../pykolab/imap/__init__.py:571
 #, python-format
 msgid "Setting ACL rights %s for subject %s on folder "
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:585
+#: ../pykolab/imap/__init__.py:582
 #, python-format
 msgid "Removing ACL rights %s for subject %s on folder "
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:608
+#: ../pykolab/imap/__init__.py:603
 #, python-format
 msgid "Found old INBOX folder %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:617
+#: ../pykolab/imap/__init__.py:612
 #, python-format
 msgid "Did not find old folder user/%s to rename"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:619
+#: ../pykolab/imap/__init__.py:614
 msgid "Value for user is not a dictionary"
 msgstr ""
 
 #. TODO: Go in fact correct the quota.
-#: ../pykolab/imap/__init__.py:682
+#: ../pykolab/imap/__init__.py:674
 #, python-format
 msgid "Cannot get current IMAP quota for folder %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:695
+#: ../pykolab/imap/__init__.py:687
 #, python-format
 msgid "Quota for %s currently is %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:701
+#: ../pykolab/imap/__init__.py:693
 #, python-format
 msgid "Adjusting authentication database quota for folder %s to %d"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:706
+#: ../pykolab/imap/__init__.py:698
 #, python-format
 msgid "Correcting quota for %s to %s (currently %s)"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:788
+#: ../pykolab/imap/__init__.py:775
 #, python-format
 msgid "Checking folder: %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:793
+#: ../pykolab/imap/__init__.py:780
 #, python-format
 msgid "Folder has no corresponding user (1): %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:796
+#: ../pykolab/imap/__init__.py:783
 #, python-format
 msgid "Folder has no corresponding user (2): %s"
 msgstr ""
 
 #. We got user identifier only
-#: ../pykolab/imap/__init__.py:811
+#: ../pykolab/imap/__init__.py:798
 msgid "Please don't give us just a user identifier"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:814
+#: ../pykolab/imap/__init__.py:801
 #, python-format
 msgid "Deleting folder %s"
 msgstr ""

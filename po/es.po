@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 #
 # Translators:
-# Jeroen van Meeuwen <vanmeeuwen@kolabsys.com>, 2012.
+# Pedro García Rodríguez <pedgarrod@gmail.com>, 2012.
 msgid ""
 msgstr ""
 "Project-Id-Version: pykolab\n"
@@ -11,8 +11,9 @@ msgstr ""
 "POT-Creation-Date: 2012-08-13 12:38+0100\n"
 "PO-Revision-Date: 2012-08-13 11:37+0000\n"
 "Last-Translator: Jeroen van Meeuwen <vanmeeuwen@kolabsys.com>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: nl\n"
+"Language-Team: Spanish (http://www.transifex.com/projects/p/pykolab/language/"
+"es/)\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -21,32 +22,32 @@ msgstr ""
 #: ../bin/kolab_smtp_access_policy.py:206
 #, python-format
 msgid "Adding policy request to instance %s"
-msgstr "Bezig policy verzoek toe te voegen aan %s"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:446
 msgid "Unauthorized access not allowed"
-msgstr "Niet geautoriseerde toegang niet toegestaan"
+msgstr "El acceso no autorizado no está permitido"
 
 #: ../bin/kolab_smtp_access_policy.py:467
 #: ../bin/kolab_smtp_access_policy.py:657
 msgid "Could not find recipient"
-msgstr "Kan ontvanger niet vinden"
+msgstr "No se ha podido encontrar el destinatario"
 
 #: ../bin/kolab_smtp_access_policy.py:486
 #: ../bin/kolab_smtp_access_policy.py:586
 #, python-format
 msgid "Could not find envelope sender user %s"
-msgstr "Kan envelope zender gebruiker %s niet vinden"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:529
 #, python-format
 msgid "Obtained authenticated user details for %r: %r"
-msgstr "Gebruikers details voor geauthentificeerde gebruiker %r verkregen: %r"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:608
 #, python-format
 msgid "%s is unauthorized to send on behalf of %s"
-msgstr "Het is %s niet toegestaan te versturen namens %s"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:618
 #, python-format
@@ -58,7 +59,7 @@ msgstr ""
 #: ../bin/kolab_smtp_access_policy.py:692
 #, python-format
 msgid "Found user %s to be a delegate user of %s"
-msgstr "Gebruiker %s als delegatie gebruiker van %s gevonden"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:716
 #, python-format
@@ -81,12 +82,12 @@ msgstr ""
 #: ../bin/kolab_smtp_access_policy.py:753
 #, python-format
 msgid "Using authentication domain %s instead of %s"
-msgstr "Gebruik authenticatie domein %s in plaats van %s"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:763
 #, python-format
 msgid "Domain %s is a primary domain"
-msgstr "Domein %s is een primair domein"
+msgstr "El dominio %s es el dominio principal"
 
 #: ../bin/kolab_smtp_access_policy.py:771
 #, python-format
@@ -110,17 +111,17 @@ msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:820
 msgid "Invalid recipient"
-msgstr "Ongeldige ontvanger"
+msgstr "Destinatario no válido"
 
 #: ../bin/kolab_smtp_access_policy.py:831
 msgid "Could not find this user, accepting"
-msgstr "Kan deze gebruiker niet vinden, accepteren"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:894
 #: ../bin/kolab_smtp_access_policy.py:945
 #, python-format
 msgid "Sender %s is not allowed to send to recipient %s"
-msgstr "Het is afzender %s niet toegestaan te versturen naar ontvanger %s"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:933
 #, python-format
@@ -129,11 +130,11 @@ msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:960
 msgid "Sender uses unauthorized envelope sender address"
-msgstr "Verstuurder gebruikt een niet geauthorizeerd envelope zender adres"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:977
 msgid "Could not verify sender"
-msgstr "Kan de verstuurder niet verifieren"
+msgstr "No es posible verificar el remitente"
 
 #: ../bin/kolab_smtp_access_policy.py:984
 msgid ""
@@ -143,15 +144,15 @@ msgstr ""
 #: ../bin/kolab_smtp_access_policy.py:997
 #, python-format
 msgid "Result is %r"
-msgstr "Het resultaat is %r"
+msgstr "El resultado es %r"
 
 #: ../bin/kolab_smtp_access_policy.py:1002
 msgid "No recipient policy restrictions exist for this sender"
-msgstr "Er zijn geen ontvanger restricties voor deze afzender"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1011
 msgid "Found a recipient policy to apply for this sender."
-msgstr "Ontvanger-beleid gevonden voor deze afzender"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1026
 #, python-format
@@ -160,161 +161,161 @@ msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1056
 msgid "Cleaning up the cache"
-msgstr "Cache aan het schoonmaken"
+msgstr "Limpiando la caché"
 
 #: ../bin/kolab_smtp_access_policy.py:1093
 #, python-format
 msgid "Operational Error in caching: %s"
-msgstr "Operationele fout in caching: %s"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1144
 #, python-format
 msgid "Caching the policy result with timestamp %d"
-msgstr "Policy resultaat aan het cachen met tijd %d"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1221
 #, python-format
 msgid "Returning action DEFER_IF_PERMIT: %s"
-msgstr "Actie DEFER_IF_PERMIT retourneren: %s"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1226
 #, python-format
 msgid "Returning action DUNNO: %s"
-msgstr "Actie DUNNO retourneren: %s"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1231
 #, python-format
 msgid "Returning action HOLD: %s"
-msgstr "Actie HOLD retourneren: %s"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1236
 #, python-format
 msgid "Returning action PERMIT: %s"
-msgstr "Actie PERMIT retourneren: %s"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1241
 #, python-format
 msgid "Returning action REJECT: %s"
-msgstr "Actie REJECT retourneren: %s"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1287
 msgid "Starting to loop for new request"
-msgstr "Loop aan het starten in afwachting van nieuw verzoek"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1294
 msgid "Timeout for policy request reading exceeded"
-msgstr "Maximale tijd voor het lezen van een policy verzoek verstreken"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1300
 msgid "End of current request"
-msgstr "Einde van huidige verzoek"
+msgstr "Finalizada la petición actual"
 
 #: ../bin/kolab_smtp_access_policy.py:1304
 #, python-format
 msgid "Getting line: %s"
-msgstr "Gegeven regel: %s"
+msgstr "Obteniendo la línea: %s"
 
 #: ../bin/kolab_smtp_access_policy.py:1308
 msgid "Returning request"
-msgstr "Verzoek aan het retourneren"
+msgstr "Returning request"
 
 #: ../bin/kolab_smtp_access_policy.py:1334
 msgid "Access Policy Options"
-msgstr "Opties voor Toegangs-beleid"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1341
 msgid "SMTP Policy request timeout."
-msgstr "Maximale tijd voor SMTP Toegangs-beleid verzoek verstreken"
+msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:1347
 msgid "Verify the recipient access policy."
-msgstr "Verifieer het toegangs-beleid voor de ontvanger."
+msgstr "Verificar la política de acceso para los destinatarios"
 
 #: ../bin/kolab_smtp_access_policy.py:1353
 msgid "Verify the sender access policy."
-msgstr "Verifieer het toegangs-beleid voor de afzender."
+msgstr "Verificar la política de acceso para los remitentes"
 
 #: ../bin/kolab_smtp_access_policy.py:1359
 msgid "Allow unauthenticated senders."
-msgstr "Sta niet geauthentificeerde afzenders toe."
+msgstr "Permitir remitentes no autenticados."
 
 #: ../bin/kolab_smtp_access_policy.py:1373
 #, python-format
 msgid "Got request instance %s"
-msgstr "Verzoek %s verkregen"
+msgstr "Hay una solicitud de instancia %s"
 
 #: ../bin/kolab_smtp_access_policy.py:1382
 #, python-format
 msgid "Request instance %s is in state %s"
-msgstr "Verzoek %s is in staat %s"
+msgstr "La instancia solicitada %s, se encuentra en estado %s"
 
 #: ../bin/kolab_smtp_access_policy.py:1390
 #, python-format
 msgid "Request instance %s is not yet in DATA state"
-msgstr "Verzoek %s is nog niet in DATA staat"
+msgstr "La instancia solicitada %s, todavía no se encuentra en estado DATA"
 
 #: ../bin/kolab_smtp_access_policy.py:1402
 #, python-format
 msgid "Request instance %s reached DATA state"
-msgstr "Verzoek %s heeft DATA staat bereikt"
+msgstr "La instancia solicitada %s, alcanzó el estado DATA"
 
 #: ../bin/kolab_smtp_access_policy.py:1420
 msgid "Sender access denied"
-msgstr "Toegang voor afzender geweigerd"
+msgstr "Acceso denegado al destinatario"
 
 #: ../bin/kolab_smtp_access_policy.py:1422
 msgid "Recipient access denied"
-msgstr "Toegang voor ontvanger geweigerd"
+msgstr "Acceso denegado al destinatario"
 
 #: ../bin/kolab_smtp_access_policy.py:1424
 msgid "No objections"
-msgstr "Geen bezwaren"
+msgstr "No hay objeciones"
 
 #: ../conf.py:37 ../kolab.py:34 ../saslauthd.py:33
 msgid "Cannot load pykolab/logger.py:"
-msgstr "Kan pykolab/logger.py niet laden:"
+msgstr "Imposible cargar pykolab/logger.py:"
 
 #: ../kolabd/__init__.py:49 ../saslauthd/__init__.py:48
 #: ../wallace/__init__.py:65
 msgid "Daemon Options"
-msgstr "Opties voor Daemon"
+msgstr "Opciones del demonio"
 
 #: ../kolabd/__init__.py:56 ../saslauthd/__init__.py:55
 #: ../wallace/__init__.py:72
 msgid "Fork to the background."
-msgstr "Draai op de achtergrond"
+msgstr ""
 
 #: ../kolabd/__init__.py:65 ../saslauthd/__init__.py:64
 #: ../wallace/__init__.py:98
 msgid "Path to the PID file to use."
-msgstr "Te gebruiken locatie voor PID bestand"
+msgstr "Ruta del archivo de PID a utilizar."
 
 #: ../kolabd/__init__.py:74 ../saslauthd/__init__.py:73
 #: ../wallace/__init__.py:115
 msgid "Run as user USERNAME"
-msgstr "Draai proces als gebruiker USERNAME"
+msgstr "Ejecutar el usuario USERNAME"
 
 #: ../kolabd/__init__.py:84 ../saslauthd/__init__.py:83
 #: ../wallace/__init__.py:89
 msgid "Run as group GROUPNAME"
-msgstr "Draai proces als group GROUPNAME"
+msgstr "Ejecutar el grupo GROUPNAME"
 
 #: ../kolabd/__init__.py:122 ../pykolab/utils.py:151
 #: ../wallace/__init__.py:288
 #, python-format
 msgid "Group %s does not exist"
-msgstr "Groep %s bestaat niet"
+msgstr "El grupo %s no existe"
 
 #: ../kolabd/__init__.py:131 ../wallace/__init__.py:297
 #, python-format
 msgid "Switching real and effective group id to %d"
-msgstr ""
+msgstr "Cambio el id real y efectiva del grupo a %d"
 
 #: ../kolabd/__init__.py:153 ../pykolab/utils.py:175
 #: ../wallace/__init__.py:319
 #, python-format
 msgid "User %s does not exist"
-msgstr "Gebruiker %s bestaat niet"
+msgstr " El usuario %s no existe"
 
 #: ../kolabd/__init__.py:163 ../wallace/__init__.py:329
 #, python-format
@@ -328,7 +329,7 @@ msgstr ""
 #: ../kolabd/__init__.py:192 ../saslauthd/__init__.py:122
 #: ../wallace/__init__.py:358
 msgid "Interrupted by user"
-msgstr "Onderbroken door gebruiker"
+msgstr ""
 
 #: ../kolabd/__init__.py:197 ../kolabd/__init__.py:208
 #: ../wallace/__init__.py:362 ../wallace/__init__.py:372
@@ -344,21 +345,21 @@ msgstr ""
 #: ../kolabd/__init__.py:223 ../pykolab/auth/ldap/__init__.py:1591
 #: ../pykolab/cli/cmd_sync.py:36
 msgid "Listing domains..."
-msgstr "Lijst van domeinen verkrijgen..."
+msgstr ""
 
 #: ../kolabd/__init__.py:256
 #, python-format
 msgid "added domains: %r, removed domains: %r"
-msgstr "Domeinen toegevoegd: %r, domeinen verwijderd: %r"
+msgstr ""
 
 #: ../kolabd.py:31 ../setup-kolab.py:36 ../wallace.py:31
 msgid "Cannot load pykolab/constants.py:"
-msgstr "Kan pykolab/constants.py niet laden:"
+msgstr ""
 
 #: ../pykolab/auth/__init__.py:94
 #, python-format
 msgid "Called for domain %r"
-msgstr "Aangeroepen voor domein %r"
+msgstr ""
 
 #: ../pykolab/auth/__init__.py:107 ../pykolab/auth/__init__.py:116
 #, python-format
@@ -368,7 +369,7 @@ msgstr ""
 #: ../pykolab/auth/__init__.py:121
 #, python-format
 msgid "Connecting to Authentication backend for domain %s"
-msgstr "Verbinding met authenticatie backend voor domein %s aan het maken"
+msgstr ""
 
 #: ../pykolab/auth/__init__.py:132
 #, python-format
@@ -430,7 +431,7 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:357
 #, python-format
 msgid "Finding recipient with filter %r"
-msgstr "Ontvanger vinden met filter %r"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:425
 #, python-format
@@ -478,17 +479,17 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:520 ../pykolab/auth/ldap/__init__.py:533
 #, python-format
 msgid "Attributes %r are not yet available for entry %r"
-msgstr "Attributen %r zijn nog niet beschikbaar voor entry %r"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:574
 #, python-format
 msgid "No results for mail address %s found"
-msgstr "Geen resultaten voor email adres %s gevonden"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:585
 #, python-format
 msgid "1 result for address %s found, verifying"
-msgstr "1 resultaat voor adres %s gevonden, aan het verifieren"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:595
 #, python-format
@@ -507,7 +508,7 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:672
 #, python-format
 msgid "1 result for address %s found, "
-msgstr "1 resultaat voor adres %s gevonden"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:683
 msgid "Too bad, secondary email "
@@ -524,16 +525,16 @@ msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:727
 msgid "Avoiding the duplication of the primary mail "
-msgstr "Duplicaat van primair email adres aan het voorkomen"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:738
 #, python-format
 msgid "Entry is getting secondary mail addresses: %r"
-msgstr "Entry verkrijgt secundaire email adressen: %r"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:746
 msgid "Entry did not have any secondary mail "
-msgstr "Entry had niet reeds enige secundaire email adressen"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:772
 #, python-format
@@ -577,16 +578,16 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:1385
 #, python-format
 msgid "Kolab user %s does not have a result attribute %r"
-msgstr "Kolab gebruiker %s heeft geen resultaat attribuut %r"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:1527
 #, python-format
 msgid "Finding domain root dn for domain %s"
-msgstr "Root DN voor domein %s aan het vinden"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:1615
 msgid "Authentication database DOWN"
-msgstr "Authenticatie database NIET beschikbaar"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:1699 ../pykolab/auth/ldap/__init__.py:1734
 #, python-format
@@ -595,11 +596,11 @@ msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:1822
 msgid "LDAP Search Result Data Entry:"
-msgstr "LDAP Zoek Resultaat:"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:1838
 msgid "Entry Change Notification attributes:"
-msgstr "Wijzigingsnotificatie attributen:"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:1843
 #, python-format
@@ -624,7 +625,7 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:2014
 #, python-format
 msgid "Searching with filter %r"
-msgstr "Zoeken met filter %r"
+msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:2058
 #, python-format
@@ -636,15 +637,15 @@ msgstr ""
 #: ../pykolab/cli/cmd_list_mailboxes.py:39
 #: ../pykolab/cli/cmd_list_user_subscriptions.py:35
 msgid "CLI Options"
-msgstr "Opties voor de CLI"
+msgstr ""
 
 #: ../pykolab/cli/cmd_add_domain.py:42
 msgid "Add domain as alias for DOMAIN"
-msgstr "Voeg DOMAIN toe als alias voor domein"
+msgstr ""
 
 #: ../pykolab/cli/cmd_add_domain.py:47
 msgid "Add a new domain or domain alias."
-msgstr "Voeg een nieuw domein, of een alias voor een bestaand domein toe"
+msgstr ""
 
 #: ../pykolab/cli/cmd_add_domain.py:55
 msgid "Could not find credentials with sufficient permissions"
@@ -652,11 +653,11 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_add_domain.py:80 ../pykolab/wap_client/__init__.py:113
 msgid "Invalid parent domain"
-msgstr "Ongeldig domein"
+msgstr ""
 
 #: ../pykolab/cli/cmd_add_domain.py:86
 msgid "Domain name"
-msgstr "Domein naam"
+msgstr ""
 
 #: ../pykolab/cli/cmd_add_user_subscription.py:37
 msgid "Subscribe a user to a folder."
@@ -702,11 +703,11 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_create_mailbox.py:50
 msgid "Invalid argument"
-msgstr "Ongeldig argument"
+msgstr ""
 
 #: ../pykolab/cli/cmd_create_mailbox.py:58
 msgid "Invalid argument for metadata"
-msgstr "Ongeldig argument voor metadata"
+msgstr ""
 
 #: ../pykolab/cli/cmd_delete_mailbox_acl.py:45
 #: ../pykolab/cli/cmd_delete_mailbox_acl.py:49
@@ -721,7 +722,7 @@ msgstr ""
 #: ../pykolab/cli/cmd_set_mailbox_acl.py:54
 #: ../pykolab/cli/cmd_set_mailbox_metadata.py:54
 msgid "Folder name"
-msgstr "Folder naam"
+msgstr ""
 
 #: ../pykolab/cli/cmd_delete_mailbox_acl.py:60
 #: ../pykolab/cli/cmd_list_mailbox_acls.py:52
@@ -730,11 +731,11 @@ msgstr "Folder naam"
 #: ../pykolab/cli/cmd_set_mailbox_metadata.py:67
 #, python-format
 msgid "No such folder %r"
-msgstr "Folder %r bestaat niet"
+msgstr ""
 
 #: ../pykolab/cli/cmd_delete_mailbox.py:46
 msgid "No mailbox specified"
-msgstr "Geen mailbox gespecificeerd"
+msgstr ""
 
 #: ../pykolab/cli/cmd_export_mailbox.py:38
 msgid "All folders this user has access to"
@@ -743,7 +744,7 @@ msgstr ""
 #: ../pykolab/cli/cmd_export_mailbox.py:108
 #, python-format
 msgid "%s is not a directory"
-msgstr "%s is geen map"
+msgstr ""
 
 #: ../pykolab/cli/cmd_export_mailbox.py:118
 #, python-format
@@ -753,7 +754,7 @@ msgstr ""
 #: ../pykolab/cli/cmd_export_mailbox.py:120
 #, python-format
 msgid "No directories found for user %s"
-msgstr "Geen mappen gevonden voor gebruiker %s"
+msgstr ""
 
 #: ../pykolab/cli/cmd_list_mailboxes.py:44
 msgid "Display raw IMAP UTF-7 folder names"
@@ -779,26 +780,26 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_remove_mailaddress.py:49
 msgid "Invalid or unqualified email address."
-msgstr "Ongeldig of onvoldoende gequalificeerd email adres."
+msgstr ""
 
 #: ../pykolab/cli/cmd_remove_mailaddress.py:57
 #, python-format
 msgid "No recipient found for email address %r"
-msgstr "Geen ontvanger gevonden voor email adres %r"
+msgstr ""
 
 #: ../pykolab/cli/cmd_remove_mailaddress.py:60
 #, python-format
 msgid "Found the following recipient(s): %r"
-msgstr "De volgende ontvanger(s) is/zijn gevonden: %r"
+msgstr ""
 
 #: ../pykolab/cli/cmd_remove_mailaddress.py:66
 #, python-format
 msgid "Using the following mail attributes: %r"
-msgstr "Maak gebruik van de volgende mail attributen: %r"
+msgstr ""
 
 #: ../pykolab/cli/cmd_remove_mailaddress.py:90
 msgid "Found the following recipients:"
-msgstr "De volgende ontvangers zijn gevonden:"
+msgstr ""
 
 #: ../pykolab/cli/cmd_remove_user_subscription.py:37
 msgid "Unsubscribe a user from a folder."
@@ -816,43 +817,43 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_rename_mailbox.py:48
 msgid "No target mailbox name specified"
-msgstr "Geen doel mailbox naam gespecificeerd"
+msgstr ""
 
 #: ../pykolab/cli/cmd_rename_mailbox.py:50
 msgid "No source mailbox name specified"
-msgstr "Geen bron mailbox naam gespecificeerd"
+msgstr ""
 
 #: ../pykolab/cli/cmd_rename_mailbox.py:62
 #, python-format
 msgid "Source folder %r does not exist"
-msgstr "Bron map %r bestaat niet"
+msgstr ""
 
 #: ../pykolab/cli/cmd_rename_mailbox.py:66
 #, python-format
 msgid "Target folder %r already exists"
-msgstr "Doel map %r bestaat reeds"
+msgstr ""
 
 #: ../pykolab/cli/cmd_set_mailbox_acl.py:47
 #: ../pykolab/cli/cmd_set_mailbox_acl.py:51
 #: ../pykolab/cli/cmd_set_mailbox_acl.py:56
 msgid "ACI Permissions"
-msgstr "ACI Rechten"
+msgstr ""
 
 #: ../pykolab/cli/cmd_set_mailbox_metadata.py:47
 #: ../pykolab/cli/cmd_set_mailbox_metadata.py:51
 #: ../pykolab/cli/cmd_set_mailbox_metadata.py:56
 msgid "Metadata value"
-msgstr "Metadata waarde"
+msgstr ""
 
 #: ../pykolab/cli/cmd_set_mailbox_metadata.py:50
 #: ../pykolab/cli/cmd_set_mailbox_metadata.py:55
 msgid "Metadata path"
-msgstr "Metadata pad"
+msgstr ""
 
 #: ../pykolab/cli/cmd_sync.py:41
 #, python-format
 msgid "Found %d domains in %d seconds"
-msgstr "%d domeinen gevonden in %d seconden"
+msgstr ""
 
 #: ../pykolab/cli/cmd_sync.py:51
 #, python-format
@@ -862,7 +863,7 @@ msgstr ""
 #: ../pykolab/cli/cmd_sync.py:57
 #, python-format
 msgid "Synchronizing users for %s took %d seconds"
-msgstr "Synchronizeren van gebruikers voor %s duurde %d seconden"
+msgstr ""
 
 #: ../pykolab/cli/cmd_undelete_mailbox.py:33
 msgid "Recover mailboxes previously deleted."
@@ -873,26 +874,26 @@ msgstr ""
 #: ../pykolab/cli/commands.py:98 ../pykolab/setup/components.py:90
 #, python-format
 msgid "Command Group: %s"
-msgstr "Commando Groep: %s"
+msgstr ""
 
 #: ../pykolab/cli/commands.py:109 ../pykolab/cli/commands.py:114
 msgid "No such command."
-msgstr "Commando bestaat niet."
+msgstr ""
 
 #: ../pykolab/cli/commands.py:165 ../pykolab/setup/components.py:231
 #, python-format
 msgid "Command '%s' already registered"
-msgstr "Commando '%s' is reeds geregistreerd"
+msgstr ""
 
 #: ../pykolab/cli/commands.py:190 ../pykolab/setup/components.py:257
 #: ../wallace/modules.py:338
 #, python-format
 msgid "Alias for %s"
-msgstr "Alias voor %s"
+msgstr ""
 
 #: ../pykolab/cli/commands.py:198 ../pykolab/setup/components.py:265
 msgid "Not yet implemented"
-msgstr "Nog niet geimplementeerd"
+msgstr ""
 
 #: ../pykolab/cli/telemetry/cmd_examine_command_issue.py:40
 msgid "Unspecified command issue identifier"
@@ -905,7 +906,7 @@ msgstr ""
 #: ../pykolab/cli/telemetry/cmd_examine_command_issue.py:60
 #: ../pykolab/cli/telemetry/cmd_examine_session.py:65
 msgid "Invalid session identifier"
-msgstr "Ongeldige sessie"
+msgstr ""
 
 #: ../pykolab/cli/telemetry/cmd_examine_command_issue.py:75
 #: ../pykolab/cli/telemetry/cmd_examine_session.py:100
@@ -987,66 +988,68 @@ msgstr ""
 #: ../pykolab/conf/__init__.py:223
 #, python-format
 msgid "Configuration file %s not readable"
-msgstr "Kan configuratie bestand %s niet lezen"
+msgstr ""
 
 #: ../pykolab/conf/__init__.py:226
 #, python-format
 msgid "Reading configuration file %s"
-msgstr "Configuratie bestand %s aan het lezen"
+msgstr ""
 
 #: ../pykolab/conf/__init__.py:230
 #, python-format
 msgid "Invalid configuration file %s"
-msgstr "Ongeldig configuratie bestand %s"
+msgstr ""
 
 #: ../pykolab/conf/__init__.py:233
 #, python-format
 msgid "No master configuration section [kolab] in configuration file %s"
-msgstr "Geen vereiste sectie [kolab] in configuratie bestand %s"
+msgstr ""
 
 #. #
 #. # Runtime Options
 #. #
 #: ../pykolab/conf/__init__.py:267
 msgid "Runtime Options"
-msgstr ""
+msgstr "Opciones en tiempo de ejecución"
 
 #: ../pykolab/conf/__init__.py:272
 msgid "Configuration file to use"
-msgstr "Te gebruiken configuratie bestand"
+msgstr "Configuración del archivo a utilizar"
 
 #: ../pykolab/conf/__init__.py:278
 msgid "Set the debugging "
-msgstr "Zet het debug niveau"
+msgstr "Establecer el nivel de depuración"
 
 #: ../pykolab/conf/__init__.py:286
 msgid "Set the logging level. "
-msgstr "Zet het log niveau"
+msgstr "Establecer el nivel de registro"
 
 #: ../pykolab/conf/__init__.py:294
 msgid "Log file to use"
-msgstr "Te gebruiken log bestand"
+msgstr "Archivo de registro a utilizar"
 
 #: ../pykolab/conf/__init__.py:300
 msgid "Be quiet."
-msgstr "Wees stil."
+msgstr "Mantente en silencio"
 
 #: ../pykolab/conf/__init__.py:306
 msgid "Answer yes to all questions."
-msgstr "Beantwoord alle vragen met ja."
+msgstr "Responde Sí a todas las preguntas."
 
 #: ../pykolab/conf/__init__.py:328
 msgid "No command supplied"
-msgstr "Geen commando gegeven"
+msgstr "No se ha proporcionado ningún comando"
 
 #: ../pykolab/conf/__init__.py:411
 msgid "Insufficient options. Need section, key and value -in that order."
 msgstr ""
+"Opciones insuficientes. Debes proporcionar la sección, la clave y el valor "
+"en este orden."
 
 #: ../pykolab/conf/__init__.py:414
 #, python-format
 msgid "No section '%s' exists."
-msgstr "Sectie '%s' bestaat niet"
+msgstr "No existe la sección '%s'."
 
 #: ../pykolab/conf/__init__.py:445
 #, python-format
@@ -1056,7 +1059,7 @@ msgstr ""
 #: ../pykolab/conf/__init__.py:514
 #, python-format
 msgid "Could not execute configuration function: %s"
-msgstr "Heb configuratie functie niet uit kunnen voeren: %s"
+msgstr ""
 
 #: ../pykolab/conf/__init__.py:522
 #, python-format
@@ -1070,25 +1073,22 @@ msgstr ""
 #: ../pykolab/conf/__init__.py:543
 #, python-format
 msgid "Configuration file %s not readable."
-msgstr "Kan configuratie bestand %s niet lezen."
+msgstr "No se puede leer el archivo de configuración %s."
 
 #: ../pykolab/conf/__init__.py:546
 #, python-format
 msgid "Configuration file %s does not exist."
-msgstr "Configuratie bestand %s bestaat niet."
+msgstr "El archivo de configuración %s no existe."
 
 #: ../pykolab/conf/__init__.py:551
 msgid ""
 "WARNING: A negative debug level value does not make this program be any more "
 "silent."
 msgstr ""
-"Waarschuwing: Een negatief debug niveau maakt dit programma niet stiller."
 
 #: ../pykolab/conf/__init__.py:557
 msgid "This program has 9 levels of verbosity. Using the maximum of 9."
 msgstr ""
-"Dit programma heeft een maximaal debug niveau van 9. Maak gebruik van het "
-"maximum van 9."
 
 #: ../pykolab/conf/__init__.py:565 ../pykolab/conf/__init__.py:571
 msgid "Cannot start SASL authentication daemon"
@@ -1202,7 +1202,7 @@ msgstr ""
 #: ../pykolab/imap/cyrus.py:238
 #, python-format
 msgid "Transferring folder %s from %s to %s"
-msgstr "Map %s van %s naar %s aan het verhuizen"
+msgstr ""
 
 #: ../pykolab/imap/cyrus.py:298
 #, python-format
@@ -1276,7 +1276,7 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:376
 #, python-format
 msgid "Creating new mailbox for user %s"
-msgstr "Nieuwe mailbox voor gebruiker %s aan het creeren"
+msgstr ""
 
 #: ../pykolab/imap/__init__.py:405
 #, python-format
@@ -1286,7 +1286,7 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:429
 #, python-format
 msgid "Mailbox already exists: %s"
-msgstr "Mailbox bestaat reeds: %s"
+msgstr ""
 
 #: ../pykolab/imap/__init__.py:472
 msgid "Subscribing user to the additional folders"
@@ -1380,7 +1380,7 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:801
 #, python-format
 msgid "Deleting folder %s"
-msgstr "Map %s aan het verwijderen"
+msgstr "Borrando la carpeta %s"
 
 #: ../pykolab/__init__.py:50
 msgid "Returning thread local configuration"
@@ -1389,12 +1389,12 @@ msgstr ""
 #: ../pykolab/logger.py:105
 #, python-format
 msgid "Could not change the ownership of log file %s"
-msgstr ""
+msgstr "Imposible cambiar el propietario del archivo de registro %s"
 
 #: ../pykolab/logger.py:121
 #, python-format
 msgid "Cannot log to file %s: %s"
-msgstr ""
+msgstr "Imposible guardar los datos de registro en el archivo %s: %s"
 
 #: ../pykolab/plugins/defaultfolders/__init__.py:47
 #, python-format
@@ -1478,12 +1478,12 @@ msgstr ""
 #: ../pykolab/plugins/__init__.py:227
 #, python-format
 msgid "Executing hook %s for plugin %s"
-msgstr ""
+msgstr "Ejecutar el hook %s para el plugin %s"
 
 #: ../pykolab/plugins/__init__.py:231 ../pykolab/plugins/__init__.py:233
 #, python-format
 msgid "Cannot execute hook %s for plugin %s: %s"
-msgstr ""
+msgstr "No se puede ejecutarel hook %s para el plugin %s: %s"
 
 #: ../pykolab/plugins/recipientpolicy/__init__.py:79
 msgid "Attribute substitution for 'mail' failed in Recipient Policy"
@@ -1501,7 +1501,7 @@ msgstr ""
 
 #: ../pykolab/setup/components.py:58
 msgid "Display this help."
-msgstr "Geef deze help weer."
+msgstr ""
 
 #: ../pykolab/setup/components.py:149
 msgid "No component selected, continuing for all components"
@@ -1580,7 +1580,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:43
 msgid "LDAP Options"
-msgstr "Opties voor LDAP"
+msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:50
 msgid "Specify FQDN (overriding defaults)."
@@ -1592,7 +1592,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:62
 msgid "Setup LDAP."
-msgstr "Zet LDAP op."
+msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:74
 msgid ""
@@ -1607,7 +1607,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:82
 msgid "Administrator password"
-msgstr "Wachtwoord voor administrator"
+msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:89
 msgid ""
@@ -1624,7 +1624,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:98
 msgid "Directory Manager password"
-msgstr "Wachtwoord voor Directory Manager"
+msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:105
 msgid ""
@@ -1638,11 +1638,11 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:112
 msgid "User"
-msgstr "Gebruiker"
+msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:113
 msgid "Group"
-msgstr "Groep"
+msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:143
 msgid ""
@@ -1660,7 +1660,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:157
 msgid "Domain name to use"
-msgstr "Domein naam te gebruiken"
+msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:162 ../pykolab/setup/setup_ldap.py:187
 msgid ""
@@ -1668,8 +1668,6 @@ msgid ""
 "                                    Invalid input. Please try again.\n"
 "                                "
 msgstr ""
-"\n"
-"Ongeldig antwoord. Probeer opnieuw alstublieft."
 
 #: ../pykolab/setup/setup_ldap.py:171
 msgid ""
@@ -1682,7 +1680,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:182
 msgid "Root DN to use"
-msgstr "Te gebruiken Root DN"
+msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:234
 msgid ""
@@ -1726,7 +1724,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:303
 msgid "Cyrus Administrator password"
-msgstr "Wachtwoord voor Cyrus administrator"
+msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:310
 msgid ""
@@ -1743,7 +1741,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:319
 msgid "Kolab Service password"
-msgstr "Wachtwoord voor Kolab service"
+msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:329
 msgid "Writing out configuration to kolab.conf"
@@ -1851,11 +1849,11 @@ msgstr ""
 
 #: ../pykolab/setup/setup_php.py:42
 msgid "PHP Options"
-msgstr "Opties voor PHP"
+msgstr ""
 
 #: ../pykolab/setup/setup_php.py:49
 msgid "Specify the timezone for PHP."
-msgstr "Specificeer de tijdzone voor PHP"
+msgstr ""
 
 #: ../pykolab/setup/setup_php.py:53
 msgid "Setup PHP."
@@ -1926,11 +1924,11 @@ msgstr ""
 #: ../pykolab/utils.py:57 ../pykolab/utils.py:59
 #, python-format
 msgid "Confirm %s: "
-msgstr "Bevestig %s:"
+msgstr ""
 
 #: ../pykolab/utils.py:62
 msgid "Incorrect confirmation. "
-msgstr "Incorrecte bevestiging."
+msgstr ""
 
 #: ../pykolab/utils.py:67 ../pykolab/utils.py:72
 #, python-format
@@ -1959,7 +1957,7 @@ msgstr ""
 #: ../pykolab/wap_client/__init__.py:263
 #, python-format
 msgid "Got response: %r"
-msgstr "Antwoord ontvangen: %r"
+msgstr ""
 
 #. Some data is not JSON
 #: ../pykolab/wap_client/__init__.py:268
@@ -1968,7 +1966,7 @@ msgstr ""
 
 #: ../pykolab/xml/attendee.py:79 ../pykolab/xml/attendee.py:99
 msgid "Not a valid attendee"
-msgstr "Ongeldige deelnemer"
+msgstr ""
 
 #: ../pykolab/xml/attendee.py:84
 msgid "No valid delegator references found"
@@ -1986,7 +1984,7 @@ msgstr ""
 #: ../pykolab/xml/attendee.py:151
 #, python-format
 msgid "Invalid participant status %r"
-msgstr "Ongeldige deelnemer status %r"
+msgstr ""
 
 #: ../pykolab/xml/attendee.py:159
 #, python-format
@@ -2015,7 +2013,7 @@ msgstr ""
 
 #: ../pykolab/xml/event.py:338
 msgid "Invalid participant status"
-msgstr "Ongeldige deelnemer status"
+msgstr ""
 
 #: ../pykolab/xml/event.py:538
 msgid "Event end needs datetime.date or datetime.datetime instance"
@@ -2037,7 +2035,7 @@ msgstr ""
 
 #: ../pykolab/xml/event.py:879
 msgid "No sender specified"
-msgstr "Geen afzender gespecificeerd"
+msgstr ""
 
 #: ../saslauthd/__init__.py:126 ../saslauthd/__init__.py:134
 msgid "Traceback occurred, please report a bug at http://bugzilla.kolabsys.com"
@@ -2063,11 +2061,11 @@ msgstr ""
 
 #: ../wallace/__init__.py:169
 msgid "Could not shut down socket"
-msgstr "Kan de socket niet afsluiten"
+msgstr ""
 
 #: ../wallace/__init__.py:226
 msgid "Accepted connection"
-msgstr "Connectie geaccepteerd"
+msgstr ""
 
 #: ../wallace/__init__.py:389
 #, python-format
@@ -2148,7 +2146,7 @@ msgstr ""
 #: ../wallace/module_resources.py:243
 #, python-format
 msgid "Mailbox for resource %r doesn't exist"
-msgstr "Mailbox voor resource %r bestaat niet"
+msgstr ""
 
 #: ../wallace/module_resources.py:256
 #, python-format
@@ -2343,4 +2341,4 @@ msgstr ""
 #: ../wallace/modules.py:316
 #, python-format
 msgid "Module '%s' already registered"
-msgstr "Module '%s' reeds geregistreerd"
+msgstr ""
