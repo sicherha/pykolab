@@ -90,7 +90,6 @@
             'acl',
             'archive',
             'calendar',
-            'compose_addressbook',
             'http_authentication',
             'jqueryui',
             'kolab_activesync',
@@ -98,6 +97,7 @@
             'kolab_auth',
             'kolab_config',
             'kolab_folders',
+            'libkolab',
             'listcommands',
             'managesieve',
             'newmail_notifier',
@@ -182,6 +182,7 @@
             'kolab_auth',
             'kolab_config',
             'kolab_folders',
+            'libkolab',
             'password',
         );
 
