@@ -12,8 +12,8 @@
 # Provides: kolabd
 # Default-Start: -
 # Default-Stop: 0 1 2 6
-# Required-Start: $local_fs $network
-# Required-Stop: $local_fs $network
+# Required-Start: $remote_fs $local_fs $network
+# Required-Stop: $remote_fs $local_fs $network
 # Short-Description: Start/Stop the Kolab Server daemon
 # Description:      The Kolab server is a server process which synchronizes
 #                   LDAP, SQL and other authentication databases with Cyrus IMAP,
@@ -21,13 +21,19 @@
 ### END INIT INFO
 
 # Source function library.
-. /etc/init.d/functions
+if [ -f /etc/init.d/functions ]; then
+    . /etc/init.d/functions
+fi
 
 # Source our configuration file for these variables.
 FLAGS="--fork -l warning"
 
 if [ -f /etc/sysconfig/kolabd ] ; then
     . /etc/sysconfig/kolabd
+fi
+
+if [ -f /etc/default/kolabd ]; then
+    . /etc/default/kolabd
 fi
 
 RETVAL=0
