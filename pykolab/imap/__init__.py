@@ -489,6 +489,8 @@ class IMAP(object):
                 _tests.append(_shared)
 
         for _folder in self.lm():
+            log.debug(_("Folder %s") % (_folder), level=8)
+
             _subscribe = True
 
             for _test in _tests:
@@ -499,9 +501,11 @@ class IMAP(object):
                     _subscribe = False
 
             if _subscribe:
+                log.debug(_("Subscribing %s to folder %s") % (folder, _folder), level=8)
                 self.subscribe(_folder)
 
         self.logout()
+        self.connect(domain=self.domain)
 
     def user_mailbox_delete(self, mailbox_base_name):
         """
