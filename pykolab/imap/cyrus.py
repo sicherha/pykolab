@@ -122,6 +122,8 @@ class Cyrus(cyruslib.CYRUS):
 
         imap = IMAP()
         imap.connect(uri=uri)
+        if not self.SEP == self.separator:
+            self.separator = self.SEP
 
     def login(self, *args, **kw):
         """
@@ -313,6 +315,9 @@ class Cyrus(cyruslib.CYRUS):
         mbox = {
                 'domain': None
             }
+
+        if len(mailfolder.split('/')) > 1:
+            self.separator = '/'
 
         # Split off the virtual domain identifier, if any
         if len(mailfolder.split('@')) > 1:
