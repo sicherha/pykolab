@@ -528,7 +528,7 @@ class LDAP(pykolab.base.Base):
         if not entry.has_key('preferredlanguage'):
             want_attrs.append('preferredlanguage')
 
-        # If we wanted anything, now is the type to get it.
+        # If we wanted anything, now is the time to get it.
         if len(want_attrs) > 0:
             log.debug(_("Attributes %r are not yet available for entry %r") % (
                         want_attrs,
@@ -710,6 +710,11 @@ class LDAP(pykolab.base.Base):
             log.debug(_("Recipient policy composed the following set of secondary " + \
                     "email addresses: %r") % (secondary_mail_addresses), level=8)
 
+            if entry.has_key(secondary_mail_attribute):
+                if isinstance(entry[secondary_mail_attribute], list):
+                    secondary_mail_addresses.extend(entry[secondary_mail_attribute])
+                else:
+                    secondary_mail_addresses.append(entry[secondary_mail_attribute])
 
             if not secondary_mail_addresses == None:
                 log.debug(
