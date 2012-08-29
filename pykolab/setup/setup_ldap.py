@@ -442,7 +442,12 @@ ServerAdminPwd = %(admin_pass)s
     dn = "associateddomain=%s,cn=kolab,cn=config" % (_input['domain'])
     attrs = {}
     attrs['objectclass'] = ['top','domainrelatedobject']
-    attrs['associateddomain'] = '%s' % (_input['domain'])
+    attrs['associateddomain'] = [
+            '%s' % (_input['domain']),
+            '%s' % (_input['fqdn']),
+            'localhost.localdomain',
+            'localhost'
+        ]
     attrs['aci'] = '(targetattr = "*") (version 3.0;acl "Read Access for %(domain)s Users";allow (read,compare,search)(userdn = "ldap:///%(rootdn)s??sub?(objectclass=*)");)' % (_input)
 
     # Add inetdomainbasedn in case the configured root dn is not the same as the
