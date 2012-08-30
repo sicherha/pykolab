@@ -337,7 +337,7 @@ class IMAP(object):
         if folder_name.startswith("shared%s" % (self.imap.separator) * 2):
             folder_name = folder_name[7:]
 
-        self.imap._setannotation(folder_name, '/vendor/kolab/folder-type', folder_type)
+        self.set_metadata(folder_name, '/shared/vendor/kolab/folder-type', folder_type)
 
     def shared_mailbox_create(self, mailbox_base_name, server=None):
         """
@@ -429,12 +429,11 @@ class IMAP(object):
 
             if additional_folders[additional_folder].has_key("annotations"):
                 for annotation in additional_folders[additional_folder]["annotations"].keys():
-                    if conf.get('kolab', 'imap_backend') == 'cyrus-imap':
-                        self.imap._setannotation(
-                                folder_name,
-                                "%s" % (annotation),
-                                "%s" % (additional_folders[additional_folder]["annotations"][annotation])
-                            )
+                    self.set_metadata(
+                            folder_name,
+                            "%s" % (annotation),
+                            "%s" % (additional_folders[additional_folder]["annotations"][annotation])
+                        )
 
             if additional_folders[additional_folder].has_key("quota"):
                 self.imap.sq(
