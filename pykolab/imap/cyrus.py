@@ -224,11 +224,12 @@ class Cyrus(cyruslib.CYRUS):
         """
             Login to the actual backend server, then set annotation.
         """
-        server = self.find_mailfolder_server(mailfolder)
+        try:
+            server = self.find_mailfolder_server(mailfolder)
+        except:
+            server = self.server
 
         log.debug(_("Setting annotation %s on folder %s") % (annotation,mailfolder), level=8)
-
-        #if annotation.startswith('/private'):
 
         try:
             self.setannotation(mailfolder, annotation, value, shared)
