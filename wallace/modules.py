@@ -254,12 +254,13 @@ def cb_action_ACCEPT(module, filepath):
 
     smtp = smtplib.SMTP("localhost", 10027)
 
+    if conf.debuglevel > 8:
+        smtp.set_debuglevel(True)
+
     try:
         smtp.sendmail(
                 formataddr(envelope_sender[0]),
-                COMMASPACE.join(
-                        [formataddr(recipient) for recipient in recipients]
-                    ),
+                [formataddr(recipient) for recipient in recipients],
                 message.as_string()
             )
 
