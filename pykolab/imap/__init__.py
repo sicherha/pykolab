@@ -275,34 +275,10 @@ class IMAP(object):
             shared = False
             metadata_path = metadata_path.replace('/private/', '/')
 
-        backend = conf.get('kolab', 'imap_backend')
-
-        if not self.domain == None:
-            if conf.has_section(self.domain) and conf.has_option(self.domain, 'imap_backend'):
-                backend = conf.get(self.domain, 'imap_backend')
-
         if not shared:
             log.warning(_("Private annotations need to be set using the appropriate user account."))
 
-        admin_login = conf.get(backend, 'admin_login')
-
-        admin_acl = None
-
-        acls = self.list_acls(folder)
-        if acls.has_key(admin_login):
-            admin_acl = acls[admin_login]
-
-        if admin_acl == None:
-            self.set_acl(folder, admin_login, 'lrsipwa')
-        elif not 'w' in admin_acl:
-            self.set_acl(folder, admin_login, '%sw' % (admin_acl))
-
         self.imap._setannotation(folder, metadata_path, metadata_value, shared)
-
-        if admin_acl == None:
-            self.set_acl(folder, admin_login, '')
-        elif not 'w' in admin_acl:
-            self.set_acl(folder, admin_login, admin_acl)
 
     def shared_folder_create(self, folder_path, server=None):
         """
@@ -405,22 +381,18 @@ class IMAP(object):
                 level=8
             )
 
+        backend = conf.get('kolab', 'imap_backend')
+
+        admin_login = conf.get(backend, 'admin_login')
+        admin_password = conf.get(backend, 'admin_password')
+
+        self.connect(login=False)
+        self.login_plain(admin_login, admin_password, folder)
+
         for additional_folder in additional_folders.keys():
             _add_folder = {}
 
-            if len(folder.split('@')) > 1:
-                folder_name = "user%(separator)s%(username)s%(separator)s%(additional_folder_name)s@%(domainname)s"
-                _add_folder['username'] = folder.split('@')[0]
-                _add_folder['domainname'] = folder.split('@')[1]
-                _add_folder['additional_folder_name'] = additional_folder
-                _add_folder['separator'] = self.imap.separator
-                folder_name = folder_name % _add_folder
-            else:
-                folder_name = "user%(separator)s%(username)s%(separator)s%(additional_folder_name)s" % {
-                        "username": folder,
-                        "separator": self.imap.separator,
-                        "additional_folder_name": additional_folder
-                    }
+            folder_name = additional_folder
 
             try:
                 self.imap.cm(folder_name)
@@ -449,8 +421,6 @@ class IMAP(object):
                             "%s" % (additional_folders[additional_folder]["acls"][acl])
                         )
 
-        backend = conf.get('kolab', 'imap_backend')
-
         if len(folder.split('@')) > 1:
             domain = folder.split('@')[1]
             domain_suffix = "@%s" % (domain)
@@ -468,12 +438,6 @@ class IMAP(object):
                 uri = None
 
         log.debug(_("Subscribing user to the additional folders"), level=8)
-        # Get the credentials
-        admin_login = conf.get(backend, 'admin_login')
-        admin_password = conf.get(backend, 'admin_password')
-
-        self.connect(login=False)
-        self.login_plain(admin_login, admin_password, folder)
 
         _tests = []
 
