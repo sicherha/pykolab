@@ -407,12 +407,6 @@ class IMAP(object):
                             "%s" % (additional_folders[additional_folder]["annotations"][annotation])
                         )
 
-            if additional_folders[additional_folder].has_key("quota"):
-                self.imap.sq(
-                        folder_name,
-                        additional_folders[additional_folder]['quota']
-                    )
-
             if additional_folders[additional_folder].has_key("acls"):
                 for acl in additional_folders[additional_folder]["acls"].keys():
                     self.imap.sam(
@@ -469,6 +463,14 @@ class IMAP(object):
 
         self.logout()
         self.connect(domain=self.domain)
+
+        for additional_folder in additional_folders.keys():
+            folder_name = additional_folder
+            if additional_folders[additional_folder].has_key("quota"):
+                self.imap.sq(
+                        folder_name,
+                        additional_folders[additional_folder]['quota']
+                    )
 
     def user_mailbox_delete(self, mailbox_base_name):
         """
@@ -834,7 +836,10 @@ class IMAP(object):
         return self.imap.lq(*args, **kw)
 
     def lqr(self, *args, **kw):
-        return self.imap.lqr(*args, **kw)
+        try:
+            return self.imap.lqr(*args, **kw)
+        except:
+            return (None, None, None)
 
     def undelete_mailfolder(self, *args, **kw):
         self.imap.undelete_mailfolder(*args, **kw)
