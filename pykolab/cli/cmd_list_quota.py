@@ -54,11 +54,17 @@ def execute(*args, **kw):
     for quota_folder in quota_folders:
         try:
             (used, quota) = imap.get_quota(quota_folder)
-            percentage = round((used/quota)*100, 1)
-            print "%d (Used: %d, Percentage: %d)" % (quota, used, percentage)
+            if not used == None and not quota == None:
+                percentage = round((used/quota)*100, 1)
+                print "%d (Used: %d, Percentage: %d)" % (quota, used, percentage)
+            else:
+                print "No quota"
         except:
             (quota_root, used, quota) = imap.get_quota_root(quota_folder)
-            percentage = round((used/quota)*100, 1)
-            print "%d (Root: %s, Used: %d, Percentage: %d)" % (quota, quota_root, used, percentage)
+            if not quota_root == None and not used == None and not quota == None:
+                percentage = round((used/quota)*100, 1)
+                print "%d (Root: %s, Used: %d, Percentage: %d)" % (quota, quota_root, used, percentage)
+            else:
+                print "No quota"
 
 
