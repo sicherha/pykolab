@@ -858,7 +858,6 @@ class LDAP(pykolab.base.Base):
             )
 
     def user_quota(self, entry_id, folder):
-
         default_quota = self.config_get('default_quota')
         quota_attribute = self.config_get('quota_attribute')
 
@@ -874,6 +873,7 @@ class LDAP(pykolab.base.Base):
 
         current_ldap_quota = self.get_entry_attribute(entry_dn, quota_attribute)
         _imap_quota = self.imap.get_quota(folder)
+
         if _imap_quota == None:
             used = None
             current_imap_quota = None
@@ -1078,6 +1078,7 @@ class LDAP(pykolab.base.Base):
                     entry[result_attribute],
                     entry[mailserver_attribute]
                 )
+
         else:
             folder = "user%s%s" % (self.imap.separator,entry[result_attribute])
 
@@ -1257,6 +1258,8 @@ class LDAP(pykolab.base.Base):
                     )
 
                 conf.changelog[entry['id']] = entry_changes[result_attribute]
+
+        self.user_quota(entry, "user%s%s" % (self.imap.separator,entry[result_attribute]))
 
     def _change_none_group(self, entry, change):
         """

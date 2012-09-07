@@ -416,9 +416,11 @@ class IMAP(object):
                         )
 
         if len(folder.split('@')) > 1:
+            localpart = folder.split('@')[0]
             domain = folder.split('@')[1]
             domain_suffix = "@%s" % (domain)
         else:
+            localpart = folder
             domain = None
             domain_suffix = ""
 
@@ -465,7 +467,14 @@ class IMAP(object):
         self.connect(domain=self.domain)
 
         for additional_folder in additional_folders.keys():
-            folder_name = additional_folder
+            folder_name = "user%s%s%s%s%s" % (
+                    self.imap.separator,
+                    localpart,
+                    self.imap.separator,
+                    additional_folder,
+                    domain_suffix
+                )
+
             if additional_folders[additional_folder].has_key("quota"):
                 self.imap.sq(
                         folder_name,
