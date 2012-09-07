@@ -4,6 +4,10 @@
 
     \$rcmail_config['db_dsnw'] = '$mysql_uri';
 
+    if (file_exists(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__)) {
+        include_once(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
+    }
+
     \$rcmail_config['db_max_length'] = 512000;
     \$rcmail_config['db_persistent'] = TRUE;
     \$rcmail_config['db_table_users'] = 'users';
