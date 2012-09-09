@@ -222,8 +222,13 @@ ServerAdminPwd = %(admin_pass)s
     os.write(fp, data)
     os.close(fp)
 
+    setup_ds_admin = "/usr/sbin/setup-ds-admin.pl"
+
+    if not os.path.isfile(setup_ds_admin):
+        setup_ds_admin = "/usr/sbin/setup-ds-admin"
+
     command = [
-            '/usr/sbin/setup-ds-admin.pl',
+            setup_ds_admin,
             '--debug',
             '--silent',
             '--force',
