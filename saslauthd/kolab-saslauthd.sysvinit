@@ -9,8 +9,8 @@
 
 ### BEGIN INIT INFO
 # Provides: kolab-saslauthd
-# Default-Start: 2 3 4 5
-# Default-Stop: 0 1 6
+# Default-Start: -
+# Default-Stop: 0 1 2 6
 # Required-Start: $remote_fs $local_fs $network
 # Required-Stop: $remote_fs $local_fs $network
 # Short-Description: Start/Stop the Kolab SASL authentication daemon
