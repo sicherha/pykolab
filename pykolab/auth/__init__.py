@@ -223,7 +223,11 @@ class Auth(pykolab.base.Base):
         # Find the domains in the authentication backend.
         kolab_primary_domain = conf.get('kolab', 'primary_domain')
 
-        domains = self._auth._list_domains()
+        try:
+            domains = self._auth._list_domains()
+        except:
+            if not self.domain == kolab_primary_domain:
+                return [(self.domain, [])]
 
         # If no domains are found, the primary domain is used.
         if len(domains) < 1:
