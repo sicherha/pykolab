@@ -55,15 +55,23 @@ def execute(*args, **kw):
         try:
             (used, quota) = imap.get_quota(quota_folder)
             if not used == None and not quota == None:
-                percentage = round((used/quota)*100, 1)
-                print "%d (Used: %d, Percentage: %d)" % (quota, used, percentage)
+                if quota == 0:
+                    print >> sys.stderr, _("The quota for folder %s is set to literally allow 0KB of storage.") % (quota_folder)
+                    print "%d (Used: %d, Percentage: %s)" % (quota, used, u'\u221E')
+                else:
+                    percentage = round((used/quota)*100, 1)
+                    print "%d (Used: %d, Percentage: %d)" % (quota, used, percentage)
             else:
                 print "No quota"
         except:
             (quota_root, used, quota) = imap.get_quota_root(quota_folder)
             if not quota_root == None and not used == None and not quota == None:
-                percentage = round((used/quota)*100, 1)
-                print "%d (Root: %s, Used: %d, Percentage: %d)" % (quota, quota_root, used, percentage)
+                if quota == 0:
+                    print >> sys.stderr, _("The quota for folder %s is set to literally allow 0KB of storage.") % (quota_folder)
+                    print "%d (Used: %d, Percentage: %s)" % (quota, used, u'\u221E')
+                else:
+                    percentage = round((used/quota)*100, 1)
+                    print "%d (Root: %s, Used: %d, Percentage: %d)" % (quota, quota_root, used, percentage)
             else:
                 print "No quota"
 
