@@ -66,8 +66,6 @@ log.remove_stdout_handler()
 
 conf = pykolab.getConf()
 
-auth = None
-
 #
 # Caching routines using SQLAlchemy.
 #
@@ -153,6 +151,8 @@ mapper(Statistic, statistic_table)
 class PolicyRequest(object):
     email_address_keys = [ 'sender', 'recipient' ]
     recipients = []
+
+    auth = None
 
     sasl_domain = None
     sasl_user = None
@@ -241,7 +241,7 @@ class PolicyRequest(object):
                     'address_search_attrs'
                 )
 
-            rule_subject = auth.get_user_attributes(
+            rule_subject = self.auth.get_user_attributes(
                     self.sasl_domain,
                     { 'dn': dn },
                     search_attrs + [ 'objectclass' ]
@@ -282,8 +282,8 @@ class PolicyRequest(object):
 
         users = []
 
-        auth._auth._bind()
-        _users = auth._auth._search(
+        self.auth._auth._bind()
+        _users = self.auth._auth._search(
                 _base_dn,
                 scope=LDAP_SCOPE[_scope],
                 filterstr=_filter,
@@ -457,7 +457,12 @@ class PolicyRequest(object):
             else:
                 self.sasl_domain = conf.get('kolab', 'primary_domain')
 
-        sasl_users = auth.find_recipient(
+        if self.auth == None:
+            self.auth = Auth(self.sasl_domain)
+        elif not self.auth.domain == self.sasl_domain:
+            self.auth = Auth(self.sasl_domain)
+
+        sasl_users = self.auth.find_recipient(
                 self.sasl_username,
                 domain=self.sasl_domain
             )
@@ -517,7 +522,7 @@ class PolicyRequest(object):
 
         attrs = list(set(attrs))
 
-        user_attrs = auth.get_user_attributes(
+        user_attrs = self.auth.get_user_attributes(
                 self.sasl_domain,
                 self.sasl_user,
                 attrs
@@ -555,7 +560,7 @@ class PolicyRequest(object):
                     'mail_attributes'
                 )
 
-        sender_users = auth.find_recipient(
+        sender_users = self.auth.find_recipient(
                 self.sender,
                 domain=self.sender_domain
             )
@@ -594,7 +599,7 @@ class PolicyRequest(object):
                     ]
             )
 
-        user_attrs = auth.get_user_attributes(
+        user_attrs = self.auth.get_user_attributes(
                 self.sender_domain,
                 self.sender_user,
                 attrs
@@ -647,7 +652,7 @@ class PolicyRequest(object):
             # See if we can match the value of the envelope sender delegates to
             # the actual sender sasl_username
             if self.sasl_user == None:
-                sasl_users = auth.find_recipient(
+                sasl_users = self.auth.find_recipient(
                         self.sasl_username,
                         domain=self.sasl_domain
                     )
@@ -664,7 +669,7 @@ class PolicyRequest(object):
             # Possible values for the kolabDelegate attribute are:
             # a 'uid', a 'dn'.
             if not self.sasl_user.has_key('uid'):
-                self.sasl_user['uid'] = auth.get_user_attribute(
+                self.sasl_user['uid'] = self.auth.get_user_attribute(
                         self.sasl_domain,
                         self.sasl_user,
                         'uid'
@@ -748,16 +753,16 @@ class PolicyRequest(object):
             sasl_domain = conf.get('kolab', 'primary_domain')
 
         if verify_domain(sasl_domain):
-            if auth.secondary_domains.has_key(sasl_domain):
+            if self.auth.secondary_domains.has_key(sasl_domain):
                 log.debug(
                         _("Using authentication domain %s instead of %s") % (
-                                auth.secondary_domains[sasl_domain],
+                                self.auth.secondary_domains[sasl_domain],
                                 sasl_domain
                             ),
                         level=8
                     )
 
-                sasl_domain = auth.secondary_domains[sasl_domain]
+                sasl_domain = self.auth.secondary_domains[sasl_domain]
             else:
                 log.debug(
                         _("Domain %s is a primary domain") % (
@@ -775,7 +780,12 @@ class PolicyRequest(object):
 
             return True
 
-        recipients = auth.find_recipient(
+        if self.auth == None:
+            self.auth = Auth(sasl_domain)
+        elif not self.auth.domain == sasl_domain:
+            self.auth = Auth(sasl_domain)
+
+        recipients = self.auth.find_recipient(
                 normalize_address(recipient),
                 domain=sasl_domain,
             )
@@ -832,7 +842,7 @@ class PolicyRequest(object):
                 return True
 
         if not recipient['dn'] == False:
-            recipient_policy = auth.get_entry_attribute(
+            recipient_policy = self.auth.get_entry_attribute(
                     sasl_domain,
                     recipient,
                     'kolabAllowSMTPSender'
@@ -988,7 +998,7 @@ class PolicyRequest(object):
         if recipient_policy_user.has_key('kolaballowsmtprecipient'):
             recipient_policy = recipient_policy_user['kolaballowsmtprecipient']
         else:
-            recipient_policy = auth.get_user_attribute(
+            recipient_policy = self.auth.get_user_attribute(
                     recipient_policy_domain,
                     recipient_policy_user,
                     'kolabAllowSMTPRecipient'
@@ -1247,6 +1257,9 @@ def expand_mydomains():
         Return a list of my domains.
     """
 
+    auth = Auth()
+    auth.connect()
+
     mydomains = []
 
     _mydomains = auth.list_domains()
@@ -1314,6 +1327,9 @@ def verify_domain(domain):
         Verify whether the domain is internal (mine) or external.
     """
 
+    auth = Auth()
+    auth.connect()
+
     domain_verified = False
 
     _mydomains = auth.list_domains()
@@ -1359,8 +1375,6 @@ if __name__ == "__main__":
                             help    = _("Allow unauthenticated senders."))
 
     conf.finalize_conf()
-
-    auth = Auth()
 
     cache = cache_init()
 
