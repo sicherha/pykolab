@@ -628,23 +628,14 @@ class PolicyRequest(object):
 
             # Got a final answer here, do the caching thing.
             if not cache == False:
-                records = cache_select(
+                record_id = cache_update(
                         function='verify_sender',
                         sender=self.sender,
                         recipients=self.recipients,
+                        result=(int)(False),
                         sasl_username=self.sasl_username,
                         sasl_sender=self.sasl_sender
                     )
-
-                if not len(records) == len(self.recipients):
-                    record_id = cache_insert(
-                            function='verify_sender',
-                            sender=self.sender,
-                            recipients=self.recipients,
-                            result=(int)(False),
-                            sasl_username=self.sasl_username,
-                            sasl_sender=self.sasl_sender
-                        )
 
             sender_is_delegate = False
 
@@ -1039,23 +1030,14 @@ class PolicyRequest(object):
             sender_verified = True
 
         if not cache == False:
-            records = cache_select(
+            record_id = cache_update(
                     function='verify_sender',
                     sender=self.sender,
                     recipients=self.recipients,
+                    result=(int)(sender_verified),
                     sasl_username=self.sasl_username,
-                    sasl_sender=self.sasl_sender,
+                    sasl_sender=self.sasl_sender
                 )
-
-            if len(records) == len(self.recipients):
-                record_id = cache_insert(
-                        function='verify_sender',
-                        sender=self.sender,
-                        recipients=self.recipients,
-                        result=(int)(sender_verified),
-                        sasl_username=self.sasl_username,
-                        sasl_sender=self.sasl_sender
-                    )
 
         return sender_verified
 
@@ -1073,11 +1055,9 @@ def cache_cleanup():
 def cache_init():
     global cache, cache_expire, session
 
-    return False
-
     if conf.has_section('kolab_smtp_access_policy'):
-        if conf.has_option('kolab_smtp_access_policy', 'uri'):
-            cache_uri = conf.get('kolab_smtp_access_policy', 'uri')
+        if conf.has_option('kolab_smtp_access_policy', 'cache_uri'):
+            cache_uri = conf.get('kolab_smtp_access_policy', 'cache_uri')
             cache = True
             if conf.has_option('kolab_smtp_access_policy', 'retention'):
                 cache_expire = (int)(
@@ -1086,7 +1066,10 @@ def cache_init():
                                 'retention'
                             )
                     )
-
+        elif conf.has_option('kolab_smtp_access_policy', 'uri'):
+            log.warning(_("The 'uri' setting in the kolab_smtp_access_policy section is soon going to be deprecated in favor of 'cache_uri'"))
+            cache_uri = conf.get('kolab_smtp_access_policy', 'uri')
+            cache = True
         else:
             return False
     else:
