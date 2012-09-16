@@ -183,7 +183,7 @@ class PolicyRequest(object):
 
             else:
                 if not policy_request['recipient'].strip() == '':
-                    self.recipients.append(policy_request['recipient'])
+                    self.recipients = list(set(self.recipients + [policy_request['recipient']]))
 
     def add_request(self, policy_request={}):
         """
@@ -214,7 +214,7 @@ class PolicyRequest(object):
                 )
 
             if not policy_request['recipient'].strip() == '':
-                self.recipients.append(policy_request['recipient'])
+                self.recipients = list(set(self.recipients + [policy_request['recipient']]))
 
     def parse_ldap_dn(self, dn):
         """
