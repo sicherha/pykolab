@@ -59,7 +59,7 @@ def execute(*args, **kw):
                     print >> sys.stderr, _("The quota for folder %s is set to literally allow 0KB of storage.") % (quota_folder)
                     print "%d (Used: %d, Percentage: %s)" % (quota, used, u'\u221E')
                 else:
-                    percentage = round((used/quota)*100, 1)
+                    percentage = round(((float)(used)/(float)(quota)) * 100.0, 1)
                     print "%d (Used: %d, Percentage: %d)" % (quota, used, percentage)
             else:
                 print "No quota"
@@ -69,9 +69,9 @@ def execute(*args, **kw):
                 if not quota_root == None and not used == None and not quota == None:
                     if quota == 0:
                         print >> sys.stderr, _("The quota for folder %s is set to literally allow 0KB of storage.") % (quota_folder)
-                        print "%d (Used: %d, Percentage: %s)" % (quota, used, u'\u221E')
+                        print "%d (Used: %d, Percentage: %d)" % (quota, used, u'\u221E')
                     else:
-                        percentage = round((used/quota)*100, 1)
+                        percentage = round(((float)(used)/(float)(quota)) * 100.0, 1)
                         print "%d (Root: %s, Used: %d, Percentage: %d)" % (quota, quota_root, used, percentage)
                 else:
                     print "No quota"
