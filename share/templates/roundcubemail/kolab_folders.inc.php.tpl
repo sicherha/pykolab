@@ -12,7 +12,7 @@
     \$rcmail_config['kolab_folders_mail_outbox'] = '';
     \$rcmail_config['kolab_folders_mail_wastebasket'] = '';
 
-    if (file_exists(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__)) {
+    if (file_exists(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
         include_once(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
     }
 

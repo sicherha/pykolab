@@ -4,7 +4,7 @@
     \$rcmail_config['acl_users_field'] = 'mail';
     \$rcmail_config['acl_users_filter'] = 'objectClass=kolabInetOrgPerson';
 
-    if (file_exists(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__)) {
+    if (file_exists(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
         include_once(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
     }
 
