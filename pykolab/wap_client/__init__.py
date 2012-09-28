@@ -1,6 +1,7 @@
 
 import json
 import httplib
+import urllib
 import sys
 from urlparse import urlparse
 
@@ -45,25 +46,15 @@ from connect import connect
 def authenticate(username=None, password=None, domain=None):
     global session_id
 
-    conf_username = conf.get('ldap', 'service_bind_dn')
-    conf_password = conf.get('ldap', 'service_bind_pw')
-
     if username == None:
-        username = utils.ask_question("Login", default=conf_username)
-
-    if username == conf_username:
-        password = conf_password
-
-    if username == conf.get('ldap', 'bind_dn'):
-        password = conf.get('ldap', 'bind_pw')
-
+        username = conf.get('ldap', 'bind_dn')
     if password == None:
-        password = utils.ask_question("Password", default=conf_password, password=True)
+        password = conf.get('ldap', 'bind_pw')
 
     if domain == None:
         domain = conf.get('kolab', 'primary_domain')
 
-    params = json.dumps(
+    post = json.dumps(
             {
                     'username': username,
                     'password': password,
@@ -71,7 +62,7 @@ def authenticate(username=None, password=None, domain=None):
                 }
         )
 
-    response = request('POST', "system.authenticate", params)
+    response = request('POST', "system.authenticate", post=post)
 
     if response.has_key('session_token'):
         session_id = response['session_token']
@@ -113,12 +104,13 @@ def domain_add(domain, parent=None):
             log.error(_("Invalid parent domain"))
             return
 
-    params = json.dumps(params)
+    post = json.dumps(params)
 
-    return request('POST', 'domain.add', params)
+    return request('POST', 'domain.add', post=post)
 
 def domain_info(domain):
-    return request('GET', 'domain.info?domain=%s' % (domain))
+    get = { 'domain': domain }
+    return request('GET', 'domain.info', get=get)
 
 def domains_capabilities():
     return request('GET', 'domains.capabilities')
@@ -127,9 +119,9 @@ def domains_list():
     return request('GET', 'domains.list')
 
 def form_value_generate(params):
-    params = json.dumps(params)
+    post = json.dumps(params)
 
-    return request('POST', 'form_value.generate', params)
+    return request('POST', 'form_value.generate', post=post)
 
 def get_group_input():
     group_types = group_types_list()
@@ -238,8 +230,8 @@ def group_types_list():
 def groups_list():
     return request('GET', 'groups.list')
 
-def request(method, api_uri, params=None, headers={}):
-    response_data = request_raw(method, api_uri, params, headers)
+def request(method, api_uri, get=None, post=None, headers={}):
+    response_data = request_raw(method, api_uri, get, post, headers)
 
     if response_data['status'] == "OK":
         del response_data['status']
@@ -247,15 +239,26 @@ def request(method, api_uri, params=None, headers={}):
     else:
         return response_data['result']
 
-def request_raw(method, api_uri, params=None, headers={}):
+def request_raw(method, api_uri, get=None, post=None, headers={}):
     global session_id
 
     if not session_id == None:
         headers["X-Session-Token"] = session_id
 
     conn = connect()
-    log.debug(_("Requesting %r with params %r") % ("%s/%s" % (API_BASE,api_uri), params), level=8)
-    conn.request(method.upper(), "%s/%s" % (API_BASE,api_uri), params, headers)
+
+    if conf.debuglevel > 8:
+        conn.set_debuglevel(9)
+
+    if not get == None:
+        _get = "?%s" % (urllib.urlencode(get))
+    else:
+        _get = ""
+
+    log.debug(_("Requesting %r with params %r") % ("%s/%s" % (API_BASE,api_uri), (get, post)), level=8)
+
+    conn.request(method.upper(), "%s/%s%s" % (API_BASE, api_uri, _get), post, headers)
+
     response = conn.getresponse()
 
     data = response.read()
@@ -281,7 +284,10 @@ def system_get_domain():
 def system_select_domain(domain=None):
     if domain == None:
         domain = utils.ask_question("Domain name")
-    return request('GET', 'system.select_domain?domain=%s' % (domain))
+
+    get = { 'domain': domain }
+
+    return request('GET', 'system.select_domain', get=get)
 
 def user_add(params=None):
     if params == None:
@@ -297,9 +303,9 @@ def user_delete(params=None):
                 'user': utils.ask_question("Username for user to delete", "user")
             }
 
-    params = json.dumps(params)
+    post = json.dumps(params)
 
-    return request('POST', 'user.delete', params)
+    return request('POST', 'user.delete', post=post)
 
 def user_edit(params=None):
     if params == None:
@@ -307,9 +313,9 @@ def user_edit(params=None):
                 'user': utils.ask_question("Username for user to edit", "user")
             }
 
-    params = json.dumps(params)
+    get = json.dumps(params)
 
-    user = request('GET', 'user.info', params)
+    user = request('GET', 'user.info', get=get)
 
     return user
 
@@ -317,38 +323,38 @@ def user_form_value_generate_cn(params=None):
     if params == None:
         params = get_user_input()
 
-    params = json.dumps(params)
+    post = json.dumps(params)
 
-    return request('POST', 'user_form_value.generate_cn', params)
+    return request('POST', 'user_form_value.generate_cn', post=post)
 
 def user_form_value_generate_displayname(params=None):
     if params == None:
         params = get_user_input()
 
-    params = json.dumps(params)
+    post = json.dumps(params)
 
-    return request('POST', 'user_form_value.generate_displayname', params)
+    return request('POST', 'user_form_value.generate_displayname', post=post)
 
 def user_form_value_generate_mail(params=None):
     if params == None:
         params = get_user_input()
 
-    params = json.dumps(params)
+    post = json.dumps(params)
 
-    return request('POST', 'user_form_value.generate_mail', params)
+    return request('POST', 'user_form_value.generate_mail', post=post)
 
 def form_value_generate_password(*args, **kw):
     return request('GET', 'form_value.generate_password')
 
 def form_value_list_options(attribute_name, *args, **kw):
-    params = json.dumps({'attribute': attribute_name})
+    post = json.dumps({'attribute': attribute_name})
 
-    return request('POST', 'form_value.list_options', params)
+    return request('POST', 'form_value.list_options', post=post)
 
 def form_value_select_options(attribute_name, *args, **kw):
-    params = json.dumps({'attributes': [attribute_name]})
+    post = json.dumps({'attributes': [attribute_name]})
 
-    return request('POST', 'form_value.select_options', params)
+    return request('POST', 'form_value.select_options', post=post)
 
 def role_find_by_attribute(params=None):
     if params == None:
@@ -356,7 +362,8 @@ def role_find_by_attribute(params=None):
     else:
         role_name = params['cn']
 
-    role = request('GET', 'role.find_by_attribute?cn=%s' % (role_name))
+    get = { 'cn': role_name }
+    role = request('GET', 'role.find_by_attribute', get=get)
 
     return role
 
@@ -385,25 +392,16 @@ def role_delete(params=None):
                 'role': role.keys()[0]
             }
 
-    params = json.dumps(params)
+    post = json.dumps(params)
 
-    return request('POST', 'role.delete', params)
+    return request('POST', 'role.delete', post=post)
 
-def role_info(params=None):
-    if params == None:
-        role_name = utils.ask_question("Role name")
-        role = role_find_by_attribute({'cn': role_name})
-        params = {
-                'role': role
-            }
+def role_info(role_name):
+    role = role_find_by_attribute({'cn': role_name})
 
-    if not params.has_key('role'):
-        role = role_find_by_attribute(params)
-        params = {
-                'role': role
-            }
+    get = { 'role': role['id'] }
 
-    role = request('GET', 'role.info?role=%s' % (params['role'].keys()[0]))
+    role = request('GET', 'role.info', get=get)
 
     return role
 
@@ -425,7 +423,8 @@ def user_form_value_generate_userpassword(*args, **kw):
 def user_info(user=None):
     if user == None:
         user = utils.ask_question("User email address")
-    user = request('GET', 'user.info?user=%s' % (user))
+    _params = { 'user': user }
+    user = request('GET', 'user.info?%s' % (urllib.urlencode(_params)))
     return user
 
 def user_types_list():
