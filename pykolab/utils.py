@@ -352,7 +352,8 @@ def translate(mystring, locale_name='en_US'):
 
     try:
         locale.setlocale(locale.LC_ALL, (locale_name,locale_charset))
-    except Error, errmsg:
+    except:
+        log.error(_("Could not set locale to %r,%r") % (local_name,locale_charset))
         pass
 
     command = [ '/usr/bin/iconv',
