@@ -150,6 +150,8 @@ mkdir -p %{buildroot}/%{_unitdir}
 %{__install} -p -m 644 kolabd/kolabd.systemd %{buildroot}/%{_unitdir}/kolabd.service
 %{__install} -p -m 644 saslauthd/kolab-saslauthd.systemd %{buildroot}/%{_unitdir}/kolab-saslauthd.service
 %{__install} -p -m 644 wallace/wallace.systemd %{buildroot}/%{_unitdir}/wallace.service
+%{__install} -p -m 644 kolabd/kolabd.tmpfiles.d.conf %{buildroot}/%{_sysconfdir}/tmpfiles.d/kolabd.conf
+%{__install} -p -m 644 wallace/wallace.tmpfiles.d.conf %{buildroot}/%{_sysconfdir}/tmpfiles.d/wallace.conf
 %else
 mkdir -p %{buildroot}/%{_initddir}
 %{__install} -p -m 755 kolabd/kolabd.sysvinit %{buildroot}/%{_initrddir}/kolabd
@@ -353,6 +355,7 @@ rm -rf %{buildroot}
 %doc AUTHORS ChangeLog COPYING
 %if 0%{?fedora} >= 15
 %{_unitdir}/kolabd.service
+%{_sysconfdir}/tmpfiles.d/kolabd.conf
 %else
 %{_initrddir}/kolabd
 %endif
@@ -371,6 +374,7 @@ rm -rf %{buildroot}
 %doc AUTHORS ChangeLog COPYING
 %if 0%{?fedora} >= 15
 %{_unitdir}/wallace.service
+%{_sysconfdir}/tmpfiles.d/wallaced.conf
 %else
 %{_initrddir}/wallace
 %endif
