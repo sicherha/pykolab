@@ -57,6 +57,8 @@ def execute(*args, **kw):
         print >> sys.stderr, utils.multiline_message(
                 _("""
                         Please supply the timezone PHP should be using.
+                        You have to use a Continent or Country / City locality name
+                        like 'Europe/Berlin', but not just 'CEST'.
                     """)
             )
 
