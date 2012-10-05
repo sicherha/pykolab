@@ -93,18 +93,19 @@ class Logger(logging.Logger):
             rgid = os.getgid()
 
         if ruid == 0 or rgid == 0:
-            try:
-                os.chown(
-                        self.logfile,
-                        pwd.getpwnam('kolab')[2],
-                        grp.getgrnam('kolab-n')[2]
-                    )
-                os.chmod(self.logfile, 0660)
-            except:
-                print >> sys.stderr, \
-                        _("Could not change the ownership of log file %s") % (
-                                self.logfile
-                            )
+            if os.path.isfile(self.logfile):
+                try:
+                    os.chown(
+                            self.logfile,
+                            pwd.getpwnam('kolab')[2],
+                            grp.getgrnam('kolab-n')[2]
+                        )
+                    os.chmod(self.logfile, 0660)
+                except:
+                    print >> sys.stderr, \
+                            _("Could not change the ownership of log file %s") % (
+                                    self.logfile
+                                )
 
         # Make sure the log file exists
         try:
