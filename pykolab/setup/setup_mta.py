@@ -266,26 +266,35 @@ result_attribute = mail
 
     template_file = None
 
-    if os.path.isfile('/etc/kolab/templates/amavisd.conf.tpl'):
-        template_file = '/etc/kolab/templates/amavisd.conf.tpl'
-    elif os.path.isfile('/usr/share/kolab/templates/amavisd.conf.tpl'):
-        template_file = '/usr/share/kolab/templates/amavisd.conf.tpl'
-    elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'amavisd.conf.tpl'))):
-        template_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'amavisd.conf.tpl'))
+    # On RPM installations, Amavis configuration is contained within a single file.
+    if os.path.isfile("/etc/amavsid/amavisd.conf"):
+        if os.path.isfile('/etc/kolab/templates/amavisd.conf.tpl'):
+            template_file = '/etc/kolab/templates/amavisd.conf.tpl'
+        elif os.path.isfile('/usr/share/kolab/templates/amavisd.conf.tpl'):
+            template_file = '/usr/share/kolab/templates/amavisd.conf.tpl'
+        elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'amavisd.conf.tpl'))):
+            template_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'amavisd.conf.tpl'))
 
-    if not template_file == None:
-        fp = open(template_file, 'r')
-        template_definition = fp.read()
-        fp.close()
+        if not template_file == None:
+            fp = open(template_file, 'r')
+            template_definition = fp.read()
+            fp.close()
 
-        t = Template(template_definition, searchList=[amavisd_settings])
-        fp = open('/etc/amavisd/amavisd.conf', 'w')
-        fp.write(t.__str__())
-        fp.close()
+            t = Template(template_definition, searchList=[amavisd_settings])
+            fp = open('/etc/amavisd/amavisd.conf', 'w')
+            fp.write(t.__str__())
+            fp.close()
 
+        else:
+            log.error(_("Could not write out Amavis configuration file /etc/amavisd/amavisd.conf"))
+            return
+
+    # On APT installations, /etc/amavis/conf.d/ is a directory with many more files.
+    # 
+    # Somebody could work on enhancement request #1080 to configure LDAP lookups,
+    # while really it isn't required.
     else:
-        log.error(_("Could not write out Amavis configuration file /etc/amavisd/amavisd.conf"))
-        return
+        log.info(_("Not writing out any configuration for Amavis."))
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'postfix.service'])
