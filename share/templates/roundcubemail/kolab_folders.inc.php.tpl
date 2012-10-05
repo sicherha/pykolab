@@ -8,9 +8,9 @@
     \$rcmail_config['kolab_folders_mail_inbox'] = 'INBOX';
     \$rcmail_config['kolab_folders_mail_drafts'] = 'Drafts';
     \$rcmail_config['kolab_folders_mail_sentitems'] = 'Sent';
-    \$rcmail_config['kolab_folders_mail_junkemail'] = 'Trash';
+    \$rcmail_config['kolab_folders_mail_junkemail'] = 'Spam';
     \$rcmail_config['kolab_folders_mail_outbox'] = '';
-    \$rcmail_config['kolab_folders_mail_wastebasket'] = '';
+    \$rcmail_config['kolab_folders_mail_wastebasket'] = 'Trash';
 
     if (file_exists(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
         include_once(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
