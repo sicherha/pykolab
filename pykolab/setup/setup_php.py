@@ -49,6 +49,14 @@ def cli_options():
             help    = _("Specify the timezone for PHP.")
         )
 
+    php_group.add_option(
+            "--with-php-ini",
+            dest    = "php_ini_path",
+            action  = "store",
+            default = None,
+            help    = _("Specify the path to the php.ini file used with the webserver.")
+        )
+
 def description():
     return _("Setup PHP.")
 
@@ -67,15 +75,31 @@ def execute(*args, **kw):
                 default="UTC"
             )
 
+    if not conf.php_ini_path == None:
+        if not os.path.isfile(conf.php_ini_path):
+            log.error(_("Cannot configure PHP through %r (No such file or directory)") % (conf.php_ini_path))
+            return
+        php_ini = conf.php_ini_path
+
+    else:
+        # Search and destroy
+        php_ini = "/etc/php.ini"
+        if not os.path.isfile(php_ini):
+            php_ini = "/etc/php5/apache2/php.ini"
+
+        if not os.path.isfile(php_ini):
+            log.error(_("Could not find PHP configuration file php.ini"))
+            return
+
     myaugeas = Augeas()
 
-    setting_base = '/files/etc/php.ini/'
+    setting_base = '/files%s/' % (php_ini)
 
     setting = os.path.join(setting_base, 'Date', 'date.timezone')
     current_value = myaugeas.get(setting)
 
     if current_value == None:
-        insert_paths = myaugeas.match('/files/etc/php.ini/Date/*')
+        insert_paths = myaugeas.match('/files%s/Date/*' % (php_ini))
         insert_path = insert_paths[(len(insert_paths)-1)]
         myaugeas.insert(insert_path, 'date.timezone', False)
 
