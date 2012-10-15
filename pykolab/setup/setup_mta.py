@@ -306,6 +306,11 @@ result_attribute = mail
     # while really it isn't required.
     else:
         log.info(_("Not writing out any configuration for Amavis."))
+	# On debian wheezy amavisd-new expects '/etc/mailname' - possibly remediable through 
+	# the #1080 enhancement mentioned above, but here's a quick fix.
+	f = open('/etc/mailname','w')
+        f.writelines(conf.get('kolab', 'primary_domain'))
+        f.close()	
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'postfix.service'])
