@@ -119,14 +119,13 @@ def execute(*args, **kw):
 
             t = Template(template_definition, searchList=[rc_settings])
             log.debug(
-                    _("Successfully compiled template %r, writing out to %r") % (
-                            template_file,
-                            '/etc/roundcubemail/%s' % (want_file)
-                        ),
+                    _("Successfully compiled template %r, writing out to %r") % (template_file, want_file),
                     level=8
                 )
-
-            fp = open('/etc/roundcubemail/%s' % (want_file), 'w')
+	    if os.path.isdir('/etc/roundcubemail'):
+	      fp = open('/etc/roundcubemail/%s' % (want_file), 'w')
+	    elif os.path.isdir('/etc/roundcube'):
+	      fp = open('/etc/roundcube/%s' % (want_file), 'w')
             fp.write(t.__str__())
             fp.close()
 
@@ -143,14 +142,18 @@ def execute(*args, **kw):
                 if not schema_filepath in schema_files:
                     schema_files.append(schema_filepath)
 
-    for root, directories, filenames in os.walk('/usr/share/roundcubemail/plugins/calendar/drivers/kolab/'):
+    if os.path.isdir('/usr/share/roundcubemail'):
+	rcpath = '/usr/share/roundcubemail/'
+    elif os.path.isdir('/usr/share/roundcube'):
+	rcpath = '/usr/share/roundcube/'
+    for root, directories, filenames in os.walk(rcpath + 'plugins/calendar/drivers/kolab/'):
         for filename in filenames:
             if filename.startswith('mysql') and filename.endswith('.sql'):
                 schema_filepath = os.path.join(root,filename)
                 if not schema_filepath in schema_files:
                     schema_files.append(schema_filepath)
 
-    for root, directories, filenames in os.walk('/usr/share/roundcubemail/plugins/libkolab/'):
+    for root, directories, filenames in os.walk(rcpath + 'plugins/libkolab/'):
         for filename in filenames:
             if filename.startswith('mysql') and filename.endswith('.sql'):
                 schema_filepath = os.path.join(root,filename)
