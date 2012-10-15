@@ -17,6 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+from augeas import Augeas
 from Cheetah.Template import Template
 import os
 import subprocess
@@ -129,6 +130,14 @@ def execute(*args, **kw):
     fp.write("\n".join(annotations))
     fp.close()
 
+    if os.path.isfile('/etc/default/kolab-saslauthd'):
+	myaugeas = Augeas()
+	setting = os.path.join('/files/etc/default/kolab-saslauthd','START')
+	if not myaugeas.get(setting) == 'yes':
+	  myaugeas.set(setting,'yes')
+	  myaugeas.save()
+	myaugeas.close()
+    
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'cyrus-imapd.service'])
         subprocess.call(['systemctl', 'restart', 'kolab-saslauthd.service'])
