@@ -135,5 +135,5 @@ password='%s'
 
         conf.command_set('kolab_wap', 'sql_uri', 'mysql://kolab:%s@localhost/kolab' % (mysql_kolab_password))
     else:
-        log.warning(_("Could not find the Kolab schema file"))
+        log.warning(_("Could not find the MySQL Kolab schema file"))
 
