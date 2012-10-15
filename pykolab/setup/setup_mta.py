@@ -20,6 +20,7 @@
 from augeas import Augeas
 from Cheetah.Template import Template
 import os
+import shutil
 import subprocess
 
 import components
@@ -208,6 +209,13 @@ result_attribute = mail
 
         }
 
+    if not os.path.isfile('/etc/postfix/main.cf'):
+      if os.path.isfile('/usr/share/postfix/main.cf.debian'):
+	shutil.copy(
+	    '/usr/share/postfix/main.cf.debian',
+	    '/etc/postfix/main.cf'
+	)
+        
     myaugeas = Augeas()
 
     setting_base = '/files/etc/postfix/main.cf/'
