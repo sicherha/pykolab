@@ -223,11 +223,15 @@ ServerAdminPwd = %(admin_pass)s
     os.write(fp, data)
     os.close(fp)
 
-    setup_ds_admin = "/usr/sbin/setup-ds-admin.pl"
-
-    if not os.path.isfile(setup_ds_admin):
-        setup_ds_admin = "/usr/sbin/setup-ds-admin"
-
+    if os.path.isfile("/usr/sbin/setup-ds-admin.pl"):
+	setup_ds_admin = "/usr/sbin/setup-ds-admin.pl"
+#    elif os.path.isfile("/usr/sbin/setup-ds-admin"):
+#	setup_ds_admin = "/usr/sbin/setup-ds-admin"
+    elif os.path.isfile("/usr/sbin/setup-ds"):
+	setup_ds_admin = "/usr/sbin/setup-ds"
+    else:
+	log.error(_("No directory server setup tool available."))
+    
     command = [
             setup_ds_admin,
             '--debug',
