@@ -312,6 +312,14 @@ result_attribute = mail
         f.writelines(conf.get('kolab', 'primary_domain'))
         f.close()	
 
+    if os.path.isfile('/etc/default/spamassassin'):
+	myaugeas = Augeas()
+	setting = os.path.join('/files/etc/default/spamassassin','ENABLED')
+	if not myaugeas.get(setting) == '1':
+	  myaugeas.set(setting,'1')
+	  myaugeas.save()
+	myaugeas.close()
+        
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'postfix.service'])
         subprocess.call(['systemctl', 'restart', 'amavisd.service'])
