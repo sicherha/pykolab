@@ -289,7 +289,10 @@ result_attribute = mail
             fp.close()
 
             t = Template(template_definition, searchList=[amavisd_settings])
-            fp = open('/etc/amavisd/amavisd.conf', 'w')
+        if os.path.isdir('/etc/amavisd'):
+	    fp = open('/etc/amavisd/amavisd.conf', 'w')
+	elif os.path.isdir('/etc/amavis'):
+	    fp = open('/etc/amavis/amavisd.conf', 'w')
             fp.write(t.__str__())
             fp.close()
 
