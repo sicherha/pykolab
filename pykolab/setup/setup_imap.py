@@ -131,14 +131,26 @@ def execute(*args, **kw):
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'cyrus-imapd.service'])
-        subprocess.call(['systemctl', 'enable', 'cyrus-imapd.service'])
         subprocess.call(['systemctl', 'restart', 'kolab-saslauthd.service'])
-        subprocess.call(['systemctl', 'enable', 'kolab-saslauthd.service'])
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['service', 'cyrus-imapd', 'restart'])
-        subprocess.call(['chkconfig', 'cyrus-imapd', 'on'])
         subprocess.call(['service', 'kolab-saslauthd', 'restart'])
-        subprocess.call(['chkconfig', 'kolab-saslauthd', 'on'])
+    elif os.path.isfile('/usr/sbin/service'):
+	subprocess.call(['/usr/sbin/service','cyrus-imapd','restart'])
+	subprocess.call(['/usr/sbin/service','kolab-saslauthd','restart'])
     else:
-        log.error(_("Could not start and configure to start on boot, the " + \
-                "cyrus-imapd and kolab-saslauthd services."))
+        log.error(_("Could not start the cyrus-imapd and kolab-saslauthd services."))
+
+    if os.path.isfile('/bin/systemctl'):
+        subprocess.call(['systemctl', 'enable', 'cyrus-imapd.service'])
+        subprocess.call(['systemctl', 'enable', 'kolab-saslauthd.service'])
+    elif os.path.isfile('/sbin/chkconfig'):
+        subprocess.call(['chkconfig', 'cyrus-imapd', 'on'])
+        subprocess.call(['chkconfig', 'kolab-saslauthd', 'on'])
+    elif os.path.isfile('/usr/sbin/update-rc.d'):
+        subprocess.call(['/usr/sbin/update-rc.d', 'cyrus-imapd', 'defaults'])
+        subprocess.call(['/usr/sbin/update-rc.d', 'kolab-saslauthd', 'defaults'])
+        subprocess.call(['/usr/sbin/update-rc.d', 'saslauthd', 'disable'])
+    else:
+        log.error(_("Could not configure to start on boot, the " + \
+                "cyrus-imapd and kolab-saslauthd services."))            

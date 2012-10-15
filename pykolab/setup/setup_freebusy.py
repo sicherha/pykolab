@@ -111,11 +111,20 @@ def execute(*args, **kw):
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['/bin/systemctl', 'restart', 'httpd.service'])
-        subprocess.call(['/bin/systemctl', 'enable', 'httpd.service'])
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'httpd', 'restart'])
-        subprocess.call(['/sbin/chkconfig', 'httpd', 'on'])
+    elif os.path.isfile('/usr/sbin/service'):
+	subprocess.call(['/usr/sbin/service','apache2','restart'])
     else:
-        log.error(_("Could not start and configure to start on boot, the " + \
-                "webserver service."))
+        log.error(_("Could not start the webserver server service."))
+
+    if os.path.isfile('/bin/systemctl'):
+        subprocess.call(['/bin/systemctl', 'enable', 'httpd.service'])
+    elif os.path.isfile('/sbin/chkconfig'):
+        subprocess.call(['/sbin/chkconfig', 'httpd', 'on'])
+    elif os.path.isfile('/usr/sbin/update-rc.d'):
+        subprocess.call(['/usr/sbin/update-rc.d', 'apache2', 'defaults'])
+    else:
+        log.error(_("Could not configure to start on boot, the " + \
+                "webserver server service."))
 

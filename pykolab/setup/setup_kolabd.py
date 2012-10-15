@@ -63,8 +63,20 @@ def execute(*args, **kw):
             fp.close()
 
     if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['systemctl', 'restart', 'kolabd.service'])
-        subprocess.call(['systemctl', 'enable', 'kolabd.service'])
+        subprocess.call(['/bin/systemctl', 'restart', 'kolabd.service'])
     elif os.path.isfile('/sbin/service'):
-        subprocess.call(['service', 'kolabd', 'restart'])
-        subprocess.call(['chkconfig', 'kolabd', 'on'])
+        subprocess.call(['/sbin/service', 'kolabd', 'restart'])
+    elif os.path.isfile('/usr/sbin/service'):
+	subprocess.call(['/usr/sbin/service','kolab-server','restart'])
+    else:
+        log.error(_("Could not start the kolab server service."))
+
+    if os.path.isfile('/bin/systemctl'):
+        subprocess.call(['/bin/systemctl', 'enable', 'kolabd.service'])
+    elif os.path.isfile('/sbin/chkconfig'):
+        subprocess.call(['/sbin/chkconfig', 'kolabd', 'on'])
+    elif os.path.isfile('/usr/sbin/update-rc.d'):
+        subprocess.call(['/usr/sbin/update-rc.d', 'kolab-server', 'defaults'])
+    else:
+        log.error(_("Could not configure to start on boot, the " + \
+                "kolab server service."))

@@ -298,23 +298,37 @@ result_attribute = mail
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'postfix.service'])
-        subprocess.call(['systemctl', 'enable', 'postfix.service'])
         subprocess.call(['systemctl', 'restart', 'amavisd.service'])
-        subprocess.call(['systemctl', 'enable', 'amavisd.service'])
         subprocess.call(['systemctl', 'restart', 'clamd.amavisd.service'])
-        subprocess.call(['systemctl', 'enable', 'clamd.amavisd.service'])
         subprocess.call(['systemctl', 'restart', 'wallace.service'])
-        subprocess.call(['systemctl', 'enable', 'wallace.service'])
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['service', 'postfix', 'restart'])
-        subprocess.call(['chkconfig', 'postfix', 'on'])
         subprocess.call(['service', 'amavisd', 'restart'])
-        subprocess.call(['chkconfig', 'amavisd', 'on'])
         subprocess.call(['service', 'clamd.amavisd', 'restart'])
-        subprocess.call(['chkconfig', 'clamd.amavisd', 'on'])
         subprocess.call(['service', 'wallace', 'restart'])
-        subprocess.call(['chkconfig', 'wallace', 'on'])
+    elif os.path.isfile('/usr/sbin/service'):
+	subprocess.call(['/usr/sbin/service','postfix','restart'])
+	subprocess.call(['/usr/sbin/service','amavis','restart'])
+	subprocess.call(['/usr/sbin/service','clamav-daemon','restart'])
+	subprocess.call(['/usr/sbin/service','wallace','restart'])
     else:
-        log.error(_("Could not start and configure to start on boot, the " + \
-                "postfix, clamav.amavisd and amavisd services."))
+        log.error(_("Could not start the postfix, clamav and amavisd services services."))
 
+    if os.path.isfile('/bin/systemctl'):
+        subprocess.call(['systemctl', 'enable', 'postfix.service'])
+        subprocess.call(['systemctl', 'enable', 'amavisd.service'])
+        subprocess.call(['systemctl', 'enable', 'clamd.amavisd.service'])
+        subprocess.call(['systemctl', 'enable', 'wallace.service'])
+    elif os.path.isfile('/sbin/chkconfig'):
+        subprocess.call(['chkconfig', 'postfix', 'on'])
+        subprocess.call(['chkconfig', 'amavisd', 'on'])
+        subprocess.call(['chkconfig', 'clamd.amavisd', 'on'])
+        subprocess.call(['chkconfig', 'wallace', 'on'])
+    elif os.path.isfile('/usr/sbin/update-rc.d'):
+        subprocess.call(['/usr/sbin/update-rc.d', 'postfix', 'defaults'])
+        subprocess.call(['/usr/sbin/update-rc.d', 'amavis', 'defaults'])
+        subprocess.call(['/usr/sbin/update-rc.d', 'clamav-daemon', 'defaults'])
+        subprocess.call(['/usr/sbin/update-rc.d', 'wallace', 'defaults'])
+    else:
+        log.error(_("Could not configure to start on boot, the " + \
+                "postfix, clamav and amavisd services."))

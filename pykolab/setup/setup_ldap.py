@@ -285,12 +285,23 @@ ServerAdminPwd = %(admin_pass)s
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['/bin/systemctl', 'restart', 'dirsrv.target'])
-        subprocess.call(['/bin/systemctl', 'enable', 'dirsrv.target'])
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'dirsrv', 'restart'])
-        subprocess.call(['/sbin/chkconfig', 'dirsrv', 'on'])
+    elif os.path.isfile('/usr/sbin/service'):
+	subprocess.call(['/usr/sbin/service','dirsrv','stop'])
+	time.sleep(20)
+	subprocess.call(['/usr/sbin/service','dirsrv','start'])
     else:
-        log.error(_("Could not start and configure to start on boot, the " + \
+        log.error(_("Could not start the directory server service."))
+
+    if os.path.isfile('/bin/systemctl'):
+        subprocess.call(['/bin/systemctl', 'enable', 'dirsrv.target'])
+    elif os.path.isfile('/sbin/chkconfig'):
+        subprocess.call(['/sbin/chkconfig', 'dirsrv', 'on'])
+    elif os.path.isfile('/usr/sbin/update-rc.d'):
+        subprocess.call(['/usr/sbin/update-rc.d', 'dirsrv', 'defaults'])
+    else:
+        log.error(_("Could not configure to start on boot, the " + \
                 "directory server service."))
 
     if ask_questions:
@@ -525,8 +536,10 @@ ServerAdminPwd = %(admin_pass)s
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['/bin/systemctl', 'enable', 'dirsrv-admin.service'])
-    elif os.path.isfile('/sbin/service'):
+    elif os.path.isfile('/sbin/chkconfig'):
         subprocess.call(['/sbin/chkconfig', 'dirsrv-admin', 'on'])
+    elif os.path.isfile('/usr/sbin/update-rc.d'):
+        subprocess.call(['/usr/sbin/update-rc.d', 'dirsrv-admin', 'defaults'])
     else:
         log.error(_("Could not start and configure to start on boot, the " + \
                 "directory server admin service."))

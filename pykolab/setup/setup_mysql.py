@@ -40,15 +40,24 @@ def description():
 
 def execute(*args, **kw):
     if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['/bin/systemctl', 'start', 'mysqld.service'])
-        subprocess.call(['/bin/systemctl', 'enable', 'mysqld.service'])
+        subprocess.call(['/bin/systemctl', 'restart', 'mysqld.service'])
     elif os.path.isfile('/sbin/service'):
-        subprocess.call(['/sbin/service', 'mysqld', 'start'])
-        subprocess.call(['/sbin/chkconfig', 'mysqld', 'on'])
+        subprocess.call(['/sbin/service', 'mysqld', 'restart'])
+    elif os.path.isfile('/usr/sbin/service'):
+	subprocess.call(['/usr/sbin/service','mysql','restart'])
     else:
-        log.error(_("Could not start and configure to start on boot, the " + \
-                "MySQL database service."))
+        log.error(_("Could not start the MySQL database service."))
 
+    if os.path.isfile('/bin/systemctl'):
+        subprocess.call(['/bin/systemctl', 'enable', 'mysqld.service'])
+    elif os.path.isfile('/sbin/chkconfig'):
+        subprocess.call(['/sbin/chkconfig', 'mysqld', 'on'])
+    elif os.path.isfile('/usr/sbin/update-rc.d'):
+        subprocess.call(['/usr/sbin/update-rc.d', 'mysql', 'defaults'])
+    else:
+        log.error(_("Could not configure to start on boot, the " + \
+                "MySQL database service."))                
+                
     print >> sys.stderr, utils.multiline_message(
             _("""
                     Please supply a root password for MySQL. This password will
