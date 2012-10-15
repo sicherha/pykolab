@@ -281,7 +281,7 @@ ServerAdminPwd = %(admin_pass)s
                     )
             )
     else:
-        log.warning(_("Could not find the Kolab schema file"))
+        log.warning(_("Could not find the ldap Kolab schema file"))
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['/bin/systemctl', 'restart', 'dirsrv.target'])
