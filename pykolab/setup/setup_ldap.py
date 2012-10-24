@@ -17,7 +17,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-import gzip
 import ldap
 import ldap.modlist
 import os
@@ -291,14 +290,6 @@ ServerAdminPwd = %(admin_pass)s
         for filename in filenames:
             if filename == 'kolab2.ldif':
                 schema_file = os.path.join(root,filename)
-            if filename == 'kolab2.ldif.gz':
-		f = gzip.open(os.path.join(root,filename), 'rb')
-		file_content = f.read()
-		f.close()
-		(nf, tmp_schema_file) = tempfile.mkstemp(dir="/tmp/")
-		nf.writelines(file_content)
-		nf.close()
-		schema_file = tmp_schema_file
 
     if not schema_file == None:
         shutil.copy(
