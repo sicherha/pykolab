@@ -830,7 +830,7 @@ class LDAP(pykolab.base.Base):
             try:
                 self.ldap.modify_s(dn, modlist)
             except:
-                log.error(_("Could not update dn %r") % (dn))
+                log.error(_("Could not update dn %r:\n%r") % (dn, modlist))
 
     def synchronize(self):
         """
