@@ -195,9 +195,17 @@ class SASLAuthDaemon(object):
             auth.connect()
 
             if auth.authenticate(login):
-                clientsocket.send(struct.pack("!H2s", 2, "OK"))
+                # #1170: Catch broken pipe error (incomplete authentication request)
+                try:
+                    clientsocket.send(struct.pack("!H2s", 2, "OK"))
+                except:
+                    pass
             else:
-                clientsocket.send(struct.pack("!H2s", 2, "NO"))
+                # #1170: Catch broken pipe error (incomplete authentication request)
+                try:
+                    clientsocket.send(struct.pack("!H2s", 2, "NO"))
+                except:
+                    pass
 
             clientsocket.close()
 
