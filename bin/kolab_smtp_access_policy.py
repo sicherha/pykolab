@@ -743,6 +743,11 @@ class PolicyRequest(object):
         else:
             sasl_domain = conf.get('kolab', 'primary_domain')
 
+        if self.auth == None:
+            self.auth = Auth(sasl_domain)
+        elif not self.auth.domain == sasl_domain:
+            self.auth = Auth(sasl_domain)
+
         if verify_domain(sasl_domain):
             if self.auth.secondary_domains.has_key(sasl_domain):
                 log.debug(
@@ -770,11 +775,6 @@ class PolicyRequest(object):
                 )
 
             return True
-
-        if self.auth == None:
-            self.auth = Auth(sasl_domain)
-        elif not self.auth.domain == sasl_domain:
-            self.auth = Auth(sasl_domain)
 
         recipients = self.auth.find_recipient(
                 normalize_address(recipient),
