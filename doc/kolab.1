@@ -1,0 +1,506 @@
+.TH kolab 1 "November 4, 2012" "version 0.6" "USER COMMANDS"
+
+.SH NAME
+kolab \- command-line utility to interact with Kolab Groupware and Cyrus IMAP
+
+.\"
+.\"
+.\" SYNOPSIS Section
+.\"
+.\"
+.SH SYNOPSIS
+.BI "kolab [-c " "config-file" "] [-d " "debug-level" "] [-l " "log-level" "] [--logfile " "log-file" "] "
+.RB "[group] " "command " "[options] [parameters]"
+
+.\"
+.\"
+.\" DESCRIPTION Section
+.\"
+.\"
+.SH DESCRIPTION
+Kolab Groupware command-line utilities that make rain go away.
+.PP
+The
+.BR kolab (1)
+utilities are of an administrative nature, meaning that actions will be executed with the highest level of privileges available. For example, listing the mailboxes a user is subscribed to logs on to IMAP as the Cyrus IMAP administrator (configured in the [cyrus-imap] section of
+.BR kolab.conf (5)),
+and authorize itself as the user before issuing the LSUB command.
+
+.\"
+.\"
+.\" OPTIONS Section
+.\"
+.\"
+.SH OPTIONS
+
+.TP
+.BI "\-c " "config-file"
+
+Use
+.I config-file
+instead of the system-wide configuration file
+.IR /etc/kolab/kolab.conf .
+
+.TP
+.BI "\-d " "debug-level"
+
+Set the debug level to
+.IR debug-level .
+The default is 0.
+
+.HP
+.RS
+Trace
+.BR kolab (1)
+itself with debug level 8.
+The maximum debug level of 9 will cause
+.BR kolab (1)
+to perform protocol tracing (on IMAP, HTTP, LDAP, SMTP, LMTP, MANAGESIEVE and other protocols it uses).
+.RE
+
+.TP
+.BI "\-h, \-\-help"
+
+Display a short help on usage, including commands and a brief description for each.
+
+.TP
+.BI "\-l, \-\-loglevel " "log-level"
+
+Set the
+.BR kolab (1)
+log level to
+.I log-level
+Valid log-levels include DEBUG, INFO, WARN, ERR, CRIT, EMERG.
+
+.HP
+.RS
+.BR NOTE :
+Setting the debug level to non-zero implies setting a log level of DEBUG.
+.RE
+
+.TP
+.BI "\-q, \-\-quiet"
+
+Be quiet \- suppresses output like headers for columns
+
+.TP
+.BI "\-y, \-\-yes"
+
+Answer yes to all questions (that ask for confirmation).
+
+.\"
+.\"
+.\" FILES Section
+.\"
+.\"
+.SH FILES
+.I /etc/kolab/kolab.conf
+
+.RS
+The system wide configuration file for Kolab Groupware. See
+.BR kolab.conf (5)
+for further details.
+.RE
+
+.\"
+.\"
+.\" ENVIRONMENT Section
+.\"
+.\"
+.SH ENVIRONMENT
+No environment variables impact the operations of
+.BR kolab (1).
+
+.\"
+.\"
+.\" COMMANDS Section
+.\"
+.\"
+.SH COMMANDS
+
+.TP
+.BI "acl-cleanup " "aci-subject"
+
+Clean up ACLs on mailboxes and mailfolders that refer to the ACI subject
+.IR aci-subject .
+
+.\" .TP
+.\" .BI "add-domain "
+.\" Add a domain name space
+.\" 
+.\" .TP
+.\" .BI "add-group "
+.\" Add a group
+.\" 
+.\" .TP
+.\" .BI "add-user "
+.\" Add a user
+.\" 
+.TP
+.BI "add-user-subscription" " " "[" "user" "" " " "[" pattern "]]"
+
+Subscribe
+.I user
+to the mailboxes matching
+.IR pattern .
+See PATTERNS for more information on pattern matching.
+
+.TP
+.BI "cm, create-mailbox [" "\-\-metadata=path,value" "] " mailbox
+
+Create a mailbox
+.I mailbox
+[with metadata
+.I path
+set to
+.IR value ].
+
+.HP
+.RS
+Valid metadata paths depend on the deployment. Metadata paths are prefixed by a METADATA namespace. See EXAMPLES for usage examples.
+.RE
+
+.TP
+.BI "dam, delete-mailbox-acl " "pattern aci-subject"
+
+Delete ACEs for
+.I aci-subject
+from mailboxes matching
+.IR pattern .
+See PATTERNS for more information on pattern matching.
+
+.\" .TP
+.\" .BI "delete-domain"
+.\" Delete a domain
+.\" 
+.\" .TP
+.\" .BI "delete-group"
+.\" Delete a group
+.\" 
+.TP
+.BI "dm, delete-mailbox " "pattern"
+
+Delete mailboxes matching
+.IR pattern .
+See PATTERNS for more information on pattern matching.
+
+.\" .TP
+.\" .BI "delete-user"
+.\" Delete a user
+.\" 
+.\" .TP
+.\" .BI "export-mailbox"
+.\" Export a mailbox.
+.\" 
+.TP
+.BI help
+
+Show a list of commands implemented with
+.BR kolab (1).
+
+.TP
+.BI "lam, list-mailbox-acls " "pattern"
+
+List the ACEs on mailboxes [matching
+.IR pattern ].
+See PATTERNS for more information on pattern matching.
+
+.TP
+.BI "list-deleted-mailboxes " "pattern"
+
+List mailboxes matching
+.IR pattern ,
+that have been deleted.
+See PATTERNS for more information on pattern matching.
+
+.\" .TP
+.\" .BI "list-domains"
+.\" List domain name spaces
+.\" 
+.\" .TP
+.\" .BI "list-groups"
+.\" List groups
+.\" 
+.TP
+.BI "list-mailbox-metadata " "pattern"
+
+List METADATA on mailboxes matching
+.IR pattern .
+See PATTERNS for more information on pattern matching.
+
+.TP
+.BI "lm, list-mailboxes " "pattern"
+
+List mailboxes [matching
+.IR pattern ].
+See PATTERNS for more information on pattern matching.
+
+.TP
+.BI "lq, list-quota " "pattern"
+
+List quota for mailboxes matching
+.IR pattern .
+See PATTERNS for more information on pattern matching.
+
+.TP
+.BI "list-user-subscriptions " "user"
+
+List the mailboxes
+.I user
+is subscribed to.
+
+.\" .TP
+.\" .BI "remove-mail"
+.\" 
+.TP
+.BI "remove-user-subscription [" "user " "[" "pattern" "]]"
+
+Unsubscribe user 
+.I user
+from mailboxes matching
+.IR pattern .
+See PATTERNS for more information on pattern matching.
+
+.TP
+.BI "rename-mailbox " "old-mailbox new-mailbox"
+
+Rename
+.IR "old-mailbox " "to " "new-mailbox" "."
+
+.\" .TP
+.\" .BI "role-info"
+.\" 
+.TP
+.BI "sam, set-mailbox-acl " "pattern aci-subject access-rights"
+
+Set the ACE for ACI subject
+.I aci-subject
+on mailboxes matching
+.I pattern
+to
+.IR access-rights .
+
+.HP
+.RS
+Should an ACE for
+.I aci-subject
+already exist, then its permissions are set to
+.IR access-rights .
+Should no ACE for
+.I aci-subject
+exist, then it is added with access rights
+.IR access-rights .
+.RE
+
+.TP
+.BI "set-language " "user " "[" "language" "]"
+
+Set the language for user
+.I user
+[to
+.IR language ].
+
+.HP
+.RS
+.I language
+should be a language identifier such as 'en_US', or 'de_CH'.
+Omit the
+.I language
+parameter to retrieve a list of languages configured to be associated with the user type in the Kolab Web Administration Panel.
+.PP
+.BR NOTE :
+The language associated with a user impacts the transliteration of their name components in to mail, alias, uid and other 7-bit ascii attributes. To see the full effect before applying this setting, use the Kolab Web Administration Panel.
+.RE
+
+.\" .TP
+.\" .BI "set-mail"
+.\" 
+.\" .TP
+.\" .BI "set-mailbox-metadata"
+.\" 
+.\" .TP
+.\" .BI "sq, set-quota"
+.\" 
+.\" .TP
+.\" .BI "sync"
+.\" 
+.TP
+.BI "transfer-mailbox " "mailbox imap-server"
+
+Manually transfer
+.I mailbox
+to IMAP server
+.IR imap-server .
+
+.HP
+.RS
+In a Cyrus IMAP Murder environment, using LDAP attribute value 'mailHost', transfers a mailbox from one IMAP server to another IMAP server. The client that runs
+.BR kolab (1)
+MUST be able to connect to the current IMAP backend server in order for the transfer to succeed.
+.PP
+.BR NOTE :
+In default Kolab Groupware deployments, the mailHost LDAP attribute will need to match the IMAP server FQDN the user's INBOX resides on. This command does not update the mailHost LDAP attribute value.
+.PP
+This command can be used to move a sub-folder to a different server (note that a separate quota root may need to be created), or to correct an environment out-of-sync.
+.RE
+
+.TP
+.BI "undelete-mailbox " "mailbox " "[" "target-mailbox" "]"
+
+Undelete mailbox
+.I mailbox
+[to target mailbox
+.IR target-mailbox ].
+
+.HP
+.RS
+Undeletes (restores) the previously deleted mailbox
+.I mailbox
+(if
+.B delete_mode
+is set to
+.I delayed
+in
+.BR imapd.conf (5)).
+If
+.I target-mailbox
+is specified, uses
+.I target-mailbox
+as the root folder to restore the previously deleted mailbox to.
+Otherwise, restores the mailbox
+.I mailbox
+to its original location (from which it was deleted).
+.RE
+
+.\" .TP
+.\" .BI "user-info"
+.\" 
+.SS SIEVE COMMANDS
+.BR kolab (1)
+includes a set of sub-commands for Sieve script management.
+
+.TP
+.BI "list " "user"
+
+List the Sieve scripts for user
+.IR user .
+
+.HP
+.RS
+Lists the names of the Sieve scripts for user
+.IR user ,
+and indicates which script is activated (the script that is executed on LMTP mail delivery to the user's mailbox).
+.PP
+.BR NOTE :
+This script does NOT check the syntax of each script, nor does it determine which scripts reside in the user's personal Sieve namespace but are not active AND not included in any other script. See the
+.BR "kolab" "(1) " "sieve test"
+.I user
+command to get that information.
+.RE
+
+.TP
+.BI "put " "user script-file " "[" "script-name" "]"
+
+Add a new Sieve script with contents
+.I script-file
+under title
+.I script-name
+for user
+.IR user .
+If
+.I script-name
+is not specified, the basename of
+.I script-file
+is used.
+
+.TP
+.BI "refresh " "user"
+
+Refresh the Sieve scripts for user
+.IR user ,
+using the Sieve script management conventions outlined in Kolab Enhancement Proposal #14 (https://wiki.kolab.org/KEP:14).
+
+.TP
+.BI "test " "user"
+
+Test the Sieve scripts for user
+.IR user .
+
+.SS PATTERNS
+Patterns matching mailboxes currently accept two wildcard types:
+
+.TP
+.B "%"
+.HP
+.RS
+Used to match one level of folders.
+.RE
+
+.TP
+.B "*"
+.HP
+.RS
+Used to match all (sub-)levels of folders.
+.RE
+
+.SH EXAMPLES
+
+.TP
+Subscribe user john.doe@example.org to all mailboxes in the shared namespace:
+
+.B kolab add-user-subscription john.doe@example.org shared/*@example.org
+
+.TP
+Create a new calendar folder "Private Calendar" for user john.doe@example.org:
+
+.B kolab create-mailbox --metadata=/shared/vendor/kolab/folder-type,event 'user/john.doe/Private Calendar@example.org'
+
+.HP
+.RS
+.BR NOTE :
+The
+.I mailbox
+command-line parameter 'user/john.doe/Private Calendar@example.org' needs to be quoted, as it contains a space character.
+
+.BR NOTE :
+Setting folder metadata should adhere to RFC standards and, for Kolab Groupware deployments, Kolab Enhancement Proposal #17 (https://wiki.kolab.org/KEP:17).
+
+For any given deployment, valid custom metadata paths are listed in
+.BR /etc/imapd.annotations.conf .
+.RE
+
+.HP
+List top-level user mailboxes for the example.org authorization realm:
+
+.B "kolab list-mailboxes user/%@example.org"
+
+.HP
+List top-level mailboxes outside any particular authorization realm:
+
+.B "kolab list-mailboxes user/%"
+
+.HP
+List mailboxes for user john.doe@example.org:
+
+.B "kolab list-mailboxes user/john.doe/*@example.org"
+
+.RS
+.BR NOTE :
+The mailbox user/john.doe@example.org itself is not included in the output for this example command.
+.RE
+
+.SH DIAGNOSTICS
+
+.SH ADDITIONAL READING
+Additional documentation for Kolab Groupware is available on https://docs.kolab.org
+
+.SH BUGS
+You are kindly requested to log bugs against
+.B pykolab
+in https://issues.kolab.org
+
+.SH AUTHOR
+Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
+
+.SH SEE ALSO
+.B kolab.conf(5)
