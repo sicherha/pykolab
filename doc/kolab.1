@@ -120,7 +120,8 @@ No environment variables impact the operations of
 .BI "acl-cleanup " "aci-subject"
 
 Clean up ACLs on mailboxes and mailfolders that refer to the ACI subject
-.IR aci-subject .
+.I aci-subject
+in any of the ACEs.
 
 .\" .TP
 .\" .BI "add-domain "
@@ -135,7 +136,7 @@ Clean up ACLs on mailboxes and mailfolders that refer to the ACI subject
 .\" Add a user
 .\" 
 .TP
-.BI "add-user-subscription" " " "[" "user" "" " " "[" pattern "]]"
+.BI "add-user-subscription " "user pattern"
 
 Subscribe
 .I user
@@ -152,8 +153,7 @@ Create a mailbox
 .I path
 set to
 .IR value ].
-
-.HP
+.PP
 .RS
 Valid metadata paths depend on the deployment. Metadata paths are prefixed by a METADATA namespace. See EXAMPLES for usage examples.
 .RE
@@ -277,8 +277,7 @@ on mailboxes matching
 .I pattern
 to
 .IR access-rights .
-
-.HP
+.PP
 .RS
 Should an ACE for
 .I aci-subject
@@ -297,8 +296,7 @@ Set the language for user
 .I user
 [to
 .IR language ].
-
-.HP
+.PP
 .RS
 .I language
 should be a language identifier such as 'en_US', or 'de_CH'.
@@ -329,8 +327,7 @@ Manually transfer
 .I mailbox
 to IMAP server
 .IR imap-server .
-
-.HP
+.PP
 .RS
 In a Cyrus IMAP Murder environment, using LDAP attribute value 'mailHost', transfers a mailbox from one IMAP server to another IMAP server. The client that runs
 .BR kolab (1)
@@ -349,8 +346,7 @@ Undelete mailbox
 .I mailbox
 [to target mailbox
 .IR target-mailbox ].
-
-.HP
+.PP
 .RS
 Undeletes (restores) the previously deleted mailbox
 .I mailbox
@@ -382,8 +378,7 @@ includes a set of sub-commands for Sieve script management.
 
 List the Sieve scripts for user
 .IR user .
-
-.HP
+.PP
 .RS
 Lists the names of the Sieve scripts for user
 .IR user ,
@@ -429,14 +424,14 @@ Patterns matching mailboxes currently accept two wildcard types:
 
 .TP
 .B "%"
-.HP
+.PP
 .RS
 Used to match one level of folders.
 .RE
 
 .TP
 .B "*"
-.HP
+.PP
 .RS
 Used to match all (sub-)levels of folders.
 .RE
@@ -452,8 +447,7 @@ Subscribe user john.doe@example.org to all mailboxes in the shared namespace:
 Create a new calendar folder "Private Calendar" for user john.doe@example.org:
 
 .B kolab create-mailbox --metadata=/shared/vendor/kolab/folder-type,event 'user/john.doe/Private Calendar@example.org'
-
-.HP
+.PP
 .RS
 .BR NOTE :
 The
@@ -481,7 +475,7 @@ List top-level mailboxes outside any particular authorization realm:
 List mailboxes for user john.doe@example.org:
 
 .B "kolab list-mailboxes user/john.doe/*@example.org"
-
+.PP
 .RS
 .BR NOTE :
 The mailbox user/john.doe@example.org itself is not included in the output for this example command.
@@ -490,15 +484,19 @@ The mailbox user/john.doe@example.org itself is not included in the output for t
 .SH DIAGNOSTICS
 
 .SH ADDITIONAL READING
+
 Additional documentation for Kolab Groupware is available on https://docs.kolab.org
 
 .SH BUGS
+
 You are kindly requested to log bugs against
 .B pykolab
 in https://issues.kolab.org
 
 .SH AUTHOR
+
 Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen@kolabsys.com>
 
 .SH SEE ALSO
-.B kolab.conf(5)
+
+.BR kolab.conf (5),
