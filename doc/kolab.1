@@ -1,4 +1,4 @@
-.TH kolab 1 "November 4, 2012" "version 0.6" "USER COMMANDS"
+.TH kolab 1 "November 4, 2012" "pykolab 0.6" "USER COMMANDS"
 
 .SH NAME
 kolab \- command-line utility to interact with Kolab Groupware and Cyrus IMAP
@@ -34,7 +34,7 @@ and authorize itself as the user before issuing the LSUB command.
 .SH OPTIONS
 
 .TP
-.BI "\-c " "config-file"
+.BI "-c " "config-file"
 
 Use
 .I config-file
@@ -42,12 +42,11 @@ instead of the system-wide configuration file
 .IR /etc/kolab/kolab.conf .
 
 .TP
-.BI "\-d " "debug-level"
+.BI "-d " "debug-level"
 
 Set the debug level to
 .IR debug-level .
 The default is 0.
-
 .HP
 .RS
 Trace
@@ -59,19 +58,18 @@ to perform protocol tracing (on IMAP, HTTP, LDAP, SMTP, LMTP, MANAGESIEVE and ot
 .RE
 
 .TP
-.BI "\-h, \-\-help"
+.BI "-h, --help"
 
 Display a short help on usage, including commands and a brief description for each.
 
 .TP
-.BI "\-l, \-\-loglevel " "log-level"
+.BI "-l, --loglevel " "log-level"
 
 Set the
 .BR kolab (1)
 log level to
 .I log-level
 Valid log-levels include DEBUG, INFO, WARN, ERR, CRIT, EMERG.
-
 .HP
 .RS
 .BR NOTE :
@@ -79,12 +77,12 @@ Setting the debug level to non-zero implies setting a log level of DEBUG.
 .RE
 
 .TP
-.BI "\-q, \-\-quiet"
+.BI "-q, --quiet"
 
 Be quiet \- suppresses output like headers for columns
 
 .TP
-.BI "\-y, \-\-yes"
+.BI "-y, --yes"
 
 Answer yes to all questions (that ask for confirmation).
 
@@ -146,7 +144,7 @@ to the mailboxes matching
 See PATTERNS for more information on pattern matching.
 
 .TP
-.BI "cm, create-mailbox [" "\-\-metadata=path,value" "] " mailbox
+.BI "cm, create-mailbox [" "--metadata=path,value" "] " mailbox
 
 Create a mailbox
 .I mailbox
