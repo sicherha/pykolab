@@ -368,6 +368,26 @@ def translate(mystring, locale_name='en_US'):
 
     return result
 
+def true_or_false(val):
+    if val == None:
+        return False
+
+    if isinstance(val, bool):
+        return val
+
+    if isinstance(val, basestring) or isinstance(val, str):
+        val = val.lower()
+        if val in [ "true", "yes", "y" ]:
+            return True
+        else:
+            return False
+
+    if isinstance(val, int) or isinstance(val, float):
+        if val >= 1:
+            return True
+        else:
+            return False
+
 def is_service(services):
     """
         Checks each item in list services to see if it has a RC script in
