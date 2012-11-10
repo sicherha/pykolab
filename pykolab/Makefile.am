@@ -15,6 +15,10 @@ pykolab_clidir = $(pythondir)/$(PACKAGE)/cli
 pykolab_cli_PYTHON = \
 	$(wildcard cli/*.py)
 
+pykolab_clisievedir = $(pythondir)/$(PACKAGE)/cli/sieve
+pykolab_clisieve_PYTHON = \
+	$(wildcard cli/sieve/*.py)
+
 pykolab_clitelemetrydir = $(pythondir)/$(PACKAGE)/cli/telemetry
 pykolab_clitelemetry_PYTHON = \
 	$(wildcard cli/telemetry/*.py)
