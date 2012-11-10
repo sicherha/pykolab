@@ -108,6 +108,10 @@ def list_commands(*args, **kw):
                     print "%-4s%-21s" % ('',__command.replace('_','-'))
 
 def execute(cmd_name, *args, **kw):
+    if cmd_name == "":
+        execute("help")
+        sys.exit(0)
+
     if not commands.has_key(cmd_name):
         log.error(_("No such command."))
         sys.exit(1)
@@ -190,7 +194,7 @@ def register(cmd_name, func, group=None, description=None, aliases=[]):
             commands[alias] = {
                     'cmd_name': cmd_name,
                     'function': func,
-                    'description': _("Alias for %s") % (cmd_name,replace('_','-'))
+                    'description': _("Alias for %s") % (cmd_name.replace('_','-'))
                 }
 
 ##
