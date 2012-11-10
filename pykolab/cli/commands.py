@@ -187,7 +187,7 @@ def register(cmd_name, func, group=None, description=None, aliases=[]):
             commands[alias] = {
                     'cmd_name': cmd_name,
                     'function': func,
-                    'description': _("Alias for %s") % (cmd_name)
+                    'description': _("Alias for %s") % (cmd_name,replace('_','-'))
                 }
 
 ##
