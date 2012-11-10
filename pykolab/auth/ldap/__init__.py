@@ -1992,6 +1992,11 @@ class LDAP(pykolab.base.Base):
                 callback=self._synchronize_callback
             )
 
+        bind_dn = self.config_get('bind_dn')
+        bind_pw = self.config_get('bind_pw')
+
+        ldap_sync_conn.simple_bind_s(bind_dn, bind_pw)
+
         msgid = ldap_sync_conn.syncrepl_search(
                 base_dn,
                 scope,
@@ -2081,6 +2086,12 @@ class LDAP(pykolab.base.Base):
                 for control_num in SUPPORTED_LDAP_CONTROLS.keys():
                     if SUPPORTED_LDAP_CONTROLS[control_num]['oid'] in \
                             supported_controls:
+
+                        log.debug(_("Found support for %s") % (
+                                    SUPPORTED_LDAP_CONTROLS[control_num]['desc'],
+                                ),
+                                level=8
+                            )
 
                         self.ldap.supported_controls.append(
                                 SUPPORTED_LDAP_CONTROLS[control_num]['func']
