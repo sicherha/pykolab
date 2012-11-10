@@ -107,6 +107,10 @@ def get_entry(domain, entry):
 
     if _entry == None:
         log.debug(_("Inserting cache entry %r") % (entry['id']), level=8)
+
+        if not entry.has_key(result_attribute):
+            entry[result_attribute] = ''
+
         db.add(
                 Entry(
                         entry['id'],
