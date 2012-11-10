@@ -85,6 +85,9 @@ def list_commands(*args, **kw):
     _commands.sort()
 
     for _command in _commands:
+        if __commands[_command].has_key('group'):
+            continue
+
         if __commands[_command].has_key('function'):
             # This is a top-level command
             if not __commands[_command]['description'] == None:
