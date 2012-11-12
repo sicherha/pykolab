@@ -139,7 +139,6 @@ def execute(cmd_name, *args, **kw):
             pass
 
     conf.finalize_conf()
-    _cmd_name = conf.cli_args.pop(0)
     commands[cmd_name]['function'](conf.cli_args, kw)
 
 def register_group(dirname, module):
