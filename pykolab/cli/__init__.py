@@ -58,6 +58,9 @@ class Cli(object):
 
                     to_execute.append(sys.argv[arg_num].replace('-','_'))
 
+        for cmd_component in to_execute:
+            sys.argv.pop(sys.argv.index(cmd_component))
+
         commands.execute('_'.join(to_execute))
 
     def run(self):
