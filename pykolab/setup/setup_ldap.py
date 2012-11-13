@@ -237,13 +237,14 @@ ServerAdminPwd = %(admin_pass)s
     os.close(fp)
 
     if os.path.isfile("/usr/sbin/setup-ds-admin.pl"):
-	setup_ds_admin = "/usr/sbin/setup-ds-admin.pl"
-#    elif os.path.isfile("/usr/sbin/setup-ds-admin"):
-#	setup_ds_admin = "/usr/sbin/setup-ds-admin"
+        setup_ds_admin = "/usr/sbin/setup-ds-admin.pl"
+    #elif os.path.isfile("/usr/sbin/setup-ds-admin"):
+        #setup_ds_admin = "/usr/sbin/setup-ds-admin"
     elif os.path.isfile("/usr/sbin/setup-ds"):
-	setup_ds_admin = "/usr/sbin/setup-ds"
+        setup_ds_admin = "/usr/sbin/setup-ds"
     else:
-	log.error(_("No directory server setup tool available."))
+        log.error(_("No directory server setup tool available."))
+        sys.exit(1)
     
     command = [
             setup_ds_admin,
@@ -306,9 +307,9 @@ ServerAdminPwd = %(admin_pass)s
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'dirsrv', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
-	subprocess.call(['/usr/sbin/service','dirsrv','stop'])
-	time.sleep(20)
-	subprocess.call(['/usr/sbin/service','dirsrv','start'])
+        subprocess.call(['/usr/sbin/service','dirsrv','stop'])
+        time.sleep(20)
+        subprocess.call(['/usr/sbin/service','dirsrv','start'])
     else:
         log.error(_("Could not start the directory server service."))
 

@@ -93,7 +93,7 @@ def execute(*args, **kw):
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'httpd', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
-	subprocess.call(['/usr/sbin/service','apache2','restart'])
+        subprocess.call(['/usr/sbin/service','apache2','restart'])
     else:
         log.error(_("Could not start the webserver server service."))
 

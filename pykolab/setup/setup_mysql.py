@@ -44,7 +44,7 @@ def execute(*args, **kw):
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'mysqld', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
-	subprocess.call(['/usr/sbin/service','mysql','restart'])
+        subprocess.call(['/usr/sbin/service','mysql','restart'])
     else:
         log.error(_("Could not start the MySQL database service."))
 

@@ -67,7 +67,7 @@ def execute(*args, **kw):
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'kolabd', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
-	subprocess.call(['/usr/sbin/service','kolab-server','restart'])
+        subprocess.call(['/usr/sbin/service','kolab-server','restart'])
     else:
         log.error(_("Could not start the kolab server service."))
 

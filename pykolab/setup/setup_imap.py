@@ -131,12 +131,14 @@ def execute(*args, **kw):
     fp.close()
 
     if os.path.isfile('/etc/default/kolab-saslauthd'):
-	myaugeas = Augeas()
-	setting = os.path.join('/files/etc/default/kolab-saslauthd','START')
-	if not myaugeas.get(setting) == 'yes':
-	  myaugeas.set(setting,'yes')
-	  myaugeas.save()
-	myaugeas.close()
+        myaugeas = Augeas()
+        setting = os.path.join('/files/etc/default/kolab-saslauthd','START')
+
+        if not myaugeas.get(setting) == 'yes':
+            myaugeas.set(setting,'yes')
+            myaugeas.save()
+
+        myaugeas.close()
     
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'cyrus-imapd.service'])
@@ -145,8 +147,8 @@ def execute(*args, **kw):
         subprocess.call(['service', 'cyrus-imapd', 'restart'])
         subprocess.call(['service', 'kolab-saslauthd', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
-	subprocess.call(['/usr/sbin/service','cyrus-imapd','restart'])
-	subprocess.call(['/usr/sbin/service','kolab-saslauthd','restart'])
+        subprocess.call(['/usr/sbin/service','cyrus-imapd','restart'])
+        subprocess.call(['/usr/sbin/service','kolab-saslauthd','restart'])
     else:
         log.error(_("Could not start the cyrus-imapd and kolab-saslauthd services."))
 

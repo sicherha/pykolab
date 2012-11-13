@@ -210,11 +210,11 @@ result_attribute = mail
         }
 
     if not os.path.isfile('/etc/postfix/main.cf'):
-      if os.path.isfile('/usr/share/postfix/main.cf.debian'):
-	shutil.copy(
-	    '/usr/share/postfix/main.cf.debian',
-	    '/etc/postfix/main.cf'
-	)
+        if os.path.isfile('/usr/share/postfix/main.cf.debian'):
+            shutil.copy(
+                    '/usr/share/postfix/main.cf.debian',
+                    '/etc/postfix/main.cf'
+                )
         
     myaugeas = Augeas()
 
@@ -289,10 +289,11 @@ result_attribute = mail
             fp.close()
 
             t = Template(template_definition, searchList=[amavisd_settings])
+
         if os.path.isdir('/etc/amavisd'):
-	    fp = open('/etc/amavisd/amavisd.conf', 'w')
-	elif os.path.isdir('/etc/amavis'):
-	    fp = open('/etc/amavis/amavisd.conf', 'w')
+            fp = open('/etc/amavisd/amavisd.conf', 'w')
+        elif os.path.isdir('/etc/amavis'):
+	        fp = open('/etc/amavis/amavisd.conf', 'w')
             fp.write(t.__str__())
             fp.close()
 
@@ -306,19 +307,20 @@ result_attribute = mail
     # while really it isn't required.
     else:
         log.info(_("Not writing out any configuration for Amavis."))
+
 	# On debian wheezy amavisd-new expects '/etc/mailname' - possibly remediable through 
 	# the #1080 enhancement mentioned above, but here's a quick fix.
 	f = open('/etc/mailname','w')
-        f.writelines(conf.get('kolab', 'primary_domain'))
-        f.close()	
+    f.writelines(conf.get('kolab', 'primary_domain'))
+    f.close()
 
     if os.path.isfile('/etc/default/spamassassin'):
-	myaugeas = Augeas()
-	setting = os.path.join('/files/etc/default/spamassassin','ENABLED')
-	if not myaugeas.get(setting) == '1':
-	  myaugeas.set(setting,'1')
-	  myaugeas.save()
-	myaugeas.close()
+        myaugeas = Augeas()
+        setting = os.path.join('/files/etc/default/spamassassin','ENABLED')
+        if not myaugeas.get(setting) == '1':
+            myaugeas.set(setting,'1')
+            myaugeas.save()
+        myaugeas.close()
         
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'postfix.service'])
@@ -331,10 +333,10 @@ result_attribute = mail
         subprocess.call(['service', 'clamd.amavisd', 'restart'])
         subprocess.call(['service', 'wallace', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
-	subprocess.call(['/usr/sbin/service','postfix','restart'])
-	subprocess.call(['/usr/sbin/service','amavis','restart'])
-	subprocess.call(['/usr/sbin/service','clamav-daemon','restart'])
-	subprocess.call(['/usr/sbin/service','wallace','restart'])
+        subprocess.call(['/usr/sbin/service','postfix','restart'])
+        subprocess.call(['/usr/sbin/service','amavis','restart'])
+        subprocess.call(['/usr/sbin/service','clamav-daemon','restart'])
+        subprocess.call(['/usr/sbin/service','wallace','restart'])
     else:
         log.error(_("Could not start the postfix, clamav and amavisd services services."))
 

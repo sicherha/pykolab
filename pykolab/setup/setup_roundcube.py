@@ -122,10 +122,14 @@ def execute(*args, **kw):
                     _("Successfully compiled template %r, writing out to %r") % (template_file, want_file),
                     level=8
                 )
+
+        fp = None
 	    if os.path.isdir('/etc/roundcubemail'):
-	      fp = open('/etc/roundcubemail/%s' % (want_file), 'w')
+	        fp = open('/etc/roundcubemail/%s' % (want_file), 'w')
 	    elif os.path.isdir('/etc/roundcube'):
-	      fp = open('/etc/roundcube/%s' % (want_file), 'w')
+            fp = open('/etc/roundcube/%s' % (want_file), 'w')
+
+        if not fp == None:
             fp.write(t.__str__())
             fp.close()
 
@@ -143,9 +147,13 @@ def execute(*args, **kw):
                     schema_files.append(schema_filepath)
 
     if os.path.isdir('/usr/share/roundcubemail'):
-	rcpath = '/usr/share/roundcubemail/'
+        rcpath = '/usr/share/roundcubemail/'
     elif os.path.isdir('/usr/share/roundcube'):
-	rcpath = '/usr/share/roundcube/'
+        rcpath = '/usr/share/roundcube/'
+    else:
+        log.error(_("Roundcube installation path not found."))
+        return
+
     for root, directories, filenames in os.walk(rcpath + 'plugins/calendar/drivers/kolab/'):
         for filename in filenames:
             if filename.startswith('mysql') and filename.endswith('.sql'):
@@ -188,7 +196,7 @@ def execute(*args, **kw):
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'httpd', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
-	subprocess.call(['/usr/sbin/service','apache2','restart'])
+        subprocess.call(['/usr/sbin/service','apache2','restart'])
     else:
         log.error(_("Could not start the webserver server service."))
 
