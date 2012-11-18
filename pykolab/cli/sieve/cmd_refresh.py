@@ -82,20 +82,20 @@ def execute(*args, **kw):
     admin_password = conf.get(backend, 'admin_password')
 
     import sievelib.managesieve
- 
+
     sieveclient = sievelib.managesieve.Client(hostname, port, conf.debuglevel > 8)
     sieveclient.connect(None, None, True)
     sieveclient._plain_authentication(admin_login, admin_password, address)
     sieveclient.authenticated = True
 
     result = sieveclient.listscripts()
-    
+
     if result == None:
         active = None
         scripts = []
     else:
         active, scripts = result
-        
+
 
     print "Found the following scripts: %s" % (','.join(scripts))
     print "And the following script is active: %s" % (active)
@@ -174,6 +174,9 @@ def execute(*args, **kw):
             else:
                 forward_addresses = user[forward_address_attr]
 
+        if len(forward_addresses) == 0:
+            forward_active = False
+
         forward_keepcopy_attr = conf.get('sieve', 'forward_keepcopy_active')
         if not forward_keepcopy_attr == None:
             if user.has_key(forward_keepcopy_attr):
@@ -191,6 +194,9 @@ def execute(*args, **kw):
     if dtf_active:
         mgmt_required_extensions.append('fileinto')
 
+    if forward_active and (len(forward_addresses) > 1 or forward_keepcopy):
+        mgmt_required_extensions.append('copy')
+
     if sdf_filter:
         mgmt_required_extensions.append('fileinto')
 
@@ -202,17 +208,40 @@ def execute(*args, **kw):
         mgmt_script.require(required_extension)
 
     if forward_active:
-        if forward_uce:
-            if forward_keepcopy:
-                mgmt_script.addfilter('forward-uce-keepcopy', ['true'], [("redirect", ":copy", forward_addresses)])
+        forward_rules = []
+
+        # Principle can be demonstrated by:
+        #
+        # python -c "print ','.join(['a','b','c'][:-1])"
+        #
+        for forward_copy in forward_addresses[:-1]:
+            forward_rules.append(("redirect", ":copy", forward_copy))
+
+        if forward_keepcopy:
+            # Principle can be demonstrated by:
+            #
+            # python -c "print ','.join(['a','b','c'][-1])"
+            #
+            if forward_uce:
+                rule_name = 'forward-uce-keepcopy'
             else:
-                mgmt_script.addfilter('forward-uce', ['true'], [("redirect", forward_addresses)])
+                rule_name = 'forward-keepcopy'
+
+            forward_rules.append(("redirect", ":copy", forward_addresses[-1]))
         else:
-            if forward_keepcopy:
-                mgmt_script.addfilter('forward-keepcopy', [("X-Spam-Status", ":matches", "No,*")], [("redirect", ":copy", forward_addresses)])
+            if forward_uce:
+                rule_name = 'forward-uce'
             else:
-                mgmt_script.addfilter('forward', [("X-Spam-Status", ":matches", "No,*")], [("redirect", forward_addresses)])
-    
+                rule_name = 'forward'
+
+            forward_rules.append(("redirect", forward_addresses[-1]))
+
+        if forward_uce:
+            mgmt_script.addfilter(rule_name, ['true'], forward_rules)
+
+        else:
+            mgmt_script.addfilter(rule_name, [("X-Spam-Status", ":matches", "No,*")], forward_rules)
+
     if sdf_filter:
         mgmt_script.addfilter('spam_delivery_folder', [("X-Spam-Status", ":matches", "Yes,*")], [("fileinto", "INBOX/Spam"), ("stop")])
 
@@ -248,12 +277,12 @@ include :personal "%s";
 
     result = sieveclient.putscript("MASTER", """#
 # MASTER
-# 
+#
 # This file is authoritative for your system and MUST BE KEPT ACTIVE.
 #
 # Altering it is likely to render your account dysfunctional and may
 # be violating your organizational or corporate policies.
-# 
+#
 # For more information on the mechanism and the conventions behind
 # this script, see http://wiki.kolab.org/KEP:14
 #
