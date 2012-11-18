@@ -188,11 +188,6 @@ def execute(*args, **kw):
             else:
                 forward_uce = False
 
-    print mgmt_script
-
-    if forward_active:
-        mgmt_required_extensions.append('redirect')
-
     if dtf_active:
         mgmt_required_extensions.append('fileinto')
 
@@ -221,11 +216,9 @@ def execute(*args, **kw):
     if sdf_filter:
         mgmt_script.addfilter('spam_delivery_folder', [("X-Spam-Status", ":matches", "Yes,*")], [("fileinto", "INBOX/Spam"), ("stop")])
 
-    #if dtf_active:
-        
-    print mgmt_script.__str__()
+    mgmt_script = mgmt_script.__str__()
 
-    result = sieveclient.putscript("MANAGEMENT", mgmt_script.__str__())
+    result = sieveclient.putscript("MANAGEMENT", mgmt_script)
 
     if not result:
         print "Putting in script MANAGEMENT failed...?"
