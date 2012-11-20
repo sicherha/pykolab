@@ -3,8 +3,10 @@ Makefile.in
 *~
 *.kate-swp
 *.log
+*.orig
 *.pyc
 *.pyo
+*.rej
 *.spec
 *.tar.gz
 aclocal.m4
