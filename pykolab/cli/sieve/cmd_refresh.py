@@ -110,6 +110,44 @@ def execute(*args, **kw):
     user = auth.get_entry_attributes(domain, user, ['*'])
 
     #
+    # Vacation settings (a.k.a. Out of Office)
+    #
+    vacation_active = None
+    vacation_text = None
+    vacation_uce = None
+    vacation_noreact_domains = None
+
+    vacation_active_attr = conf.get('sieve', 'vacation_active_attr')
+    vacation_text_attr = conf.get('sieve', 'vacation_text_attr')
+    vacation_uce_attr = conf.get('sieve', 'vacation_uce_attr')
+    vacation_noreact_domains_attr = conf.get('sieve', 'vacation_noreact_domains_attr')
+
+    if not vacation_text_attr == None:
+
+        if user.has_key(vacation_active_attr):
+            vacation_active = utils.true_or_false(user[vacation_active_attr])
+        else:
+            vacation_active = False
+
+        if user.has_key(vacation_text_attr):
+            vacation_text = user[vacation_text_attr]
+        else:
+            vacation_active = False
+
+        if user.has_key(vacation_uce_attr):
+            vacation_uce = utils.true_or_false(user[vacation_uce_attr])
+        else:
+            vacation_uce = False
+
+        if user.has_key(vacation_noreact_domains_attr):
+            if isinstance(user[vacation_noreact_domains_attr], list):
+                vacation_noreact_domains = user[vacation_noreact_domains_attr]
+            else:
+                vacation_noreact_domains = [ user[vacation_noreact_domains_attr] ]
+        else:
+            vacation_noreact_domains = []
+
+    #
     # Delivery to Folder
     #
     dtf_active_attr = conf.get('sieve', 'deliver_to_folder_active')
@@ -191,6 +229,10 @@ def execute(*args, **kw):
             else:
                 forward_uce = False
 
+    if vacation_active:
+        mgmt_required_extensions.append('vacation')
+        mgmt_required_extensions.append('envelope')
+
     if dtf_active:
         mgmt_required_extensions.append('fileinto')
 
@@ -206,6 +248,40 @@ def execute(*args, **kw):
 
     for required_extension in mgmt_required_extensions:
         mgmt_script.require(required_extension)
+
+    if vacation_active:
+        if len(vacation_noreact_domains) > 0:
+            mgmt_script.addfilter(
+                    'vacation',
+                    [('not', ('envelope', ':domain', ":is", "from", vacation_noreact_domains))],
+                    [
+                            (
+                                    "vacation",
+                                    ":days", 1,
+                                    ":subject",
+                                    "Out of Office",
+                                    # ":handle", see http://tools.ietf.org/html/rfc5230#page-4
+                                    # ":mime", to indicate the reason is in fact MIME
+                                    vacation_text
+                                )
+                        ]
+                )
+        else:
+            mgmt_script.addfilter(
+                    'vacation',
+                    [('true',)],
+                    [
+                            (
+                                    "vacation",
+                                    ":days", 1,
+                                    ":subject",
+                                    "Out of Office",
+                                    # ":handle", see http://tools.ietf.org/html/rfc5230#page-4
+                                    # ":mime", to indicate the reason is in fact MIME
+                                    vacation_text
+                                )
+                        ]
+                )
 
     if forward_active:
         forward_rules = []
