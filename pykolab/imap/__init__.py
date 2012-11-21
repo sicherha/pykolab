@@ -347,6 +347,13 @@ class IMAP(object):
 
             Returns the full path to the new mailbox folder.
         """
+        # TODO: Whether or not to lowercase the mailbox name is really up to the
+        # IMAP server setting username_tolower (normalize_uid, lmtp_downcase_rcpt).
+
+        if not mailbox_base_name == mailbox_base_name.lower():
+            log.warning(_("Downcasing mailbox name %r") % (mailbox_base_name))
+            mailbox_base_name = mailbox_base_name.lower()
+
         folder_name = "user%s%s" % (self.imap.separator, mailbox_base_name)
         log.info(_("Creating new mailbox for user %s") %(mailbox_base_name))
 
