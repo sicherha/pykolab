@@ -17,6 +17,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import sys
+
 import commands
 
 import pykolab
@@ -31,6 +33,17 @@ conf = pykolab.getConf()
 def __init__():
     commands.register('list_mailbox_metadata', execute, description=description())
 
+def cli_options():
+    my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
+    my_option_group.add_option(
+                '--user',
+                dest    = "user",
+                action  = "store",
+                default = None,
+                metavar = "USER",
+                help    = _("List annotations as user USER")
+            )
+
 def description():
     return """Obtain a list of metadata entries on a folder."""
 
@@ -42,11 +55,26 @@ def execute(*args, **kw):
 
     if len(folder.split('@')) > 1:
         domain = folder.split('@')[1]
+    elif not conf.user == None and len(conf.user.split('@')) > 1:
+        domain = conf.user.split('@')[1]
     else:
         domain = conf.get('kolab', 'primary_domain')
 
     imap = IMAP()
-    imap.connect(domain=domain)
+
+    if not conf.user == None:
+        imap.connect(domain=domain, login=False)
+
+        backend = conf.get(domain, 'imap_backend')
+        if backend == None:
+            backend = conf.get('kolab', 'imap_backend')
+
+        admin_login = conf.get(backend, 'admin_login')
+        admin_password = conf.get(backend, 'admin_password')
+
+        imap.login_plain(admin_login, admin_password, conf.user)
+    else:
+        imap.connect(domain=domain)
 
     if not imap.has_folder(folder):
         print >> sys.stderr, _("No such folder %r") % (folder)
