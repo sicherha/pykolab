@@ -647,6 +647,8 @@ class CYRUS:
             return {}
         ann = {}
         for annotation in data:
+            if isinstance(annotation, tuple):
+                annotation = annotation[0]
             self.__verbose( '[GETANNOTATION] RAW %r (length %d)' % (annotation,len(annotation)))
             annotation = annotation.split('"')
             self.__verbose( '[GETANNOTATION] SPLIT %r (length %d)' % (annotation,len(annotation)))
