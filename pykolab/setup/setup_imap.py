@@ -139,29 +139,29 @@ def execute(*args, **kw):
             myaugeas.save()
 
         myaugeas.close()
-    
+
     if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['systemctl', 'restart', 'cyrus-imapd.service'])
         subprocess.call(['systemctl', 'restart', 'kolab-saslauthd.service'])
+        subprocess.call(['systemctl', 'restart', 'cyrus-imapd.service'])
     elif os.path.isfile('/sbin/service'):
-        subprocess.call(['service', 'cyrus-imapd', 'restart'])
         subprocess.call(['service', 'kolab-saslauthd', 'restart'])
+        subprocess.call(['service', 'cyrus-imapd', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
-        subprocess.call(['/usr/sbin/service','cyrus-imapd','restart'])
         subprocess.call(['/usr/sbin/service','kolab-saslauthd','restart'])
+        subprocess.call(['/usr/sbin/service','cyrus-imapd','restart'])
     else:
         log.error(_("Could not start the cyrus-imapd and kolab-saslauthd services."))
 
     if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['systemctl', 'enable', 'cyrus-imapd.service'])
         subprocess.call(['systemctl', 'enable', 'kolab-saslauthd.service'])
+        subprocess.call(['systemctl', 'enable', 'cyrus-imapd.service'])
     elif os.path.isfile('/sbin/chkconfig'):
-        subprocess.call(['chkconfig', 'cyrus-imapd', 'on'])
         subprocess.call(['chkconfig', 'kolab-saslauthd', 'on'])
+        subprocess.call(['chkconfig', 'cyrus-imapd', 'on'])
     elif os.path.isfile('/usr/sbin/update-rc.d'):
-        subprocess.call(['/usr/sbin/update-rc.d', 'cyrus-imapd', 'defaults'])
         subprocess.call(['/usr/sbin/update-rc.d', 'kolab-saslauthd', 'defaults'])
         subprocess.call(['/usr/sbin/update-rc.d', 'saslauthd', 'disable'])
+        subprocess.call(['/usr/sbin/update-rc.d', 'cyrus-imapd', 'defaults'])
     else:
         log.error(_("Could not configure to start on boot, the " + \
-                "cyrus-imapd and kolab-saslauthd services."))            
+                "cyrus-imapd and kolab-saslauthd services."))
