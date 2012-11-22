@@ -56,8 +56,8 @@ def execute(*args, **kw):
         subprocess.call(['/usr/sbin/update-rc.d', 'mysql', 'defaults'])
     else:
         log.error(_("Could not configure to start on boot, the " + \
-                "MySQL database service."))                
-                
+                "MySQL database service."))
+
     print >> sys.stderr, utils.multiline_message(
             _("""
                     Please supply a root password for MySQL. This password will
@@ -93,6 +93,7 @@ password='%s'
 """ % (mysql_root_password)
 
     fp = open('/tmp/kolab-setup-my.cnf', 'w')
+    os.chmod('/tmp/kolab-setup-my.cnf', 0600)
     fp.write(data)
     fp.close()
 
