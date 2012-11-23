@@ -116,11 +116,13 @@ def execute(*args, **kw):
     vacation_text = None
     vacation_uce = None
     vacation_noreact_domains = None
+    vacation_react_domains = None
 
     vacation_active_attr = conf.get('sieve', 'vacation_active_attr')
     vacation_text_attr = conf.get('sieve', 'vacation_text_attr')
     vacation_uce_attr = conf.get('sieve', 'vacation_uce_attr')
     vacation_noreact_domains_attr = conf.get('sieve', 'vacation_noreact_domains_attr')
+    vacation_react_domains_attr = conf.get('sieve', 'vacation_react_domains_attr')
 
     if not vacation_text_attr == None:
 
@@ -139,13 +141,19 @@ def execute(*args, **kw):
         else:
             vacation_uce = False
 
-        if user.has_key(vacation_noreact_domains_attr):
-            if isinstance(user[vacation_noreact_domains_attr], list):
-                vacation_noreact_domains = user[vacation_noreact_domains_attr]
+        if user.has_key(vacation_react_domains_attr):
+            if isinstance(user[vacation_react_domains_attr], list):
+                vacation_react_domains = user[vacation_react_domains_attr]
             else:
-                vacation_noreact_domains = [ user[vacation_noreact_domains_attr] ]
+                vacation_react_domains = [ user[vacation_react_domains_attr] ]
         else:
-            vacation_noreact_domains = []
+            if user.has_key(vacation_noreact_domains_attr):
+                if isinstance(user[vacation_noreact_domains_attr], list):
+                    vacation_noreact_domains = user[vacation_noreact_domains_attr]
+                else:
+                    vacation_noreact_domains = [ user[vacation_noreact_domains_attr] ]
+            else:
+                vacation_noreact_domains = []
 
     #
     # Delivery to Folder
@@ -250,7 +258,24 @@ def execute(*args, **kw):
         mgmt_script.require(required_extension)
 
     if vacation_active:
-        if len(vacation_noreact_domains) > 0:
+        if len(vacation_react_domains) > 0:
+            mgmt_script.addfilter(
+                    'vacation',
+                    [('envelope', ':domain', ":is", "from", vacation_react_domains)],
+                    [
+                            (
+                                    "vacation",
+                                    ":days", 1,
+                                    ":subject",
+                                    "Out of Office",
+                                    # ":handle", see http://tools.ietf.org/html/rfc5230#page-4
+                                    # ":mime", to indicate the reason is in fact MIME
+                                    vacation_text
+                                )
+                        ]
+                )
+
+        elif len(vacation_noreact_domains) > 0:
             mgmt_script.addfilter(
                     'vacation',
                     [('not', ('envelope', ':domain', ":is", "from", vacation_noreact_domains))],
@@ -266,6 +291,7 @@ def execute(*args, **kw):
                                 )
                         ]
                 )
+
         else:
             mgmt_script.addfilter(
                     'vacation',
