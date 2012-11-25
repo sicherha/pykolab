@@ -34,6 +34,8 @@ BuildRequires:      python-icalendar
 BuildRequires:      python-kolabformat
 BuildRequires:      python-ldap
 BuildRequires:      python-nose
+BuildRequires:      python-pyasn1
+BuildRequires:      python-pyasn1-modules
 Requires:           kolab-cli = %{version}-%{release}
 Requires:           python-ldap >= 2.4
 Requires:           python-pyasn1
@@ -150,6 +152,7 @@ mkdir -p %{buildroot}/%{_unitdir}
 %{__install} -p -m 644 kolabd/kolabd.systemd %{buildroot}/%{_unitdir}/kolabd.service
 %{__install} -p -m 644 saslauthd/kolab-saslauthd.systemd %{buildroot}/%{_unitdir}/kolab-saslauthd.service
 %{__install} -p -m 644 wallace/wallace.systemd %{buildroot}/%{_unitdir}/wallace.service
+mkdir -p %{buildroot}/%{_sysconfdir}/tmpfiles.d/
 %{__install} -p -m 644 kolabd/kolabd.tmpfiles.d.conf %{buildroot}/%{_sysconfdir}/tmpfiles.d/kolabd.conf
 %{__install} -p -m 644 wallace/wallace.tmpfiles.d.conf %{buildroot}/%{_sysconfdir}/tmpfiles.d/wallace.conf
 %else
