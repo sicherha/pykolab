@@ -1,7 +1,8 @@
 EXTRA_DIST = \
 	kolabd.sysconfig \
 	kolabd.systemd \
-	kolabd.sysvinit
+	kolabd.sysvinit \
+	kolabd.tmpfiles.d.conf
 
 kolabddir = $(pythondir)/kolabd
 kolabd_PYTHON = $(wildcard *.py)
