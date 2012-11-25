@@ -201,9 +201,6 @@ def execute(component_name, *args, **kw):
 
     components[component_name]['function'](conf.cli_args, kw)
 
-    if os.path.exists('/tmp/kolab-setup-my.cnf'):
-        os.unlink('/tmp/kolab-setup-my.cnf')
-
 def register_group(dirname, module):
     components_base_path = os.path.join(os.path.dirname(__file__), module)
 

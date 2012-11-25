@@ -40,3 +40,7 @@ class Setup(object):
 
     def run(self):
         components.execute('_'.join(to_execute))
+
+        if os.path.exists('/tmp/kolab-setup-my.cnf'):
+            os.unlink('/tmp/kolab-setup-my.cnf')
+
