@@ -377,7 +377,7 @@ rm -rf %{buildroot}
 %doc AUTHORS ChangeLog COPYING
 %if 0%{?fedora} >= 15
 %{_unitdir}/wallace.service
-%{_sysconfdir}/tmpfiles.d/wallaced.conf
+%{_sysconfdir}/tmpfiles.d/wallace.conf
 %else
 %{_initrddir}/wallace
 %endif
