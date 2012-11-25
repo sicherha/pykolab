@@ -63,7 +63,9 @@ def execute(*args, **kw):
             2: "New MySQL server (needs to be initialized)."
         }
 
-    answer = utils.ask_menu(_("What MySQL server are we setting up?"), options)
+    answer = 0
+    if os.path.exists('/var/run/mysqld/mysqld.sock'):
+        answer = utils.ask_menu(_("What MySQL server are we setting up?"), options)
 
     if answer == "1" or answer == 1:
         print >> sys.stderr, utils.multiline_message(
