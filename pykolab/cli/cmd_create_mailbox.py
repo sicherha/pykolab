@@ -34,11 +34,13 @@ def __init__():
 
 def cli_options():
     my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
-    my_option_group.add_option( '--metadata',
-                                dest    = "metadata",
-                                action  = "store",
-                                default = None,
-                                help    = _("Set metadata for folder to ANNOTATION=VALUE"))
+    my_option_group.add_option(
+            '--metadata',
+            dest    = "metadata",
+            action  = "store",
+            default = None,
+            help    = _("Set metadata for folder to ANNOTATION=VALUE")
+        )
 
 def description():
     return """Create a mailbox or sub-folder of an existing mailbox."""
@@ -60,8 +62,11 @@ def execute(*args, **kw):
 
     imap = IMAP()
     imap.connect()
+
+    admin_login = conf.get('cyrus-imap', 'admin_login')
+
     imap.cm(mailbox)
 
     if not conf.metadata == None:
-        imap.setannotation(mailbox, conf.metadata.split('=')[0], conf.metadata.split('=')[1])
+        imap.set_metadata(mailbox, conf.metadata.split('=')[0], conf.metadata.split('=')[1])
 
