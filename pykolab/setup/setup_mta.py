@@ -211,14 +211,6 @@ result_attribute = mail
         subprocess.call(['/etc/pki/tls/certs/make-dummy-cert', '/etc/pki/tls/private/localhost.pem'])
         postfix_main_settings['smtpd_tls_cert_file'] = "/etc/pki/tls/private/localhost.pem"
         postfix_main_settings['smtpd_tls_key_file'] = "/etc/pki/tls/private/localhost.pem"
-    else:
-        if os.path.isfile('/etc/ssl/private/postfix.pem'):
-            postfix_main_settings['smtpd_tls_cert_file'] = "/etc/ssl/private/postfix.pem"
-            postfix_main_settings['smtpd_tls_key_file'] = "/etc/ssl/private/postfix.pem"
-        else:
-            log.error(_("No certificate found for Postfix, please supply one at /etc/pki/tls/private/localhost.pem."))
-            postfix_main_settings['smtpd_tls_cert_file'] = "/etc/pki/tls/private/localhost.pem"
-            postfix_main_settings['smtpd_tls_key_file'] = "/etc/pki/tls/private/localhost.pem"
 
     if not os.path.isfile('/etc/postfix/main.cf'):
         if os.path.isfile('/usr/share/postfix/main.cf.debian'):
