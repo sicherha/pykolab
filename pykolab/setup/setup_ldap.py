@@ -111,26 +111,26 @@ def execute(*args, **kw):
                     """)
             )
 
-	try:
-	    pw = pwd.getpwnam("dirsrv")
-	except:
-	    _input['userid'] = utils.ask_question(_("User"), default="nobody")
-	    _input['group'] = utils.ask_question(_("Group"), default="nobody")
-	else:
-	    _input['userid'] = utils.ask_question(_("User"), default="dirsrv")
-	    _input['group'] = utils.ask_question(_("Group"), default="dirsrv")
+        try:
+            pw = pwd.getpwnam("dirsrv")
+        except:
+            _input['userid'] = utils.ask_question(_("User"), default="nobody")
+            _input['group'] = utils.ask_question(_("Group"), default="nobody")
+        else:
+            _input['userid'] = utils.ask_question(_("User"), default="dirsrv")
+            _input['group'] = utils.ask_question(_("Group"), default="dirsrv")
 
     else:
         _input['admin_pass'] = conf.get('ldap', 'bind_pw')
         _input['dirmgr_pass'] = conf.get('ldap', 'bind_pw')
         try:
-	    pw = pwd.getpwnam("dirsrv")
-	except:
-	    _input['userid'] = "nobody"
-	    _input['group'] = "nobody"
-	else:
-	    _input['userid'] = "dirsrv"
-	    _input['group'] = "dirsrv"
+            pw = pwd.getpwnam("dirsrv")
+        except:
+            _input['userid'] = "nobody"
+            _input['group'] = "nobody"
+        else:
+            _input['userid'] = "dirsrv"
+            _input['group'] = "dirsrv"
 
     # TODO: Verify the user and group exist.
 
@@ -245,7 +245,7 @@ ServerAdminPwd = %(admin_pass)s
     else:
         log.error(_("No directory server setup tool available."))
         sys.exit(1)
-    
+
     command = [
             setup_ds_admin,
             '--debug',

@@ -124,9 +124,9 @@ def execute(*args, **kw):
                 )
 
         fp = None
-	    if os.path.isdir('/etc/roundcubemail'):
-	        fp = open('/etc/roundcubemail/%s' % (want_file), 'w')
-	    elif os.path.isdir('/etc/roundcube'):
+        if os.path.isdir('/etc/roundcubemail'):
+            fp = open('/etc/roundcubemail/%s' % (want_file), 'w')
+        elif os.path.isdir('/etc/roundcube'):
             fp = open('/etc/roundcube/%s' % (want_file), 'w')
 
         if not fp == None:

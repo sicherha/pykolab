@@ -218,7 +218,7 @@ result_attribute = mail
                     '/usr/share/postfix/main.cf.debian',
                     '/etc/postfix/main.cf'
                 )
-        
+
     myaugeas = Augeas()
 
     setting_base = '/files/etc/postfix/main.cf/'
@@ -268,6 +268,12 @@ result_attribute = mail
         log.error(_("Could not write out Postfix configuration file /etc/postfix/master.cf"))
         return
 
+    if os.path.isdir('/etc/postfix/sasl/'):
+        fp = open('/etc/postfix/sasl/smtpd.conf', 'w')
+        fp.write("pwcheck_method: saslauthd\n")
+        fp.write("mech_list: plain login\n")
+        fp.close()
+
     amavisd_settings = {
             'ldap_server': 'localhost',
             'ldap_bind_dn': conf.get('ldap', 'service_bind_dn'),
@@ -298,7 +304,7 @@ result_attribute = mail
         if os.path.isdir('/etc/amavisd'):
             fp = open('/etc/amavisd/amavisd.conf', 'w')
         elif os.path.isdir('/etc/amavis'):
-	        fp = open('/etc/amavis/amavisd.conf', 'w')
+            fp = open('/etc/amavis/amavisd.conf', 'w')
             fp.write(t.__str__())
             fp.close()
 
@@ -307,15 +313,15 @@ result_attribute = mail
             return
 
     # On APT installations, /etc/amavis/conf.d/ is a directory with many more files.
-    # 
+    #
     # Somebody could work on enhancement request #1080 to configure LDAP lookups,
     # while really it isn't required.
     else:
         log.info(_("Not writing out any configuration for Amavis."))
 
-	# On debian wheezy amavisd-new expects '/etc/mailname' - possibly remediable through 
-	# the #1080 enhancement mentioned above, but here's a quick fix.
-	f = open('/etc/mailname','w')
+    # On debian wheezy amavisd-new expects '/etc/mailname' - possibly remediable through
+    # the #1080 enhancement mentioned above, but here's a quick fix.
+    f = open('/etc/mailname','w')
     f.writelines(conf.get('kolab', 'primary_domain'))
     f.close()
 
@@ -326,7 +332,7 @@ result_attribute = mail
             myaugeas.set(setting,'1')
             myaugeas.save()
         myaugeas.close()
-        
+
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'postfix.service'])
         subprocess.call(['systemctl', 'restart', 'amavisd.service'])
