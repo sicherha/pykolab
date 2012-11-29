@@ -171,17 +171,17 @@ smtp-wallace    unix    -   -   n   -       3   smtp
     -o smtpd_authorized_xforward_hosts=127.0.0.0/8
 
 recipient_policy unix    -   n   n   -       -   spawn
-    user=kolab-n argv=/usr/libexec/postfix/kolab_smtp_access_policy --verify-recipient
+    user=kolab-n argv=${kolab_sap_executable_path} --verify-recipient
 
 recipient_policy_incoming unix - n n -       -   spawn
-    user=kolab-n argv=/usr/libexec/postfix/kolab_smtp_access_policy --verify-recipient --allow-unauthenticated
+    user=kolab-n argv=${kolab_sap_executable_path} --verify-recipient --allow-unauthenticated
 
 sender_policy    unix    -   n   n   -       -   spawn
-    user=kolab-n argv=/usr/libexec/postfix/kolab_smtp_access_policy --verify-sender
+    user=kolab-n argv=${kolab_sap_executable_path} --verify-sender
 
 sender_policy_incoming unix - n  n   -       -   spawn
-    user=kolab-n argv=/usr/libexec/postfix/kolab_smtp_access_policy --verify-sender --allow-unauthenticated
+    user=kolab-n argv=${kolab_sap_executable_path} --verify-sender --allow-unauthenticated
 
 submission_policy unix - n n - - spawn
-    user=kolab-n argv=/usr/libexec/postfix/kolab_smtp_access_policy --verify-sender --verify-recipient
+    user=kolab-n argv=${kolab_sap_executable_path} --verify-sender --verify-recipient
 

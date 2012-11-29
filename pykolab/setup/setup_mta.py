@@ -237,6 +237,11 @@ result_attribute = mail
     postfix_master_settings = {
         }
 
+    if os.path.exists('/usr/lib/postfix/kolab_smtp_access_policy'):
+        postfix_master_settings['kolab_sap_executable_path'] = '/usr/lib/postfix/kolab_smtp_access_policy'
+    else:
+        postfix_master_settings['kolab_sap_executable_path'] = '/usr/libexec/postfix/kolab_smtp_access_policy'
+
     template_file = None
 
     if os.path.isfile('/etc/kolab/templates/master.cf.tpl'):
