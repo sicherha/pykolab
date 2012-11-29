@@ -198,8 +198,6 @@ result_attribute = mail
             "transport_maps": "ldap:/etc/postfix/ldap/transport_maps.cf",
             "virtual_alias_maps": "$alias_maps, ldap:/etc/postfix/ldap/virtual_alias_maps.cf, ldap:/etc/postfix/ldap/mailenabled_distgroups.cf, ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf",
             "smtpd_tls_auth_only": "yes",
-            "smtpd_tls_cert_file": "/etc/pki/tls/private/localhost.pem",
-            "smtpd_tls_key_file": "/etc/pki/tls/private/localhost.pem",
             "smtpd_recipient_restrictions": "permit_mynetworks, reject_unauth_pipelining, reject_rbl_client zen.spamhaus.org, reject_non_fqdn_recipient, reject_invalid_helo_hostname, reject_unknown_recipient_domain, reject_unauth_destination, check_policy_service unix:private/recipient_policy_incoming, permit",
             "smtpd_sender_restrictions": "permit_mynetworks, check_policy_service unix:private/sender_policy_incoming",
             "submission_recipient_restrictions": "check_policy_service unix:private/submission_policy, permit_sasl_authenticated, reject",
@@ -208,6 +206,19 @@ result_attribute = mail
             "content_filter": "smtp-amavis:[127.0.0.1]:10024"
 
         }
+
+    if os.path.isfile('/etc/pki/tls/certs/make-dummy-cert') and not os.path.isfile('/etc/pki/tls/private/localhost.pem'):
+        subprocess.call(['/etc/pki/tls/certs/make-dummy-cert', '/etc/pki/tls/private/localhost.pem'])
+        postfix_main_settings['smtpd_tls_cert_file'] = "/etc/pki/tls/private/localhost.pem"
+        postfix_main_settings['smtpd_tls_key_file'] = "/etc/pki/tls/private/localhost.pem"
+    else:
+        if os.path.isfile('/etc/ssl/private/postfix.pem'):
+            postfix_main_settings['smtpd_tls_cert_file'] = "/etc/ssl/private/postfix.pem"
+            postfix_main_settings['smtpd_tls_key_file'] = "/etc/ssl/private/postfix.pem"
+        else:
+            log.error(_("No certificate found for Postfix, please supply one at /etc/pki/tls/private/localhost.pem."))
+            postfix_main_settings['smtpd_tls_cert_file'] = "/etc/pki/tls/private/localhost.pem"
+            postfix_main_settings['smtpd_tls_key_file'] = "/etc/pki/tls/private/localhost.pem"
 
     if not os.path.isfile('/etc/postfix/main.cf'):
         if os.path.isfile('/usr/share/postfix/main.cf.debian'):
@@ -264,9 +275,6 @@ result_attribute = mail
     else:
         log.error(_("Could not write out Postfix configuration file /etc/postfix/master.cf"))
         return
-
-    if os.path.isfile('/etc/pki/tls/certs/make-dummy-cert') and not os.path.isfile('/etc/pki/tls/private/localhost.pem'):
-        subprocess.call(['/etc/pki/tls/certs/make-dummy-cert', '/etc/pki/tls/private/localhost.pem'])
 
     amavisd_settings = {
             'ldap_server': 'localhost',
