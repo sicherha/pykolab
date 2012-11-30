@@ -209,6 +209,8 @@ result_attribute = mail
 
     if os.path.isfile('/etc/pki/tls/certs/make-dummy-cert') and not os.path.isfile('/etc/pki/tls/private/localhost.pem'):
         subprocess.call(['/etc/pki/tls/certs/make-dummy-cert', '/etc/pki/tls/private/localhost.pem'])
+
+    if os.path.isfile('/etc/pki/tls/private/localhost.pem'):
         postfix_main_settings['smtpd_tls_cert_file'] = "/etc/pki/tls/private/localhost.pem"
         postfix_main_settings['smtpd_tls_key_file'] = "/etc/pki/tls/private/localhost.pem"
 
