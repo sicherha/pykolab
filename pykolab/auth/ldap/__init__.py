@@ -219,7 +219,13 @@ class LDAP(pykolab.base.Base):
         if conf.debuglevel > 8:
             trace_level = 1
 
-        self.ldap = ldap.initialize(uri, trace_level=trace_level)
+        self.ldap = ldap.ldapobject.ReconnectLDAPObject(
+                uri,
+                trace_level=trace_level,
+                retry_max=200,
+                retry_delay=3.0
+            )
+
         self.ldap.protocol_version = 3
         self.ldap.supported_controls = []
 
@@ -1230,17 +1236,14 @@ class LDAP(pykolab.base.Base):
         pass
 
     def _change_modify_user(self, entry, change):
-        for entry_key in conf.changelog.keys():
-            log.debug(
-                    _("Current changelog entry %s with %s") % (
-                            entry_key,
-                            conf.changelog[entry_key]
-                        ),
-                    level=8
-                )
+        result_attribute = conf.get('cyrus-sasl','result_attribute')
 
-        if conf.changelog.has_key(entry['id']):
-            old_canon_attr = conf.changelog[entry['id']]
+        _entry = cache.get_entry(self.domain, entry)
+
+        log.debug("Entry.__dict__: %r" % (_entry.__dict__))
+
+        if _entry.__dict__.has_key('result_attribute') and not _entry.result_attribute == '':
+            old_canon_attr = _entry.result_attribute
 
         entry_changes = self.recipient_policy(entry)
 
@@ -1249,7 +1252,6 @@ class LDAP(pykolab.base.Base):
                 level=8
             )
 
-        result_attribute = conf.get('cyrus-sasl','result_attribute')
         if entry_changes.has_key(result_attribute):
             if not entry_changes[result_attribute] == old_canon_attr:
                 self.imap.user_mailbox_rename(
@@ -1257,7 +1259,8 @@ class LDAP(pykolab.base.Base):
                         entry_changes[result_attribute]
                     )
 
-                conf.changelog[entry['id']] = entry_changes[result_attribute]
+                entry[result_attribute] = entry_changes[result_attribute]
+                cache.get_entry(self.domain, entry)
 
         self.user_quota(entry, "user%s%s" % (self.imap.separator,entry[result_attribute]))
 
