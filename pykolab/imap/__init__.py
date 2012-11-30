@@ -598,7 +598,15 @@ class IMAP(object):
                 log.debug(_("Value for user is not a dictionary"), level=8)
 
     def set_quota(self, folder, quota):
-        self.imap._setquota(folder, quota)
+        i = 0
+        while i < 10:
+            try:
+                self.imap._setquota(folder, quota)
+                i = 10
+            except:
+                self.disconnect()
+                self.connect()
+                i += 1
 
     def set_user_folder_quota(self, users=[], primary_domain=None, secondary_domain=[], folders=[]):
         """
