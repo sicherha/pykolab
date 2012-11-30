@@ -37,6 +37,10 @@ class KolabdProcess(multiprocessing.Process):
             )
 
     def synchronize(self, domain):
-        auth = Auth(domain)
-        auth.connect(domain)
-        auth.synchronize()
+        try:
+            auth = Auth(domain)
+            auth.connect(domain)
+            auth.synchronize()
+        except:
+            log.error(_("Error in process %r, terminating") % (self.name))
+            return
