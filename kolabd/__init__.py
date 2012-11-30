@@ -243,7 +243,11 @@ class KolabDaemon(object):
 
             for domain in all_domains:
                 if domain in domain_auth.keys() and domain in primary_domains:
-                    continue
+                    if not domain_auth[domain].is_alive():
+                        domain_auth[domain].terminate()
+                        added_domains.append(domain)
+                    else:
+                        continue
                 elif domain in domain_auth.keys():
                     removed_domains.append(domain)
                 else:
@@ -268,8 +272,19 @@ class KolabDaemon(object):
         pass
 
     def remove_pid(self, *args, **kw):
+        """
+            Remove our PID file.
+
+            Note that multiple processes can attempt to do this very same thing
+            at the same time, and therefore we need to test if the PID file
+            exists, and only try/except removing it.
+        """
         if os.access(conf.pidfile, os.R_OK):
-            os.remove(conf.pidfile)
+            try:
+                os.remove(conf.pidfile)
+            except:
+                pass
+
         raise SystemExit
 
     def set_signal_handlers(self):
