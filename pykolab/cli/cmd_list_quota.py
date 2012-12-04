@@ -54,6 +54,7 @@ def execute(*args, **kw):
     for quota_folder in quota_folders:
         try:
             (used, quota) = imap.get_quota(quota_folder)
+            print "Folder: %s" % (quota_folder)
             if not used == None and not quota == None:
                 if quota == 0:
                     print >> sys.stderr, _("The quota for folder %s is set to literally allow 0KB of storage.") % (quota_folder)
@@ -66,6 +67,7 @@ def execute(*args, **kw):
         except:
             try:
                 (quota_root, used, quota) = imap.get_quota_root(quota_folder)
+                print "Folder: %s" % (quota_folder)
                 if not quota_root == None and not used == None and not quota == None:
                     if quota == 0:
                         print >> sys.stderr, _("The quota for folder %s is set to literally allow 0KB of storage.") % (quota_folder)
@@ -76,5 +78,6 @@ def execute(*args, **kw):
                 else:
                     print "No quota"
             except:
+                print "Folder: %s" % (quota_folder)
                 print "No quota root"
 
