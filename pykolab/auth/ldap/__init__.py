@@ -964,8 +964,11 @@ class LDAP(pykolab.base.Base):
         """
         pass
 
-    def _change_add_None(self, *args, **kw):
-        pass
+    def _change_add_None(self, entry, change):
+        """
+            Redirect to _change_add_unknown
+        """
+        self._change_add_unknown(entry, change)
 
     def _change_add_resource(self, entry, change):
         """
@@ -992,16 +995,22 @@ class LDAP(pykolab.base.Base):
         self.imap.connect(domain=self.domain)
 
         server = None
+
+        # Get some configuration values
         mailserver_attribute = self.config_get('mailserver_attribute')
-
         if entry.has_key(mailserver_attribute):
-            server = entry['mailserver_attribute']
+            server = entry[mailserver_attribute]
 
-        if not entry.has_key('kolabtargetfolder'):
-            entry['kolabtargetfolder'] = self.get_entry_attribute(
-                    entry['id'],
-                    'kolabtargetfolder'
-                )
+        foldertype_attribute = self.config_get('sharedfolder_type_attribute')
+        if not foldertype_attribute == None:
+            if not entry.has_key(foldertype_attribute):
+                entry[foldertype_attribute] = self.get_user_attribute(
+                        entry['id'],
+                        foldertype_attribute
+                    )
+
+            if not entry[foldertype_attribute] == None:
+                entry['kolabfoldertype'] = entry[foldertype_attribute]
 
         if not entry.has_key('kolabfoldertype'):
             entry['kolabfoldertype'] = self.get_entry_attribute(
@@ -1009,11 +1018,24 @@ class LDAP(pykolab.base.Base):
                     'kolabfoldertype'
                 )
 
-        #if not entry.has_key('kolabmailfolderaclentry'):
-            #entry['kolabmailfolderaclentry'] = self.get_entry_attribute(
-                    #entry['id'],
-                    #'kolabmailfolderaclentry'
-                #)
+        # A delivery address is postuser+targetfolder
+        delivery_address_attribute = self.config_get('sharedfolder_delivery_address_attribute')
+        if not delivery_address_attribute == None:
+            if not entry.has_key(delivery_address_attribute):
+                entry[delivery_address_attribute] = self.get_entry_attribute(
+                        entry['id'],
+                        delivery_address_attribute
+                    )
+
+            if not entry[delivery_address_attribute] == None:
+                if len(entry[delivery_address_attribute].split('+')) > 1:
+                    entry['kolabtargetfolder'] = entry[delivery_address_attribute].split('+')[1]
+
+        if not entry.has_key('kolabtargetfolder'):
+            entry['kolabtargetfolder'] = self.get_entry_attribute(
+                    entry['id'],
+                    'kolabtargetfolder'
+                )
 
         if entry.has_key('kolabtargetfolder') and \
                 not entry['kolabtargetfolder'] == None:
@@ -1031,6 +1053,32 @@ class LDAP(pykolab.base.Base):
             else:
                 folder_path = entry['cn']
 
+        folderacl_entry_attribute = self.config_get('sharedfolder_acl_entry_attribute')
+
+        if not folderacl_entry_attribute == None:
+            if not entry.has_key(folderacl_entry_attribute):
+                entry[folderacl_entry_attribute] = self.get_entry_attribute(
+                        entry['id'],
+                        folderacl_entry_attribute
+                    )
+
+            if not entry[folderacl_entry_attribute] == None:
+                # Parse it before assigning it
+                entry['kolabmailfolderaclentry'] = []
+                if not isinstance(entry[folderacl_entry_attribute], list):
+                    entry[folderacl_entry_attribute] = [ entry[folderacl_entry_attribute] ]
+
+                for acl_entry in entry[folderacl_entry_attribute]:
+                    acl_access = acl_entry.split()[-1]
+                    aci_subject = ' '.join(acl_entry.split()[:-1])
+                    entry['kolabmailfolderaclentry'].append("(%r, %r, %r)" % (folder_path, aci_subject, acl_access))
+
+        if not entry.has_key('kolabmailfolderaclentry'):
+            entry['kolabmailfolderaclentry'] = self.get_entry_attribute(
+                    entry['id'],
+                    'kolabmailfolderaclentry'
+                )
+
         if not self.imap.shared_folder_exists(folder_path):
             self.imap.shared_folder_create(folder_path, server)
 
@@ -1042,14 +1090,38 @@ class LDAP(pykolab.base.Base):
                     entry['kolabfoldertype']
                 )
 
-        #if entry.has_key('kolabmailfolderaclentry') and \
-                #not entry['kolabmailfolderaclentry'] == None:
-            #self.imap._set_kolab_mailfolder_acls(
-                    #entry['kolabmailfolderaclentry']
-                #)
+        if entry.has_key('kolabmailfolderaclentry') and \
+                not entry['kolabmailfolderaclentry'] == None:
+
+            self.imap._set_kolab_mailfolder_acls(
+                    entry['kolabmailfolderaclentry']
+                )
 
         #if server == None:
             #self.entry_set_attribute(mailserver_attribute, server)
+
+    def _change_add_unknown(self, entry, change):
+        """
+            An entry has been add, and we do not know of what object type
+            the entry was - user, group, role or sharedfolder.
+        """
+        result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+
+        if not entry.has_key(result_attribute):
+            return None
+
+        if entry[result_attribute] == None:
+            return None
+
+        for _type in ['user','group','role','sharedfolder']:
+            try:
+                eval("self._change_add_%s(entry, change)" % (_type))
+                success = True
+            except:
+                success = False
+
+            if success:
+                break
 
     def _change_add_user(self, entry, change):
         """
@@ -1160,7 +1232,6 @@ class LDAP(pykolab.base.Base):
         self.imap.user_mailbox_delete(entry[result_attribute])
         self.imap.cleanup_acls(entry[result_attribute])
 
-
     def _change_moddn_group(self, entry, change):
         # TODO: If the rdn attribute is the same as the result attribute...
         pass
@@ -1236,11 +1307,15 @@ class LDAP(pykolab.base.Base):
         pass
 
     def _change_modify_user(self, entry, change):
+        """
+            Handle the changes for an object of type user.
+
+            Expects the new entry.
+        """
+
         result_attribute = conf.get('cyrus-sasl','result_attribute')
 
-        _entry = cache.get_entry(self.domain, entry)
-
-        log.debug("Entry.__dict__: %r" % (_entry.__dict__))
+        _entry = cache.get_entry(self.domain, entry, update=False)
 
         if _entry.__dict__.has_key('result_attribute') and not _entry.result_attribute == '':
             old_canon_attr = _entry.result_attribute
@@ -1261,8 +1336,26 @@ class LDAP(pykolab.base.Base):
 
                 entry[result_attribute] = entry_changes[result_attribute]
                 cache.get_entry(self.domain, entry)
+        elif entry.has_key(result_attribute):
+            if not entry[result_attribute] == old_canon_attr:
+                self.imap.user_mailbox_rename(
+                        old_canon_attr,
+                        entry[result_attribute]
+                    )
 
-        self.user_quota(entry, "user%s%s" % (self.imap.separator,entry[result_attribute]))
+                cache.get_entry(self.domain, entry)
+
+        self.user_quota(entry, "user%s%s" % (self.imap.get_separator(),entry[result_attribute]))
+
+        if conf.has_option(self.domain, 'sieve_mgmt'):
+            sieve_mgmt_enabled = conf.get(self.domain, 'sieve_mgmt')
+            if utils.true_or_false(sieve_mgmt_enabled):
+                conf.plugins.exec_hook(
+                        'sieve_mgmt_refresh',
+                        kw={
+                                'user': entry[result_attribute]
+                            }
+                    )
 
     def _change_none_group(self, entry, change):
         """
@@ -1442,6 +1535,7 @@ class LDAP(pykolab.base.Base):
         """
             Return the type of object for an entry.
         """
+        self._bind()
 
         entry_dn = self.entry_dn(entry_id)
 
