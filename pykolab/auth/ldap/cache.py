@@ -99,11 +99,14 @@ def delete_entry(domain, entry):
         db.delete(_entry)
         db.commit()
 
-def get_entry(domain, entry):
+def get_entry(domain, entry, update=True):
     result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
     db = init_db(domain)
     _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
+
+    if not update:
+        return _entry
 
     if _entry == None:
         log.debug(_("Inserting cache entry %r") % (entry['id']), level=8)
