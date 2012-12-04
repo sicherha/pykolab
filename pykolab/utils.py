@@ -403,7 +403,7 @@ def true_or_false(val):
 
     if isinstance(val, basestring) or isinstance(val, str):
         val = val.lower()
-        if val in [ "true", "yes", "y" ]:
+        if val in [ "true", "yes", "y", "1" ]:
             return True
         else:
             return False
