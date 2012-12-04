@@ -38,28 +38,29 @@ class Logger(logging.Logger):
     fork = False
     loglevel = logging.CRITICAL
 
-    for arg in sys.argv:
-        if debuglevel == -1:
-            debuglevel = int(arg)
-            loglevel = logging.DEBUG
-            break
-
-        if '-d' == arg:
-            debuglevel = -1
-            continue
-
-        if '-l' == arg:
-            loglevel = -1
-            continue
-
-        if '--fork' == arg:
-            fork = True
-
-        if loglevel == -1:
-            if hasattr(logging,arg.upper()):
-                loglevel = getattr(logging,arg.upper())
-            else:
+    if hasattr(sys, 'argv'):
+        for arg in sys.argv:
+            if debuglevel == -1:
+                debuglevel = int(arg)
                 loglevel = logging.DEBUG
+                break
+
+            if '-d' == arg:
+                debuglevel = -1
+                continue
+
+            if '-l' == arg:
+                loglevel = -1
+                continue
+
+            if '--fork' == arg:
+                fork = True
+
+            if loglevel == -1:
+                if hasattr(logging,arg.upper()):
+                    loglevel = getattr(logging,arg.upper())
+                else:
+                    loglevel = logging.DEBUG
 
     def __init__(self, *args, **kw):
         if kw.has_key('name'):
@@ -102,10 +103,7 @@ class Logger(logging.Logger):
                         )
                     os.chmod(self.logfile, 0660)
                 except:
-                    print >> sys.stderr, \
-                            _("Could not change the ownership of log file %s") % (
-                                    self.logfile
-                                )
+                    pass
 
         # Make sure the log file exists
         try:
@@ -144,5 +142,6 @@ class Logger(logging.Logger):
         if level <= self.debuglevel:
             # TODO: Not the way it's supposed to work!
             self.log(logging.DEBUG, '[%d]: %s' % (os.getpid(),msg))
+ 
 
 logging.setLoggerClass(Logger)
