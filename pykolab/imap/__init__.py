@@ -26,6 +26,7 @@ import sys
 from urlparse import urlparse
 
 import pykolab
+from pykolab import utils
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.imap')
@@ -80,7 +81,7 @@ class IMAP(object):
                 if acl_entry == aci_subject:
                     # Set the ACL to '' (effectively deleting the ACL entry)
                     log.debug(_("Removing acl %r for subject %r from folder %r") % (acls[acl_entry],acl_entry,folder), level=8)
-                    self.imap.sam(folder, acl_entry, '')
+                    self.set_acl(folder, acl_entry, '')
 
     def connect(self, uri=None, server=None, domain=None, login=True):
         """
@@ -218,6 +219,17 @@ class IMAP(object):
 
         return self.imap.getannotation(folder, '*')
 
+    def get_separator(self):
+        if not hasattr(self, 'imap') or self.imap == None:
+            self.connect()
+
+        if hasattr(self.imap, 'separator'):
+            return self.imap.separator
+        elif hasattr(self.imap, 'm') and hasattr(self.imap.m, 'separator'):
+            return self.imap.m.separator
+        else:
+            return '/'
+
     def namespaces(self):
         """
             Obtain the namespaces.
@@ -252,12 +264,22 @@ class IMAP(object):
         if len(_namespaces) >= 1:
             _personal = _namespaces[0].replace('((','').replace('))','').split()[0]
 
-        return (_personal, _other_users, _shared)
+        return (_personal.replace('"', ''), _other_users.replace('"', ''), [x.replace('"', '') for x in _shared])
 
     def set_acl(self, folder, identifier, acl):
         """
             Set an ACL entry on a folder.
         """
+        short_rights = {
+                'all': 'lrswipkxtecda',
+                'read-only': 'lrs',
+                'read-write': 'lrswited',
+                'semi-full': 'lrswit',
+                'full': 'lrswipkxtecd'
+            }
+
+        if short_rights.has_key(acl):
+            acl = short_rights[acl]
 
         self.imap.sam(folder, identifier, acl)
 
@@ -274,9 +296,6 @@ class IMAP(object):
         elif metadata_path.startswith('/private/'):
             shared = False
             metadata_path = metadata_path.replace('/private/', '/')
-
-        if not shared:
-            log.warning(_("Private annotations need to be set using the appropriate user account."))
 
         self.imap._setannotation(folder, metadata_path, metadata_value, shared)
 
@@ -379,6 +398,15 @@ class IMAP(object):
                                 mailbox_base_name,
                                 additional_folders
                             )
+            if conf.has_option(self.domain, "sieve_mgmt"):
+                sieve_mgmt_enabled = conf.get(self.domain, 'sieve_mgmt')
+                if utils.true_or_false(sieve_mgmt_enabled):
+                    conf.plugins.exec_hook(
+                            'sieve_mgmt_refresh',
+                            kw={
+                                    'user': mailbox_base_name
+                                }
+                        )
 
         return folder_name
 
@@ -394,17 +422,25 @@ class IMAP(object):
         admin_password = conf.get(backend, 'admin_password')
 
         self.connect(login=False)
+
         self.login_plain(admin_login, admin_password, folder)
+
+        (personal, other, shared) = self.namespaces()
 
         for additional_folder in additional_folders.keys():
             _add_folder = {}
 
             folder_name = additional_folder
 
+            if not folder_name.startswith(personal):
+                log.error(_("Correcting additional folder name from %r to %r") % (folder_name, "%s%s" % (personal, folder_name)))
+                folder_name = "%s%s" % (personal, folder_name)
+
             try:
                 self.imap.cm(folder_name)
             except:
                 log.warning(_("Mailbox already exists: %s") % (folder_name))
+                continue
 
             if additional_folders[additional_folder].has_key("annotations"):
                 for annotation in additional_folders[additional_folder]["annotations"].keys():
@@ -416,7 +452,7 @@ class IMAP(object):
 
             if additional_folders[additional_folder].has_key("acls"):
                 for acl in additional_folders[additional_folder]["acls"].keys():
-                    self.imap.sam(
+                    self.set_acl(
                             folder_name,
                             "%s" % (acl),
                             "%s" % (additional_folders[additional_folder]["acls"][acl])
@@ -474,11 +510,16 @@ class IMAP(object):
         self.connect(domain=self.domain)
 
         for additional_folder in additional_folders.keys():
+            if additional_folder.startswith(personal) and not personal == '':
+                folder_name = additional_folder.replace(personal, '')
+            else:
+                folder_name = additional_folder
+
             folder_name = "user%s%s%s%s%s" % (
                     self.imap.separator,
                     localpart,
                     self.imap.separator,
-                    additional_folder,
+                    folder_name,
                     domain_suffix
                 )
 
@@ -492,6 +533,8 @@ class IMAP(object):
         """
             Delete a user mailbox.
         """
+        self.connect()
+
         folder = "user%s%s" %(self.imap.separator,mailbox_base_name)
         self.delete_mailfolder(folder)
         self.cleanup_acls(mailbox_base_name)
@@ -506,8 +549,8 @@ class IMAP(object):
         pass
 
     def user_mailbox_rename(self, old_name, new_name):
-        old_name = "user%s%s" % (self.imap.separator,old_name)
-        new_name = "user%s%s" % (self.imap.separator,new_name)
+        old_name = "user%s%s" % (self.get_separator(),old_name)
+        new_name = "user%s%s" % (self.get_separator(),new_name)
 
         if old_name == new_name:
             return
@@ -555,7 +598,7 @@ class IMAP(object):
                         _("Setting ACL rights %s for subject %s on folder " + \
                             "%s") % (rights,subject,folder), level=8)
 
-                self.imap.sam(
+                self.set_acl(
                         folder,
                         "%s" % (subject),
                         "%s" % (rights)
@@ -566,7 +609,7 @@ class IMAP(object):
                         _("Removing ACL rights %s for subject %s on folder " + \
                             "%s") % (rights,subject,folder), level=8)
 
-                self.imap.sam(
+                self.set_acl(
                         folder,
                         "%s" % (subject),
                         ""
