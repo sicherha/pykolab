@@ -53,6 +53,10 @@ pykolab_plugins_recipientpolicydir = $(pythondir)/$(PACKAGE)/plugins/recipientpo
 pykolab_plugins_recipientpolicy_PYTHON = \
 	plugins/recipientpolicy/__init__.py
 
+pykolab_plugins_sievemgmtdir = $(pythondir)/$(PACKAGE)/plugins/sievemgmt
+pykolab_plugins_sievemgmt_PYTHON = \
+	plugins/sievemgmt/__init__.py
+
 pykolab_setupdir = $(pythondir)/$(PACKAGE)/setup
 pykolab_setup_PYTHON = \
 	setup/components.py \
