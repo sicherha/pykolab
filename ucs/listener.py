@@ -28,7 +28,16 @@ import sys
 import univention_baseconfig
 import univention.debug as ulog
 
-sys.path = [ '/root/pykolab.git/' ] + sys.path
+sys.path = [
+        os.path.abspath(
+                os.path.join(
+                        os.path.dirname(
+                                os.path.realpath(os.path.abspath(__file__))
+                            ),
+                        '..'
+                    )
+            ) ] + sys.path
+
 #sys.stderr = open('/dev/null', 'a')
 
 name = 'kolab'
