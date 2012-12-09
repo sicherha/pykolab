@@ -195,7 +195,7 @@
     \$rcmail_config['smtp_server'] = 'tls://localhost';
     \$rcmail_config['session_domain'] = '';
     \$rcmail_config['des_key'] = "$des_key";
-    \$rcmail_config['username_domain'] = '';
+    \$rcmail_config['username_domain'] = '$primary_domain';
 
     \$rcmail_config['mail_domain'] = '';
 

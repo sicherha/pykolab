@@ -81,6 +81,7 @@ def execute(*args, **kw):
             'ldap_service_bind_pw': conf.get('ldap', 'service_bind_pw'),
             'ldap_user_base_dn': conf.get('ldap', 'user_base_dn'),
             'ldap_user_filter': conf.get('ldap', 'user_filter'),
+            'primary_domain': conf.get('kolab','primary_domain'),
             'mysql_uri': 'mysqli://roundcube:%s@localhost/roundcube' % (mysql_roundcube_password),
             'conf': conf
         }
