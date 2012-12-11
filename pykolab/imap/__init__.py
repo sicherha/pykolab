@@ -543,6 +543,10 @@ class IMAP(object):
         """
             Check if a user mailbox exists.
         """
+        if not mailbox_base_name == mailbox_base_name.lower():
+            log.warning(_("Downcasing mailbox name %r") % (mailbox_base_name))
+            mailbox_base_name = mailbox_base_name.lower()
+
         return self.has_folder('user%s%s' %(self.imap.separator, mailbox_base_name))
 
     def user_mailbox_quota(self, mailbox_quota):
