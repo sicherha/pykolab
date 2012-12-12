@@ -134,6 +134,7 @@ def handler(*args, **kw):
 
             # See if the mailserver_attribute exists
             mailserver_attribute = conf.get('ldap', 'mailserver_attribute').lower()
+            result_attr = conf.get('cyrus-sasl', 'result_attribute').lower()
 
             if mailserver_attribute == None:
                 log.error("Mail server attribute is not set")
