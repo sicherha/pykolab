@@ -271,7 +271,7 @@ class KolabSievemgmt(object):
             mgmt_script.require(required_extension)
 
         if vacation_active:
-            if len(vacation_react_domains) > 0:
+            if not vacation_react_domains == None and len(vacation_react_domains) > 0:
                 mgmt_script.addfilter(
                         'vacation',
                         [('envelope', ':domain', ":is", "from", vacation_react_domains)],
@@ -288,7 +288,7 @@ class KolabSievemgmt(object):
                             ]
                     )
 
-            elif len(vacation_noreact_domains) > 0:
+            elif not vacation_noreact_domains == None and len(vacation_noreact_domains) > 0:
                 mgmt_script.addfilter(
                         'vacation',
                         [('not', ('envelope', ':domain', ":is", "from", vacation_noreact_domains))],
