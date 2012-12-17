@@ -488,6 +488,7 @@ ServerAdminPwd = %(admin_pass)s
     # Add inetdomainbasedn in case the configured root dn is not the same as the
     # standard root dn for the domain name configured
     if not _input['rootdn'] == utils.standard_root_dn(_input['domain']):
+        attrs['objectclass'].append('inetdomain')
         attrs['inetdomainbasedn'] = _input['rootdn']
 
     ldif = ldap.modlist.addModlist(attrs)
