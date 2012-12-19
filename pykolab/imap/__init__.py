@@ -202,9 +202,25 @@ class IMAP(object):
             if not self._imap.has_key(server):
                 self.connect(server=server)
 
-            self._imap[server].cm(folder_path)
+            try:
+                self._imap[server].cm(folder_path)
+                return True
+            except:
+                log.error(
+                        _("Could not create folder %r") + \
+                                _(" on server %r") % (
+                                folder_path,
+                                server
+                            )
+                    )
+
         else:
-            self.imap.cm(folder_path)
+            try:
+                self.imap.cm(folder_path)
+                return True
+            except:
+                log.error(_("Could not create folder %r") % (folder_path))
+                return False
 
     def __getattr__(self, name):
         if hasattr(self.imap, name):
