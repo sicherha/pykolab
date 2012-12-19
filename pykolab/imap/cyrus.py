@@ -179,14 +179,14 @@ class Cyrus(cyruslib.CYRUS):
 
             if max_tries <= num_try:
                 log.error(_("Could not get the annotations after %s tries.") % (num_try))
-                annotations = { mailfolder: { '/vendor/cmu/cyrus-imapd/server': self.server }}
+                annotations = { mailfolder: { '/shared/vendor/cmu/cyrus-imapd/server': self.server }}
                 break
 
             log.warning(_("No annotations for %s: %r") % (mailfolder,annotations))
 
             time.sleep(1)
 
-        server = annotations[mailfolder]['/vendor/cmu/cyrus-imapd/server']
+        server = annotations[mailfolder]['/shared/vendor/cmu/cyrus-imapd/server']
         self.mbox[mailfolder] = server
 
         log.debug(_("Server for INBOX folder %s is %s") % (mailfolder,server), level=8)
