@@ -52,9 +52,11 @@ def execute(*args, **kw):
 
     resource_filter = conf.get('ldap', 'resource_filter')
 
+    server_host = utils.parse_ldap_uri(conf.get('ldap', 'ldap_uri'))[1]
+
     files = {
             "/etc/postfix/ldap/local_recipient_maps.cf": """
-server_host = localhost
+server_host = %(server_host)s
 server_port = 389
 version = 3
 search_base = %(base_dn)s
@@ -69,6 +71,7 @@ query_filter = (&(|(mail=%%s)(alias=%%s))(|%(kolab_user_filter)s%(kolab_group_fi
 result_attribute = mail
 """ % {
                         "base_dn": conf.get('ldap', 'base_dn'),
+                        "server_host": server_host,
                         "service_bind_dn": conf.get('ldap', 'service_bind_dn'),
                         "service_bind_pw": conf.get('ldap', 'service_bind_pw'),
                         "kolab_user_filter": user_filter,
@@ -76,7 +79,7 @@ result_attribute = mail
                         "resource_filter": resource_filter,
                     },
             "/etc/postfix/ldap/mydestination.cf": """
-server_host = localhost
+server_host = %(server_host)s
 server_port = 389
 version = 3
 search_base = %(domain_base_dn)s
@@ -88,6 +91,7 @@ bind_pw = %(service_bind_pw)s
 query_filter = %(domain_filter)s
 result_attribute = %(domain_name_attribute)s
 """ % {
+                        "server_host": server_host,
                         "domain_base_dn": conf.get('ldap', 'domain_base_dn'),
                         "domain_filter": conf.get('ldap', 'domain_filter').replace('*', '%s'),
                         "domain_name_attribute": conf.get('ldap', 'domain_name_attribute'),
@@ -95,7 +99,7 @@ result_attribute = %(domain_name_attribute)s
                         "service_bind_pw": conf.get('ldap', 'service_bind_pw'),
                     },
             "/etc/postfix/ldap/mailenabled_distgroups.cf": """
-server_host = localhost
+server_host = %(server_host)s
 server_port = 389
 version = 3
 search_base = %(group_base_dn)s
@@ -114,12 +118,13 @@ special_result_attribute = uniqueMember
 result_attribute =
 leaf_result_attribute = mail
 """ % {
+                        "server_host": server_host,
                         "group_base_dn": conf.get('ldap', 'group_base_dn'),
                         "service_bind_dn": conf.get('ldap', 'service_bind_dn'),
                         "service_bind_pw": conf.get('ldap', 'service_bind_pw'),
                     },
             "/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf": """
-server_host = localhost
+server_host = %(server_host)s
 server_port = 389
 version = 3
 search_base = %(group_base_dn)s
@@ -138,12 +143,13 @@ special_result_attribute = memberURL
 result_attribute =
 leaf_result_attribute = mail
 """ % {
+                        "server_host": server_host,
                         "group_base_dn": conf.get('ldap', 'group_base_dn'),
                         "service_bind_dn": conf.get('ldap', 'service_bind_dn'),
                         "service_bind_pw": conf.get('ldap', 'service_bind_pw'),
                     },
             "/etc/postfix/ldap/transport_maps.cf": """
-server_host = localhost
+server_host = %(server_host)s
 server_port = 389
 version = 3
 search_base = %(base_dn)s
@@ -159,11 +165,12 @@ result_attribute = mail
 result_format = lmtp:unix:/var/lib/imap/socket/lmtp
 """ % {
                         "base_dn": conf.get('ldap', 'base_dn'),
+                        "server_host": server_host,
                         "service_bind_dn": conf.get('ldap', 'service_bind_dn'),
                         "service_bind_pw": conf.get('ldap', 'service_bind_pw'),
                     },
             "/etc/postfix/ldap/virtual_alias_maps.cf": """
-server_host = localhost
+server_host = %(server_host)s
 server_port = 389
 version = 3
 search_base = %(base_dn)s
@@ -178,6 +185,7 @@ query_filter = (&(|(mail=%%s)(alias=%%s))(objectclass=kolabinetorgperson))
 result_attribute = mail
 """ % {
                         "base_dn": conf.get('ldap', 'base_dn'),
+                        "server_host": server_host,
                         "service_bind_dn": conf.get('ldap', 'service_bind_dn'),
                         "service_bind_pw": conf.get('ldap', 'service_bind_pw'),
                     },
@@ -280,7 +288,7 @@ result_attribute = mail
         fp.close()
 
     amavisd_settings = {
-            'ldap_server': 'localhost',
+            'ldap_server': '%(server_host)s',
             'ldap_bind_dn': conf.get('ldap', 'service_bind_dn'),
             'ldap_bind_pw': conf.get('ldap', 'service_bind_pw'),
             'primary_domain': conf.get('kolab', 'primary_domain'),
