@@ -333,11 +333,29 @@ def parse_ldap_uri(uri):
         or None on failure
     """
 
+    _protocol = uri.split(':')[0]
+
     try:
-        _protocol = uri.split(':')[0]
-        _ldap_uri, _attr, _scope, _filter = uri.split('?')
-        _server = _ldap_uri.split('//')[1].split('/')[0]
-        _base_dn = _ldap_uri.split('//')[1].split('/')[1]
+        try:
+            _ldap_uri, _attr, _scope, _filter = uri.split('?')
+            _server = _ldap_uri.split('//')[1].split('/')[0]
+            _base_dn = _ldap_uri.split('//')[1].split('/')[1]
+
+        except:
+            _server = uri.split('//')[1].split('/')[0]
+            _attr = None
+            _scope = None
+            _filter = None
+            _base_dn = None
+
+        if len(_server.split(':')) > 1:
+            _port = _server.split(':')[1]
+            _server = _server.split(':')[0]
+        else:
+            if _protocol == 'ldaps':
+                _port = "636"
+            else:
+                _port = "389"
 
         if _server == '':
             _server = None
@@ -352,7 +370,7 @@ def parse_ldap_uri(uri):
         if _filter == '':
             _filter = "(objectclass=*)"
 
-        return (_protocol, _server, _base_dn, _attr, _scope, _filter)
+        return (_protocol, _server, _port, _base_dn, _attr, _scope, _filter)
 
     except:
         return None

@@ -269,7 +269,7 @@ class PolicyRequest(object):
         if parsed_uri == None:
             return None
 
-        (_protocol, _server, _base_dn, _attrs, _scope, _filter) = \
+        (_protocol, _server, _port, _base_dn, _attrs, _scope, _filter) = \
                 parsed_uri
 
         if len(_attrs) == 0:
