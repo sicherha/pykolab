@@ -36,6 +36,7 @@ BuildRequires:      python-ldap
 BuildRequires:      python-nose
 BuildRequires:      python-pyasn1
 BuildRequires:      python-pyasn1-modules
+BuildRequires:      python-sqlalchemy
 Requires:           kolab-cli = %{version}-%{release}
 Requires:           python-ldap >= 2.4
 Requires:           python-pyasn1
