@@ -289,18 +289,25 @@ ServerAdminPwd = %(admin_pass)s
     schema_file = None
     for root, directories, filenames in os.walk('/usr/share/doc/'):
         for filename in filenames:
-            if filename == 'kolab2.ldif':
+            if filename.startswith('kolab') and filename.endswith('.ldif') and not schema_file == None:
                 schema_file = os.path.join(root,filename)
 
     if not schema_file == None:
-        shutil.copy(
-                schema_file,
-                '/etc/dirsrv/slapd-%s/schema/99kolab2.ldif' % (
-                        _input['hostname']
-                    )
-            )
+        try:
+            shutil.copy(
+                    schema_file,
+                    '/etc/dirsrv/slapd-%s/schema/99%s' % (
+                            _input['hostname'],
+                            os.path.basename(schema_file)
+                        )
+                )
+            schema_error = False
+        except:
+            log.error(_("Could not copy the LDAP extensions for Kolab"))
+            schema_error = True
     else:
-        log.warning(_("Could not find the ldap Kolab schema file"))
+        log.error(_("Could not find the ldap Kolab schema file"))
+        schema_error = True
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['/bin/systemctl', 'restart', 'dirsrv.target'])
@@ -544,7 +551,12 @@ ServerAdminPwd = %(admin_pass)s
     log.info(_("Setting access control to %s") % (_input['rootdn']))
     dn = _input['rootdn']
     aci = []
-    aci.append('(targetattr = "homePhone || preferredDeliveryMethod || jpegPhoto || postalAddress || carLicense || userPassword || mobile || kolabAllowSMTPRecipient || displayName || kolabDelegate || description || labeledURI || homePostalAddress || postOfficeBox || registeredAddress || postalCode || photo || title || street || kolabInvitationPolicy || pager || o || l || initials || kolabAllowSMTPSender || telephoneNumber || preferredLanguage || facsimileTelephoneNumber") (version 3.0;acl "Enable self write for common attributes";allow (read,compare,search,write)(userdn = "ldap:///self");)')
+
+    if not schema_error:
+        aci.append('(targetattr = "homePhone || preferredDeliveryMethod || jpegPhoto || postalAddress || carLicense || userPassword || mobile || displayName || description || labeledURI || homePostalAddress || postOfficeBox || registeredAddress || postalCode || photo || title || street || pager || o || l || initials || telephoneNumber || preferredLanguage || facsimileTelephoneNumber") (version 3.0;acl "Enable self write for common attributes";allow (read,compare,search,write)(userdn = "ldap:///self");)')
+    else:
+        aci.append('(targetattr = "homePhone || preferredDeliveryMethod || jpegPhoto || postalAddress || carLicense || userPassword || mobile || kolabAllowSMTPRecipient || displayName || kolabDelegate || description || labeledURI || homePostalAddress || postOfficeBox || registeredAddress || postalCode || photo || title || street || kolabInvitationPolicy || pager || o || l || initials || kolabAllowSMTPSender || telephoneNumber || preferredLanguage || facsimileTelephoneNumber") (version 3.0;acl "Enable self write for common attributes";allow (read,compare,search,write)(userdn = "ldap:///self");)')
+
     aci.append('(targetattr = "*") (version 3.0;acl "Directory Administrators Group";allow (all)(groupdn = "ldap:///cn=Directory Administrators,%(rootdn)s" or roledn = "ldap:///cn=kolab-admin,%(rootdn)s");)' % (_input))
     aci.append('(targetattr="*")(version 3.0; acl "Configuration Administrators Group"; allow (all) groupdn="ldap:///cn=Configuration Administrators,ou=Groups,ou=TopologyManagement,o=NetscapeRoot";)')
     aci.append('(targetattr="*")(version 3.0; acl "Configuration Administrator"; allow (all) userdn="ldap:///uid=admin,ou=Administrators,ou=TopologyManagement,o=NetscapeRoot";)')
