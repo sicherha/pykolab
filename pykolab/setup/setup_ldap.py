@@ -289,7 +289,7 @@ ServerAdminPwd = %(admin_pass)s
     schema_file = None
     for root, directories, filenames in os.walk('/usr/share/doc/'):
         for filename in filenames:
-            if filename.startswith('kolab') and filename.endswith('.ldif') and not schema_file == None:
+            if filename.startswith('kolab') and filename.endswith('.ldif') and schema_file == None:
                 schema_file = os.path.join(root,filename)
 
     if not schema_file == None:
