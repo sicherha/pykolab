@@ -11,6 +11,9 @@ conf = pykolab.getConf()
 class TestKolabDaemon(unittest.TestCase):
     @classmethod
     def setup_class(self, *args, **kw):
+        from tests.functional.purge_users import purge_users
+        purge_users()
+
         self.user = {
                 'local': 'john.doe',
                 'domain': 'example.org'
@@ -18,6 +21,11 @@ class TestKolabDaemon(unittest.TestCase):
 
         from tests.functional.user_add import user_add
         user_add("John", "Doe")
+
+    @classmethod
+    def teardown_class(self, *args, **kw):
+        from tests.functional.purge_users import purge_users
+        purge_users()
 
     def test_001_user_recipient_policy(self):
         auth = Auth()
@@ -28,11 +36,43 @@ class TestKolabDaemon(unittest.TestCase):
 
         self.assertEqual(recipient, "uid=doe,ou=People,dc=example,dc=org")
 
-        result = wap_client.user_info(recipient)
-        self.assertEqual(result['mail'], 'john.doe@example.org')
-        self.assertEqual(result['alias'], ['doe@example.org', 'j.doe@example.org'])
+        result_before = wap_client.user_info(recipient)
 
-    def test_002_user_mailbox_created(self):
+        # Ensure the synchronization is run even without a kolab daemon running.
+        auth.synchronize(mode='_paged_search')
+
+        result_after = wap_client.user_info(recipient)
+        self.assertEqual(result_after['mail'], 'john.doe@example.org')
+        self.assertEqual(result_before['alias'], ['doe@example.org', 'j.doe@example.org', 'john.doe@example.org'])
+        self.assertEqual(result_after['alias'], ['doe@example.org', 'j.doe@example.org'])
+
+    def test_002_user_recipient_policy_duplicate(self):
+        from tests.functional.user_add import user_add
+        user = {
+                'local': 'jane.doe',
+                'domain': 'example.org'
+            }
+        user_add("Jane", "Doe")
+
+        auth = Auth()
+        auth.connect()
+        recipient = auth.find_recipient("%(local)s@%(domain)s" % (user))
+        if hasattr(self, 'assertIsInstance'):
+            self.assertIsInstance(recipient, str)
+
+        self.assertEqual(recipient, "uid=doe2,ou=People,dc=example,dc=org")
+
+        result_before = wap_client.user_info(recipient)
+
+        # Ensure the synchronization is run even without a kolab daemon running.
+        auth.synchronize(mode='_paged_search')
+
+        result_after = wap_client.user_info(recipient)
+        self.assertEqual(result_after['mail'], 'jane.doe@example.org')
+        self.assertEqual(result_before['alias'], ['doe2@example.org', 'j.doe2@example.org', 'jane.doe@example.org'])
+        self.assertEqual(result_after['alias'], ['doe2@example.org', 'j.doe2@example.org'])
+
+    def test_003_user_mailbox_created(self):
         time.sleep(2)
         imap = IMAP()
         imap.connect()
@@ -40,7 +80,7 @@ class TestKolabDaemon(unittest.TestCase):
         folders = imap.lm('user/%(local)s@%(domain)s' % (self.user))
         self.assertEqual(len(folders), 1)
 
-    def test_003_user_additional_folders_created(self):
+    def test_004_user_additional_folders_created(self):
         time.sleep(2)
         imap = IMAP()
         imap.connect()
@@ -51,7 +91,7 @@ class TestKolabDaemon(unittest.TestCase):
 
         self.assertEqual(len(folders), len(ac_folders.keys()))
 
-    def test_004_user_folder_annotations_set(self):
+    def test_005_user_folders_metadata_set(self):
         imap = IMAP()
         imap.connect()
 
@@ -62,18 +102,21 @@ class TestKolabDaemon(unittest.TestCase):
         folders.extend(imap.lm('user/%(local)s/*@%(domain)s' % (self.user)))
 
         for folder in folders:
-            annotation = imap.getannotation(folder)
-            print annotation
+            metadata = imap.get_metadata(folder)
+            print metadata
 
             folder_name = '/'.join(folder.split('/')[2:]).split('@')[0]
             if ac_folders.has_key(folder_name):
                 if ac_folders[folder_name].has_key('annotations'):
                     for _annotation in ac_folders[folder_name]['annotations'].keys():
-                        _annotation_value = ac_folders[folder_name]['annotations'][_annotation]
-                        self.assertTrue(annotation[annotation.keys().pop()].has_key(_annotation))
-                        self.assertEqual(_annotation_value, annotation[annotation.keys().pop()][_annotation])
+                        if _annotation.startswith('/private'):
+                            continue
 
-    def test_005_user_subscriptions(self):
+                        _annotation_value = ac_folders[folder_name]['annotations'][_annotation]
+                        self.assertTrue(metadata[metadata.keys().pop()].has_key(_annotation))
+                        self.assertEqual(_annotation_value, metadata[metadata.keys().pop()][_annotation])
+
+    def test_006_user_subscriptions(self):
         imap = IMAP()
         imap.connect(login=False)
         login = conf.get('cyrus-imap', 'admin_login')
