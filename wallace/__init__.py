@@ -21,6 +21,7 @@ import asyncore
 import binascii
 from distutils import version
 import grp
+import json
 import multiprocessing
 import os
 import pwd
@@ -240,6 +241,14 @@ class WallaceDaemon(object):
             and not ever block.
         """
         inheaders = 1
+
+        data = json.dumps(
+                {
+                        'from': mailfrom,
+                        'to': rcpttos,
+                        'data': data
+                   }
+            )
 
         (fp, filename) = tempfile.mkstemp(dir="/var/spool/pykolab/wallace/")
         os.write(fp, data)
