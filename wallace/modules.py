@@ -17,11 +17,12 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import json
 import os
 import sys
 import time
 
-from email import message_from_file
+from email import message_from_string
 from email.message import Message
 from email.mime.base import MIMEBase
 from email.mime.message import MIMEMessage
@@ -119,7 +120,8 @@ def cb_action_HOLD(module, filepath):
 
 def cb_action_DEFER(module, filepath):
     log.info(_("Deferring message in %s (by module %s)") % (filepath, module))
-    message = message_from_file(open(filepath, 'r'))
+    message = json.load(open(filepath, 'r'))
+    message = message_from_string(message['data'])
 
     internal_time = parsedate_tz(message.__getitem__('Date'))
     internal_time = time.mktime(internal_time[:9]) + internal_time[9]
@@ -161,11 +163,14 @@ def cb_action_DEFER(module, filepath):
 def cb_action_REJECT(module, filepath):
     log.info(_("Rejecting message in %s (by module %s)") % (filepath, module))
 
-    message = message_from_file(open(filepath, 'r'))
+    _message = json.load(open(filepath, 'r'))
+    message = message_from_string(_message['data'])
+
     envelope_sender = getaddresses(message.get_all('From', []))
 
     recipients = getaddresses(message.get_all('To', [])) + \
-            getaddresses(message.get_all('Cc', []))
+            getaddresses(message.get_all('Cc', [])) + \
+            _message['to']
 
     _recipients = []
 
@@ -246,11 +251,11 @@ X-Wallace-Result: REJECT
 
 def cb_action_ACCEPT(module, filepath):
     log.info(_("Accepting message in %s (by module %s)") % (filepath, module))
-    message = message_from_file(open(filepath, 'r'))
-    envelope_sender = getaddresses(message.get_all('From', []))
+    _message = json.load(open(filepath, 'r'))
 
-    recipients = getaddresses(message.get_all('To', [])) + \
-            getaddresses(message.get_all('Cc', []))
+    message = message_from_string("%s" %(str(_message['data'])))
+    sender = _message['from']
+    recipients = _message['to']
 
     smtp = smtplib.SMTP("localhost", 10027)
 
@@ -259,21 +264,25 @@ def cb_action_ACCEPT(module, filepath):
 
     try:
         smtp.sendmail(
-                formataddr(envelope_sender[0]),
-                [formataddr(recipient) for recipient in recipients],
+                sender,
+                recipients,
                 message.as_string()
             )
 
     except smtplib.SMTPDataError, errmsg:
+        log.error("SMTP Data Error, %r" % (errmsg))
         # DEFER
         pass
     except smtplib.SMTPHeloError, errmsg:
+        log.error("SMTP HELO Error, %r" % (errmsg))
         # DEFER
         pass
     except smtplib.SMTPRecipientsRefused, errmsg:
+        log.error("SMTP Recipient(s) Refused, %r" % (errmsg))
         # DEFER
         pass
     except smtplib.SMTPSenderRefused, errmsg:
+        log.error("SMTP Sender Refused, %r" % (errmsg))
         # DEFER
         pass
     finally:
