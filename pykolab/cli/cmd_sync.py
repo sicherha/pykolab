@@ -51,7 +51,7 @@ def execute(*args, **kw):
         log.debug(_("Running for domain %s") % (primary_domain), level=8)
         auth.connect(primary_domain)
         start_time = time.time()
-        auth.synchronize()
+        auth.synchronize(mode='_paged_search')
         end_time = time.time()
 
         log.info(_("Synchronizing users for %s took %d seconds")
