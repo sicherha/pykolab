@@ -28,7 +28,6 @@ import time
 from urlparse import urlparse
 import urllib
 
-from email import message_from_file
 from email import message_from_string
 from email.utils import formataddr
 from email.utils import getaddresses
@@ -121,10 +120,15 @@ def execute(*args, **kw):
                 os.path.basename(filepath)
             )
 
-        os.rename(filepath, new_filepath)
-        filepath = new_filepath
+        if not filepath == new_filepath:
+            log.debug("Renaming %r to %r" % (filepath, new_filepath))
+            os.rename(filepath, new_filepath)
+            filepath = new_filepath
 
-    message = message_from_file(open(filepath, 'r'))
+    _message = json.load(open(filepath, 'r'))
+    log.debug("Loaded message %r" % (_message), level=9)
+    message = message_from_string(_message['data'])
+    recipients = _message['to']
 
     any_itips = False
     any_resources = False
@@ -158,15 +162,8 @@ def execute(*args, **kw):
             possibly_any_resources = False
 
     if possibly_any_resources:
-        recipients = {
-                "To": getaddresses(message.get_all('To', [])),
-                "Cc": getaddresses(message.get_all('Cc', []))
-                # TODO: Are those all recipient addresses?
-            }
-        log.debug("Recipients: %r" % recipients)
-
-        for recipient in recipients['Cc'] + recipients['To']:
-            if not len(resource_record_from_email_address(recipient[1])) == 0:
+        for recipient in recipients:
+            if not len(resource_record_from_email_address(recipient)) == 0:
                 any_resources = True
 
     if any_resources:
