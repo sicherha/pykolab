@@ -239,8 +239,8 @@ class Auth(pykolab.base.Base):
 
         return domains
 
-    def synchronize(self):
-        self._auth.synchronize()
+    def synchronize(self, mode=0):
+        self._auth.synchronize(mode=mode)
 
     def domain_default_quota(self, domain):
         return self._auth._domain_default_quota(domain)

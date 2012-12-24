@@ -427,7 +427,6 @@ class LDAP(pykolab.base.Base):
 
         _filter = "%s%s%s" % (__filter_prefix,_filter,__filter_suffix)
 
-
         log.debug(_("Finding resource with filter %r") % (_filter), level=8)
 
         if len(_filter) <= 6:
@@ -515,12 +514,12 @@ class LDAP(pykolab.base.Base):
                 if _mail_attr == primary_mail_attribute:
                     log.debug(_("key %r is the prim. mail attr.") % (_mail_attr), level=8)
                     if not primary_mail == None:
-                        log.debug(_("prim. mail pol. is not empty"))
+                        log.debug(_("prim. mail pol. is not empty"), level=8)
                         want_attrs.append(_mail_attr)
                 elif _mail_attr == secondary_mail_attribute:
                     log.debug(_("key %r is the sec. mail attr.") % (_mail_attr), level=8)
                     if not secondary_mail == None:
-                        log.debug(_("sec. mail pol. is not empty"))
+                        log.debug(_("sec. mail pol. is not empty"), level=8)
                         want_attrs.append(_mail_attr)
 
         log.debug(_("Attributes %r are not yet available for entry %r") % (
@@ -838,7 +837,7 @@ class LDAP(pykolab.base.Base):
             except:
                 log.error(_("Could not update dn %r:\n%r") % (dn, modlist))
 
-    def synchronize(self):
+    def synchronize(self, mode=0):
         """
             Synchronize with LDAP
         """
@@ -851,6 +850,11 @@ class LDAP(pykolab.base.Base):
 
         log.debug(_("Using filter %r") % (_filter), level=8)
 
+        if not mode == 0:
+            override_search = mode
+        else:
+            override_search = False
+
         self._search(
                 self.config_get('base_dn'),
                 filterstr=_filter,
@@ -860,6 +864,7 @@ class LDAP(pykolab.base.Base):
                         conf.get('cyrus-sasl', 'result_attribute'),
                         'modifytimestamp'
                     ],
+                override_search=override_search,
                 callback=self._synchronize_callback,
             )
 
@@ -1886,6 +1891,7 @@ class LDAP(pykolab.base.Base):
             primary_domain=None,
             secondary_domains=[]
         ):
+
         _results = []
 
         psearch_server_controls = []
