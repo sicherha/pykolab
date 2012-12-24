@@ -295,7 +295,7 @@ def user_add(params=None):
 
     params = json.dumps(params)
 
-    return request('POST', 'user.add', params)
+    return request('POST', 'user.add', get=None, post=params)
 
 def user_delete(params=None):
     if params == None:
