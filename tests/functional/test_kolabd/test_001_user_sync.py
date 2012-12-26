@@ -36,15 +36,9 @@ class TestKolabDaemon(unittest.TestCase):
 
         self.assertEqual(recipient, "uid=doe,ou=People,dc=example,dc=org")
 
-        result_before = wap_client.user_info(recipient)
-
-        # Ensure the synchronization is run even without a kolab daemon running.
-        auth.synchronize(mode='_paged_search')
-
-        result_after = wap_client.user_info(recipient)
-        self.assertEqual(result_after['mail'], 'john.doe@example.org')
-        self.assertEqual(result_before['alias'], ['doe@example.org', 'j.doe@example.org', 'john.doe@example.org'])
-        self.assertEqual(result_after['alias'], ['doe@example.org', 'j.doe@example.org'])
+        result = wap_client.user_info(recipient)
+        self.assertEqual(result['mail'], 'john.doe@example.org')
+        self.assertEqual(result['alias'], ['doe@example.org', 'j.doe@example.org'])
 
     def test_002_user_recipient_policy_duplicate(self):
         from tests.functional.user_add import user_add
@@ -62,15 +56,10 @@ class TestKolabDaemon(unittest.TestCase):
 
         self.assertEqual(recipient, "uid=doe2,ou=People,dc=example,dc=org")
 
-        result_before = wap_client.user_info(recipient)
+        result = wap_client.user_info(recipient)
 
-        # Ensure the synchronization is run even without a kolab daemon running.
-        auth.synchronize(mode='_paged_search')
-
-        result_after = wap_client.user_info(recipient)
-        self.assertEqual(result_after['mail'], 'jane.doe@example.org')
-        self.assertEqual(result_before['alias'], ['doe2@example.org', 'j.doe2@example.org', 'jane.doe@example.org'])
-        self.assertEqual(result_after['alias'], ['doe2@example.org', 'j.doe2@example.org'])
+        self.assertEqual(result['mail'], 'jane.doe@example.org')
+        self.assertEqual(result['alias'], ['doe2@example.org', 'j.doe2@example.org'])
 
     def test_003_user_mailbox_created(self):
         time.sleep(2)
@@ -126,8 +115,8 @@ class TestKolabDaemon(unittest.TestCase):
         folders = imap.lm()
         self.assertTrue("INBOX" in folders)
 
-        #folders = imap.imap.lsub()
-        #self.assertTrue("Calendar" in folders)
+        folders = imap.imap.lsub()
+        self.assertTrue("Calendar" in folders)
 
     def test_011_resource_add(self):
         pass
