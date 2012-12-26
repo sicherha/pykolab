@@ -43,7 +43,10 @@ class KolabdProcess(multiprocessing.Process):
                 auth = Auth(domain)
                 auth.connect(domain)
                 auth.synchronize()
+            except KeyboardInterrupt:
+                break
             except Exception, errmsg:
                 log.error(_("Error in process %r, terminating:\n\t%r") % (self.name, errmsg))
                 import traceback
                 traceback.print_exc()
+                time.sleep(1)
