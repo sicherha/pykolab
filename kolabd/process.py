@@ -41,6 +41,8 @@ class KolabdProcess(multiprocessing.Process):
             auth = Auth(domain)
             auth.connect(domain)
             auth.synchronize()
-        except:
-            log.error(_("Error in process %r, terminating") % (self.name))
+        except Exception, errmsg:
+            log.error(_("Error in process %r, terminating:\n\t%r") % (self.name, errmsg))
+            import traceback
+            traceback.print_exc()
             return
