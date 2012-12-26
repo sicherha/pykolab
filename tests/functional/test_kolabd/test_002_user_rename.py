@@ -21,7 +21,7 @@ class TestKolabDaemon(unittest.TestCase):
 
         from tests.functional.user_add import user_add
         user_add("John", "Doe")
-        time.sleep(5)
+        time.sleep(2)
 
     @classmethod
     def teardown_class(self, *args, **kw):
@@ -34,6 +34,15 @@ class TestKolabDaemon(unittest.TestCase):
             policy is applied, and the IMAP INBOX folder for the user is
             renamed.
         """
+        auth = Auth()
+        auth.connect()
+        recipient = auth.find_recipient('john.doe@example.org')
+        user_info = wap_client.user_info(recipient)
+
+        if not user_info.has_key('mailhost'):
+            from tests.functional.synchronize import synchronize_once
+            synchronize_once()
+
         imap = IMAP()
         imap.connect()
         folders = imap.lm('user/john.doe@example.org')
@@ -49,14 +58,23 @@ class TestKolabDaemon(unittest.TestCase):
         user_info['uid'] = 'sixpack'
         user_edit = wap_client.user_edit(recipient, user_info)
 
-        time.sleep(5)
+        time.sleep(2)
+
+        print imap.lm()
 
         user_info = wap_client.user_info('uid=sixpack,ou=People,dc=example,dc=org')
+        if not user_info['mail'] == 'joe.sixpack@example.org':
+            from tests.functional.synchronize import synchronize_once
+            synchronize_once()
+            user_info = wap_client.user_info('uid=sixpack,ou=People,dc=example,dc=org')
+
         self.assertEqual(user_info['mail'], 'joe.sixpack@example.org')
 
+        print imap.lm()
+
         folders = imap.lm('user/john.doe@example.org')
-        self.assertEqual(len(folders), 0)
+        self.assertEqual(len(folders), 0, "INBOX for john.doe still exists")
 
         folders = imap.lm('user/joe.sixpack@example.org')
-        self.assertEqual(len(folders), 1)
+        self.assertEqual(len(folders), 1, "INBOX for joe.sixpack does not exist")
 
