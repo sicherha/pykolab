@@ -1453,10 +1453,34 @@ class LDAP(pykolab.base.Base):
         """
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
-        rcpt_addrs = self.recipient_policy(entry)
+        old_canon_attr = None
 
-        for key in rcpt_addrs.keys():
-            entry[key] = rcpt_addrs[key]
+        _entry = cache.get_entry(self.domain, entry, update=False)
+
+        if not _entry == None and _entry.__dict__.has_key('result_attribute') and not _entry.result_attribute == '':
+            old_canon_attr = _entry.result_attribute
+
+        entry_changes = self.recipient_policy(entry)
+
+        if entry.has_key(result_attribute) and entry_changes.has_key(result_attribute):
+            if not entry[result_attribute] == entry_changes[result_attribute]:
+                old_canon_attr = entry[result_attribute]
+
+        log.debug(
+                _("Result from recipient policy: %r") % (entry_changes),
+                level=8
+            )
+
+        if entry_changes.has_key(result_attribute) and not old_canon_attr == None:
+            if not entry_changes[result_attribute] == old_canon_attr:
+                self.imap.user_mailbox_rename(
+                        old_canon_attr,
+                        entry_changes[result_attribute]
+                    )
+
+        for key in entry_changes.keys():
+            entry[key] = entry_changes[key]
+            self.set_entry_attribute(entry, key, entry[key])
 
         cache.get_entry(self.domain, entry)
 
