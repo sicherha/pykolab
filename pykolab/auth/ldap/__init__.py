@@ -522,12 +522,14 @@ class LDAP(pykolab.base.Base):
                         log.debug(_("sec. mail pol. is not empty"), level=8)
                         want_attrs.append(_mail_attr)
 
-        log.debug(_("Attributes %r are not yet available for entry %r") % (
-                    want_attrs,
-                    entry_dn
-                ),
-                level=8
-            )
+        if len(want_attrs) > 0:
+            log.debug(_("Attributes %r are not yet available for entry %r") % (
+                        want_attrs,
+                        entry_dn
+                    ),
+                    level=8
+                )
+
         # Also append the preferredlanguage or 'native tongue' configured
         # for the entry.
         if not entry.has_key('preferredlanguage'):
@@ -551,19 +553,14 @@ class LDAP(pykolab.base.Base):
 
         # Primary mail address
         if not primary_mail == None:
-            if not entry.has_key(primary_mail_attribute) or \
-                    entry[primary_mail_attribute] == None:
-
-                primary_mail_address = conf.plugins.exec_hook(
-                        "set_primary_mail",
-                        kw={
-                                'primary_mail': primary_mail,
-                                'entry': entry,
-                                'primary_domain': self.domain
-                            }
-                    )
-            else:
-                primary_mail_address = entry[primary_mail_attribute]
+            primary_mail_address = conf.plugins.exec_hook(
+                    "set_primary_mail",
+                    kw={
+                            'primary_mail': primary_mail,
+                            'entry': entry,
+                            'primary_domain': self.domain
+                        }
+                )
 
             i = 1
             _primary_mail = primary_mail_address
