@@ -295,7 +295,7 @@ def user_add(params=None):
 
     params = json.dumps(params)
 
-    return request('POST', 'user.add', get=None, post=params)
+    return request('POST', 'user.add', post=params)
 
 def user_delete(params=None):
     if params == None:
@@ -307,17 +307,26 @@ def user_delete(params=None):
 
     return request('POST', 'user.delete', post=post)
 
-def user_edit(params=None):
-    if params == None:
-        params = {
+def user_edit(user = None, attributes={}):
+    if user == None:
+        get = {
                 'user': utils.ask_question("Username for user to edit", "user")
             }
+    else:
+        get = {
+                'user': user
+            }
 
-    get = json.dumps(params)
+    user_info = request('GET', 'user.info', get=get)
 
-    user = request('GET', 'user.info', get=get)
+    for attribute in attributes.keys():
+        user_info[attribute] = attributes[attribute]
 
-    return user
+    post = json.dumps(user_info)
+
+    user_edit = request('POST', 'user.edit', get=get, post=post)
+
+    return user_edit
 
 def user_form_value_generate_cn(params=None):
     if params == None:
@@ -424,7 +433,7 @@ def user_info(user=None):
     if user == None:
         user = utils.ask_question("User email address")
     _params = { 'user': user }
-    user = request('GET', 'user.info?%s' % (urllib.urlencode(_params)))
+    user = request('GET', 'user.info', get=_params)
     return user
 
 def user_types_list():
