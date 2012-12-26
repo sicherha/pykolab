@@ -17,6 +17,7 @@
 #
 
 import multiprocessing
+import os
 import time
 
 import pykolab
@@ -37,12 +38,12 @@ class KolabdProcess(multiprocessing.Process):
             )
 
     def synchronize(self, domain):
-        try:
-            auth = Auth(domain)
-            auth.connect(domain)
-            auth.synchronize()
-        except Exception, errmsg:
-            log.error(_("Error in process %r, terminating:\n\t%r") % (self.name, errmsg))
-            import traceback
-            traceback.print_exc()
-            return
+        while True:
+            try:
+                auth = Auth(domain)
+                auth.connect(domain)
+                auth.synchronize()
+            except Exception, errmsg:
+                log.error(_("Error in process %r, terminating:\n\t%r") % (self.name, errmsg))
+                import traceback
+                traceback.print_exc()

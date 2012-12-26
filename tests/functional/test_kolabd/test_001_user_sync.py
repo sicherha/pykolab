@@ -48,6 +48,8 @@ class TestKolabDaemon(unittest.TestCase):
             }
         user_add("Jane", "Doe")
 
+        time.sleep(3)
+
         auth = Auth()
         auth.connect()
         recipient = auth.find_recipient("%(local)s@%(domain)s" % (user))
@@ -55,6 +57,12 @@ class TestKolabDaemon(unittest.TestCase):
             self.assertIsInstance(recipient, str)
 
         self.assertEqual(recipient, "uid=doe2,ou=People,dc=example,dc=org")
+
+        result = wap_client.user_info(recipient)
+
+        if not result.has_key('mailhost'):
+            from tests.functional.synchronize import synchronize_once
+            synchronize_once()
 
         result = wap_client.user_info(recipient)
 
