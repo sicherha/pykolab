@@ -257,6 +257,8 @@ def execute(*args, **kw):
     for required_extension in mgmt_required_extensions:
         mgmt_script.require(required_extension)
 
+    mgmt_script.require('fileinto')
+
     if vacation_active:
         if not vacation_react_domains == None and len(vacation_react_domains) > 0:
             mgmt_script.addfilter(
@@ -348,6 +350,8 @@ def execute(*args, **kw):
         mgmt_script.addfilter('spam_delivery_folder', [("X-Spam-Status", ":matches", "Yes,*")], [("fileinto", "INBOX/Spam"), ("stop")])
 
     mgmt_script = mgmt_script.__str__()
+
+    log.debug(_("MANAGEMENT Script contents: %r") % (mgmt_script), level=9)
 
     result = sieveclient.putscript("MANAGEMENT", mgmt_script)
 

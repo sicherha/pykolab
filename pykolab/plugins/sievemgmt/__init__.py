@@ -270,6 +270,8 @@ class KolabSievemgmt(object):
         for required_extension in mgmt_required_extensions:
             mgmt_script.require(required_extension)
 
+        mgmt_script.require('fileinto')
+
         if vacation_active:
             if not vacation_react_domains == None and len(vacation_react_domains) > 0:
                 mgmt_script.addfilter(
@@ -381,7 +383,7 @@ require ["include"];
                 print "Including script %s in USER" % (script)
                 user_script = """%s
 
-    include :personal "%s";
+include :personal "%s";
     """ % (user_script, script)
 
         result = sieveclient.putscript("USER", user_script)
