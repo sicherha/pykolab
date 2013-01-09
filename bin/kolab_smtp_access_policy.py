@@ -448,6 +448,8 @@ class PolicyRequest(object):
                 # If unauthenticated is allowed, I have nothing to do here.
                 return True
 
+        sasl_username = self.sasl_username
+
         # If we have an sasl_username, find the user object in the
         # authentication database, along with the attributes we are
         # interested in.
@@ -456,6 +458,7 @@ class PolicyRequest(object):
                 self.sasl_domain = self.sasl_username.split('@')[1]
             else:
                 self.sasl_domain = conf.get('kolab', 'primary_domain')
+                sasl_username = "%s@%s" % (self.sasl_username, self.sasl_domain)
 
         if self.auth == None:
             self.auth = Auth(self.sasl_domain)
@@ -463,7 +466,7 @@ class PolicyRequest(object):
             self.auth = Auth(self.sasl_domain)
 
         sasl_users = self.auth.find_recipient(
-                self.sasl_username,
+                sasl_username,
                 domain=self.sasl_domain
             )
 
