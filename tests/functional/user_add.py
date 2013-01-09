@@ -64,5 +64,7 @@ def user_add(givenname, sn, preferredlanguage='en_US'):
     for attribute in user_type_info['auto_form_fields'].keys():
         params[attribute] = retval[attribute]
 
+    params['userpassword'] = user_details['userpassword']
+
     result = wap_client.user_add(params)
 
