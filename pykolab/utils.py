@@ -23,8 +23,11 @@ import os
 import pwd
 import sys
 
+import pykolab
 from pykolab import constants
 from pykolab.translate import _
+
+log = pykolab.getLogger('pykolab.utils')
 
 def ask_question(question, default="", password=False, confirm=False):
     """
@@ -389,14 +392,19 @@ def translate(mystring, locale_name='en_US'):
     import locale
     import subprocess
 
+    log.debug(_("Transliterating string %r with locale %r") % (mystring, locale_name), level=8)
+
     if len(locale.normalize(locale_name).split('.')) > 1:
         (locale_name,locale_charset) = locale.normalize(locale_name).split('.')
     else:
         locale_charset = 'utf-8'
 
     try:
+        log.debug(_("Attempting to set locale"), level=8)
         locale.setlocale(locale.LC_ALL, (locale_name,locale_charset))
+        log.debug(_("Success setting locale"), level=8)
     except:
+        log.debug(_("Failure to set locale"), level=8)
         pass
 
     command = [ '/usr/bin/iconv',
@@ -404,9 +412,10 @@ def translate(mystring, locale_name='en_US'):
                 '-t', 'ASCII//TRANSLIT',
                 '-s' ]
 
+    log.debug(_("Executing '%s | %s'") % (r"%s" % (mystring), ' '.join(command)), level=8)
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE, env={'LANG': locale.normalize(locale_name)})
 
-    print >> process.stdin, mystring
+    print >> process.stdin, r"%s" % mystring
 
     result = process.communicate()[0].strip()
 
