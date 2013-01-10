@@ -116,28 +116,33 @@ class KolabRecipientpolicy(object):
 
         alternative_mail = []
 
-        #print "%r" % (alternative_mail_routines)
+        log.debug(_("Alternative mail routines: %r") % (alternative_mail_routines), level=8)
         _domains = [ kw['primary_domain'] ] + kw['secondary_domains']
+
+        for attr in [ 'givenname', 'sn', 'surname' ]:
+            user_attrs[attr] = utils.translate(user_attrs[attr], user_attrs['preferredlanguage'])
 
         for number in alternative_mail_routines.keys():
             for routine in alternative_mail_routines[number].keys():
                 try:
                     exec("retval = '%s'.%s" % (routine,alternative_mail_routines[number][routine] % user_attrs))
+
+                    log.debug(_("Appending additional mail address: %s") % (retval), level=8)
+                    alternative_mail.append(retval)
+
                 except KeyError, e:
                     log.warning(_("Attribute substitution for 'alternative_mail' failed in Recipient Policy"))
-
-                #log.debug(_("Appending additional mail address: %s") % (retval), level=8)
-                alternative_mail.append(utils.translate(retval, user_attrs['preferredlanguage']))
 
                 for _domain in kw['secondary_domains']:
                     user_attrs['domain'] = _domain
                     try:
                         exec("retval = '%s'.%s" % (routine,alternative_mail_routines[number][routine] % user_attrs))
+
+                        log.debug(_("Appending additional mail address: %s") % (retval), level=8)
+                        alternative_mail.append(retval)
+
                     except KeyError, e:
                         log.warning(_("Attribute substitution for 'alternative_mail' failed in Recipient Policy"))
-
-                    #log.debug(_("Appending additional mail address: %s") % (retval), level=8)
-                    alternative_mail.append(utils.translate(retval, user_attrs['preferredlanguage']))
 
         alternative_mail = utils.normalize(alternative_mail)
 
