@@ -362,14 +362,17 @@ class KolabSievemgmt(object):
         if sdf_filter:
             mgmt_script.addfilter('spam_delivery_folder', [("X-Spam-Status", ":matches", "Yes,*")], [("fileinto", "INBOX/Spam"), ("stop")])
 
+        if dtf_active:
+            mgmt_script.addfilter('delivery_to_folder', ['true'], [("fileinto", dtf_folder)])
+
         mgmt_script = mgmt_script.__str__()
 
         result = sieveclient.putscript("MANAGEMENT", mgmt_script)
 
         if not result:
             print "Putting in script MANAGEMENT failed...?"
-        else:
-            print "Putting in script MANAGEMENT succeeded"
+        #else:
+            #print "Putting in script MANAGEMENT succeeded"
 
         user_script = """#
 # User
@@ -380,7 +383,7 @@ require ["include"];
 
         for script in scripts:
             if not script in [ "MASTER", "MANAGEMENT", "USER" ]:
-                print "Including script %s in USER" % (script)
+                #print "Including script %s in USER" % (script)
                 user_script = """%s
 
 include :personal "%s";
@@ -389,8 +392,8 @@ include :personal "%s";
         result = sieveclient.putscript("USER", user_script)
         if not result:
             print "Putting in script USER failed...?"
-        else:
-            print "Putting in script USER succeeded"
+        #else:
+            #print "Putting in script USER succeeded"
 
         result = sieveclient.putscript("MASTER", """#
 # MASTER
@@ -419,8 +422,8 @@ include :personal "USER";
 
         if not result:
             print "Putting in script MASTER failed...?"
-        else:
-            print "Putting in script MASTER succeeded"
+        #else:
+            #print "Putting in script MASTER succeeded"
 
         sieveclient.setactive("MASTER")
 

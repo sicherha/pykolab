@@ -349,6 +349,9 @@ def execute(*args, **kw):
     if sdf_filter:
         mgmt_script.addfilter('spam_delivery_folder', [("X-Spam-Status", ":matches", "Yes,*")], [("fileinto", "INBOX/Spam"), ("stop")])
 
+    if dtf_active:
+        mgmt_script.addfilter('delivery_to_folder', ['true'], [("fileinto", dtf_folder)])
+
     mgmt_script = mgmt_script.__str__()
 
     log.debug(_("MANAGEMENT Script contents: %r") % (mgmt_script), level=9)
