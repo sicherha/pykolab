@@ -58,7 +58,6 @@ class KolabSievemgmt(object):
 
         user = auth.find_recipient(address)
 
-        print user, address
         log.info("User for address %r: %r" % (address, user))
 
         # Get the main, default backend
@@ -109,9 +108,8 @@ class KolabSievemgmt(object):
         else:
             active, scripts = result
 
-
-        print "Found the following scripts: %s" % (','.join(scripts))
-        print "And the following script is active: %s" % (active)
+        log.debug(_("Found the following scripts for user %s: %s") % (address, ','.join(scripts)), level=8)
+        log.deubg(_("And the following script is active for user %s: %s") % (address, active), level=8)
 
         mgmt_required_extensions = []
 
@@ -370,9 +368,9 @@ class KolabSievemgmt(object):
         result = sieveclient.putscript("MANAGEMENT", mgmt_script)
 
         if not result:
-            print "Putting in script MANAGEMENT failed...?"
-        #else:
-            #print "Putting in script MANAGEMENT succeeded"
+            log.error(_("Uploading script MANAGEMENT failed for user %s") % (address))
+        else:
+            log.debug(_("Uploading script MANAGEMENT for user %s succeeded") % (address), level=8)
 
         user_script = """#
 # User
@@ -383,17 +381,18 @@ require ["include"];
 
         for script in scripts:
             if not script in [ "MASTER", "MANAGEMENT", "USER" ]:
-                #print "Including script %s in USER" % (script)
+                log.debug(_("Including script %s in USER (for user %s)") % (script,address) ,level=8)
                 user_script = """%s
 
 include :personal "%s";
     """ % (user_script, script)
 
         result = sieveclient.putscript("USER", user_script)
+
         if not result:
-            print "Putting in script USER failed...?"
-        #else:
-            #print "Putting in script USER succeeded"
+            log.error(_("Uploading script USER failed for user %s") % (address))
+        else:
+            log.debug(_("Uploading script USER for user %s succeeded") % (address), level=8)
 
         result = sieveclient.putscript("MASTER", """#
 # MASTER
@@ -421,9 +420,9 @@ include :personal "USER";
 """)
 
         if not result:
-            print "Putting in script MASTER failed...?"
-        #else:
-            #print "Putting in script MASTER succeeded"
+            log.error(_("Uploading script MASTER failed for user %s") % (address))
+        else:
+            log.debug(_("Uploading script MASTER for user %s succeeded") % (address), level=8)
 
         sieveclient.setactive("MASTER")
 
