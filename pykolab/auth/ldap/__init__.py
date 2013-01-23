@@ -767,7 +767,7 @@ class LDAP(pykolab.base.Base):
                     if isinstance(entry[secondary_mail_attribute], basestring):
                         entry[secondary_mail_attribute] = list(set([entry[secondary_mail_attribute]]))
 
-                    if not secondary_mail_addresses == entry[secondary_mail_attribute]:
+                    if not list(set(secondary_mail_addresses)) == list(set(entry[secondary_mail_attribute])):
                         self.set_entry_attribute(
                                 entry,
                                 secondary_mail_attribute,
