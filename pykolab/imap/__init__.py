@@ -135,6 +135,9 @@ class IMAP(object):
         admin_login = conf.get(backend, 'admin_login')
         admin_password = conf.get(backend, 'admin_password')
 
+        if admin_password == None or admin_password == '':
+            log.error(_("No administrator password is available."))
+
         if not self._imap.has_key(hostname):
             if backend == 'cyrus-imap':
                 import cyrus
@@ -517,6 +520,15 @@ class IMAP(object):
 
                 if _folder.startswith(_test):
                     _subscribe = False
+
+                    # If the namespace prefix for "shared" is "", we need to
+                    # catch this.
+                    for __test in _tests:
+                        if _subscribe:
+                            continue
+
+                        if _folder.startswith(__test):
+                            _subscribe = True
 
             if _subscribe:
                 log.debug(_("Subscribing %s to folder %s") % (folder, _folder), level=8)
