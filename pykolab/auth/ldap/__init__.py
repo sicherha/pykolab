@@ -1073,6 +1073,22 @@ class LDAP(pykolab.base.Base):
                 for acl_entry in entry[folderacl_entry_attribute]:
                     acl_access = acl_entry.split()[-1]
                     aci_subject = ' '.join(acl_entry.split()[:-1])
+
+                    log.debug(_("Found a subject %r with access %r") % (aci_subject, acl_access), level=8)
+
+                    access_lookup_dict = {
+                            'read': 'lrs',
+                            'post': 'p',
+                            'append': 'wip',
+                            'write': 'lrswite',
+                            'all': 'lrsedntxakcpiw'
+                        }
+
+                    if access_lookup_dict.has_key(acl_access):
+                        acl_access = access_lookup_dict[acl_access]
+
+                    log.debug(_("Found a subject %r with access %r") % (aci_subject, acl_access), level=8)
+
                     entry['kolabmailfolderaclentry'].append("(%r, %r, %r)" % (folder_path, aci_subject, acl_access))
 
         if not entry.has_key('kolabmailfolderaclentry'):
@@ -1092,11 +1108,16 @@ class LDAP(pykolab.base.Base):
                     entry['kolabfoldertype']
                 )
 
+        if entry.has_key(delivery_address_attribute) and \
+                not entry[delivery_address_attribute] == None:
+            self.imap.set_acl(folder_path, 'anyone', 'p')
+
         if entry.has_key('kolabmailfolderaclentry') and \
                 not entry['kolabmailfolderaclentry'] == None:
 
             self.imap._set_kolab_mailfolder_acls(
-                    entry['kolabmailfolderaclentry']
+                    entry['kolabmailfolderaclentry'],
+                    folder=folder_path
                 )
 
         #if server == None:
@@ -1306,7 +1327,137 @@ class LDAP(pykolab.base.Base):
         pass
 
     def _change_modify_sharedfolder(self, entry, change):
-        pass
+        """
+            A shared folder was modified.
+        """
+        self.imap.connect(domain=self.domain)
+
+        server = None
+
+        # Get some configuration values
+        mailserver_attribute = self.config_get('mailserver_attribute')
+        if entry.has_key(mailserver_attribute):
+            server = entry[mailserver_attribute]
+
+        foldertype_attribute = self.config_get('sharedfolder_type_attribute')
+        if not foldertype_attribute == None:
+            if not entry.has_key(foldertype_attribute):
+                entry[foldertype_attribute] = self.get_user_attribute(
+                        entry['id'],
+                        foldertype_attribute
+                    )
+
+            if not entry[foldertype_attribute] == None:
+                entry['kolabfoldertype'] = entry[foldertype_attribute]
+
+        if not entry.has_key('kolabfoldertype'):
+            entry['kolabfoldertype'] = self.get_entry_attribute(
+                    entry['id'],
+                    'kolabfoldertype'
+                )
+
+        # A delivery address is postuser+targetfolder
+        delivery_address_attribute = self.config_get('sharedfolder_delivery_address_attribute')
+        if not delivery_address_attribute == None:
+            if not entry.has_key(delivery_address_attribute):
+                entry[delivery_address_attribute] = self.get_entry_attribute(
+                        entry['id'],
+                        delivery_address_attribute
+                    )
+
+            if not entry[delivery_address_attribute] == None:
+                if len(entry[delivery_address_attribute].split('+')) > 1:
+                    entry['kolabtargetfolder'] = entry[delivery_address_attribute].split('+')[1]
+
+        if not entry.has_key('kolabtargetfolder'):
+            entry['kolabtargetfolder'] = self.get_entry_attribute(
+                    entry['id'],
+                    'kolabtargetfolder'
+                )
+
+        if entry.has_key('kolabtargetfolder') and \
+                not entry['kolabtargetfolder'] == None:
+
+            folder_path = entry['kolabtargetfolder']
+        else:
+            # TODO: What is *the* way to see if we need to create an @domain
+            # shared mailbox?
+            # TODO^2: self.domain, really? Presumes any mail attribute is
+            # set to the primary domain name space...
+            # TODO^3: Test if the cn is already something@domain
+            result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+            if result_attribute in ['mail']:
+                folder_path = "%s@%s" % (entry['cn'], self.domain)
+            else:
+                folder_path = entry['cn']
+
+        folderacl_entry_attribute = self.config_get('sharedfolder_acl_entry_attribute')
+
+        if not folderacl_entry_attribute == None:
+            if not entry.has_key(folderacl_entry_attribute):
+                entry[folderacl_entry_attribute] = self.get_entry_attribute(
+                        entry['id'],
+                        folderacl_entry_attribute
+                    )
+
+            if not entry[folderacl_entry_attribute] == None:
+                # Parse it before assigning it
+                entry['kolabmailfolderaclentry'] = []
+                if not isinstance(entry[folderacl_entry_attribute], list):
+                    entry[folderacl_entry_attribute] = [ entry[folderacl_entry_attribute] ]
+
+                for acl_entry in entry[folderacl_entry_attribute]:
+                    acl_access = acl_entry.split()[-1]
+                    aci_subject = ' '.join(acl_entry.split()[:-1])
+
+                    log.debug(_("Found a subject %r with access %r") % (aci_subject, acl_access), level=8)
+
+                    access_lookup_dict = {
+                            'read': 'lrs',
+                            'post': 'p',
+                            'append': 'wip',
+                            'write': 'lrswite',
+                            'all': 'lrsedntxakcpiw'
+                        }
+
+                    if access_lookup_dict.has_key(acl_access):
+                        acl_access = access_lookup_dict[acl_access]
+
+                    log.debug(_("Found a subject %r with access %r") % (aci_subject, acl_access), level=8)
+
+                    entry['kolabmailfolderaclentry'].append("(%r, %r, %r)" % (folder_path, aci_subject, acl_access))
+
+        if not entry.has_key('kolabmailfolderaclentry'):
+            entry['kolabmailfolderaclentry'] = self.get_entry_attribute(
+                    entry['id'],
+                    'kolabmailfolderaclentry'
+                )
+
+        if not self.imap.shared_folder_exists(folder_path):
+            self.imap.shared_folder_create(folder_path, server)
+
+        if entry.has_key('kolabfoldertype') and \
+                not entry['kolabfoldertype'] == None:
+
+            self.imap.shared_folder_set_type(
+                    folder_path,
+                    entry['kolabfoldertype']
+                )
+
+        if entry.has_key(delivery_address_attribute) and \
+                not entry[delivery_address_attribute] == None:
+            self.imap.set_acl(folder_path, 'anyone', 'p')
+
+        if entry.has_key('kolabmailfolderaclentry') and \
+                not entry['kolabmailfolderaclentry'] == None:
+
+            self.imap._set_kolab_mailfolder_acls(
+                    entry['kolabmailfolderaclentry'],
+                    folder=folder_path
+                )
+
+        #if server == None:
+            #self.entry_set_attribute(mailserver_attribute, server)
 
     def _change_modify_user(self, entry, change):
         """
