@@ -1116,8 +1116,7 @@ class LDAP(pykolab.base.Base):
                 not entry['kolabmailfolderaclentry'] == None:
 
             self.imap._set_kolab_mailfolder_acls(
-                    entry['kolabmailfolderaclentry'],
-                    folder=folder_path
+                    entry['kolabmailfolderaclentry']
                 )
 
         #if server == None:
