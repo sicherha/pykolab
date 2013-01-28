@@ -350,6 +350,7 @@ class KolabSievemgmt(object):
                     rule_name = 'forward'
 
                 forward_rules.append(("redirect", forward_addresses[-1]))
+                forward_rules.append(("stop"))
 
             if forward_uce:
                 mgmt_script.addfilter(rule_name, ['true'], forward_rules)
