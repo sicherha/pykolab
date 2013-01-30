@@ -281,6 +281,8 @@ class LDAP(pykolab.base.Base):
 
         if entry_attrs.has_key(attribute):
             return entry_attrs[attribute]
+        elif entry_attrs.has_key(attribute.lower()):
+            return entry_attrs[attribute.lower()]
         else:
             return None
 
