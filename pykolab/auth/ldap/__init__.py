@@ -767,16 +767,25 @@ class LDAP(pykolab.base.Base):
                         entry_modifications[secondary_mail_attribute] = secondary_mail_addresses
                 else:
                     if isinstance(entry[secondary_mail_attribute], basestring):
-                        entry[secondary_mail_attribute] = list(set([entry[secondary_mail_attribute]]))
+                        entry[secondary_mail_attribute] = [entry[secondary_mail_attribute]]
+
+                    log.debug(_("secondary_mail_addresses: %r") % (secondary_mail_addresses), level=8)
+                    log.debug(_("entry[%s]: %r") % (secondary_mail_attribute,entry[secondary_mail_attribute]), level=8)
+
+                    secondary_mail_addresses.sort()
+                    entry[secondary_mail_attribute].sort()
+
+                    log.debug(_("secondary_mail_addresses: %r") % (secondary_mail_addresses), level=8)
+                    log.debug(_("entry[%s]: %r") % (secondary_mail_attribute,entry[secondary_mail_attribute]), level=8)
 
                     if not list(set(secondary_mail_addresses)) == list(set(entry[secondary_mail_attribute])):
                         self.set_entry_attribute(
                                 entry,
                                 secondary_mail_attribute,
-                                secondary_mail_addresses
+                                list(set(secondary_mail_addresses))
                             )
 
-                        entry_modifications[secondary_mail_attribute] = secondary_mail_addresses
+                        entry_modifications[secondary_mail_attribute] = list(set(secondary_mail_addresses))
 
         log.debug(_("Entry modifications list: %r") % (entry_modifications), level=8)
 
