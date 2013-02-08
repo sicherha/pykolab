@@ -252,8 +252,8 @@ X-Wallace-Result: REJECT
 def cb_action_ACCEPT(module, filepath):
     log.info(_("Accepting message in %s (by module %s)") % (filepath, module))
     _message = json.load(open(filepath, 'r'))
+    message = message_from_string(_message['data'])
 
-    message = message_from_string("%s" %(str(_message['data'])))
     sender = _message['from']
     recipients = _message['to']
 
@@ -266,7 +266,13 @@ def cb_action_ACCEPT(module, filepath):
         smtp.sendmail(
                 sender,
                 recipients,
-                message.as_string()
+                # - Make sure we do not send this as binary.
+                # - Second, strip NUL characters - I don't know where they
+                #   come from (TODO)
+                # - Third, a character return is inserted somewhere. It
+                #   divides the body from the headers - and we don't like (TODO)
+                #unicode(message.as_string()).replace('\0', '').lstrip()
+                message.as_string().encode('utf-8').replace('\0','').lstrip()
             )
 
     except smtplib.SMTPDataError, errmsg:
