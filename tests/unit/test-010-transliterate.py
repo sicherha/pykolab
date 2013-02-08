@@ -59,6 +59,45 @@ class TestTransliteration(unittest.TestCase):
         self.assertEqual('Alvaro', utils.translate(givenname, preferredlanguage))
         self.assertEqual('Fuentes', utils.translate(surname, preferredlanguage))
 
+    def test_005_raw_ru_RU(self):
+        from pykolab import utils
+        givenname = r'Николай'
+        surname = r'Римский-Корсаков'
+
+        preferredlanguage = 'ru_RU'
+
+        self.assertEqual('Nikolaj', utils.translate(givenname, preferredlanguage))
+        self.assertEqual('Rimskij-Korsakov', utils.translate(surname, preferredlanguage))
+
+    def test_006_unicode_ru_RU(self):
+        from pykolab import utils
+        givenname = u'Николай'
+        surname = u'Римский-Корсаков'
+
+        preferredlanguage = 'ru_RU'
+
+        self.assertEqual('Nikolaj', utils.translate(givenname, preferredlanguage))
+        self.assertEqual('Rimskij-Korsakov', utils.translate(surname, preferredlanguage))
+
+    def test_007_raw_ru_RU(self):
+        from pykolab import utils
+        givenname = r'Юлия'
+        surname = r'Ёлкина'
+
+        preferredlanguage = 'ru_RU'
+
+        self.assertEqual('Yuliya', utils.translate(givenname, preferredlanguage))
+        self.assertEqual('Yolkina', utils.translate(surname, preferredlanguage))
+
+    def test_008_unicode_ru_RU(self):
+        from pykolab import utils
+        givenname = u'Юлия'
+        surname = u'Ёлкина'
+
+        preferredlanguage = 'ru_RU'
+
+        self.assertEqual('Yuliya', utils.translate(givenname, preferredlanguage))
+        self.assertEqual('Yolkina', utils.translate(surname, preferredlanguage))
 
 if __name__ == '__main__':
     unittest.main()

@@ -415,9 +415,17 @@ def translate(mystring, locale_name='en_US'):
     log.debug(_("Executing '%s | %s'") % (r"%s" % (mystring), ' '.join(command)), level=8)
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE, env={'LANG': locale.normalize(locale_name)})
 
-    print >> process.stdin, r"%s" % mystring
+    try:
+        print >> process.stdin, r"%s" % mystring
+    except UnicodeEncodeError, errmsg:
+        pass
 
     result = process.communicate()[0].strip()
+
+    if '?' in result or (result == '' and not mystring == ''):
+        log.warning(_("Could not translate %s using locale %s") % (mystring, locale_name))
+        from pykolab import translit
+        result = translit.transliterate(mystring, locale_name)
 
     return result
 
