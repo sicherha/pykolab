@@ -99,5 +99,12 @@ class TestTransliteration(unittest.TestCase):
         self.assertEqual('Yuliya', utils.translate(givenname, preferredlanguage))
         self.assertEqual('Yolkina', utils.translate(surname, preferredlanguage))
 
+    def test_009_raw_decode(self):
+        raw_str = r"Николай"
+        self.assertEqual('Николай', raw_str.decode("string_escape"))
+
+        raw_str = r"raw"
+        self.assertEqual('raw', raw_str.decode("string_escape"))
+
 if __name__ == '__main__':
     unittest.main()
