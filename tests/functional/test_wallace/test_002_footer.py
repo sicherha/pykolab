@@ -54,10 +54,10 @@ class TestWallaceFooter(unittest.TestCase):
         from tests.functional.synchronize import synchronize_once
         synchronize_once()
 
-#    @classmethod
-#    def teardown_class(self, *args, **kw):
-#        from tests.functional.purge_users import purge_users
-#        purge_users()
+    @classmethod
+    def teardown_class(self, *args, **kw):
+        from tests.functional.purge_users import purge_users
+        purge_users()
 
     def check_message_delivered(self, subject):
         imap = IMAP()
