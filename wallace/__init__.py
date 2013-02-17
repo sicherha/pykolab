@@ -247,7 +247,9 @@ class WallaceDaemon(object):
                         'from': mailfrom,
                         'to': rcpttos,
                         'data': data
-                   }
+                   },
+                ensure_ascii=True,
+                indent=4
             )
 
         (fp, filename) = tempfile.mkstemp(dir="/var/spool/pykolab/wallace/")

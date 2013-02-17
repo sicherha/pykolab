@@ -17,6 +17,11 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import pykolab
+from pykolab.translate import _
+
+log = pykolab.getLogger('pykolab.translit')
+
 locale_translit_map = {
         'ru_RU': 'cyrillic'
     }
@@ -97,9 +102,11 @@ def transliterate(_input, lang, _output_expected=None):
 
     _output = ''
 
-    for char in _input:
+    for char in _input.decode('utf-8'):
         if translit_map[_translit_name].has_key(char):
             _output += translit_map[_translit_name][char]
+        elif char in [repr(x) for x in translit_map[_translit_name].keys()]:
+            _output += translit_map[_translit_name][[char in [raw(x) for x in translit_map[_translit_name].keys()]][0]]
         else:
             _output += char
 
