@@ -121,7 +121,7 @@ class TestWallaceFooter(unittest.TestCase):
 
         folders = imap.lm('user/%(local)s@%(domain)s' % (self.user))
         self.assertEqual(len(folders), 1)
-        
+
     def test_002_send_plaintext(self):
         subject = "test_002_send_plaintext"
         body = "This is a test message"
