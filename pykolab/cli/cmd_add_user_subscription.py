@@ -74,23 +74,7 @@ def execute(*args, **kw):
         sys.exit(1)
 
     _folders = imap.lm(folder_pattern)
-    _subscribed_folders = imap.lsub(folder_pattern)
-    subscribed_folders = []
 
     for _folder in _folders:
-        if not _folder in _subscribed_folders:
-            imap.subscribe(_folder)
-            subscribed_folders.append(_folder)
+        imap.subscribe(_folder)
 
-    if len(subscribed_folders) > 0:
-        print _("Successfully subscribed user %s to the following folders:") % (
-                user
-            )
-
-        print "\n".join(subscribed_folders)
-    else:
-        print >> sys.stderr, _("User %s not subscribed to any folders.") % (
-                user
-            )
-
-        sys.exit(1)
