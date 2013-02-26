@@ -24,7 +24,7 @@ class TestUserAdd(unittest.TestCase):
             }
 
         self.jane = {
-                'local': 'john.doe',
+                'local': 'jane.doe',
                 'domain': 'example.org'
             }
 
