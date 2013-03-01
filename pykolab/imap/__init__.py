@@ -228,6 +228,11 @@ class IMAP(object):
     def __getattr__(self, name):
         if hasattr(self.imap, name):
             return getattr(self.imap, name)
+        elif hasattr(self.imap, 'm'):
+            if hasattr(self.imap.m, name):
+                return getattr(self.imap.m, name)
+            else:
+                raise AttributeError, _("%r has no attribute %s") % (self,name)
         else:
             raise AttributeError, _("%r has no attribute %s") % (self,name)
 
