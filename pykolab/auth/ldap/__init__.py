@@ -1475,12 +1475,17 @@ class LDAP(pykolab.base.Base):
             Expects the new entry.
         """
 
+        # Initialize old_canon_attr (#1701)
+        old_canon_attr = None
+
         result_attribute = conf.get('cyrus-sasl','result_attribute')
 
         _entry = cache.get_entry(self.domain, entry, update=False)
 
-        if _entry.__dict__.has_key('result_attribute') and not _entry.result_attribute == '':
-            old_canon_attr = _entry.result_attribute
+        # We do not necessarily have a synchronisation cache entry (#1701)
+        if not _entry == None:
+            if _entry.__dict__.has_key('result_attribute') and not _entry.result_attribute == '':
+                old_canon_attr = _entry.result_attribute
 
         entry_changes = self.recipient_policy(entry)
 
