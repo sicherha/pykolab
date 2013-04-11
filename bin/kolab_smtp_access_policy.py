@@ -62,7 +62,7 @@ log = pykolab.getLogger('pykolab.smtp_access_policy')
 
 # TODO: Removing the stdout handler would mean one can no longer test by
 # means of manual execution in debug mode.
-log.remove_stdout_handler()
+#log.remove_stdout_handler()
 
 conf = pykolab.getConf()
 
@@ -410,14 +410,44 @@ class PolicyRequest(object):
             John.Doe@example.org (mail) for example could be sending with
             envelope sender jdoe@example.org (mailAlternateAddress, alias).
         """
-        search_attrs = conf.get_list(self.sasl_domain, 'mail_attributes')
+
+        search_attrs = conf.get_list(self.sasl_domain, 'address_search_attrs')
+
+        if search_attrs == None or \
+                (isinstance(search_attrs, list) and len(search_attrs) == 0):
+
+            search_attrs = conf.get_list(self.sasl_domain, 'mail_attributes')
 
         if search_attrs == None or \
                 (isinstance(search_attrs, list) and len(search_attrs) == 0):
 
             search_attrs = conf.get_list(
+                    'kolab_smtp_access_policy',
+                    'address_search_attrs'
+                )
+
+        if search_attrs == None or \
+                (isinstance(search_attrs, list) and len(search_attrs) == 0):
+
+
+            search_attrs = conf.get_list(
                     conf.get('kolab', 'auth_mechanism'),
                     'mail_attributes'
+                )
+
+        want_attrs = []
+
+        for search_attr in search_attrs:
+            if not self.sasl_user.has_key(search_attr):
+                want_attrs.append(search_attr)
+
+        if len(want_attrs) > 0:
+            self.sasl_user.update(
+                    self.auth.get_user_attributes(
+                            self.sasl_domain,
+                            self.sasl_user,
+                            want_attrs
+                        )
                 )
 
         # Catch a user using one of its own alias addresses.
@@ -491,7 +521,7 @@ class PolicyRequest(object):
                 )
 
             reject(
-                    _("Could not find envelope sender user %s") % (
+                    _("Could not find envelope sender user %s (511)") % (
                             self.sasl_username
                         )
                 )
@@ -953,7 +983,9 @@ class PolicyRequest(object):
         self.verify_authenticity()
         self.sasl_user_uses_alias = self.verify_alias()
 
+
         if not self.sasl_user_uses_alias:
+            log.debug(_("Sender is not using an alias"), level=8)
             self.sasl_user_is_delegate = self.verify_delegate()
 
         # If the authenticated user is using delegate functionality, apply the
