@@ -31,8 +31,12 @@ class TestConnect(unittest.TestCase):
         self.assertEqual(result['reason'], "Unknown service")
         self.assertEqual(result['code'], 400)
 
-    def test_003_domains_list(self):
+    def test_004_domains_list(self):
         result = wap_client.domains_list()
         self.assertTrue(result.has_key('count'))
         self.assertTrue(result.has_key('list'))
         self.assertEqual(result['count'], len(result['list']))
+
+    def test_005_get_domain(self):
+        result = wap_client.request_raw('GET', 'system.get_domain')
+        self.assertEqual(result, {u'status': u'OK', u'result': {u'domain': u'example.org'}})
