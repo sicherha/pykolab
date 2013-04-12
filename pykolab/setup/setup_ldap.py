@@ -69,6 +69,22 @@ def execute(*args, **kw):
     if not conf.config_file == conf.defaults.config_file:
         ask_questions = False
 
+    # Pre-execution checks
+    for path, directories, files in os.walk('/etc/dirsrv/'):
+        for direct in directories:
+            if direct.startswith('slapd-'):
+                print >> sys.stderr, utils.multiline_message(
+                        _("""
+                                It seems 389 Directory Server has an existing
+                                instance configured. This setup script does not
+                                intend to destroy or overwrite your data. Please
+                                make sure /etc/dirsrv/ and /var/lib/dirsrv/ are
+                                clean so that this setup does not have to worry.
+                            """)
+                    )
+
+                sys.exit(1)
+
     _input = {}
 
     if ask_questions:
