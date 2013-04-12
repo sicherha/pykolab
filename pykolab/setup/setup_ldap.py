@@ -288,7 +288,24 @@ ServerAdminPwd = %(admin_pass)s
 
     (stdoutdata, stderrdata) = setup_389.communicate()
 
-    # TODO: Get the return code and display output if not successful.
+    if not setup_389.returncode == 0:
+        print >> sys.stderr, utils.multiline_message(
+                _("""
+                        An error was detected in the setup procedure for 389
+                        Directory Server. This setup will write out stderr and
+                        stdout to /var/log/kolab/setup.error.log and
+                        /var/log/kolab/setup.out.log respectively, before it
+                        exits.
+                    """)
+            )
+
+        fp = open('/var/log/kolab/setup.error.log', 'w')
+        fp.write(stderrdata)
+        fp.close()
+
+        fp = open('/var/log/kolab/setup.out.log', 'w')
+        fp.write(stderrdata)
+        fp.close()
 
     log.debug(_("Setup DS stdout:"), level=8)
     log.debug(stdoutdata, level=8)
@@ -296,9 +313,8 @@ ServerAdminPwd = %(admin_pass)s
     log.debug(_("Setup DS stderr:"), level=8)
     log.debug(stderrdata, level=8)
 
-    # TODO: Fails when ran a second time.
-
-    # TODO: When fail, fail gracefully.
+    if not setup_389.returncode == 0:
+        sys.exit(1)
 
     # Find the kolab schema. It's installed as %doc in the kolab-schema package.
     # TODO: Chown nobody, nobody, chmod 440
@@ -317,6 +333,7 @@ ServerAdminPwd = %(admin_pass)s
                             os.path.basename(schema_file)
                         )
                 )
+
             schema_error = False
         except:
             log.error(_("Could not copy the LDAP extensions for Kolab"))
