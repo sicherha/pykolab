@@ -48,3 +48,4 @@ deletedprefix: DELETED
 delete_mode: delayed
 expunge_mode: delayed
 flushseenstate: 1
+postuser: shared
