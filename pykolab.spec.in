@@ -301,6 +301,9 @@ rm -rf %{buildroot}
 %{python_sitelib}/pykolab/plugins/defaultfolders
 %{python_sitelib}/pykolab/plugins/dynamicquota
 %{python_sitelib}/pykolab/plugins/recipientpolicy
+# No sieve script management without our modified version of
+# python-sievelib
+%exclude %{python_sitelib}/pykolab/plugins/sievemgmt
 %{python_sitelib}/kolab/
 %{python_sitelib}/cyruslib.py*
 %attr(0775,kolab,kolab-n) %dir %{_localstatedir}/lib/kolab/
@@ -339,6 +342,9 @@ rm -rf %{buildroot}
 %{python_sitelib}/pykolab/wap_client/*.py
 %{python_sitelib}/pykolab/wap_client/*.pyc
 %{python_sitelib}/pykolab/wap_client/*.pyo
+# No sieve script management without our modified version of
+# python-sievelib
+%exclude %{python_sitelib}/pykolab/cli/sieve
 
 %files -n kolab-saslauthd
 %defattr(-,root,root,-)
