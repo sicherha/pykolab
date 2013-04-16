@@ -13,7 +13,7 @@
     \$rcmail_config['sendmail_delay'] = 0;
     \$rcmail_config['max_recipients'] = 0;
     \$rcmail_config['max_group_members'] = 0;
-    \$rcmail_config['useragent'] = 'Roundcube Webmail/'.RCMAIL_VERSION;
+    \$rcmail_config['useragent'] = 'Roundcube Webmail/'.RCUBE_VERSION;
     \$rcmail_config['include_host_config'] = false;
     \$rcmail_config['generic_message_footer'] = '';
     \$rcmail_config['generic_message_footer_html'] = '';
@@ -111,8 +111,8 @@
             'contextmenu',
         );
 
-    if (file_exists(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
-        include_once(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
+    if (file_exists(RCUBE_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
+        include_once(RCUBE_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
     }
 
     // Re-apply mandatory settings here.
