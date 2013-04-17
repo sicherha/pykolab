@@ -164,10 +164,12 @@ def get_user_input():
     user_types = user_types_list()
 
     if user_types['count'] > 1:
+        print ""
         for key in user_types['list'].keys():
             if not key == "status":
                 print "%s) %s" % (key,user_types['list'][key]['name'])
 
+        print ""
         user_type_id = utils.ask_question("Please select the user type")
 
     elif user_types['count'] > 0:
@@ -185,15 +187,62 @@ def get_user_input():
         sys.exit(1)
 
     params = {
-            'user_type_id': user_type_id
+            'object_type': 'user',
+            'type_id': user_type_id
         }
 
-    for attribute in user_type_info['form_fields'].keys():
-        params[attribute] = utils.ask_question(attribute)
+    must_attrs = []
+    may_attrs = []
 
-    for attribute in user_type_info['auto_form_fields'].keys():
-        exec("retval = form_value_generate_%s(params)" % (attribute))
-        params[attribute] = retval[attribute]
+    for attribute in user_type_info['form_fields'].keys():
+        if isinstance(user_type_info['form_fields'][attribute], dict):
+            if user_type_info['form_fields'][attribute].has_key('optional') and user_type_info['form_fields'][attribute]['optional']:
+                may_attrs.append(attribute)
+            else:
+                must_attrs.append(attribute)
+        else:
+            must_attrs.append(attribute)
+
+    for attribute in must_attrs:
+        if isinstance(user_type_info['form_fields'][attribute], dict) and \
+                user_type_info['form_fields'][attribute].has_key('type'):
+
+            if user_type_info['form_fields'][attribute]['type'] == 'select':
+                if not user_type_info['form_fields'][attribute].has_key('values'):
+                    attribute_values = form_value_select_options('user', user_type_id, attribute)
+
+                    default = ''
+                    if attribute_values[attribute].has_key('default'):
+                        default = attribute_values[attribute]['default']
+
+                    params[attribute] = utils.ask_menu(
+                            "Choose the %s value" % (attribute),
+                            attribute_values[attribute]['list'],
+                            default=default
+                        )
+
+                else:
+                    default = ''
+                    if user_type_info['form_fields'][attribute].has_key('default'):
+                        default = user_type_info['form_fields'][attribute]['default']
+
+                    params[attribute] = utils.ask_menu(
+                            "Choose the %s value" % (attribute),
+                            user_type_info['form_fields'][attribute]['values'],
+                            default=default
+                        )
+
+            else:
+                params[attribute] = utils.ask_question(attribute)
+
+        else:
+            params[attribute] = utils.ask_question(attribute)
+
+    for attribute in user_type_info['fields'].keys():
+        params[attribute] = user_type_info['fields'][attribute]
+
+    exec("retval = user_form_value_generate(params)")
+    print retval
 
     return params
 
@@ -328,40 +377,36 @@ def user_edit(user = None, attributes={}):
 
     return user_edit
 
-def user_form_value_generate_cn(params=None):
+def user_form_value_generate(params=None):
     if params == None:
         params = get_user_input()
 
     post = json.dumps(params)
 
-    return request('POST', 'user_form_value.generate_cn', post=post)
-
-def user_form_value_generate_displayname(params=None):
-    if params == None:
-        params = get_user_input()
-
-    post = json.dumps(params)
-
-    return request('POST', 'user_form_value.generate_displayname', post=post)
-
-def user_form_value_generate_mail(params=None):
-    if params == None:
-        params = get_user_input()
-
-    post = json.dumps(params)
-
-    return request('POST', 'user_form_value.generate_mail', post=post)
+    return request('POST', 'form_value.generate', post=post)
 
 def form_value_generate_password(*args, **kw):
     return request('GET', 'form_value.generate_password')
 
-def form_value_list_options(attribute_name, *args, **kw):
-    post = json.dumps({'attribute': attribute_name})
+def form_value_list_options(object_type, object_type_id, attribute):
+    post = json.dumps(
+            {
+                    'object_type': object_type,
+                    'type_id': object_type_id,
+                    'attribute': attribute
+                }
+        )
 
     return request('POST', 'form_value.list_options', post=post)
 
-def form_value_select_options(attribute_name, *args, **kw):
-    post = json.dumps({'attributes': [attribute_name]})
+def form_value_select_options(object_type, object_type_id, attribute):
+    post = json.dumps(
+            {
+                    'object_type': object_type,
+                    'type_id': object_type_id,
+                    'attributes': [ attribute ]
+                }
+        )
 
     return request('POST', 'form_value.select_options', post=post)
 
@@ -423,7 +468,7 @@ def user_form_value_generate_uid(params=None):
 
     params = json.dumps(params)
 
-    return request('POST', 'user_form_value.generate_uid', params)
+    return request('POST', 'form_value.generate_uid', params)
 
 def user_form_value_generate_userpassword(*args, **kw):
     result = form_value_generate_password()
