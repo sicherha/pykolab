@@ -56,7 +56,6 @@ def __init__():
     register('help', list_commands)
 
     register('list_users', not_yet_implemented, description="Not yet implemented")
-    register('add_user', not_yet_implemented, description="Not yet implemented")
     register('delete_user', not_yet_implemented, description="Not yet implemented")
 
     register('list_groups', not_yet_implemented, description="Not yet implemented")
