@@ -23,6 +23,10 @@ pykolab_clitelemetrydir = $(pythondir)/$(PACKAGE)/cli/telemetry
 pykolab_clitelemetry_PYTHON = \
 	$(wildcard cli/telemetry/*.py)
 
+pykolab_cliwapdir = $(pythondir)/$(PACKAGE)/cli/wap
+pykolab_cliwap_PYTHON = \
+	$(wildcard cli/wap/*.py)
+
 pykolab_confdir = $(pythondir)/$(PACKAGE)/conf
 pykolab_conf_PYTHON = \
 	conf/defaults.py \
