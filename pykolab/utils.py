@@ -126,11 +126,21 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
             else:
                 return True
 
-def ask_menu(question, options={}):
-    print question
+def ask_menu(question, options={}, default=''):
+    if not default == '':
+        print question + " [" + default + "]:"
+    else:
+        print question
+
     answer_correct = False
     max_key_length = 0
 
+    if isinstance(options, list):
+        _options = options
+        options = {}
+        for key in _options:
+            options[key] = key
+        
     keys = options.keys()
     keys.sort()
 
@@ -142,10 +152,29 @@ def ask_menu(question, options={}):
 
         str_format = "%%%ds" % max_key_length
 
-        for key in keys:
-            print " - " + eval("str_format % key") + ": " + options[key]
+        if default == '' or not default in options.keys():
+            for key in keys:
+                if options[key] == key:
+                    print " - " + key
+                else:
+                    print " - " + eval("str_format % key") + ": " + options[key]
 
-        answer = raw_input(_("Choice") + ": ")
+            answer = raw_input(_("Choice") + ": ")
+
+        else:
+            answer = raw_input(_("Choice (type '?' for options)") + ": ")
+
+        if answer == '?':
+            for key in keys:
+                if options[key] == key:
+                    print " - " + key
+                else:
+                    print " - " + eval("str_format % key") + ": " + options[key]
+
+            continue
+
+        if answer == '' and default in options.keys():
+            answer = default
 
         if answer in [str(x) for x in options.keys()]:
             answer_correct = True
