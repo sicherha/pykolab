@@ -60,6 +60,22 @@ def cli_options():
             help    = _("Allow anonymous binds (default: no).")
         )
 
+    ldap_group.add_option(
+            "--without-ldap",
+            dest    = "without_ldap",
+            action  = "store_true",
+            default = False,
+            help    = _("Skip setting up the LDAP server.")
+        )
+
+    ldap_group.add_option(
+            "--with-openldap",
+            dest    = "with_openldap",
+            action  = "store_true",
+            default = False,
+            help    = _("Setup configuration for OpenLDAP compatibility.")
+        )
+
 def description():
     return _("Setup LDAP.")
 
@@ -68,6 +84,22 @@ def execute(*args, **kw):
 
     if not conf.config_file == conf.defaults.config_file:
         ask_questions = False
+
+    if conf.without_ldap:
+        print >> sys.stderr, _("Skipping setup of LDAP, as specified")
+        return
+
+    _input = {}
+
+    if conf.with_openldap:
+
+        conf.command_set('ldap', 'unique_attribute', 'entryuuid')
+
+        fp = open(conf.defaults.config_file, "w+")
+        conf.cfg_parser.write(fp)
+        fp.close()
+
+        return
 
     # Pre-execution checks
     for path, directories, files in os.walk('/etc/dirsrv/'):
@@ -163,7 +195,6 @@ def execute(*args, **kw):
         _input['fqdn'] = fqdn
         _input['hostname'] = hostname.split('.')[0]
         _input['domain'] = domainname
-
     _input['nodotdomain'] = _input['domain'].replace('.','_')
 
     _input['rootdn'] = utils.standard_root_dn(_input['domain'])
@@ -608,3 +639,4 @@ ServerAdminPwd = %(admin_pass)s
     else:
         log.error(_("Could not start and configure to start on boot, the " + \
                 "directory server admin service."))
+
