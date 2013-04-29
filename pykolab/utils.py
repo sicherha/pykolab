@@ -21,6 +21,7 @@ import getpass
 import grp
 import os
 import pwd
+import struct
 import sys
 
 import pykolab
@@ -300,15 +301,21 @@ def normalize(_object):
             if type(_object[key]) == list:
                 if _object[key] == None:
                     continue
+
                 if len(_object[key]) == 1:
                     result[key.lower()] = ''.join(_object[key])
                 else:
                     result[key.lower()] = _object[key]
+
             else:
                 if _object[key] == None:
                     continue
+
                 # What the heck?
                 result[key.lower()] = _object[key]
+
+        if result.has_key('objectsid') and not result['objectsid'][0] == "S":
+            result['objectsid'] = sid_to_string(result['objectsid'])
 
         if result.has_key('sn'):
             result['surname'] = result['sn'].replace(' ', '')
@@ -413,6 +420,24 @@ def pop_empty_from_list(_input_list):
     for item in _input_list:
         if not item == '':
             _output_list.append(item)
+
+def sid_to_string(sid):
+    srl = ord(sid[0])
+    number_sub_id = ord(sid[1])
+    iav = struct.unpack('!Q', '\x00\x00' + sid[2:8])[0]
+
+    sub_ids = []
+
+    for i in range(number_sub_id):
+        sub_ids.append(struct.unpack('<I',sid[8+4*i:12+4*i])[0])
+
+    result = 'S-%d-%d-%s' % (
+            srl,
+            iav,
+            '-'.join([str(s) for s in sub_ids]),
+        )
+
+    return result
 
 def standard_root_dn(domain):
     return 'dc=%s' % (',dc='.join(domain.split('.')))
