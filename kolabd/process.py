@@ -38,11 +38,19 @@ class KolabdProcess(multiprocessing.Process):
             )
 
     def synchronize(self, domain):
+        sync_interval = conf.get('kolab', 'sync_interval')
+
+        if sync_interval == None or sync_interval == 0:
+            sync_interval = 300
+        else:
+            sync_interval = (int)(sync_interval)
+
         while True:
             try:
                 auth = Auth(domain)
                 auth.connect(domain)
                 auth.synchronize()
+                time.sleep(sync_interval)
             except KeyboardInterrupt:
                 break
             except Exception, errmsg:
