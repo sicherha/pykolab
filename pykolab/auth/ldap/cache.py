@@ -62,9 +62,14 @@ class Entry(object):
     def __init__(self, uniqueid, result_attr, last_change):
         self.uniqueid = uniqueid
         self.result_attribute = result_attr
+
+        modifytimestamp_format = conf.get('ldap', 'modifytimestamp_format')
+        if modifytimestamp_format == None:
+            modifytimestamp_format = "%Y%m%d%H%M%SZ"
+
         self.last_change = datetime.datetime.strptime(
                 last_change,
-                "%Y%m%d%H%M%SZ"
+                modifytimestamp_format
             )
 
 ##
@@ -125,9 +130,13 @@ def get_entry(domain, entry, update=True):
         db.commit()
         _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
     else:
-        if not _entry.last_change.strftime("%Y%m%d%H%M%SZ") == entry['modifytimestamp']:
+        modifytimestamp_format = conf.get('ldap', 'modifytimestamp_format')
+        if modifytimestamp_format == None:
+            modifytimestamp_format = "%Y%m%d%H%M%SZ"
+
+        if not _entry.last_change.strftime(modifytimestamp_format) == entry['modifytimestamp']:
             log.debug(_("Updating timestamp for cache entry %r") % (entry['id']), level=8)
-            last_change = datetime.datetime.strptime(entry['modifytimestamp'], "%Y%m%d%H%M%SZ")
+            last_change = datetime.datetime.strptime(entry['modifytimestamp'], modifytimestamp_format)
             _entry.last_change = last_change
             db.commit()
             _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
@@ -163,7 +172,12 @@ def init_db(domain):
 def last_modify_timestamp(domain):
     db = init_db(domain)
     last_change = db.query(Entry).order_by(desc(Entry.last_change)).first()
-    if not last_change == None:
-        return last_change.last_change.strftime("%Y%m%d%H%M%SZ")
 
-    return datetime.datetime(1900, 01, 01, 00, 00, 00).strftime("%Y%m%d%H%M%SZ")
+    modifytimestamp_format = conf.get('ldap', 'modifytimestamp_format')
+    if modifytimestamp_format == None:
+        modifytimestamp_format = "%Y%m%d%H%M%SZ"
+
+    if not last_change == None:
+        return last_change.last_change.strftime(modifytimestamp_format)
+
+    return datetime.datetime(1900, 01, 01, 00, 00, 00).strftime(modifytimestamp_format)
