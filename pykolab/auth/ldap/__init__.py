@@ -2394,27 +2394,33 @@ class LDAP(pykolab.base.Base):
             _use_ldap_controls = self.ldap.supported_controls
 
         for supported_control in _use_ldap_controls:
-            exec("""_results = self.%s(
-                    %r,
-                    scope=%r,
-                    filterstr=%r,
-                    attrlist=%r,
-                    attrsonly=%r,
-                    timeout=%r,
-                    callback=callback,
-                    primary_domain=%r,
-                    secondary_domains=%r
-                )""" % (
-                        supported_control,
-                        base_dn,
-                        scope,
-                        filterstr,
-                        attrlist,
-                        attrsonly,
-                        timeout,
-                        primary_domain,
-                        secondary_domains
+            try:
+                exec("""_results = self.%s(
+                        %r,
+                        scope=%r,
+                        filterstr=%r,
+                        attrlist=%r,
+                        attrsonly=%r,
+                        timeout=%r,
+                        callback=callback,
+                        primary_domain=%r,
+                        secondary_domains=%r
+                    )""" % (
+                            supported_control,
+                            base_dn,
+                            scope,
+                            filterstr,
+                            attrlist,
+                            attrsonly,
+                            timeout,
+                            primary_domain,
+                            secondary_domains
+                        )
                     )
-                )
+
+                break
+
+            except:
+                continue
 
         return _results
