@@ -76,6 +76,14 @@ def cli_options():
             help    = _("Setup configuration for OpenLDAP compatibility.")
         )
 
+    ldap_group.add_option(
+            "--with-ad",
+            dest    = "with_ad",
+            action  = "store_true",
+            default = False,
+            help    = _("Setup configuration for Active Directory compatibility.")
+        )
+
 def description():
     return _("Setup LDAP.")
 
@@ -91,7 +99,7 @@ def execute(*args, **kw):
 
     _input = {}
 
-    if conf.with_openldap:
+    if conf.with_openldap and not conf.with_ad:
 
         conf.command_set('ldap', 'unique_attribute', 'entryuuid')
 
@@ -100,6 +108,28 @@ def execute(*args, **kw):
         fp.close()
 
         return
+
+    elif conf.with_ad and not conf.with_openldap:
+        conf.command_set('ldap', 'auth_attributes', 'samaccountname')
+        conf.command_set('ldap', 'modifytimestamp_format', '%%Y%%m%%d%%H%%M%%S.0Z')
+        conf.command_set('ldap', 'unique_attribute', 'userprincipalname')
+        
+        # TODO: These attributes need to be checked
+        conf.command_set('ldap', 'mail_attributes', 'mail')
+        conf.command_set('ldap', 'mailserver_attributes', 'mailhost')
+        conf.command_set('ldap', 'quota_attribute', 'mailquota')
+
+        return
+
+    elif conf.with_ad and conf.with_openldap:
+        print >> sys.stderr, utils.multiline_message(
+                _("""
+                        You can not configure Kolab to run against OpenLDAP
+                        and Active Directory simultaneously.
+                    """)
+            )
+
+        sys.exit(1)
 
     # Pre-execution checks
     for path, directories, files in os.walk('/etc/dirsrv/'):
