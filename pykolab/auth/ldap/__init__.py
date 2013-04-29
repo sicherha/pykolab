@@ -361,7 +361,6 @@ class LDAP(pykolab.base.Base):
 
         _filter = "%s%s%s" % (__filter_prefix,_filter,__filter_suffix)
 
-
         log.debug(_("Finding recipient with filter %r") % (_filter), level=8)
 
         if len(_filter) <= 6:
@@ -379,7 +378,10 @@ class LDAP(pykolab.base.Base):
 
         for _result in _results:
             (_entry_id, _entry_attrs) = _result
-            _entry_dns.append(_entry_id)
+
+            # Prevent Active Directory referrals
+            if not _entry_id == None:
+                _entry_dns.append(_entry_id)
 
         return _entry_dns
 
@@ -2014,6 +2016,10 @@ class LDAP(pykolab.base.Base):
         # Typical for Paged Results Control
         elif kw.has_key('entry') and isinstance(kw['entry'], list):
             for entry_dn,entry_attrs in kw['entry']:
+                # This is a referral
+                if entry_dn == None:
+                    continue
+
                 entry = { 'dn': entry_dn }
                 entry_attrs = utils.normalize(entry_attrs)
                 for attr in entry_attrs.keys():
