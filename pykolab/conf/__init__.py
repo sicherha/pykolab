@@ -123,7 +123,7 @@ class Conf(object):
                 continue
 
             for key in self.defaults.__dict__[section].keys():
-		retval = False
+                retval = False
                 if not config.has_option(section, key):
                     continue
 
