@@ -17,9 +17,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-from Cheetah.Template import Template
+from ConfigParser import RawConfigParser
 import os
-import subprocess
 import sys
 import time
 
@@ -39,92 +38,44 @@ def __init__():
             'freebusy',
             execute,
             description=description(),
-            after=['mysql','ldap', 'roundcube']
+            after=['ldap']
         )
 
 def description():
     return _("Setup Free/Busy.")
 
 def execute(*args, **kw):
-    if not os.path.isfile('/etc/kolab/freebusy/config.php'):
+    if not os.path.isfile('/etc/kolab-freebusy/config.ini') and not os.path.isfile('/etc/kolab-freebusy/config.ini.sample'):
         log.error(_("Free/Busy is not installed on this system"))
         return
 
-    if not hasattr(conf, 'mysql_roundcube_password'):
-        print >> sys.sdterr, utils.multiline_message(
-                _("""
-                        Please supply the MySQL password for the 'roundcube'
-                        user. You have supplied this password earlier, and it is
-                        available from the database URI setting in
-                        /etc/roundcubemail/db.inc.php.
-                    """)
-            )
-
-        conf.mysql_roundcube_password = utils.ask_question(
-                _("MySQL roundcube password"),
-                password=True,
-                confirm=True
-            )
+    if not os.path.isfile('/etc/kolab-freebusy/config.ini'):
+        os.rename('/etc/kolab-freebusy/config.ini.sample', '/etc/kolab-freebusy/config.ini')
 
     freebusy_settings = {
-            'ldap_base_dn': conf.get('ldap', 'base_dn'),
-            'ldap_ldap_uri': conf.get('ldap', 'ldap_uri'),
-            'ldap_service_bind_dn': conf.get('ldap', 'service_bind_dn'),
-            'ldap_service_bind_pw': conf.get('ldap', 'service_bind_pw'),
-            'primary_domain': conf.get('kolab', 'primary_domain'),
-            'mysql_roundcube_password': conf.mysql_roundcube_password
+            'directory "kolab-ldap"': {
+                    'host': conf.get('ldap', 'ldap_uri'),
+                    'base_dn': conf.get('ldap', 'base_dn'),
+                    'bind_dn': conf.get('ldap', 'service_bind_dn'),
+                    'bind_pw': conf.get('ldap', 'service_bind_pw'),
+                    'fbsource': 'file:/var/lib/kolab-freebusy/%mail.ifb',
+                },
+            'httpauth': {
+                }
         }
 
-    want_files = [
-            'config.php',
-        ]
+    cfg_parser = RawConfigParser()
+    cfg_parser.read('/etc/kolab-freebusy/config.ini')
 
-    for want_file in want_files:
-        template_file = None
-        if os.path.isfile('/etc/kolab/templates/freebusy/%s.tpl' % (want_file)):
-            template_file = '/etc/kolab/templates/freebusy/%s.tpl' % (want_file)
-        elif os.path.isfile('/usr/share/kolab/templates/freebusy/%s.tpl' % (want_file)):
-            template_file = '/usr/share/kolab/templates/freebusy/%s.tpl' % (want_file)
-        elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'freebusy', '%s.tpl' % (want_file)))):
-            template_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'freebusy', '%s.tpl' % (want_file)))
+    for section in freebusy_settings.keys():
+        if len(freebusy_settings[section].keys()) < 1:
+            cfg_parser.remove_section(section)
+            continue
 
-        if not template_file == None:
-            log.debug(_("Using template file %r") % (template_file), level=8)
-            fp = open(template_file, 'r')
-            template_definition = fp.read()
-            fp.close()
+        for key in freebusy_settings[section].keys():
+            cfg_parser.set(section, key, freebusy_settings[section][key])
 
-            t = Template(template_definition, searchList=[freebusy_settings])
-            log.debug(
-                    _("Successfully compiled template %r, writing out to %r") % (
-                            template_file,
-                            '/etc/kolab/freebusy/%s' % (want_file)
-                        ),
-                    level=8
-                )
-
-            fp = open('/etc/kolab/freebusy/%s' % (want_file), 'w')
-            fp.write(t.__str__())
-            fp.close()
-
-    time.sleep(2)
-
-    if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['/bin/systemctl', 'restart', 'httpd.service'])
-    elif os.path.isfile('/sbin/service'):
-        subprocess.call(['/sbin/service', 'httpd', 'restart'])
-    elif os.path.isfile('/usr/sbin/service'):
-        subprocess.call(['/usr/sbin/service','apache2','restart'])
-    else:
-        log.error(_("Could not start the webserver server service."))
-
-    if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['/bin/systemctl', 'enable', 'httpd.service'])
-    elif os.path.isfile('/sbin/chkconfig'):
-        subprocess.call(['/sbin/chkconfig', 'httpd', 'on'])
-    elif os.path.isfile('/usr/sbin/update-rc.d'):
-        subprocess.call(['/usr/sbin/update-rc.d', 'apache2', 'defaults'])
-    else:
-        log.error(_("Could not configure to start on boot, the " + \
-                "webserver server service."))
+    fp = open('/etc/kolab-freebusy/config.ini', "w+")
+    cfg_parser.write(fp)
+    fp.close()
 
