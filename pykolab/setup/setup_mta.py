@@ -272,9 +272,12 @@ result_format = shared+%%s
         current_value = myaugeas.get(setting)
 
         if current_value == None:
-            insert_paths = myaugeas.match('/files/etc/postfix/main.cf/*')
-            insert_path = insert_paths[(len(insert_paths)-1)]
-            myaugeas.insert(insert_path, setting_key, False)
+            try:
+                myaugeas.set(setting, postfix_main_settings[setting_key])
+            except:
+                insert_paths = myaugeas.match('/files/etc/postfix/main.cf/*')
+                insert_path = insert_paths[(len(insert_paths)-1)]
+                myaugeas.insert(insert_path, setting_key, False)
 
         log.debug(_("Setting key %r to %r") % (setting_key, postfix_main_settings[setting_key]), level=8)
         myaugeas.set(setting, postfix_main_settings[setting_key])
