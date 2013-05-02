@@ -37,14 +37,14 @@ EVENTS {
 
     # this is only necessary if using duplicate delivery suppression,
     # Sieve or NNTP
-    duplicate_prune cmd="cyr_expire -E 3" at=0400
+    duplicateprune cmd="cyr_expire -E 3" at=0400
 
     # Expire data older then 69 days. Two full months of 31 days
     # each includes two full backup cycles, plus 1 week margin
     # because we run our full backups on the first sat/sun night
     # of each month.
-    delete_prune cmd="cyr_expire -E 4 -D 69" at=0430
-    expunge_prune cmd="cyr_expire -E 4 -X 69" at=0445
+    deleteprune cmd="cyr_expire -E 4 -D 69" at=0430
+    expungeprune cmd="cyr_expire -E 4 -X 69" at=0445
 
     # this is only necessary if caching TLS sessions
     tlsprune	cmd="tls_prune" at=0400
