@@ -30,21 +30,10 @@ log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
 def __init__():
-    commands.register('add_domain', execute, description=description())
-
-def cli_options():
-    my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
-    my_option_group.add_option(
-            '--alias',
-            dest    = "domains",
-            action  = "append",
-            default = [],
-            help    = _("Add alias domain."),
-            metavar = "DOMAIN",
-        )
+    commands.register('delete_domain', execute, description=description())
 
 def description():
-    return _("Add a new domain.")
+    return _("Delete a domain.")
 
 def execute(*args, **kw):
     from pykolab import wap_client
@@ -66,4 +55,4 @@ def execute(*args, **kw):
     except IndexError, errmsg:
         domain = utils.ask_question(_("Domain name"))
 
-    wap_client.domain_add(domain, conf.domains)
+    wap_client.domain_delete(domain)
