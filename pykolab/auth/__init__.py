@@ -160,7 +160,7 @@ class Auth(pykolab.base.Base):
 
         self._auth.connect()
 
-    def disconnect(self):
+    def disconnect(self, domain=None):
         """
             Connect to the domain authentication backend using domain, or fall
             back to the primary domain specified by the configuration.

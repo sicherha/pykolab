@@ -208,6 +208,7 @@ class SASLAuthDaemon(object):
                     pass
 
             clientsocket.close()
+            auth.disconnect()
 
     def reload_config(self, *args, **kw):
         pass
