@@ -76,40 +76,36 @@ def connect():
 
     return conn
 
-def domain_add(domain, parent=None):
-    params = {
-            'domain': domain,
-        }
-
+def domain_add(domain, aliases=[]):
     dna = conf.get('ldap', 'domain_name_attribute')
 
-    if not parent == None:
-        domains = domains_list()
-        parent_found = False
-        if isinstance(domains['list'], dict):
-            for _domain in domains['list'].keys():
-                if parent_found:
-                    continue
-
-                if isinstance(domains['list'][_domain][dna], basestring):
-                    if parent == domains['list'][_domain][dna]:
-                        parent_found = True
-                elif isinstance(domains['list'][_domain][dna], list):
-                    if parent in domains['list'][_domain][dna]:
-                        parent_found = True
-
-        if parent_found:
-            params['parent'] = parent
-        else:
-            log.error(_("Invalid parent domain"))
-            return
-
-    post = json.dumps(params)
+    post = json.dumps({
+            dna: [ domain ] + aliases
+        })
 
     return request('POST', 'domain.add', post=post)
 
+def domain_delete(domain):
+    domain_id, domain_attrs = domain_find(domain).popitem()
+
+    post = json.dumps({
+            'id': domain_id
+        })
+
+    return request('POST', 'domain.delete', post=post)
+
+def domain_find(domain):
+    dna = conf.get('ldap', 'domain_name_attribute')
+
+    get = { dna: domain }
+
+    return request('GET', 'domain.find', get=get)
+
 def domain_info(domain):
-    get = { 'domain': domain }
+    domain_id, domain_attrs = domain_find(domain)
+
+    get = { 'id': domain_id }
+
     return request('GET', 'domain.info', get=get)
 
 def domains_capabilities():
