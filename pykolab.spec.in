@@ -334,6 +334,10 @@ rm -rf %{buildroot}
 %{python_sitelib}/pykolab/cli/*.py
 %{python_sitelib}/pykolab/cli/*.pyc
 %{python_sitelib}/pykolab/cli/*.pyo
+%dir %{python_sitelib}/pykolab/cli/wap
+%{python_sitelib}/pykolab/cli/wap/*.py
+%{python_sitelib}/pykolab/cli/wap/*.pyc
+%{python_sitelib}/pykolab/cli/wap/*.pyo
 %dir %{python_sitelib}/pykolab/setup/
 %{python_sitelib}/pykolab/setup/*.py
 %{python_sitelib}/pykolab/setup/*.pyc
