@@ -1,5 +1,5 @@
-AC_INIT([pykolab], 0.6)
-AC_SUBST([RELEASE], 0.1)
+AC_INIT([pykolab], 0.6.0)
+AC_SUBST([RELEASE], 1)
 
 AC_CONFIG_SRCDIR(pykolab/constants.py.in)
 
