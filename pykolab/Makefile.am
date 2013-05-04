@@ -73,7 +73,6 @@ pykolab_setup_PYTHON = \
 	setup/setup_php.py \
 	setup/setup_roundcube.py \
 	setup/setup_syncroton.py \
-	setup/setup_zpush.py \
 	setup/__init__.py
 
 pykolab_wapclientdir = $(pythondir)/$(PACKAGE)/wap_client
