@@ -436,6 +436,9 @@ def execute(*args, **kw):
 
                         send_response(original_resource['mail'], itip_event)
 
+    auth.disconnect()
+    del auth
+
     # Disconnect IMAP or we lock the mailbox almost constantly
     imap.disconnect()
     del imap
@@ -589,6 +592,8 @@ def resource_record_from_email_address(email_address):
 
         resource_records = [ resource_records ]
 
+    auth.disconnect()
+
     return resource_records
 
 def resource_records_from_itip_events(itip_events):
@@ -721,6 +726,8 @@ def resource_records_from_itip_events(itip_events):
                 ),
             level=8
         )
+
+    auth.disconnect()
 
     return resource_records
 
