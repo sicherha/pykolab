@@ -78,7 +78,7 @@ class KolabRecipientpolicy(object):
         except KeyError, e:
             log.warning(_("Attribute substitution for 'mail' failed in Recipient Policy"))
             if user_attrs.has_key('mail'):
-                return mail
+                return user_attrs['mail']
             else:
                 return None
 
