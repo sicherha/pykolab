@@ -566,6 +566,9 @@ class LDAP(pykolab.base.Base):
                         }
                 )
 
+            if primary_mail_address == None:
+                return entry_modifications
+
             i = 1
             _primary_mail = primary_mail_address
 

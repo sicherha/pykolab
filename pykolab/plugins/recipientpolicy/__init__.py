@@ -77,9 +77,10 @@ class KolabRecipientpolicy(object):
             return mail
         except KeyError, e:
             log.warning(_("Attribute substitution for 'mail' failed in Recipient Policy"))
-            mail = utils.translate(user_attrs['mail'], user_attrs['preferredlanguage'])
-            mail = mail.lower()
-            return mail
+            if user_attrs.has_key('mail'):
+                return mail
+            else:
+                return None
 
     def set_secondary_mail(self, *args, **kw):
         """
