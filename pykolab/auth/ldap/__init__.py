@@ -2441,7 +2441,11 @@ class LDAP(pykolab.base.Base):
 
                 break
 
-            except:
+            except Exception, errmsg:
+                log.error(_("An error occured using %s: %r") % (supported_control, errmsg))
+                if conf.debuglevel > 8:
+                    import traceback
+                    traceback.print_exc()
                 continue
 
         return _results
