@@ -1185,6 +1185,9 @@ class LDAP(pykolab.base.Base):
         if entry[result_attribute] == None:
             return
 
+        if entry[result_attribute] == '':
+            return
+
         cache.get_entry(self.domain, entry)
 
         self.imap.connect(domain=self.domain)
@@ -1315,6 +1318,15 @@ class LDAP(pykolab.base.Base):
 
             for key in entry_changes.keys():
                 entry[key] = entry_changes[key]
+
+            if not entry.has_key(result_attribute):
+                return
+
+            if entry[result_attribute] == None:
+                return
+
+            if entry[result_attribute] == '':
+                return
 
             # Now look at entry_changes and old_canon_attr, and see if they're
             # the same value.
