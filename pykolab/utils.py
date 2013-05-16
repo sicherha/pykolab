@@ -321,6 +321,9 @@ def normalize(_object):
             result['surname'] = result['sn'].replace(' ', '')
 
         if result.has_key('mail'):
+            if isinstance(result['mail'], list):
+                result['mail'] = result['mail'][0]
+
             if len(result['mail']) > 0:
                 if len(result['mail'].split('@')) > 1:
                     result['domain'] = result['mail'].split('@')[1]
