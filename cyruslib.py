@@ -674,12 +674,14 @@ class CYRUS:
 
         for annotation in annotations:
 
-            folder = annotation.split()[0].replace('"','')
+            print annotation
+
+            folder = annotation.split('"')[1].replace('"','')
 
             if not ann.has_key(folder):
                 ann[folder] = {}
 
-            key = annotation.split()[1].replace('"','').replace("'","")
+            key = annotation.split('"')[3].replace('"','').replace("'","")
 
             _annot = annotation.split('(')[1].split(')')[0]
 
