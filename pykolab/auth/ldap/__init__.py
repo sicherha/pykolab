@@ -2021,6 +2021,14 @@ class LDAP(pykolab.base.Base):
                 else:
                     change = change_dict['change_type']
 
+                # See if we can find the cache entry - this way we can get to
+                # the value of a (former, on a deleted entry) result_attribute
+                cache_entry = cache.get_entry(self.domain, entry, update=False)
+                result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+
+                if hasattr(cache_entry, 'result_attribute') and change == 'delete':
+                    entry[result_attribute] = cache_entry.result_attribute
+
                 eval(
                         "self._change_%s_%s(entry, change_dict)" % (
                                 change,
