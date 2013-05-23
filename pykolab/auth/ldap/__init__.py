@@ -868,8 +868,18 @@ class LDAP(pykolab.base.Base):
         else:
             override_search = False
 
+        config_base_dn = self.config_get('base_dn')
+        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
+
+        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+            base_dn = ldap_base_dn
+        else:
+            base_dn = config_base_dn
+
+        log.debug(_("Synchronization is searching against base DN: %s") % (base_dn), level=8)
+
         self._search(
-                self.config_get('base_dn'),
+                base_dn,
                 filterstr=_filter,
                 attrlist=[
                         '*',
