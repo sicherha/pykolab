@@ -673,14 +673,19 @@ class CYRUS:
                     continue
 
         for annotation in annotations:
-            folder = annotation.split('"')[1].replace('"','')
+            annotation = annotation.strip()
+
+            if not annotation[0] == '"':
+                folder = annotation.split('"')[0].replace('"','').strip()
+                key = annotation.split('"')[1].replace('"','').replace("'","").strip()
+                _annot = annotation.split('(')[1].split(')')[0].strip()
+            else:
+                folder = annotation.split('"')[1].replace('"','').strip()
+                key = annotation.split('"')[3].replace('"','').replace("'","").strip()
+                _annot = annotation.split('(')[1].split(')')[0].strip()
 
             if not ann.has_key(folder):
                 ann[folder] = {}
-
-            key = annotation.split('"')[3].replace('"','').replace("'","")
-
-            _annot = annotation.split('(')[1].split(')')[0]
 
             try:
                 value_priv = _annot[(_annot.index('"value.priv"')+len('"value.priv"')):_annot.index('"size.priv"')].strip()
