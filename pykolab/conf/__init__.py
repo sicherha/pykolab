@@ -596,7 +596,7 @@ class Conf(object):
         if value:
             try:
                 from smtplib import SMTP
-		self.use_mail = value
+                self.use_mail = value
                 return True
             except ImportError:
                 log.error(_("No SMTP class found in the smtplib library."))
@@ -606,8 +606,8 @@ class Conf(object):
         # Attempt to load the suite,
         # Get the suite's options,
         # Set them here.
-	if not hasattr(self,'test_suites'):
-	    self.test_suites = []
+        if not hasattr(self,'test_suites'):
+            self.test_suites = []
 
         if "zpush" in value:
             selectively = False
