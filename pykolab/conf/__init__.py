@@ -182,7 +182,7 @@ class Conf(object):
             return
 
         for key in config.options('testing'):
-	    retval = False
+            retval = False
 
             if isinstance(self.defaults.__dict__['testing'][key], int):
                 value = config.getint('testing',key)
