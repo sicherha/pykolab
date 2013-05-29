@@ -2091,6 +2091,14 @@ class LDAP(pykolab.base.Base):
 #
 #                    server = self.imap.user_mailbox_server(folder)
 
+        log.debug(
+                _("Done with _synchronize_callback() for entry %r") % (
+                        entry['id']
+                    ),
+                level=9
+            )
+
+
     def _unbind(self):
         """
             Discard the current set of bind credentials.
