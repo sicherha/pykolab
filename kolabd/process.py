@@ -30,6 +30,7 @@ conf = pykolab.getConf()
 class KolabdProcess(multiprocessing.Process):
     def __init__(self, domain):
         self.domain = domain
+        log.debug(_("Process created for domain %s") % (domain), level=8)
         multiprocessing.Process.__init__(
                 self,
                 target=self.synchronize,
@@ -38,6 +39,7 @@ class KolabdProcess(multiprocessing.Process):
             )
 
     def synchronize(self, domain):
+        log.debug(_("Synchronizing for domain %s") % (domain), level=8)
         sync_interval = conf.get('kolab', 'sync_interval')
 
         if sync_interval == None or sync_interval == 0:

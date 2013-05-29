@@ -5,7 +5,12 @@ import ldap
 import ldap.syncrepl
 import ldapurl
 
+import pykolab
+
 from pykolab import utils
+
+log = pykolab.getLogger('pykolab.syncrepl')
+conf = pykolab.getConf()
 
 class DNSync(ldap.ldapobject.LDAPObject,ldap.syncrepl.SyncreplConsumer):
 
@@ -28,8 +33,26 @@ class DNSync(ldap.ldapobject.LDAPObject,ldap.syncrepl.SyncreplConsumer):
             return self.__db['cookie']
 
     def syncrepl_delete(self, uuids):
+        log.debug("syncrepl_delete uuids: %r" % (uuids), level=8)
+
+        # Get the unique_attribute name to issue along with our
+        # callback (if any)
+        unique_attr = conf.get('ldap', 'unique_attribute')
+        if unique_attr == None:
+            unique_attr = 'entryuuid'
+
+        if unique_attr == 'nsuniqueid':
+            log.warning(
+                    _("The name of the persistent, unique attribute " + \
+                    "is very probably not compatible with the use of " + \
+                    "syncrepl.")
+                )
+            
+
         for uuid in uuids:
             dn = self.__db[uuid]
+
+            log.debug("syncrepl_delete dn: %r" % (dn), level=8)
 
             if not self.callback == None:
                 self.callback(
@@ -37,7 +60,9 @@ class DNSync(ldap.ldapobject.LDAPObject,ldap.syncrepl.SyncreplConsumer):
                         previous_dn=None,
                         change_number=None,
                         dn=dn,
-                        entry={}
+                        entry={
+                                unique_attr: uuid
+                            }
                     )
 
             del self.__db[uuid]

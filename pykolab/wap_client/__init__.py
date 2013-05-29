@@ -246,9 +246,19 @@ def group_add(params=None):
     if params == None:
         params = get_group_input()
 
-    params = json.dumps(params)
+    post = json.dumps(params)
 
-    return request('POST', 'group.add', params)
+    return request('POST', 'group.add', post=post)
+
+def group_delete(params=None):
+    if params == None:
+        params = {
+                'id': utils.ask_question("Name of group to delete", "group")
+            }
+
+    post = json.dumps(params)
+
+    return request('POST', 'group.delete', post=post)
 
 def group_form_value_generate_mail(params=None):
     if params == None:

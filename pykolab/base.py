@@ -26,7 +26,10 @@ class Base(object):
         Abstraction class for functions commonly shared between auth, imap, etc.
     """
     def __init__(self, *args, **kw):
-        self.domain = conf.get('kolab', 'primary_domain')
+        if kw.has_key('domain') and not kw['domain'] == None:
+            self.domain = kw['domain']
+        else:
+            self.domain = conf.get('kolab', 'primary_domain')
 
         # Placeholder primary_domain => [secondary_domains]. Should be updated
         # on auth backend _connect().

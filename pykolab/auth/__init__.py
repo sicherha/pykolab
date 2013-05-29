@@ -37,14 +37,9 @@ class Auth(pykolab.base.Base):
         """
             Initialize the authentication class.
         """
-        pykolab.base.Base.__init__(self)
+        pykolab.base.Base.__init__(self, domain=domain)
 
         self._auth = None
-
-        if not domain == None:
-            self.domain = domain
-        else:
-            self.domain = conf.get('kolab', 'primary_domain')
 
     def authenticate(self, login):
         """
@@ -97,8 +92,12 @@ class Auth(pykolab.base.Base):
             return
 
         if domain == None:
-            section = 'kolab'
-            domain = conf.get('kolab', 'primary_domain')
+            if not self.domain == None:
+                section = self.domain
+                domain = self.domain
+            else:
+                section = 'kolab'
+                domain = conf.get('kolab', 'primary_domain')
         else:
             self.list_domains()
             section = domain
@@ -228,6 +227,8 @@ class Auth(pykolab.base.Base):
         except:
             if not self.domain == kolab_primary_domain:
                 return [(self.domain, [])]
+            else:
+                domains = []
 
         # If no domains are found, the primary domain is used.
         if len(domains) < 1:

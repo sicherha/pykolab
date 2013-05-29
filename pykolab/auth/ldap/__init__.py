@@ -868,8 +868,18 @@ class LDAP(pykolab.base.Base):
         else:
             override_search = False
 
+        config_base_dn = self.config_get('base_dn')
+        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
+
+        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+            base_dn = ldap_base_dn
+        else:
+            base_dn = config_base_dn
+
+        log.debug(_("Synchronization is searching against base DN: %s") % (base_dn), level=8)
+
         self._search(
-                self.config_get('base_dn'),
+                base_dn,
                 filterstr=_filter,
                 attrlist=[
                         '*',
@@ -2020,6 +2030,15 @@ class LDAP(pykolab.base.Base):
                     change = change.lower()
                 else:
                     change = change_dict['change_type']
+
+                # See if we can find the cache entry - this way we can get to
+                # the value of a (former, on a deleted entry) result_attribute
+                result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+                if not entry.has_key(result_attribute):
+                    cache_entry = cache.get_entry(self.domain, entry, update=False)
+
+                    if hasattr(cache_entry, 'result_attribute') and change == 'delete':
+                        entry[result_attribute] = cache_entry.result_attribute
 
                 eval(
                         "self._change_%s_%s(entry, change_dict)" % (
