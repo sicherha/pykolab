@@ -32,6 +32,7 @@ class Event(object):
 
     def __init__(self, from_ical="", from_string=""):
         self._attendees = []
+        self._categories = []
 
         if from_ical == "":
             if from_string == "":
@@ -47,6 +48,53 @@ class Event(object):
         attendee = Attendee(email, name, rsvp, role, participant_status)
         self._attendees.append(attendee)
         self.event.setAttendees(self._attendees)
+
+    def add_category(self, category):
+        self._categories.append(category)
+        self.event.setCategories(self._categories)
+
+    def add_exception_date(self, _datetime):
+        valid_datetime = False
+        if isinstance(_datetime, datetime.date):
+            valid_datetime = True
+
+        if isinstance(_datetime, datetime.datetime):
+            # If no timezone information is passed on, make it UTC
+            if _datetime.tzinfo == None:
+                _datetime = _datetime.replace(tzinfo=pytz.utc)
+
+            valid_datetime = True
+
+        if not valid_datetime:
+            raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance")
+
+        (
+                year,
+                month,
+                day,
+            ) = (
+                    _datetime.year,
+                    _datetime.month,
+                    _datetime.day,
+                )
+        if hasattr(_datetime, 'hour'):
+            (
+                    hour,
+                    minute,
+                    second
+                ) = (
+                        _datetime.hour,
+                        _datetime.minute,
+                        _datetime.second
+                    )
+            _cdatetime = kolabformat.cDateTime(year, month, day, hour, minute, second)
+        else:
+            _cdatetime = kolabformat.cDateTime(year, month, day)
+
+        if hasattr(_datetime, "tzinfo"):
+            _cdatetime.setTimezone(_datetime.tzinfo.__str__())
+
+        self.event.addExceptionDate(_cdatetime)
 
     def as_string_itip(self, method="REQUEST"):
         cal = icalendar.Calendar()
@@ -194,6 +242,12 @@ class Event(object):
     def get_attendees(self):
         return self._attendees
 
+    def get_categories(self):
+        return self.event.categories()
+
+    def get_classification(self):
+        return self.classification()
+
     def get_created(self):
         _datetime = self.event.created()
 
@@ -217,6 +271,9 @@ class Event(object):
             result = datetime.datetime(year, month, day, hour, minute, second)
         except ValueError:
             result = datetime.datetime.now()
+
+    def get_description(self):
+        return self.event.description()
 
     def get_end(self):
         _datetime = self.event.end()
@@ -255,6 +312,9 @@ class Event(object):
             return datetime.date(year, month, day)
         else:
             return datetime.datetime(year, month, day, hour, minute, second, tzinfo=_timezone)
+
+    def get_exception_dates(self):
+        return self.event.exceptionDates()
 
     def get_ical_attendee(self):
         # TODO: Formatting, aye? See also the example snippet:
@@ -477,6 +537,9 @@ class Event(object):
         attendee.set_participant_status(status)
         self.event.setAttendees(self._attendees)
 
+    def set_classification(self, classification):
+        self.event.setClassification(classification)
+
     def set_created(self, _datetime=None):
         if _datetime == None:
             _datetime = datetime.datetime.now()
@@ -500,6 +563,9 @@ class Event(object):
         self.event.setCreated(
                 kolabformat.cDateTime(year, month, day, hour, minute, second)
             )
+
+    def set_description(self, description):
+        self.event.setDescription(description)
 
     def set_dtstamp(self, _datetime):
         (
@@ -564,6 +630,10 @@ class Event(object):
             _cdatetime.setTimezone(_datetime.tzinfo.__str__())
 
         self.event.setEnd(_cdatetime)
+
+    def set_exception_dates(self, _datetimes):
+        for _datetime in _datetimes:
+            self.add_exception_date(_datetime)
 
     def set_from_ical(self, attr, value):
         if attr == "dtend":
@@ -698,6 +768,9 @@ class Event(object):
 
         self.event.setLastModified(kolabformat.cDateTime(year, month, day, hour, minute, second))
 
+    def set_location(self, location):
+        self.event.setLocation(location)
+
     def set_organizer(self, email, name=None):
         contactreference = ContactReference(email)
         if not name == None:
@@ -707,6 +780,9 @@ class Event(object):
 
     def set_priority(self, priority):
         self.event.setPriority(priority)
+
+    def set_recurrence(self, recurrence):
+        self.event.setRecurrenceRule(recurrence)
 
     def set_start(self, _datetime):
 
