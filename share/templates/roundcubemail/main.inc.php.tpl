@@ -136,7 +136,7 @@
     \$rcmail_config['skin'] = 'larry';
     \$rcmail_config['skin_logo'] = 'skins/kolab/images/kolab_logo.png';
     \$rcmail_config['skin_include_php'] = false;
-    \$rcmail_config['mime_magic'] = '/usr/share/misc/magic';
+    \$rcmail_config['mime_magic'] = null;
     \$rcmail_config['im_identify_path'] = '/usr/bin/identify';
     \$rcmail_config['im_convert_path'] = '/usr/bin/convert';
     \$rcmail_config['login_lc'] = true;
@@ -162,8 +162,8 @@
     \$rcmail_config['smtp_auth_pw'] = null;
     \$rcmail_config['smtp_helo_host'] = \$_SERVER["HTTP_HOST"];
     \$rcmail_config['smtp_timeout'] = 0;
-    \$rcmail_config['log_dir'] = '/var/log/roundcubemail/';
-    \$rcmail_config['temp_dir'] = '\${_tmppath}';
+    \$rcmail_config['log_dir'] = 'logs/';
+    \$rcmail_config['temp_dir'] = '/var/lib/roundcubemail/';
     \$rcmail_config['message_cache_lifetime'] = '10d';
 
     \$rcmail_config['archive_mbox'] = 'Archive';
