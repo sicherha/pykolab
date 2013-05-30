@@ -898,8 +898,9 @@ class LDAP(pykolab.base.Base):
         if quota_attribute == None:
             return
 
+        # The default quota may be None, but LDAP quota could still be set
         if default_quota == None:
-            return
+            default_quota = 0
 
         self._bind()
 
