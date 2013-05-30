@@ -59,12 +59,5 @@ def user_add(givenname, sn, preferredlanguage='en_US'):
     fvg_params['type_id'] = user_type_id
     fvg_params['attributes'] = [attr for attr in user_type_info['auto_form_fields'].keys() if not attr in params.keys()]
 
-    exec("retval = wap_client.form_value_generate(%r)" % (params))
-
-    for attribute in user_type_info['auto_form_fields'].keys():
-        params[attribute] = retval[attribute]
-
-    params['userpassword'] = user_details['userpassword']
-
     result = wap_client.user_add(params)
 
