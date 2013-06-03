@@ -655,7 +655,7 @@ ServerAdminPwd = %(admin_pass)s
     aci.append('(targetattr="*")(version 3.0; acl "Configuration Administrators Group"; allow (all) groupdn="ldap:///cn=Configuration Administrators,ou=Groups,ou=TopologyManagement,o=NetscapeRoot";)')
     aci.append('(targetattr="*")(version 3.0; acl "Configuration Administrator"; allow (all) userdn="ldap:///uid=admin,ou=Administrators,ou=TopologyManagement,o=NetscapeRoot";)')
     aci.append('(targetattr = "*")(version 3.0; acl "SIE Group"; allow (all) groupdn = "ldap:///cn=slapd-%(hostname)s,cn=389 Directory Server,cn=Server Group,cn=%(fqdn)s,ou=%(domain)s,o=NetscapeRoot";)' %(_input))
-    aci.append('(targetattr = "*") (version 3.0;acl "Search Access";allow (read,compare,search)(userdn = "ldap:///all");)')
+    aci.append('(targetattr != "userPassword") (version 3.0;acl "Search Access";allow (read,compare,search)(userdn = "ldap:///all");)')
     modlist = []
     modlist.append((ldap.MOD_REPLACE, "aci", aci))
     auth._auth.ldap.modify_s(dn, modlist)
