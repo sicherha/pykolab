@@ -15,6 +15,9 @@ declare -a tasks
 
 #dists[${#dists[@]}]='f16';  dist_tags[${#dist_tags[@]}]='fc16'; product_series[${#product_series[@]}]="3.0"
 dists[${#dists[@]}]='f17';  dist_tags[${#dist_tags[@]}]='fc17'; product_series[${#product_series[@]}]="3.0"
+dists[${#dists[@]}]='f17';  dist_tags[${#dist_tags[@]}]='fc17'; product_series[${#product_series[@]}]="3.1"
+dists[${#dists[@]}]='f18';  dist_tags[${#dist_tags[@]}]='fc18'; product_series[${#product_series[@]}]="3.0"
+dists[${#dists[@]}]='f18';  dist_tags[${#dist_tags[@]}]='fc18'; product_series[${#product_series[@]}]="3.1"
 dists[${#dists[@]}]='el6';  dist_tags[${#dist_tags[@]}]='el6';  product_series[${#product_series[@]}]="3.0"
 dists[${#dists[@]}]='el6';  dist_tags[${#dist_tags[@]}]='el6';  product_series[${#product_series[@]}]="3.1"
 
