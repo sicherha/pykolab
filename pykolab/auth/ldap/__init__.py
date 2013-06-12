@@ -889,18 +889,24 @@ class LDAP(pykolab.base.Base):
 
         log.debug(_("Synchronization is searching against base DN: %s") % (base_dn), level=8)
 
-        self._search(
-                base_dn,
-                filterstr=_filter,
-                attrlist=[
-                        '*',
-                        self.config_get('unique_attribute'),
-                        conf.get('cyrus-sasl', 'result_attribute'),
-                        'modifytimestamp'
-                    ],
-                override_search=override_search,
-                callback=self._synchronize_callback,
-            )
+        try:
+            self._search(
+                    base_dn,
+                    filterstr=_filter,
+                    attrlist=[
+                            '*',
+                            self.config_get('unique_attribute'),
+                            conf.get('cyrus-sasl', 'result_attribute'),
+                            'modifytimestamp'
+                        ],
+                    override_search=override_search,
+                    callback=self._synchronize_callback,
+                )
+        except Exception, errmsg:
+            log.error("Exception occurred: %r" % (errmsg))
+            if conf.debuglevel > 8:
+                import traceback
+                traceback.print_exc()
 
     def user_quota(self, entry_id, folder):
         default_quota = self.config_get('default_quota')
