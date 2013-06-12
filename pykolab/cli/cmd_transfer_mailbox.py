@@ -21,6 +21,8 @@ import commands
 
 import pykolab
 
+from pykolab.auth import Auth
+from pykolab.imap import IMAP
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.cli')
@@ -41,22 +43,25 @@ def execute(*args, **kw):
     if len(conf.cli_args) > 0:
         target_partition = conf.cli_args.pop(0)
 
+    imap = IMAP()
+    imap.connect()
+
     mbox_parts = imap.parse_mailfolder(mailfolder)
 
-    print "Mailbox parts:", mbox_parts
-
     if mbox_parts['domain'] == None:
+        domain = conf.get('kolab', 'primary_domain')
         user_identifier = mbox_parts['path_parts'][1]
     else:
+        domain = mbox_parts['domain']
         user_identifier = "%s@%s" % (mbox_parts['path_parts'][1], mbox_parts['domain'])
 
-    print "User Identifier:", user_identifier
-
-    user = auth.find_user("mail", user_identifier)
-
-    print "User:", user
-
-    imap.connect()
+    source_server = imap.user_mailbox_server(mailfolder)
+    imap.connect(server=source_server)
     imap.imap.xfer(mailfolder, target_server)
 
-    auth.set_user_attribute(mbox_parts['domain'], user, "mailHost", target_server)
+    auth = Auth()
+    auth.connect()
+
+    user = auth.find_recipient(user_identifier)
+
+    auth.set_entry_attributes(domain, user, {'mailhost': target_server})
