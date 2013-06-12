@@ -110,7 +110,7 @@ class LDAP(pykolab.base.Base):
             Initialize the LDAP object for domain. If no domain is specified,
             domain name space configured as 'kolab'.'primary_domain' is used.
         """
-        pykolab.base.Base.__init__(self)
+        pykolab.base.Base.__init__(self, domain=domain)
 
         self.ldap = None
         self.bind = False
@@ -151,7 +151,10 @@ class LDAP(pykolab.base.Base):
         self.connect()
         self._bind()
 
-        user_filter = self.config_get('user_filter')
+        user_filter = self.config_get('kolab_user_filter')
+
+        if user_filter == None:
+            user_filter = self.config_get('user_filter')
 
         _filter = '(&(|'
 
@@ -163,8 +166,16 @@ class LDAP(pykolab.base.Base):
 
         _filter += ')%s)' % (user_filter)
 
+        config_base_dn = self.config_get('base_dn')
+        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
+
+        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+            base_dn = ldap_base_dn
+        else:
+            base_dn = config_base_dn
+
         _search = self.ldap.search_ext(
-                self.config_get('base_dn'),
+                base_dn,
                 ldap.SCOPE_SUBTREE,
                 _filter,
                 ['entrydn']
