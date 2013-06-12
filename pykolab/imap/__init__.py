@@ -111,6 +111,7 @@ class IMAP(object):
                 if conf.has_section(domain) and conf.has_option(domain, 'imap_uri'):
                     uri = conf.get(domain, 'imap_uri')
 
+        scheme = None
         hostname = None
         port = None
 
@@ -130,6 +131,11 @@ class IMAP(object):
 
         if port == None:
             port = 993
+
+        if scheme == None or scheme == "":
+            scheme = 'imaps'
+
+        uri = '%s://%s:%s' % (scheme, hostname, port)
 
         # Get the credentials
         admin_login = conf.get(backend, 'admin_login')
@@ -167,7 +173,7 @@ class IMAP(object):
                     self._imap[hostname].logged_in = True
 
         else:
-            if not login and self._imap[hostname].logged_in == True:
+            if not login:
                 self.disconnect(hostname)
                 self.connect(uri=uri,login=False)
             elif login and not hasattr(self._imap[hostname],'logged_in'):
@@ -193,7 +199,8 @@ class IMAP(object):
     def disconnect(self, server=None):
         if server == None:
             # No server specified, but make sure self.imap is None anyways
-            del self.imap
+            if hasattr(self, 'imap'):
+                del self.imap
         else:
             if self._imap.has_key(server):
                 del self._imap[server]
@@ -445,11 +452,21 @@ class IMAP(object):
         admin_login = conf.get(backend, 'admin_login')
         admin_password = conf.get(backend, 'admin_password')
 
-        self.connect(login=False)
+        success = False
+        while not success:
+            try:
 
-        self.login_plain(admin_login, admin_password, folder)
-
-        (personal, other, shared) = self.namespaces()
+                self.disconnect()
+                self.connect(login=False)
+                self.login_plain(admin_login, admin_password, folder)
+                (personal, other, shared) = self.namespaces()
+                success = True
+            except Exception, errmsg:
+                log.debug(_("Waiting for the Cyrus murder to settle... %r") % (errmsg))
+                if conf.debuglevel > 8:
+                    import traceback
+                    traceback.print_exc()
+                time.sleep(0.5)
 
         for additional_folder in additional_folders.keys():
             _add_folder = {}
