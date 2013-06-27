@@ -103,7 +103,7 @@ def handler(*args, **kw):
                     if not old[mailserver_attribute] == constants.fqdn:
                         # Even though the new mailserver can be us, it is the
                         # *current* mail server that needs to push for the XFER.
-                        log.info("The mail server for user %r is set, and it is not me (%r)" % (dn, old[mailserver_attribute))
+                        log.info("The mail server for user %r is set, and it is not me (%r)" % (dn, old[mailserver_attribute]))
                         return
 
                 else:
