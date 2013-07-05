@@ -29,7 +29,10 @@ class FolderNameError(ValueError):
 
 def encode(s):
     if isinstance(s, str) and sum(n for n in (ord(c) for c in s) if n > 127):
-        raise FolderNameError("%r contains characters not valid in a str folder name. "
+        try:
+            s = unicode(s, "UTF-8")
+        except Exception, errmsg:
+            raise FolderNameError("%r contains characters not valid in a str folder name. "
                               "Convert to unicode first?" % s)
 
     r = []
@@ -49,6 +52,7 @@ def encode(s):
             _in.append(c)
     if _in:
         r.extend(['&', modified_base64(''.join(_in)), '-'])
+
     return ''.join(r)
 
 
