@@ -243,6 +243,10 @@ class IMAP(object):
         else:
             raise AttributeError, _("%r has no attribute %s") % (self,name)
 
+    def folder_utf7(self, folder):
+        from pykolab import imap_utf7
+        return imap_utf7.encode(folder_path)
+
     def get_metadata(self, folder):
         """
             Obtain all metadata entries on a folder
@@ -328,7 +332,7 @@ class IMAP(object):
             shared = False
             metadata_path = metadata_path.replace('/private/', '/')
 
-        self.imap._setannotation(folder, metadata_path, metadata_value, shared)
+        self.imap._setannotation(self.folder_utf7(folder), metadata_path, metadata_value, shared)
 
     def shared_folder_create(self, folder_path, server=None):
         """
@@ -478,9 +482,12 @@ class IMAP(object):
                 folder_name = "%s%s" % (personal, folder_name)
 
             try:
-                self.imap.cm(folder_name)
+                self.create_folder(folder_name)
             except:
                 log.warning(_("Mailbox already exists: %s") % (folder_name))
+                if conf.debuglevel > 8:
+                    import traceback
+                    traceback.print_exc()
                 continue
 
             if additional_folders[additional_folder].has_key("annotations"):
@@ -625,7 +632,7 @@ class IMAP(object):
         """
             Check if the environment has a folder named folder.
         """
-        folders = self.imap.lm(folder)
+        folders = self.imap.lm(self.folder_utf7(folder))
         log.debug(_("Looking for folder '%s', we found folders: %r") % (folder,folders), level=8)
         # Greater then one, this folder may have subfolders.
         if len(folders) > 0:
@@ -653,7 +660,7 @@ class IMAP(object):
                             "%s") % (rights,subject,folder), level=8)
 
                 self.set_acl(
-                        folder,
+                        self.folder_utf7(folder),
                         "%s" % (subject),
                         "%s" % (rights)
                     )
@@ -664,7 +671,7 @@ class IMAP(object):
                             "%s") % (rights,subject,folder), level=8)
 
                 self.set_acl(
-                        folder,
+                        self.folder_utf7(folder),
                         "%s" % (subject),
                         ""
                     )
