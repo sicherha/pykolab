@@ -127,7 +127,7 @@ def execute(*args, **kw):
 
     _message = json.load(open(filepath, 'r'))
     log.debug("Loaded message %r" % (_message), level=9)
-    message = message_from_string(_message['data'])
+    message = message_from_string(str(_message['data']))
     recipients = _message['to']
 
     any_itips = False
