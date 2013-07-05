@@ -21,6 +21,7 @@ import commands
 
 import pykolab
 
+from pykolab import imap_utf7
 from pykolab.imap import IMAP
 from pykolab.translate import _
 
@@ -76,4 +77,4 @@ def execute(*args, **kw):
         folders.extend(imap.lm(search))
 
     for folder in folders:
-        print folder
+        print imap_utf7.decode(folder)
