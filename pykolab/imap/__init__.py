@@ -208,6 +208,8 @@ class IMAP(object):
                 log.warning(_("Called imap.disconnect() on a server that we had no connection to."))
 
     def create_folder(self, folder_path, server=None):
+        folder_path = self.folder_utf7(folder_path)
+
         if not server == None:
             if not self._imap.has_key(server):
                 self.connect(server=server)
@@ -245,7 +247,7 @@ class IMAP(object):
 
     def folder_utf7(self, folder):
         from pykolab import imap_utf7
-        return imap_utf7.encode(folder_path)
+        return imap_utf7.encode(folder)
 
     def get_metadata(self, folder):
         """
