@@ -49,7 +49,9 @@ def execute(*args, **kw):
     imap = IMAP()
 
     imap.connect()
-    delete_folders = imap.lm(delete_folder)
+
+    delete_folders = imap.list_folders(delete_folder)
+
     for delete_folder in delete_folders:
-        imap.delete_mailfolder(delete_folder)
+        imap.delete_mailfolder(imap.folder_utf8(delete_folder))
 

@@ -249,6 +249,10 @@ class IMAP(object):
         from pykolab import imap_utf7
         return imap_utf7.encode(folder)
 
+    def folder_utf8(self, folder):
+        from pykolab import imap_utf7
+        return imap_utf7.decode(folder)
+
     def get_metadata(self, folder):
         """
             Obtain all metadata entries on a folder
@@ -898,22 +902,25 @@ class IMAP(object):
 
         log.info(_("Deleting folder %s") % (mailfolder_path))
 
-        self.imap.dm(mailfolder_path)
+        self.imap.dm(self.folder_utf7(mailfolder_path))
 
     def get_quota(self, mailfolder_path):
         try:
-            return self.lq(mailfolder_path)
+            return self.lq(self.folder_utf7(mailfolder_path))
         except:
             return
 
     def get_quota_root(self, mailfolder_path):
-        return self.lqr(mailfolder_path)
+        return self.lqr(self.folder_utf7(mailfolder_path))
 
     def list_acls(self, folder):
         """
             List the ACL entries on a folder
         """
         return self.imap.lam(folder)
+
+    def list_folders(self, pattern):
+        return self.lm(self.folder_utf7(pattern))
 
     def list_user_folders(self, primary_domain=None, secondary_domains=[]):
         """
