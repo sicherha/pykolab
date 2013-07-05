@@ -81,7 +81,7 @@ def execute(*args, **kw):
 
     else:
         metadata = []
-        folders = imap.lm(folder)
+        folders = imap.list_folders(folder)
         for folder in folders:
             print "Folder", folder
 

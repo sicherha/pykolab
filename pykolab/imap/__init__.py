@@ -257,8 +257,14 @@ class IMAP(object):
         """
             Obtain all metadata entries on a folder
         """
+        metadata = {}
 
-        return self.imap.getannotation(folder, '*')
+        _metadata = self.imap.getannotation(self.folder_utf7(folder), '*')
+
+        for (k,v) in _metadata.items():
+            metadata[self.folder_utf8(k)] = v
+
+        return metadata
 
     def get_separator(self):
         if not hasattr(self, 'imap') or self.imap == None:
@@ -322,7 +328,7 @@ class IMAP(object):
         if short_rights.has_key(acl):
             acl = short_rights[acl]
 
-        self.imap.sam(folder, identifier, acl)
+        self.imap.sam(self.folder_utf7(folder), identifier, acl)
 
     def set_metadata(self, folder, metadata_path, metadata_value, shared=True):
         """
@@ -639,7 +645,7 @@ class IMAP(object):
             Check if the environment has a folder named folder.
         """
         folders = self.imap.lm(self.folder_utf7(folder))
-        log.debug(_("Looking for folder '%s', we found folders: %r") % (folder,folders), level=8)
+        log.debug(_("Looking for folder '%s', we found folders: %r") % (folder,[self.folder_utf8(x) for x in folders]), level=8)
         # Greater then one, this folder may have subfolders.
         if len(folders) > 0:
             return True
@@ -917,10 +923,10 @@ class IMAP(object):
         """
             List the ACL entries on a folder
         """
-        return self.imap.lam(folder)
+        return self.imap.lam(self.folder_utf7(folder))
 
     def list_folders(self, pattern):
-        return self.lm(self.folder_utf7(pattern))
+        return [self.folder_utf8(x) for x in self.lm(self.folder_utf7(pattern))]
 
     def list_user_folders(self, primary_domain=None, secondary_domains=[]):
         """

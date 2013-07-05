@@ -55,7 +55,7 @@ def execute(*args, **kw):
 
     else:
         acls = []
-        folders = imap.lm(folder)
+        folders = imap.list_folders(folder)
         for folder in folders:
             print "Folder", folder
             acls = imap.list_acls(folder)
