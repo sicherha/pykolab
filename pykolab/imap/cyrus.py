@@ -193,6 +193,14 @@ class Cyrus(cyruslib.CYRUS):
 
         return server
 
+    def folder_utf7(self, folder):
+        from pykolab import imap_utf7
+        return imap_utf7.encode(folder)
+
+    def folder_utf8(self, folder):
+        from pykolab import imap_utf7
+        return imap_utf7.decode(folder)
+
     def _setquota(self, mailfolder, quota):
         """
             Login to the actual backend server.
@@ -355,7 +363,7 @@ class Cyrus(cyruslib.CYRUS):
             if not mbox['domain'] == None:
                 verify_folder_search = "%s@%s" % (verify_folder_search, mbox['domain'])
 
-            folders = self.lm(verify_folder_search)
+            folders = self.lm(self.folder_utf7(verify_folder_search))
 
             # NOTE: Case also covered is valid hexadecimal folders; won't be the
             # actual check as intended, but doesn't give you anyone else's data
