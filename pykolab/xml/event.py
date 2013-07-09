@@ -872,6 +872,7 @@ class Event(object):
         msg['To'] = ', '.join([x.__str__() for x in self.get_attendees()])
         msg['Date'] = formatdate(localtime=True)
 
+        msg.add_header('X-Kolab-MIME-Version', '3.0')
         msg.add_header('X-Kolab-Type', 'application/x-vnd.kolab.event')
 
         text = utils.multiline_message("""
