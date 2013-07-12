@@ -151,10 +151,7 @@ class LDAP(pykolab.base.Base):
         self.connect()
         self._bind()
 
-        user_filter = self.config_get('kolab_user_filter')
-
-        if user_filter == None:
-            user_filter = self.config_get('user_filter')
+        user_filter = self.config_get('user_filter')
 
         _filter = '(&(|'
 
