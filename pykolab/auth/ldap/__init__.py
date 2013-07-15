@@ -374,8 +374,16 @@ class LDAP(pykolab.base.Base):
         if len(_filter) <= 6:
             return None
 
+        config_base_dn = self.config_get('base_dn')
+        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
+
+        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+            base_dn = ldap_base_dn
+        else:
+            base_dn = config_base_dn
+
         _results = self.ldap.search_s(
-                self.config_get('base_dn'),
+                base_dn,
                 scope=ldap.SCOPE_SUBTREE,
                 filterstr=_filter,
                 attrlist=result_attributes,
@@ -419,8 +427,6 @@ class LDAP(pykolab.base.Base):
             __filter_prefix = "(&%s" % resource_filter
             __filter_suffix = ")"
 
-        resource_base_dn = self.config_get('resource_base_dn')
-
         recipient_address_attrs = self.config_get_list("mail_attributes")
 
         result_attributes = recipient_address_attrs
@@ -443,6 +449,14 @@ class LDAP(pykolab.base.Base):
 
         if len(_filter) <= 6:
             return None
+
+        config_base_dn = self.config_get('resource_base_dn')
+        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
+
+        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+            resource_base_dn = ldap_base_dn
+        else:
+            resource_base_dn = config_base_dn
 
         _results = self.ldap.search_s(
                 resource_base_dn,
