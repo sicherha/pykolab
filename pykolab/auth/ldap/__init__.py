@@ -1611,7 +1611,7 @@ class LDAP(pykolab.base.Base):
         mailserver_attribute = self.config_get('mailserver_attribute')
 
         if entry.has_key(mailserver_attribute):
-            server = entry['mailserver_attribute']
+            server = entry[mailserver_attribute]
 
         if not entry.has_key('kolabtargetfolder'):
             entry['kolabtargetfolder'] = self.get_entry_attribute(
