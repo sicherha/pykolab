@@ -41,7 +41,11 @@ class Logger(logging.Logger):
     if hasattr(sys, 'argv'):
         for arg in sys.argv:
             if debuglevel == -1:
-                debuglevel = int(arg)
+                try:
+                    debuglevel = int(arg)
+                except ValueError, errmsg:
+                    continue
+
                 loglevel = logging.DEBUG
                 break
 
