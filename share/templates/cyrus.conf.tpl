@@ -50,5 +50,5 @@ EVENTS {
     tlsprune	cmd="tls_prune" at=0400
 
     # Create search indexes regularly
-    squatter    cmd="squatter -s -i" at=0530
+    #squatter    cmd="squatter -s -i" at=0530
 }
