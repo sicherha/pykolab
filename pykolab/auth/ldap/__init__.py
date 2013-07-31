@@ -151,7 +151,15 @@ class LDAP(pykolab.base.Base):
         self.connect()
         self._bind()
 
-        user_filter = self.config_get('user_filter')
+        config_base_dn = self.config_get('base_dn')
+        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
+
+        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+            base_dn = ldap_base_dn
+        else:
+            base_dn = config_base_dn
+
+        user_filter = self.config_get_raw('user_filter') % ({'base_dn':base_dn})
 
         _filter = '(&(|'
 
