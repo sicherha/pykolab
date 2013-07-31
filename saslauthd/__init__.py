@@ -194,7 +194,14 @@ class SASLAuthDaemon(object):
             auth = Auth(domain=realm)
             auth.connect()
 
-            if auth.authenticate(login):
+            success = False
+
+            try:
+                success = auth.authenticate(login)
+            except:
+                success = False
+
+            if success:
                 # #1170: Catch broken pipe error (incomplete authentication request)
                 try:
                     clientsocket.send(struct.pack("!H2s", 2, "OK"))
