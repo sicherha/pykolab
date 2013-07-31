@@ -114,7 +114,7 @@ bind_dn = %(service_bind_dn)s
 bind_pw = %(service_bind_pw)s
 
 # This finds the mail enabled distribution group LDAP entry
-query_filter = (&(mail=%%s)(objectClass=kolabgroupofuniquenames)(objectclass=groupofuniquenames))
+query_filter = (&(|(mail=%%s)(alias=%%s))(objectClass=kolabgroupofuniquenames)(objectclass=groupofuniquenames)(!(objectclass=groupofurls)))
 # From this type of group, get all uniqueMember DNs
 special_result_attribute = uniqueMember
 # Only from those DNs, get the mail
@@ -139,7 +139,7 @@ bind_dn = %(service_bind_dn)s
 bind_pw = %(service_bind_pw)s
 
 # This finds the mail enabled dynamic distribution group LDAP entry
-query_filter = (&(mail=%%s)(objectClass=kolabgroupofuniquenames)(objectClass=groupOfURLs))
+query_filter = (&(|(mail=%%s)(alias=%%s))(objectClass=kolabgroupofuniquenames)(objectClass=groupOfURLs))
 # From this type of group, get all memberURL searches/references
 special_result_attribute = memberURL
 # Only from those DNs, get the mail
