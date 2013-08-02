@@ -831,8 +831,16 @@ class LDAP(pykolab.base.Base):
 
         _filter = "(%s=%s)" % (attr, value)
 
+        config_base_dn = self.config_get('base_dn')
+        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
+
+        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+            base_dn = ldap_base_dn
+        else:
+            base_dn = config_base_dn
+
         return self._search(
-                self.config_get('base_dn'),
+                base_dn,
                 filterstr=_filter,
                 attrlist=[
                         '*',
@@ -1794,7 +1802,13 @@ class LDAP(pykolab.base.Base):
 
         entry_dn = self.entry_dn(entry_id)
 
-        base_dn = self.config_get('base_dn')
+        config_base_dn = self.config_get('base_dn')
+        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
+
+        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+            base_dn = ldap_base_dn
+        else:
+            base_dn = config_base_dn
 
         for _type in ['user', 'group', 'sharedfolder']:
             __filter = self.config_get('kolab_%s_filter' % (_type))
