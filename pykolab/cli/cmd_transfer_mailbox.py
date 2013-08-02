@@ -55,13 +55,13 @@ def execute(*args, **kw):
         domain = mbox_parts['domain']
         user_identifier = "%s@%s" % (mbox_parts['path_parts'][1], mbox_parts['domain'])
 
-    source_server = imap.user_mailbox_server(mailfolder)
-    imap.connect(server=source_server)
-    imap.imap.xfer(mailfolder, target_server)
-
-    auth = Auth()
+    auth = Auth(domain=domain)
     auth.connect()
 
     user = auth.find_recipient(user_identifier)
+
+    source_server = imap.user_mailbox_server(mailfolder)
+    imap.connect(server=source_server)
+    imap.imap.xfer(mailfolder, target_server)
 
     auth.set_entry_attributes(domain, user, {'mailhost': target_server})
