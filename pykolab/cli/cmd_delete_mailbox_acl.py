@@ -62,4 +62,8 @@ def execute(*args, **kw):
     else:
         folders = imap.lm(folder)
         for folder in folders:
-            imap.set_acl(folder, identifier, '')
+            try:
+                imap.set_acl(folder, identifier, '')
+            except:
+                # Mailbox no longer exists?
+                pass
