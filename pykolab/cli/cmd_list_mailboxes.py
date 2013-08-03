@@ -44,6 +44,13 @@ def cli_options():
                                 default = False,
                                 help    = _("Display raw IMAP UTF-7 folder names"))
 
+    my_option_group.add_option( '--server',
+                                dest    = "connect_server",
+                                action  = "store",
+                                default = None,
+                                metavar = "SERVER",
+                                help    = _("List mailboxes on server SERVER only."))
+
 def execute(*args, **kw):
     """
         List mailboxes
@@ -68,7 +75,11 @@ def execute(*args, **kw):
         searches = [ '' ]
 
     imap = IMAP()
-    imap.connect()
+
+    if not conf.connect_server == None:
+        imap.connect(server=conf.connect_server)
+    else:
+        imap.connect()
 
     folders = []
 
@@ -77,4 +88,7 @@ def execute(*args, **kw):
         folders.extend(imap.lm(search))
 
     for folder in folders:
-        print imap_utf7.decode(folder)
+        if not conf.raw:
+            print imap_utf7.decode(folder)
+        else:
+            print folder
