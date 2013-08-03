@@ -1927,6 +1927,9 @@ class LDAP(pykolab.base.Base):
                 _domain_attrs = utils.normalize(_domain_attrs)
                 if _domain_attrs.has_key(domain_rootdn_attribute):
                     return _domain_attrs[domain_rootdn_attribute]
+                else:
+                    if isinstance(_domain_attrs[domain_name_attribute], list):
+                        domain = _domain_attrs[domain_name_attribute][0]
 
         else:
             if conf.has_option('ldap', 'base_dn'):
