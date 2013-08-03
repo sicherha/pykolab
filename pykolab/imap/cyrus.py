@@ -363,7 +363,7 @@ class Cyrus(cyruslib.CYRUS):
             if not mbox['domain'] == None:
                 verify_folder_search = "%s@%s" % (verify_folder_search, mbox['domain'])
 
-            folders = self.lm(self.folder_utf7(verify_folder_search))
+            folders = self.lm(verify_folder_search)
 
             # NOTE: Case also covered is valid hexadecimal folders; won't be the
             # actual check as intended, but doesn't give you anyone else's data
@@ -375,7 +375,7 @@ class Cyrus(cyruslib.CYRUS):
             # but it still would not cover all cases.
             #
 
-            # If no folders where found... well... then there you go.
+            # If no folders were found... well... then there you go.
             if len(folders) < 1:
                 return None
 
