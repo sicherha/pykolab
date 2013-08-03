@@ -292,7 +292,8 @@ def request(method, api_uri, get=None, post=None, headers={}):
         del response_data['status']
         return response_data['result']
     else:
-        return response_data['result']
+        print "ERROR: %r" % (response_data['reason'])
+        return False
 
 def request_raw(method, api_uri, get=None, post=None, headers={}):
     global session_id
@@ -382,6 +383,30 @@ def user_edit(user = None, attributes={}):
     user_edit = request('POST', 'user.edit', get=get, post=post)
 
     return user_edit
+
+def user_find(attribs=None):
+    if attribs == None:
+        post = {
+                'search': {
+                        'params': {
+                                utils.ask_question("Attribute") : {
+                                        'value': utils.ask_question("value"),
+                                        'type': 'exact'
+                                    }
+                            }
+                    }
+            }
+    else:
+        post = { 'search': { 'params': {} } }
+
+        for (k,v) in attribs.iteritems():
+            post['search']['params'][k] = { 'value': v, 'type': 'exact' }
+
+    post = json.dumps(post)
+
+    user = request('POST', 'user.find', post=post)
+
+    return user
 
 def user_form_value_generate(params=None):
     if params == None:
