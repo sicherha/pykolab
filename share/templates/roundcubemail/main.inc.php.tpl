@@ -90,7 +90,7 @@
             'acl',
             'archive',
             'calendar',
-            'http_authentication',
+            // 'http_authentication',
             'jqueryui',
             'kolab_activesync',
             'kolab_addressbook',
@@ -99,7 +99,7 @@
             'kolab_folders',
             'libkolab',
             'libcalendaring',
-            'listcommands',
+            // 'listcommands'
             'managesieve',
             'newmail_notifier',
             'odfviewer',
