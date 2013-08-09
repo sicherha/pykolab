@@ -23,6 +23,7 @@ import commands
 
 import pykolab
 
+from pykolab import imap_utf7
 from pykolab.imap import IMAP
 from pykolab.translate import _
 
@@ -60,7 +61,7 @@ def execute(*args, **kw):
     imap = IMAP()
     imap.connect()
 
-    _folder = imap.lm(folder)
+    _folder = imap.lm(imap_utf7.encode(folder))
 
     if _folder == None or _folder == []:
         log.error(_("No such folder"))
@@ -68,7 +69,7 @@ def execute(*args, **kw):
 
     imap.set_acl(folder, 'cyrus-admin', 'lrs')
 
-    imap.select(folder)
+    imap.select(imap_utf7.encode(folder))
 
     if conf.list_deleted:
         typ, data = imap.search(None, 'ALL')
@@ -94,3 +95,5 @@ def execute(*args, **kw):
                 print num
         else:
             print num
+
+    imap.set_acl(folder, 'cyrus-admin', '')
