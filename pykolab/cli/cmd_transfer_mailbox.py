@@ -64,4 +64,5 @@ def execute(*args, **kw):
     imap.connect(server=source_server)
     imap.imap.xfer(mailfolder, target_server)
 
-    auth.set_entry_attributes(domain, user, {'mailhost': target_server})
+    if not user == None and not len(user) < 1:
+        auth.set_entry_attributes(domain, user, {'mailhost': target_server})
