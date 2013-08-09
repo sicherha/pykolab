@@ -32,6 +32,15 @@ conf = pykolab.getConf()
 def __init__():
     commands.register('list_quota', execute, description=description(), aliases=['lq'])
 
+def cli_options():
+    my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
+    my_option_group.add_option( '--server',
+                                dest    = "connect_server",
+                                action  = "store",
+                                default = None,
+                                metavar = "SERVER",
+                                help    = _("List mailboxes on server SERVER only."))
+
 def description():
     return """List quota for a folder."""
 
@@ -46,7 +55,11 @@ def execute(*args, **kw):
         quota_folder = '*'
 
     imap = IMAP()
-    imap.connect()
+
+    if not conf.connect_server == None:
+        imap.connect(server=conf.connect_server)
+    else:
+        imap.connect()
 
     folders = []
 
