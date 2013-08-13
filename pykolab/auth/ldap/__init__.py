@@ -979,6 +979,11 @@ class LDAP(pykolab.base.Base):
                 }
             )
 
+        try:
+            current_ldap_quota = (int)(current_ldap_quota)
+        except:
+            current_ldap_quota = None
+
         if not current_ldap_quota == None:
             if not new_quota == (int)(current_ldap_quota):
                 self.set_entry_attribute(
