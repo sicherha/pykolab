@@ -21,7 +21,6 @@ import commands
 
 import pykolab
 
-from pykolab import imap_utf7
 from pykolab.imap import IMAP
 from pykolab.translate import _
 
@@ -29,21 +28,10 @@ log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
 def __init__():
-    commands.register('list_mailboxes', execute, description=description(), aliases='lm')
-
-def description():
-    return "List mailboxes.\n" + \
-        "%-28s" % ('') + \
-        "Use wildcards '*' and '%' for more control.\n"
+    commands.register('server_info', execute, description=description())
 
 def cli_options():
     my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
-    my_option_group.add_option( '--raw',
-                                dest    = "raw",
-                                action  = "store_true",
-                                default = False,
-                                help    = _("Display raw IMAP UTF-7 folder names"))
-
     my_option_group.add_option( '--server',
                                 dest    = "connect_server",
                                 action  = "store",
@@ -51,28 +39,14 @@ def cli_options():
                                 metavar = "SERVER",
                                 help    = _("List mailboxes on server SERVER only."))
 
+
+def description():
+    return "Display server info.\n"
+
 def execute(*args, **kw):
     """
         List mailboxes
     """
-
-    searches = []
-
-    # See if conf.cli_args components make sense.
-    for arg in conf.cli_args:
-        if arg == '*':
-            searches.append(arg)
-        if arg.startswith('user'):
-            searches.append(arg)
-        if arg.startswith('shared'):
-            searches.append(arg)
-        if arg.startswith('DELETED'):
-            searches.append(arg)
-        if arg.startswith('news'):
-            searches.append(arg)
-
-    if len(searches) == 0:
-        searches = [ '' ]
 
     imap = IMAP()
 
@@ -81,14 +55,4 @@ def execute(*args, **kw):
     else:
         imap.connect()
 
-    folders = []
-
-    for search in searches:
-        log.debug(_("Appending folder search for %r") % (search), level=8)
-        folders.extend(imap.lm(imap_utf7.encode(search)))
-
-    for folder in folders:
-        if not conf.raw:
-            print imap_utf7.decode(folder)
-        else:
-            print folder
+    print imap.get_metadata("")

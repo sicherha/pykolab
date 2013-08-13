@@ -17,11 +17,14 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import datetime
+
 import commands
 
 import pykolab
 
 from pykolab import imap_utf7
+from pykolab.auth import Auth
 from pykolab.imap import IMAP
 from pykolab.translate import _
 
@@ -29,21 +32,10 @@ log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
 def __init__():
-    commands.register('list_mailboxes', execute, description=description(), aliases='lm')
-
-def description():
-    return "List mailboxes.\n" + \
-        "%-28s" % ('') + \
-        "Use wildcards '*' and '%' for more control.\n"
+    commands.register('count_domain_mailboxes', execute)
 
 def cli_options():
     my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
-    my_option_group.add_option( '--raw',
-                                dest    = "raw",
-                                action  = "store_true",
-                                default = False,
-                                help    = _("Display raw IMAP UTF-7 folder names"))
-
     my_option_group.add_option( '--server',
                                 dest    = "connect_server",
                                 action  = "store",
@@ -53,42 +45,24 @@ def cli_options():
 
 def execute(*args, **kw):
     """
-        List mailboxes
+        List deleted mailboxes
     """
-
-    searches = []
-
-    # See if conf.cli_args components make sense.
-    for arg in conf.cli_args:
-        if arg == '*':
-            searches.append(arg)
-        if arg.startswith('user'):
-            searches.append(arg)
-        if arg.startswith('shared'):
-            searches.append(arg)
-        if arg.startswith('DELETED'):
-            searches.append(arg)
-        if arg.startswith('news'):
-            searches.append(arg)
-
-    if len(searches) == 0:
-        searches = [ '' ]
-
     imap = IMAP()
+    imap.connect()
 
-    if not conf.connect_server == None:
-        imap.connect(server=conf.connect_server)
-    else:
-        imap.connect()
+    auth = Auth()
+    auth.connect()
+
+    domains = auth.list_domains()
 
     folders = []
+    for primary,secondaries in domains:
+        print "%s: %d" % (primary,len(imap.lm("user/%%@%s" % (primary))))
+        for secondary in secondaries:
+            print "%s: %d" % (secondary,len(imap.lm("user/%%@%s" % (secondary))))
 
-    for search in searches:
-        log.debug(_("Appending folder search for %r") % (search), level=8)
-        folders.extend(imap.lm(imap_utf7.encode(search)))
+    null_realm = len(imap.lm("user/%%"))
 
-    for folder in folders:
-        if not conf.raw:
-            print imap_utf7.decode(folder)
-        else:
-            print folder
+    if null_realm > 0:
+        print "null: %d" % (null_realm)
+

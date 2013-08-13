@@ -9,11 +9,13 @@ Makefile.in
 *.rej
 *.spec
 *.tar.gz
+*.tar.gz.gpg
 aclocal.m4
 autom4te.cache/
 bin/rebuild.sh
 bin/test*
 ChangeLog
+conf/*-*.conf
 config.log
 config.status
 configure
@@ -23,3 +25,4 @@ po/POTFILES
 pykolab/constants.py
 pykolab-[0-9]*.*/
 src/
+test-*
