@@ -267,16 +267,16 @@ result_format = shared+%%s
 
     # Copy header checks files
     for hc_file in [ 'inbound', 'internal', 'submission' ]:
-    if not os.path.isfile("/etc/postfix/header_checks.%s" % (hc_file)):
-        if os.path.isfile('/etc/kolab/templates/header_checks.%s' % (hc_file)):
-            input_file = '/etc/kolab/templates/header_checks.%s' % (hc_file)
-        elif os.path.isfile('/usr/share/kolab/templates/header_checks.%s' % (hc_file)):
-            input_file = '/usr/share/kolab/templates/header_checks.%s' % (hc_file)
-        elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'header_checks.%s' % (hc_file)))):
-            input_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'header_checks.%s' % (hc_file)))
+        if not os.path.isfile("/etc/postfix/header_checks.%s" % (hc_file)):
+            if os.path.isfile('/etc/kolab/templates/header_checks.%s' % (hc_file)):
+                input_file = '/etc/kolab/templates/header_checks.%s' % (hc_file)
+            elif os.path.isfile('/usr/share/kolab/templates/header_checks.%s' % (hc_file)):
+                input_file = '/usr/share/kolab/templates/header_checks.%s' % (hc_file)
+            elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'header_checks.%s' % (hc_file)))):
+                input_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'header_checks.%s' % (hc_file)))
 
-        shutil.copy(input_file, "/etc/postfix/header_checks.%s" % (hc_file))
-        subprocess.call(["postmap", "/etc/postfix/header_checks.%s" % (hc_file)])
+            shutil.copy(input_file, "/etc/postfix/header_checks.%s" % (hc_file))
+            subprocess.call(["postmap", "/etc/postfix/header_checks.%s" % (hc_file)])
 
     myaugeas = Augeas()
 
