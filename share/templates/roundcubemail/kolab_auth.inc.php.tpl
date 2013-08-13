@@ -2,7 +2,7 @@
 
     // The id of the LDAP address book (which refers to the rcmail_config['ldap_public'])
     // or complete addressbook definition array.
-    \$rcmail_config['kolab_auth_addressbook'] = Array(
+    \$config['kolab_auth_addressbook'] = Array(
         'name'                      => 'Kolab Auth',
         'hosts'                     => Array('localhost'),
         'port'                      => 389,
@@ -35,33 +35,33 @@
 
 
     // This will overwrite defined filter
-    \$rcmail_config['kolab_auth_filter'] = '(&' . '$ldap_user_filter' . '(|(uid=%u)(mail=%fu)(alias=%fu)))';
+    \$config['kolab_auth_filter'] = '(&' . '$ldap_user_filter' . '(|(uid=%u)(mail=%fu)(alias=%fu)))';
 
     // Use this fields (from fieldmap configuration) to get authentication ID
-    \$rcmail_config['kolab_auth_login'] = 'email';
+    \$config['kolab_auth_login'] = 'email';
 
     // Use this fields (from fieldmap configuration) for default identity
-    \$rcmail_config['kolab_auth_name']  = 'name';
-    \$rcmail_config['kolab_auth_alias'] = 'alias';
-    \$rcmail_config['kolab_auth_email'] = 'email';
+    \$config['kolab_auth_name']  = 'name';
+    \$config['kolab_auth_alias'] = 'alias';
+    \$config['kolab_auth_email'] = 'email';
 
     if (preg_match('/\/helpdesk-login\//', \$_SERVER["REQUEST_URI"]) ) {
 
         // Login and password of the admin user. Enables "Login As" feature.
-        \$rcmail_config['kolab_auth_admin_login']    = '$imap_admin_login';
-        \$rcmail_config['kolab_auth_admin_password'] = '$imap_admin_password';
+        \$config['kolab_auth_admin_login']    = '$imap_admin_login';
+        \$config['kolab_auth_admin_password'] = '$imap_admin_password';
 
-        \$rcmail_config['kolab_auth_auditlog'] = true;
+        \$config['kolab_auth_auditlog'] = true;
     }
 
     // Administrative role field (from fieldmap configuration) which must be filled with
     // specified value which adds privilege to login as another user.
-    \$rcmail_config['kolab_auth_role']       = 'role';
-    \$rcmail_config['kolab_auth_role_value'] = 'cn=kolab-admin,$ldap_base_dn';
+    \$config['kolab_auth_role']       = 'role';
+    \$config['kolab_auth_role_value'] = 'cn=kolab-admin,$ldap_base_dn';
 
     // Administrative group name to which user must be assigned to
     // which adds privilege to login as another user.
-    \$rcmail_config['kolab_auth_group'] = 'Kolab Helpdesk';
+    \$config['kolab_auth_group'] = 'Kolab Helpdesk';
 
     if (file_exists(RCUBE_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
         include_once(RCUBE_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));

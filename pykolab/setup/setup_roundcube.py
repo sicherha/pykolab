@@ -90,12 +90,11 @@ def execute(*args, **kw):
     want_files = [
             'acl.inc.php',
             'calendar.inc.php',
-            'db.inc.php',
+            'config.inc.php',
             'kolab_auth.inc.php',
             'kolab_files.inc.php',
             'kolab_folders.inc.php',
             'kolab.inc.php',
-            'main.inc.php',
             'managesieve.inc.php',
             'owncloud.inc.php',
             'password.inc.php',
