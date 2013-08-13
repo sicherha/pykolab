@@ -1,0 +1,6 @@
+/^X-Spam-Flag:.*YES/    REJECT
+/^X-Virus-Scanned:/     IGNORE
+/^X-Spam-Flag:.*NO/     IGNORE
+/^X-Spam-Score:/        IGNORE
+/^X-Spam-Level:/        IGNORE
+/^X-Spam-Status:/       IGNORE

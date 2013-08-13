@@ -237,6 +237,8 @@ result_format = shared+%%s
             "transport_maps": "ldap:/etc/postfix/ldap/transport_maps.cf, hash:/etc/postfix/transport",
             "virtual_alias_maps": "$alias_maps, ldap:/etc/postfix/ldap/virtual_alias_maps.cf, ldap:/etc/postfix/ldap/virtual_alias_maps_sharedfolders.cf, ldap:/etc/postfix/ldap/mailenabled_distgroups.cf, ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf",
             "smtpd_tls_auth_only": "yes",
+            "smtpd_tls_security_level": "may",
+            "smtp_tls_security_level": "may",
             "smtpd_sasl_auth_enable": "yes",
             "smtpd_sender_login_maps": "$relay_recipient_maps",
             "smtpd_sender_restrictions": "permit_mynetworks, reject_sender_login_mismatch",
@@ -262,6 +264,19 @@ result_format = shared+%%s
                     '/usr/share/postfix/main.cf.debian',
                     '/etc/postfix/main.cf'
                 )
+
+    # Copy header checks files
+    for hc_file in [ 'inbound', 'internal', 'submission' ]:
+    if not os.path.isfile("/etc/postfix/header_checks.%s" % (hc_file)):
+        if os.path.isfile('/etc/kolab/templates/header_checks.%s' % (hc_file)):
+            input_file = '/etc/kolab/templates/header_checks.%s' % (hc_file)
+        elif os.path.isfile('/usr/share/kolab/templates/header_checks.%s' % (hc_file)):
+            input_file = '/usr/share/kolab/templates/header_checks.%s' % (hc_file)
+        elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'header_checks.%s' % (hc_file)))):
+            input_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'header_checks.%s' % (hc_file)))
+
+        shutil.copy(input_file, "/etc/postfix/header_checks.%s" % (hc_file))
+        subprocess.call(["postmap", "/etc/postfix/header_checks.%s" % (hc_file)])
 
     myaugeas = Augeas()
 

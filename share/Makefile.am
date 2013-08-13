@@ -1,6 +1,7 @@
 templatedir = $(datadir)/kolab/templates
 template_DATA = \
-	$(wildcard templates/*.tpl)
+	$(wildcard templates/*.tpl) \
+	$(wildcard templates/header_checks.*)
 
 rctemplatedir = $(datadir)/kolab/templates/roundcubemail
 rctemplate_DATA = \
