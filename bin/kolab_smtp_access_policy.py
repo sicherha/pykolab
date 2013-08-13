@@ -454,9 +454,9 @@ class PolicyRequest(object):
         for search_attr in search_attrs:
             if self.sasl_user.has_key(search_attr):
                 if isinstance(self.sasl_user[search_attr], list):
-                    if self.sender in self.sasl_user[search_attr]:
+                    if self.sender.lower() in [x.lower() for x in self.sasl_user[search_attr]]:
                         return True
-                elif self.sasl_user[search_attr] == self.sender:
+                elif self.sasl_user[search_attr].lower() == self.sender.lower():
                     return True
 
         return False
@@ -1262,7 +1262,10 @@ def hold(message, policy_request=None):
 
 def permit(message, policy_request=None):
     log.info(_("Returning action PERMIT: %s") % (message))
-    print "action=PERMIT\n\n"
+    if hasattr(policy_request, 'sasl_username'):
+        print "action=PREPEND Sender: %s\naction=PERMIT\n\n" % (policy_request.sasl_username)
+    else:
+        print "action=PERMIT\n\n"
     sys.exit(0)
 
 def reject(message, policy_request=None):
@@ -1299,13 +1302,13 @@ def normalize_address(email_address):
         # Take the first part split by recipient delimiter and the last part
         # split by '@'.
         return "%s@%s" % (
-                email_address.split("+")[0],
+                email_address.split("+")[0].lower(),
                 # TODO: Under some conditions, the recipient may not be fully
                 # qualified. We'll cross that bridge when we get there, though.
-                email_address.split('@')[1]
+                email_address.split('@')[1].lower()
             )
     else:
-        return email_address
+        return email_address.lower()
 
 def read_request_input():
     """
@@ -1453,4 +1456,4 @@ if __name__ == "__main__":
             elif not recipient_allowed:
                 reject(_("Recipient access denied"))
             else:
-                permit(_("No objections"))
+                permit(_("No objections"), policy_requests[instance])
