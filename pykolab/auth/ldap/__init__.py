@@ -35,6 +35,7 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.auth')
 conf = pykolab.getConf()
 
+import auth_cache
 import cache
 
 # Catch python-ldap-2.4 changes
@@ -151,13 +152,24 @@ class LDAP(pykolab.base.Base):
         self.connect()
         self._bind()
 
-        config_base_dn = self.config_get('base_dn')
-        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
+        # See if we know a base_dn for the domain
+        base_dn = None
 
-        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
-            base_dn = ldap_base_dn
-        else:
-            base_dn = config_base_dn
+        try:
+            base_dn = auth_cache.get_entry(self.domain)
+        except:
+            pass
+
+        if base_dn == None:
+            config_base_dn = self.config_get('base_dn')
+            ldap_base_dn = self._kolab_domain_root_dn(self.domain)
+
+            if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+                base_dn = ldap_base_dn
+            else:
+                base_dn = config_base_dn
+
+            auth_cache.set_entry(self.domain, base_dn)
 
         user_filter = self.config_get_raw('user_filter') % ({'base_dn':base_dn})
 
@@ -171,49 +183,69 @@ class LDAP(pykolab.base.Base):
 
         _filter += ')%s)' % (user_filter)
 
-        config_base_dn = self.config_get('base_dn')
-        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
-
-        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
-            base_dn = ldap_base_dn
-        else:
-            base_dn = config_base_dn
-
-        _search = self.ldap.search_ext(
-                base_dn,
-                ldap.SCOPE_SUBTREE,
-                _filter,
-                ['entrydn']
-            )
-
-        (
-                _result_type,
-                _result_data,
-                _result_msgid,
-                _result_controls
-            ) = self.ldap.result3(_search)
-
-        if len(_result_data) >= 1:
-            (entry_dn, entry_attrs) = _result_data[0]
+        entry_dn = None
 
         try:
-            log.debug(_("Binding with user_dn %s and password %s")
-                % (entry_dn, login[1]))
-
-            # Needs to be synchronous or succeeds and continues setting retval
-            # to True!!
-            self.ldap.simple_bind_s(entry_dn, login[1])
-            retval = True
+            entry_dn = auth_cache.get_entry(_filter)
         except:
-            try:
-                log.debug(
-                        _("Failed to authenticate as user %s") % (login[0]),
-                        level=8
-                    )
-            except:
-                pass
+            pass
 
-            retval = False
+        if entry_dn == None:
+            _search = self.ldap.search_ext(
+                    base_dn,
+                    ldap.SCOPE_SUBTREE,
+                    _filter,
+                    ['entrydn']
+                )
+
+            (
+                    _result_type,
+                    _result_data,
+                    _result_msgid,
+                    _result_controls
+                ) = self.ldap.result3(_search)
+
+            if len(_result_data) >= 1:
+                (entry_dn, entry_attrs) = _result_data[0]
+
+            try:
+                log.debug(_("Binding with user_dn %s and password %s")
+                    % (entry_dn, login[1]))
+
+                # Needs to be synchronous or succeeds and continues setting retval
+                # to True!!
+                self.ldap.simple_bind_s(entry_dn, login[1])
+                retval = True
+                auth_cache.set_entry(_filter, entry_dn)
+            except:
+                try:
+                    log.debug(
+                            _("Failed to authenticate as user %s") % (login[0]),
+                            level=8
+                        )
+                except:
+                    pass
+
+                retval = False
+        else:
+            try:
+                log.debug(_("Binding with user_dn %s and password %s")
+                    % (entry_dn, login[1]))
+
+                # Needs to be synchronous or succeeds and continues setting retval
+                # to True!!
+                self.ldap.simple_bind_s(entry_dn, login[1])
+                retval = True
+            except:
+                try:
+                    log.debug(
+                            _("Failed to authenticate as user %s") % (login[0]),
+                            level=8
+                        )
+                except:
+                    pass
+
+                retval = False
 
         return retval
 
