@@ -8,6 +8,7 @@ pykolab_auth_PYTHON = \
 pykolab_auth_ldapdir = $(pythondir)/$(PACKAGE)/auth/ldap
 pykolab_auth_ldap_PYTHON = \
 	auth/ldap/__init__.py \
+	auth/ldap/auth_cache.py \
 	auth/ldap/cache.py \
 	auth/ldap/syncrepl.py
 
