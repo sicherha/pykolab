@@ -131,7 +131,11 @@
     \$config['log_dir'] = 'logs/';
     \$config['temp_dir'] = '/var/lib/roundcubemail/';
 
+    // Some additional default folders (archive plugin)
     \$config['archive_mbox'] = 'Archive';
+    // The Kolab daemon by default creates 'Spam'
+    \$config['junk_mbox'] = 'Spam';
+    \$config['default_folders'] = array('INBOX', 'Drafts', 'Sent', 'Spam', 'Trash', 'Archive');
 
     \$config['address_book_type'] = 'ldap';
     \$config['autocomplete_min_length'] = 3;
