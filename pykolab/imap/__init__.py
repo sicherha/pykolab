@@ -602,7 +602,7 @@ class IMAP(object):
             log.warning(_("Moving INBOX folder %s won't succeed as target folder %s already exists") % (old_name,new_name))
 
     def user_mailbox_server(self, mailbox):
-        return self.imap.find_mailfolder_server(mailbox)
+        return self.imap.find_mailfolder_server(mailbox.lower())
 
     def has_folder(self, folder):
         """

@@ -1184,14 +1184,14 @@ class LDAP(pykolab.base.Base):
 
         self.imap.connect(domain=self.domain)
 
-        if not self.imap.user_mailbox_exists(entry[result_attribute]):
+        if not self.imap.user_mailbox_exists(entry[result_attribute].lower()):
             folder = self.imap.user_mailbox_create(
                     entry[result_attribute],
                     entry[mailserver_attribute]
                 )
 
         else:
-            folder = "user%s%s" % (self.imap.separator,entry[result_attribute])
+            folder = "user%s%s" % (self.imap.separator,entry[result_attribute].lower())
 
         server = self.imap.user_mailbox_server(folder)
 
