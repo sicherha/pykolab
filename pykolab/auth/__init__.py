@@ -180,7 +180,7 @@ class Auth(pykolab.base.Base):
         """
             Find one or more entries corresponding to the recipient address.
         """
-        if not domain == None:
+        if not domain == None and not self.domain == domain:
             self.connect(domain=domain)
 
         result = self._auth.find_recipient(address)
