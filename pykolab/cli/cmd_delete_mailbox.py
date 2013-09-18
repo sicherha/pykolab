@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -49,7 +49,9 @@ def execute(*args, **kw):
     imap = IMAP()
 
     imap.connect()
-    delete_folders = imap.lm(delete_folder)
+
+    delete_folders = imap.list_folders(delete_folder)
+
     for delete_folder in delete_folders:
         imap.delete_mailfolder(delete_folder)
 

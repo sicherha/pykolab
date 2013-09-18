@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -251,8 +251,20 @@ X-Wallace-Result: REJECT
 
 def cb_action_ACCEPT(module, filepath):
     log.info(_("Accepting message in %s (by module %s)") % (filepath, module))
-    _message = json.load(open(filepath, 'r'))
-    message = message_from_string(_message['data'])
+    try:
+        _message = json.load(open(filepath, 'r'))
+        log.debug(_(u"Message JSON loaded: %r") % (_message), level=9)
+    except Exception, errmsg:
+        log.error(_("Error loading message: %r") % (errmsg))
+        return
+
+    try:
+        message = message_from_string(str(_message['data']).replace('\x00',''))
+    except Exception, errmsg:
+        log.error(_("Error parsing message: %r") % (errmsg))
+        return
+
+    log.debug(_("Accepting message in: %r") %(filepath), level=8)
 
     sender = _message['from']
     recipients = _message['to']
@@ -271,8 +283,7 @@ def cb_action_ACCEPT(module, filepath):
                 #   come from (TODO)
                 # - Third, a character return is inserted somewhere. It
                 #   divides the body from the headers - and we don't like (TODO)
-                #unicode(message.as_string()).replace('\0', '').lstrip()
-                message.as_string().encode('utf-8').replace('\0','').lstrip()
+                message.as_string()
             )
 
     except smtplib.SMTPDataError, errmsg:

@@ -642,49 +642,128 @@ class CYRUS:
         """Get Annotation"""
         self.__prepare('GETANNOTATION')
         res, data = self.__docommand('getannotation', self.decode(mailbox), pattern)
+
         if (len(data) == 1) and data[0] is None:
             self.__verbose( '[GETANNOTATION %s] No results' % (mailbox) )
             return {}
+
         ann = {}
-        for annotation in data:
-            if isinstance(annotation, tuple):
-                annotation = annotation[0]
-            self.__verbose( '[GETANNOTATION] RAW %r (length %d)' % (annotation,len(annotation)))
-            annotation = annotation.split('"')
-            self.__verbose( '[GETANNOTATION] SPLIT %r (length %d)' % (annotation,len(annotation)))
-            if not len(annotation) in [ 9, 17, 21, 37 ]:
-                self.__verbose( '[GETANNOTATION] Invalid annotation entry' )
-                continue
-            mbx = self.encode(annotation[1])
-            _key = annotation[3]
+        annotations = []
+        empty_values = [ "NIL", '" "', None, '', ' ' ]
 
-            if annotation[5] == "value.shared":
-                key = "/shared%s" % (_key)
-            elif annotation[5] == "value.priv":
-                key = "/private%s" % (_key)
+        concat_items = []
+        for item in data:
+            if isinstance(item, tuple):
+                item = ' '.join([str(x) for x in item])
 
-            value = annotation[7]
+            if len(concat_items) > 0:
+                concat_items.append(item)
 
-            self.__verbose( '[GETANNOTATION %s] %s: %s' % (mbx, key, value) )
-            if not ann.has_key(mbx):
-                ann[mbx] = {}
-            if not ann[mbx].has_key(key):
-                ann[mbx][key] = value
+                if ''.join(concat_items).count('(') == ''.join(concat_items).count(')'):
+                    annotations.append(''.join(concat_items))
+                    concat_items = []
+                    continue
+            else:
 
-            if len(annotation) > 21:
-                # There's another one hidden in here.
-                if annotation[21] == "value.shared":
-                    key = "/shared%s" % (_key)
-                elif annotation[21] == "value.priv":
-                    key = "/private%s" % (_key)
+                if item.count('(') == item.count(')'):
+                    annotations.append(item)
+                    continue
+                else:
+                    concat_items.append(item)
+                    continue
 
-                value = annotation[23]
+        for annotation in annotations:
+            annotation = annotation.strip()
 
-                self.__verbose( '[GETANNOTATION %s] %s: %s' % (mbx, key, value) )
-                if not ann.has_key(mbx):
-                    ann[mbx] = {}
-                if not ann[mbx].has_key(key):
-                    ann[mbx][key] = value
+            if not annotation[0] == '"':
+                folder = annotation.split('"')[0].replace('"','').strip()
+                key = annotation.split('"')[1].replace('"','').replace("'","").strip()
+                _annot = annotation.split('(')[1].split(')')[0].strip()
+            else:
+                folder = annotation.split('"')[1].replace('"','').strip()
+                key = annotation.split('"')[3].replace('"','').replace("'","").strip()
+                _annot = annotation.split('(')[1].split(')')[0].strip()
+
+            if not ann.has_key(folder):
+                ann[folder] = {}
+
+            try:
+                value_priv = _annot[(_annot.index('"value.priv"')+len('"value.priv"')):_annot.index('"size.priv"')].strip()
+            except ValueError, errmsg:
+                value_priv = None
+
+            try:
+                size_priv = _annot[(_annot.index('"size.priv"')+len('"size.priv"')):].strip().split('"')[1].strip()
+                try:
+                    value_priv = value_priv[value_priv.index('{%s}' % (size_priv))+len('{%s}' % (size_priv)):].strip()
+                except Exception, errmsg:
+                    pass
+            except Exception, errmsg:
+                pass
+
+            if value_priv in empty_values:
+                value_priv = None
+            else:
+                try:
+                    value_priv = value_priv[:value_priv.index('"content-type.priv"')].strip()
+                except:
+                    pass
+
+                try:
+                    value_priv = value_priv[:value_priv.index('"modifiedsince.priv"')].strip()
+                except:
+                    pass
+
+                if value_priv.startswith('"'):
+                    value_priv = value_priv[1:]
+
+                if value_priv.endswith('"'):
+                    value_priv = value_priv[:-1]
+
+            if value_priv in empty_values:
+                value_priv = None
+
+            try:
+                value_shared = _annot[(_annot.index('"value.shared"')+len('"value.shared"')):_annot.index('"size.shared"')].strip()
+            except ValueError, errmsg:
+                value_shared = None
+
+            try:
+                size_shared = _annot[(_annot.index('"size.shared"')+len('"size.shared"')):].strip().split('"')[1].strip()
+                try:
+                    value_shared = value_shared[value_shared.index('{%s}' % (size_shared))+len('{%s}' % (size_shared)):].strip()
+                except Exception, errmsg:
+                    pass
+            except Exception, errmsg:
+                pass
+
+            if value_shared in empty_values:
+                value_shared = None
+            else:
+                try:
+                    value_shared = value_shared[:value_shared.index('"content-type.shared"')].strip()
+                except:
+                    pass
+
+                try:
+                    value_shared = value_shared[:value_shared.index('"modifiedsince.shared"')].strip()
+                except:
+                    pass
+
+                if value_shared.startswith('"'):
+                    value_shared = value_shared[1:]
+
+                if value_shared.endswith('"'):
+                    value_shared = value_shared[:-1]
+
+            if value_shared in empty_values:
+                value_shared = None
+
+            if not value_priv == None:
+                ann[folder]['/private' + key] = value_priv
+
+            if not value_shared == None:
+                ann[folder]['/shared' + key] = value_shared
 
         return ann
 

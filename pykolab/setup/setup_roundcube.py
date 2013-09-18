@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -90,11 +90,11 @@ def execute(*args, **kw):
     want_files = [
             'acl.inc.php',
             'calendar.inc.php',
-            'db.inc.php',
+            'config.inc.php',
             'kolab_auth.inc.php',
+            'kolab_files.inc.php',
             'kolab_folders.inc.php',
             'kolab.inc.php',
-            'main.inc.php',
             'managesieve.inc.php',
             'owncloud.inc.php',
             'password.inc.php',

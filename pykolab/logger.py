@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -41,7 +41,11 @@ class Logger(logging.Logger):
     if hasattr(sys, 'argv'):
         for arg in sys.argv:
             if debuglevel == -1:
-                debuglevel = int(arg)
+                try:
+                    debuglevel = int(arg)
+                except ValueError, errmsg:
+                    continue
+
                 loglevel = logging.DEBUG
                 break
 

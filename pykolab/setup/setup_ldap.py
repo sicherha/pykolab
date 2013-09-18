@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -60,6 +60,30 @@ def cli_options():
             help    = _("Allow anonymous binds (default: no).")
         )
 
+    ldap_group.add_option(
+            "--without-ldap",
+            dest    = "without_ldap",
+            action  = "store_true",
+            default = False,
+            help    = _("Skip setting up the LDAP server.")
+        )
+
+    ldap_group.add_option(
+            "--with-openldap",
+            dest    = "with_openldap",
+            action  = "store_true",
+            default = False,
+            help    = _("Setup configuration for OpenLDAP compatibility.")
+        )
+
+    ldap_group.add_option(
+            "--with-ad",
+            dest    = "with_ad",
+            action  = "store_true",
+            default = False,
+            help    = _("Setup configuration for Active Directory compatibility.")
+        )
+
 def description():
     return _("Setup LDAP.")
 
@@ -68,6 +92,60 @@ def execute(*args, **kw):
 
     if not conf.config_file == conf.defaults.config_file:
         ask_questions = False
+
+    if conf.without_ldap:
+        print >> sys.stderr, _("Skipping setup of LDAP, as specified")
+        return
+
+    _input = {}
+
+    if conf.with_openldap and not conf.with_ad:
+
+        conf.command_set('ldap', 'unique_attribute', 'entryuuid')
+
+        fp = open(conf.defaults.config_file, "w+")
+        conf.cfg_parser.write(fp)
+        fp.close()
+
+        return
+
+    elif conf.with_ad and not conf.with_openldap:
+        conf.command_set('ldap', 'auth_attributes', 'samaccountname')
+        conf.command_set('ldap', 'modifytimestamp_format', '%%Y%%m%%d%%H%%M%%S.0Z')
+        conf.command_set('ldap', 'unique_attribute', 'userprincipalname')
+        
+        # TODO: These attributes need to be checked
+        conf.command_set('ldap', 'mail_attributes', 'mail')
+        conf.command_set('ldap', 'mailserver_attributes', 'mailhost')
+        conf.command_set('ldap', 'quota_attribute', 'mailquota')
+
+        return
+
+    elif conf.with_ad and conf.with_openldap:
+        print >> sys.stderr, utils.multiline_message(
+                _("""
+                        You can not configure Kolab to run against OpenLDAP
+                        and Active Directory simultaneously.
+                    """)
+            )
+
+        sys.exit(1)
+
+    # Pre-execution checks
+    for path, directories, files in os.walk('/etc/dirsrv/'):
+        for direct in directories:
+            if direct.startswith('slapd-'):
+                print >> sys.stderr, utils.multiline_message(
+                        _("""
+                                It seems 389 Directory Server has an existing
+                                instance configured. This setup script does not
+                                intend to destroy or overwrite your data. Please
+                                make sure /etc/dirsrv/ and /var/lib/dirsrv/ are
+                                clean so that this setup does not have to worry.
+                            """)
+                    )
+
+                sys.exit(1)
 
     _input = {}
 
@@ -147,7 +225,6 @@ def execute(*args, **kw):
         _input['fqdn'] = fqdn
         _input['hostname'] = hostname.split('.')[0]
         _input['domain'] = domainname
-
     _input['nodotdomain'] = _input['domain'].replace('.','_')
 
     _input['rootdn'] = utils.standard_root_dn(_input['domain'])
@@ -272,7 +349,24 @@ ServerAdminPwd = %(admin_pass)s
 
     (stdoutdata, stderrdata) = setup_389.communicate()
 
-    # TODO: Get the return code and display output if not successful.
+    if not setup_389.returncode == 0:
+        print >> sys.stderr, utils.multiline_message(
+                _("""
+                        An error was detected in the setup procedure for 389
+                        Directory Server. This setup will write out stderr and
+                        stdout to /var/log/kolab/setup.error.log and
+                        /var/log/kolab/setup.out.log respectively, before it
+                        exits.
+                    """)
+            )
+
+        fp = open('/var/log/kolab/setup.error.log', 'w')
+        fp.write(stderrdata)
+        fp.close()
+
+        fp = open('/var/log/kolab/setup.out.log', 'w')
+        fp.write(stderrdata)
+        fp.close()
 
     log.debug(_("Setup DS stdout:"), level=8)
     log.debug(stdoutdata, level=8)
@@ -280,9 +374,8 @@ ServerAdminPwd = %(admin_pass)s
     log.debug(_("Setup DS stderr:"), level=8)
     log.debug(stderrdata, level=8)
 
-    # TODO: Fails when ran a second time.
-
-    # TODO: When fail, fail gracefully.
+    if not setup_389.returncode == 0:
+        sys.exit(1)
 
     # Find the kolab schema. It's installed as %doc in the kolab-schema package.
     # TODO: Chown nobody, nobody, chmod 440
@@ -301,6 +394,7 @@ ServerAdminPwd = %(admin_pass)s
                             os.path.basename(schema_file)
                         )
                 )
+
             schema_error = False
         except:
             log.error(_("Could not copy the LDAP extensions for Kolab"))
@@ -561,7 +655,7 @@ ServerAdminPwd = %(admin_pass)s
     aci.append('(targetattr="*")(version 3.0; acl "Configuration Administrators Group"; allow (all) groupdn="ldap:///cn=Configuration Administrators,ou=Groups,ou=TopologyManagement,o=NetscapeRoot";)')
     aci.append('(targetattr="*")(version 3.0; acl "Configuration Administrator"; allow (all) userdn="ldap:///uid=admin,ou=Administrators,ou=TopologyManagement,o=NetscapeRoot";)')
     aci.append('(targetattr = "*")(version 3.0; acl "SIE Group"; allow (all) groupdn = "ldap:///cn=slapd-%(hostname)s,cn=389 Directory Server,cn=Server Group,cn=%(fqdn)s,ou=%(domain)s,o=NetscapeRoot";)' %(_input))
-    aci.append('(targetattr = "*") (version 3.0;acl "Search Access";allow (read,compare,search)(userdn = "ldap:///all");)')
+    aci.append('(targetattr != "userPassword") (version 3.0;acl "Search Access";allow (read,compare,search)(userdn = "ldap:///all");)')
     modlist = []
     modlist.append((ldap.MOD_REPLACE, "aci", aci))
     auth._auth.ldap.modify_s(dn, modlist)
@@ -575,3 +669,4 @@ ServerAdminPwd = %(admin_pass)s
     else:
         log.error(_("Could not start and configure to start on boot, the " + \
                 "directory server admin service."))
+

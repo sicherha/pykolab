@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -62,7 +62,7 @@ log = pykolab.getLogger('pykolab.smtp_access_policy')
 
 # TODO: Removing the stdout handler would mean one can no longer test by
 # means of manual execution in debug mode.
-log.remove_stdout_handler()
+#log.remove_stdout_handler()
 
 conf = pykolab.getConf()
 
@@ -410,23 +410,53 @@ class PolicyRequest(object):
             John.Doe@example.org (mail) for example could be sending with
             envelope sender jdoe@example.org (mailAlternateAddress, alias).
         """
-        search_attrs = conf.get_list(self.sasl_domain, 'mail_attributes')
+
+        search_attrs = conf.get_list(self.sasl_domain, 'address_search_attrs')
 
         if search_attrs == None or \
                 (isinstance(search_attrs, list) and len(search_attrs) == 0):
+
+            search_attrs = conf.get_list(self.sasl_domain, 'mail_attributes')
+
+        if search_attrs == None or \
+                (isinstance(search_attrs, list) and len(search_attrs) == 0):
+
+            search_attrs = conf.get_list(
+                    'kolab_smtp_access_policy',
+                    'address_search_attrs'
+                )
+
+        if search_attrs == None or \
+                (isinstance(search_attrs, list) and len(search_attrs) == 0):
+
 
             search_attrs = conf.get_list(
                     conf.get('kolab', 'auth_mechanism'),
                     'mail_attributes'
                 )
 
+        want_attrs = []
+
+        for search_attr in search_attrs:
+            if not self.sasl_user.has_key(search_attr):
+                want_attrs.append(search_attr)
+
+        if len(want_attrs) > 0:
+            self.sasl_user.update(
+                    self.auth.get_user_attributes(
+                            self.sasl_domain,
+                            self.sasl_user,
+                            want_attrs
+                        )
+                )
+
         # Catch a user using one of its own alias addresses.
         for search_attr in search_attrs:
             if self.sasl_user.has_key(search_attr):
                 if isinstance(self.sasl_user[search_attr], list):
-                    if self.sender in self.sasl_user[search_attr]:
+                    if self.sender.lower() in [x.lower() for x in self.sasl_user[search_attr]]:
                         return True
-                elif self.sasl_user[search_attr] == self.sender:
+                elif self.sasl_user[search_attr].lower() == self.sender.lower():
                     return True
 
         return False
@@ -491,7 +521,7 @@ class PolicyRequest(object):
                 )
 
             reject(
-                    _("Could not find envelope sender user %s") % (
+                    _("Could not find envelope sender user %s (511)") % (
                             self.sasl_username
                         )
                 )
@@ -953,7 +983,9 @@ class PolicyRequest(object):
         self.verify_authenticity()
         self.sasl_user_uses_alias = self.verify_alias()
 
+
         if not self.sasl_user_uses_alias:
+            log.debug(_("Sender is not using an alias"), level=8)
             self.sasl_user_is_delegate = self.verify_delegate()
 
         # If the authenticated user is using delegate functionality, apply the
@@ -1230,7 +1262,10 @@ def hold(message, policy_request=None):
 
 def permit(message, policy_request=None):
     log.info(_("Returning action PERMIT: %s") % (message))
-    print "action=PERMIT\n\n"
+    if hasattr(policy_request, 'sasl_username'):
+        print "action=PREPEND Sender: %s\naction=PERMIT\n\n" % (policy_request.sasl_username)
+    else:
+        print "action=PERMIT\n\n"
     sys.exit(0)
 
 def reject(message, policy_request=None):
@@ -1267,13 +1302,13 @@ def normalize_address(email_address):
         # Take the first part split by recipient delimiter and the last part
         # split by '@'.
         return "%s@%s" % (
-                email_address.split("+")[0],
+                email_address.split("+")[0].lower(),
                 # TODO: Under some conditions, the recipient may not be fully
                 # qualified. We'll cross that bridge when we get there, though.
-                email_address.split('@')[1]
+                email_address.split('@')[1].lower()
             )
     else:
-        return email_address
+        return email_address.lower()
 
 def read_request_input():
     """
@@ -1421,4 +1456,4 @@ if __name__ == "__main__":
             elif not recipient_allowed:
                 reject(_("Recipient access denied"))
             else:
-                permit(_("No objections"))
+                permit(_("No objections"), policy_requests[instance])

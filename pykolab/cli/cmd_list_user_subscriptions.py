@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -21,6 +21,7 @@ import commands
 
 import pykolab
 
+from pykolab import imap_utf7
 from pykolab.imap import IMAP
 from pykolab.translate import _
 from pykolab import utils
@@ -33,6 +34,12 @@ def __init__():
 
 def cli_options(*args, **kw):
     my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
+    my_option_group.add_option( '--raw',
+                                dest    = "raw",
+                                action  = "store_true",
+                                default = False,
+                                help    = _("Display raw IMAP UTF-7 folder names"))
+
     my_option_group.add_option( '--unsubscribed',
                                 dest    = "unsubscribed",
                                 action  = "store_true",
@@ -83,9 +90,15 @@ def execute(*args, **kw):
                 unsubscribed_folders.append(folder)
 
         if len(unsubscribed_folders) > 0:
-            print "\n".join(unsubscribed_folders)
+            if not conf.raw:
+                print "\n".join([imap_utf7.decode(x) for x in unsubscribed_folders])
+            else:
+                print "\n".join(unsubscribed_folders)
         else:
             print _("No unsubscribed folders for user %s") % (user)
 
     else:
-        print "\n".join(subscribed_folders)
+        if not conf.raw:
+            print "\n".join([imap_utf7.decode(x) for x in subscribed_folders])
+        else:
+            print "\n".join(subscribed_folders)

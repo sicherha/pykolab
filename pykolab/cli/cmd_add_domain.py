@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -35,16 +35,16 @@ def __init__():
 def cli_options():
     my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
     my_option_group.add_option(
-            '--alias-for',
-            dest    = "parent_domain",
-            action  = "store",
-            default = None,
-            help    = _("Add domain as alias for DOMAIN"),
+            '--alias',
+            dest    = "domains",
+            action  = "append",
+            default = [],
+            help    = _("Add alias domain."),
             metavar = "DOMAIN",
         )
 
 def description():
-    return _("Add a new domain or domain alias.")
+    return _("Add a new domain.")
 
 def execute(*args, **kw):
     from pykolab import wap_client
@@ -58,31 +58,12 @@ def execute(*args, **kw):
         sys.exit(1)
 
     wap_client.authenticate(username=username)
-    domains = wap_client.domains_list()
 
     dna = conf.get('ldap', 'domain_name_attribute')
-
-    if not conf.parent_domain == None:
-        parent_found = False
-        if isinstance(domains['list'], dict):
-            for _domain in domains['list'].keys():
-                if parent_found:
-                    continue
-
-                if isinstance(domains['list'][_domain][dna], basestring):
-                    if conf.parent_domain == domains['list'][_domain][dna]:
-                        parent_found = True
-                elif isinstance(domains['list'][_domain], list):
-                    if conf.parent_domain in domains['list'][_domain][dna]:
-                        parent_found = True
-
-        if not parent_found:
-            log.error(_("Invalid parent domain"))
-            sys.exit(1)
 
     try:
         domain = conf.cli_args.pop(0)
     except IndexError, errmsg:
         domain = utils.ask_question(_("Domain name"))
 
-    wap_client.domain_add(domain, conf.parent_domain)
+    wap_client.domain_add(domain, conf.domains)

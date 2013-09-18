@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -91,6 +91,32 @@ def handler(*args, **kw):
             if isinstance(new, dict) and len(new.keys()) > 0:
                 log.info("Modify entry %r" % (dn))
 
+                mailserver_attribute = conf.get('ldap', 'mailserver_attribute').lower()
+
+                if mailserver_attribute == None:
+                    log.error("Mail server attribute is not set")
+                    return
+
+                if old.has_key(mailserver_attribute):
+                    log.info("Modified entry %r has mail server attribute %s: %r" % (dn, mailserver_attribute, new[mailserver_attribute]))
+
+                    if not old[mailserver_attribute] == constants.fqdn:
+                        # Even though the new mailserver can be us, it is the
+                        # *current* mail server that needs to push for the XFER.
+                        log.info("The mail server for user %r is set, and it is not me (%r)" % (dn, old[mailserver_attribute]))
+                        return
+
+                else:
+                    # If old has no mailserver attribute, but new does, we need to create
+                    # the user locally.
+                    if new.has_key(mailserver_attribute):
+                        if not new[mailserver_attribute] == constants.fqdn:
+                            log.info("The mail server for user %r is set (in new, not old), but it is not me (%r)" % (dn, new[mailserver_attribute]))
+                            return
+                    else:
+                        log.info("Entry %r does not have a mail server attribute." % (dn))
+                        return
+
                 auth._auth._synchronize_callback(
                         change_type = 'modify',
                         previous_dn = None,
@@ -101,6 +127,25 @@ def handler(*args, **kw):
 
             else:
                 log.info("Delete entry %r" % (dn))
+
+                # See if the mailserver_attribute exists
+                mailserver_attribute = conf.get('ldap', 'mailserver_attribute').lower()
+
+                if mailserver_attribute == None:
+                    log.error("Mail server attribute is not set")
+                    # TODO: Perhaps, query for IMAP servers. If there is only one,
+                    #       we know what to do.
+                    return
+
+                if old.has_key(mailserver_attribute):
+                    log.info("Deleted entry %r has mail server attribute %s: %r" % (dn, mailserver_attribute, old[mailserver_attribute]))
+
+                    if not old[mailserver_attribute] == constants.fqdn:
+                        log.info("The mail server for user %r is set, and it is not me (%r)" % (dn, old[mailserver_attribute]))
+                        return
+
+                else:
+                    log.info("Entry deletion notification for %r does not have a mail server attribute specified." % (dn))
 
                 auth._auth._synchronize_callback(
                         change_type = 'delete',
@@ -129,6 +174,10 @@ def handler(*args, **kw):
                 if not new[mailserver_attribute] == constants.fqdn:
                     log.info("The mail server for user %r is set, and it is not me (%r)" % (dn, new[mailserver_attribute]))
                     return
+
+            else:
+                log.info("Added entry %r does not have a mail server attribute set." % (dn))
+                return
 
             auth._auth._synchronize_callback(
                     change_type = 'add',

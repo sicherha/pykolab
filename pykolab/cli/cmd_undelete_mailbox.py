@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -21,6 +21,7 @@ import commands
 
 import pykolab
 
+from pykolab.imap import IMAP
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.cli')
@@ -43,6 +44,7 @@ def execute(*args, **kw):
     if len(conf.cli_args) > 0:
         target_folder = conf.cli_args.pop(0)
 
+    imap = IMAP()
     imap.connect()
     imap.undelete_mailfolder(undelete_folder, target_folder)
 

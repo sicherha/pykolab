@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -52,6 +52,8 @@ def execute(*args, **kw):
 
     resource_filter = conf.get('ldap', 'resource_filter')
 
+    sharedfolder_filter = conf.get('ldap', 'sharedfolder_filter')
+
     server_host = utils.parse_ldap_uri(conf.get('ldap', 'ldap_uri'))[1]
 
     files = {
@@ -67,7 +69,7 @@ domain = ldap:/etc/postfix/ldap/mydestination.cf
 bind_dn = %(service_bind_dn)s
 bind_pw = %(service_bind_pw)s
 
-query_filter = (&(|(mail=%%s)(alias=%%s))(|%(kolab_user_filter)s%(kolab_group_filter)s%(resource_filter)s))
+query_filter = (&(|(mail=%%s)(alias=%%s))(|%(kolab_user_filter)s%(kolab_group_filter)s%(resource_filter)s%(sharedfolder_filter)s))
 result_attribute = mail
 """ % {
                         "base_dn": conf.get('ldap', 'base_dn'),
@@ -77,6 +79,7 @@ result_attribute = mail
                         "kolab_user_filter": user_filter,
                         "kolab_group_filter": group_filter,
                         "resource_filter": resource_filter,
+                        "sharedfolder_filter": sharedfolder_filter,
                     },
             "/etc/postfix/ldap/mydestination.cf": """
 server_host = %(server_host)s
@@ -111,7 +114,7 @@ bind_dn = %(service_bind_dn)s
 bind_pw = %(service_bind_pw)s
 
 # This finds the mail enabled distribution group LDAP entry
-query_filter = (&(mail=%%s)(objectClass=kolabgroupofuniquenames)(objectclass=groupofuniquenames))
+query_filter = (&(|(mail=%%s)(alias=%%s))(objectClass=kolabgroupofuniquenames)(objectclass=groupofuniquenames)(!(objectclass=groupofurls)))
 # From this type of group, get all uniqueMember DNs
 special_result_attribute = uniqueMember
 # Only from those DNs, get the mail
@@ -136,7 +139,7 @@ bind_dn = %(service_bind_dn)s
 bind_pw = %(service_bind_pw)s
 
 # This finds the mail enabled dynamic distribution group LDAP entry
-query_filter = (&(mail=%%s)(objectClass=kolabgroupofuniquenames)(objectClass=groupOfURLs))
+query_filter = (&(|(mail=%%s)(alias=%%s))(objectClass=kolabgroupofuniquenames)(objectClass=groupOfURLs))
 # From this type of group, get all memberURL searches/references
 special_result_attribute = memberURL
 # Only from those DNs, get the mail
@@ -189,6 +192,27 @@ result_attribute = mail
                         "service_bind_dn": conf.get('ldap', 'service_bind_dn'),
                         "service_bind_pw": conf.get('ldap', 'service_bind_pw'),
                     },
+            "/etc/postfix/ldap/virtual_alias_maps_sharedfolders.cf": """
+server_host = %(server_host)s
+server_port = 389
+version = 3
+search_base = %(base_dn)s
+scope = sub
+
+domain = ldap:/etc/postfix/ldap/mydestination.cf
+
+bind_dn = %(service_bind_dn)s
+bind_pw = %(service_bind_pw)s
+
+query_filter = (&(|(mail=%%s)(alias=%%s))(objectclass=kolabsharedfolder))
+result_attribute = kolabtargetfolder
+result_format = shared+%%s
+""" % {
+                        "base_dn": conf.get('ldap', 'base_dn'),
+                        "server_host": server_host,
+                        "service_bind_dn": conf.get('ldap', 'service_bind_dn'),
+                        "service_bind_pw": conf.get('ldap', 'service_bind_pw'),
+                    },
         }
 
     if not os.path.isdir('/etc/postfix/ldap'):
@@ -199,13 +223,22 @@ result_attribute = mail
         fp.write(files[filename])
         fp.close()
 
+    fp = open('/etc/postfix/transport', 'a')
+    fp.write("\n# Shared Folder Delivery for %(domain)s:\nshared@%(domain)s\t\tlmtp:unix:/var/lib/imap/socket/lmtp\n" % {'domain': conf.get('kolab', 'primary_domain')})
+    fp.close()
+
+    subprocess.call(["postmap", "/etc/postfix/transport"])
+
     postfix_main_settings = {
             "inet_interfaces": "all",
+            "recipient_delimiter": "+",
             "local_recipient_maps": "ldap:/etc/postfix/ldap/local_recipient_maps.cf",
             "mydestination": "ldap:/etc/postfix/ldap/mydestination.cf",
-            "transport_maps": "ldap:/etc/postfix/ldap/transport_maps.cf",
-            "virtual_alias_maps": "$alias_maps, ldap:/etc/postfix/ldap/virtual_alias_maps.cf, ldap:/etc/postfix/ldap/mailenabled_distgroups.cf, ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf",
+            "transport_maps": "ldap:/etc/postfix/ldap/transport_maps.cf, hash:/etc/postfix/transport",
+            "virtual_alias_maps": "$alias_maps, ldap:/etc/postfix/ldap/virtual_alias_maps.cf, ldap:/etc/postfix/ldap/virtual_alias_maps_sharedfolders.cf, ldap:/etc/postfix/ldap/mailenabled_distgroups.cf, ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf",
             "smtpd_tls_auth_only": "yes",
+            "smtpd_tls_security_level": "may",
+            "smtp_tls_security_level": "may",
             "smtpd_sasl_auth_enable": "yes",
             "smtpd_sender_login_maps": "$relay_recipient_maps",
             "smtpd_sender_restrictions": "permit_mynetworks, reject_sender_login_mismatch",
@@ -232,6 +265,19 @@ result_attribute = mail
                     '/etc/postfix/main.cf'
                 )
 
+    # Copy header checks files
+    for hc_file in [ 'inbound', 'internal', 'submission' ]:
+        if not os.path.isfile("/etc/postfix/header_checks.%s" % (hc_file)):
+            if os.path.isfile('/etc/kolab/templates/header_checks.%s' % (hc_file)):
+                input_file = '/etc/kolab/templates/header_checks.%s' % (hc_file)
+            elif os.path.isfile('/usr/share/kolab/templates/header_checks.%s' % (hc_file)):
+                input_file = '/usr/share/kolab/templates/header_checks.%s' % (hc_file)
+            elif os.path.isfile(os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'header_checks.%s' % (hc_file)))):
+                input_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'share', 'templates', 'header_checks.%s' % (hc_file)))
+
+            shutil.copy(input_file, "/etc/postfix/header_checks.%s" % (hc_file))
+            subprocess.call(["postmap", "/etc/postfix/header_checks.%s" % (hc_file)])
+
     myaugeas = Augeas()
 
     setting_base = '/files/etc/postfix/main.cf/'
@@ -241,9 +287,12 @@ result_attribute = mail
         current_value = myaugeas.get(setting)
 
         if current_value == None:
-            insert_paths = myaugeas.match('/files/etc/postfix/main.cf/*')
-            insert_path = insert_paths[(len(insert_paths)-1)]
-            myaugeas.insert(insert_path, setting_key, False)
+            try:
+                myaugeas.set(setting, postfix_main_settings[setting_key])
+            except:
+                insert_paths = myaugeas.match('/files/etc/postfix/main.cf/*')
+                insert_path = insert_paths[(len(insert_paths)-1)]
+                myaugeas.insert(insert_path, setting_key, False)
 
         log.debug(_("Setting key %r to %r") % (setting_key, postfix_main_settings[setting_key]), level=8)
         myaugeas.set(setting, postfix_main_settings[setting_key])

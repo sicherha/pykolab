@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -63,9 +63,7 @@ def execute(*args, **kw):
     imap = IMAP()
     imap.connect()
 
-    admin_login = conf.get('cyrus-imap', 'admin_login')
-
-    imap.cm(mailbox)
+    imap.create_folder(mailbox)
 
     if not conf.metadata == None:
         imap.set_metadata(mailbox, conf.metadata.split('=')[0], conf.metadata.split('=')[1])

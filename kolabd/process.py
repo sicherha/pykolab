@@ -1,4 +1,4 @@
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -30,6 +30,7 @@ conf = pykolab.getConf()
 class KolabdProcess(multiprocessing.Process):
     def __init__(self, domain):
         self.domain = domain
+        log.debug(_("Process created for domain %s") % (domain), level=8)
         multiprocessing.Process.__init__(
                 self,
                 target=self.synchronize,
@@ -38,11 +39,20 @@ class KolabdProcess(multiprocessing.Process):
             )
 
     def synchronize(self, domain):
+        log.debug(_("Synchronizing for domain %s") % (domain), level=8)
+        sync_interval = conf.get('kolab', 'sync_interval')
+
+        if sync_interval == None or sync_interval == 0:
+            sync_interval = 300
+        else:
+            sync_interval = (int)(sync_interval)
+
         while True:
             try:
                 auth = Auth(domain)
                 auth.connect(domain)
                 auth.synchronize()
+                time.sleep(sync_interval)
             except KeyboardInterrupt:
                 break
             except Exception, errmsg:

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -111,6 +111,7 @@ class IMAP(object):
                 if conf.has_section(domain) and conf.has_option(domain, 'imap_uri'):
                     uri = conf.get(domain, 'imap_uri')
 
+        scheme = None
         hostname = None
         port = None
 
@@ -130,6 +131,11 @@ class IMAP(object):
 
         if port == None:
             port = 993
+
+        if scheme == None or scheme == "":
+            scheme = 'imaps'
+
+        uri = '%s://%s:%s' % (scheme, hostname, port)
 
         # Get the credentials
         admin_login = conf.get(backend, 'admin_login')
@@ -167,7 +173,7 @@ class IMAP(object):
                     self._imap[hostname].logged_in = True
 
         else:
-            if not login and self._imap[hostname].logged_in == True:
+            if not login:
                 self.disconnect(hostname)
                 self.connect(uri=uri,login=False)
             elif login and not hasattr(self._imap[hostname],'logged_in'):
@@ -193,7 +199,8 @@ class IMAP(object):
     def disconnect(self, server=None):
         if server == None:
             # No server specified, but make sure self.imap is None anyways
-            del self.imap
+            if hasattr(self, 'imap'):
+                del self.imap
         else:
             if self._imap.has_key(server):
                 del self._imap[server]
@@ -201,6 +208,8 @@ class IMAP(object):
                 log.warning(_("Called imap.disconnect() on a server that we had no connection to."))
 
     def create_folder(self, folder_path, server=None):
+        folder_path = self.folder_utf7(folder_path)
+
         if not server == None:
             if not self._imap.has_key(server):
                 self.connect(server=server)
@@ -236,12 +245,26 @@ class IMAP(object):
         else:
             raise AttributeError, _("%r has no attribute %s") % (self,name)
 
+    def folder_utf7(self, folder):
+        from pykolab import imap_utf7
+        return imap_utf7.encode(folder)
+
+    def folder_utf8(self, folder):
+        from pykolab import imap_utf7
+        return imap_utf7.decode(folder)
+
     def get_metadata(self, folder):
         """
             Obtain all metadata entries on a folder
         """
+        metadata = {}
 
-        return self.imap.getannotation(folder, '*')
+        _metadata = self.imap.getannotation(self.folder_utf7(folder), '*')
+
+        for (k,v) in _metadata.items():
+            metadata[self.folder_utf8(k)] = v
+
+        return metadata
 
     def get_separator(self):
         if not hasattr(self, 'imap') or self.imap == None:
@@ -305,7 +328,7 @@ class IMAP(object):
         if short_rights.has_key(acl):
             acl = short_rights[acl]
 
-        self.imap.sam(folder, identifier, acl)
+        self.imap.sam(self.folder_utf7(folder), identifier, acl)
 
     def set_metadata(self, folder, metadata_path, metadata_value, shared=True):
         """
@@ -321,7 +344,7 @@ class IMAP(object):
             shared = False
             metadata_path = metadata_path.replace('/private/', '/')
 
-        self.imap._setannotation(folder, metadata_path, metadata_value, shared)
+        self.imap._setannotation(self.folder_utf7(folder), metadata_path, metadata_value, shared)
 
     def shared_folder_create(self, folder_path, server=None):
         """
@@ -445,11 +468,21 @@ class IMAP(object):
         admin_login = conf.get(backend, 'admin_login')
         admin_password = conf.get(backend, 'admin_password')
 
-        self.connect(login=False)
+        success = False
+        while not success:
+            try:
 
-        self.login_plain(admin_login, admin_password, folder)
-
-        (personal, other, shared) = self.namespaces()
+                self.disconnect()
+                self.connect(login=False)
+                self.login_plain(admin_login, admin_password, folder)
+                (personal, other, shared) = self.namespaces()
+                success = True
+            except Exception, errmsg:
+                log.debug(_("Waiting for the Cyrus murder to settle... %r") % (errmsg))
+                if conf.debuglevel > 8:
+                    import traceback
+                    traceback.print_exc()
+                time.sleep(0.5)
 
         for additional_folder in additional_folders.keys():
             _add_folder = {}
@@ -461,9 +494,12 @@ class IMAP(object):
                 folder_name = "%s%s" % (personal, folder_name)
 
             try:
-                self.imap.cm(folder_name)
+                self.create_folder(folder_name)
             except:
                 log.warning(_("Mailbox already exists: %s") % (folder_name))
+                if conf.debuglevel > 8:
+                    import traceback
+                    traceback.print_exc()
                 continue
 
             if additional_folders[additional_folder].has_key("annotations"):
@@ -608,8 +644,8 @@ class IMAP(object):
         """
             Check if the environment has a folder named folder.
         """
-        folders = self.imap.lm(folder)
-        log.debug(_("Looking for folder '%s', we found folders: %r") % (folder,folders), level=8)
+        folders = self.imap.lm(self.folder_utf7(folder))
+        log.debug(_("Looking for folder '%s', we found folders: %r") % (folder,[self.folder_utf8(x) for x in folders]), level=8)
         # Greater then one, this folder may have subfolders.
         if len(folders) > 0:
             return True
@@ -636,7 +672,7 @@ class IMAP(object):
                             "%s") % (rights,subject,folder), level=8)
 
                 self.set_acl(
-                        folder,
+                        self.folder_utf7(folder),
                         "%s" % (subject),
                         "%s" % (rights)
                     )
@@ -647,7 +683,7 @@ class IMAP(object):
                             "%s") % (rights,subject,folder), level=8)
 
                 self.set_acl(
-                        folder,
+                        self.folder_utf7(folder),
                         "%s" % (subject),
                         ""
                     )
@@ -872,22 +908,25 @@ class IMAP(object):
 
         log.info(_("Deleting folder %s") % (mailfolder_path))
 
-        self.imap.dm(mailfolder_path)
+        self.imap.dm(self.folder_utf7(mailfolder_path))
 
     def get_quota(self, mailfolder_path):
         try:
-            return self.lq(mailfolder_path)
+            return self.lq(self.folder_utf7(mailfolder_path))
         except:
             return
 
     def get_quota_root(self, mailfolder_path):
-        return self.lqr(mailfolder_path)
+        return self.lqr(self.folder_utf7(mailfolder_path))
 
     def list_acls(self, folder):
         """
             List the ACL entries on a folder
         """
-        return self.imap.lam(folder)
+        return self.imap.lam(self.folder_utf7(folder))
+
+    def list_folders(self, pattern):
+        return [self.folder_utf8(x) for x in self.lm(self.folder_utf7(pattern))]
 
     def list_user_folders(self, primary_domain=None, secondary_domains=[]):
         """

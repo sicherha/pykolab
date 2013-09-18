@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -56,14 +56,11 @@ def __init__():
     register('help', list_commands)
 
     register('list_users', not_yet_implemented, description="Not yet implemented")
-    register('add_user', not_yet_implemented, description="Not yet implemented")
     register('delete_user', not_yet_implemented, description="Not yet implemented")
 
     register('list_groups', not_yet_implemented, description="Not yet implemented")
     register('add_group', not_yet_implemented, description="Not yet implemented")
     register('delete_group', not_yet_implemented, description="Not yet implemented")
-
-    register('delete_domain', not_yet_implemented, description="Not yet implemented")
 
 def list_commands(*args, **kw):
     """

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -193,6 +193,14 @@ class Cyrus(cyruslib.CYRUS):
 
         return server
 
+    def folder_utf7(self, folder):
+        from pykolab import imap_utf7
+        return imap_utf7.encode(folder)
+
+    def folder_utf8(self, folder):
+        from pykolab import imap_utf7
+        return imap_utf7.decode(folder)
+
     def _setquota(self, mailfolder, quota):
         """
             Login to the actual backend server.
@@ -367,7 +375,7 @@ class Cyrus(cyruslib.CYRUS):
             # but it still would not cover all cases.
             #
 
-            # If no folders where found... well... then there you go.
+            # If no folders were found... well... then there you go.
             if len(folders) < 1:
                 return None
 

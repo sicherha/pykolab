@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -127,7 +127,7 @@ def execute(*args, **kw):
 
     _message = json.load(open(filepath, 'r'))
     log.debug("Loaded message %r" % (_message), level=9)
-    message = message_from_string(_message['data'])
+    message = message_from_string(str(_message['data']))
     recipients = _message['to']
 
     any_itips = False
@@ -436,6 +436,9 @@ def execute(*args, **kw):
 
                         send_response(original_resource['mail'], itip_event)
 
+    auth.disconnect()
+    del auth
+
     # Disconnect IMAP or we lock the mailbox almost constantly
     imap.disconnect()
     del imap
@@ -589,6 +592,8 @@ def resource_record_from_email_address(email_address):
 
         resource_records = [ resource_records ]
 
+    auth.disconnect()
+
     return resource_records
 
 def resource_records_from_itip_events(itip_events):
@@ -721,6 +726,8 @@ def resource_records_from_itip_events(itip_events):
                 ),
             level=8
         )
+
+    auth.disconnect()
 
     return resource_records
 

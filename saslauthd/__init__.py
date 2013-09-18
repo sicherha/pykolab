@@ -1,4 +1,4 @@
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -194,7 +194,14 @@ class SASLAuthDaemon(object):
             auth = Auth(domain=realm)
             auth.connect()
 
-            if auth.authenticate(login):
+            success = False
+
+            try:
+                success = auth.authenticate(login)
+            except:
+                success = False
+
+            if success:
                 # #1170: Catch broken pipe error (incomplete authentication request)
                 try:
                     clientsocket.send(struct.pack("!H2s", 2, "OK"))
@@ -208,6 +215,7 @@ class SASLAuthDaemon(object):
                     pass
 
             clientsocket.close()
+            auth.disconnect()
 
     def reload_config(self, *args, **kw):
         pass

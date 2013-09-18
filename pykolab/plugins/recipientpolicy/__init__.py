@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -77,9 +77,10 @@ class KolabRecipientpolicy(object):
             return mail
         except KeyError, e:
             log.warning(_("Attribute substitution for 'mail' failed in Recipient Policy"))
-            mail = utils.translate(user_attrs['mail'], user_attrs['preferredlanguage'])
-            mail = mail.lower()
-            return mail
+            if user_attrs.has_key('mail'):
+                return user_attrs['mail']
+            else:
+                return None
 
     def set_secondary_mail(self, *args, **kw):
         """
@@ -120,7 +121,14 @@ class KolabRecipientpolicy(object):
         _domains = [ kw['primary_domain'] ] + kw['secondary_domains']
 
         for attr in [ 'givenname', 'sn', 'surname' ]:
-            user_attrs[attr] = utils.translate(user_attrs[attr], user_attrs['preferredlanguage'])
+            try:
+                user_attrs[attr] = utils.translate(user_attrs[attr], user_attrs['preferredlanguage'])
+            except Exception, errmsg:
+                log.error(_("An error occurred in composing the secondary mail attribute for entry %r") % (user_attrs['id']))
+                if conf.debuglevel > 8:
+                    import traceback
+                    traceback.print_exc()
+                return []
 
         for number in alternative_mail_routines.keys():
             for routine in alternative_mail_routines[number].keys():
@@ -130,8 +138,12 @@ class KolabRecipientpolicy(object):
                     log.debug(_("Appending additional mail address: %s") % (retval), level=8)
                     alternative_mail.append(retval)
 
-                except KeyError, e:
-                    log.warning(_("Attribute substitution for 'alternative_mail' failed in Recipient Policy"))
+                except Exception, errmsg:
+                    log.error(_("Policy for secondary email address failed: %r") % (errmsg))
+                    if conf.debuglevel > 8:
+                        import traceback
+                        traceback.print_exc()
+                    return []
 
                 for _domain in kw['secondary_domains']:
                     user_attrs['domain'] = _domain

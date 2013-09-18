@@ -8,7 +8,7 @@ sasl_mech_list: PLAIN LOGIN
 allowplaintext: no
 tls_cert_file: /etc/pki/cyrus-imapd/cyrus-imapd.pem
 tls_key_file: /etc/pki/cyrus-imapd/cyrus-imapd.pem
-tls_ca_file: /etc/pki/tls/certs/ca-bundle.crt
+tls_ca_file: /etc/pki/cyrus-imapd/cyrus-imapd.pem
 # uncomment this if you're operating in a DSCP environment (RFC-4594)
 # qosmarking: af13
 auth_mech: pts
@@ -48,3 +48,4 @@ deletedprefix: DELETED
 delete_mode: delayed
 expunge_mode: delayed
 flushseenstate: 1
+postuser: shared

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -32,6 +32,15 @@ conf = pykolab.getConf()
 def __init__():
     commands.register('list_quota', execute, description=description(), aliases=['lq'])
 
+def cli_options():
+    my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
+    my_option_group.add_option( '--server',
+                                dest    = "connect_server",
+                                action  = "store",
+                                default = None,
+                                metavar = "SERVER",
+                                help    = _("List mailboxes on server SERVER only."))
+
 def description():
     return """List quota for a folder."""
 
@@ -46,11 +55,15 @@ def execute(*args, **kw):
         quota_folder = '*'
 
     imap = IMAP()
-    imap.connect()
+
+    if not conf.connect_server == None:
+        imap.connect(server=conf.connect_server)
+    else:
+        imap.connect()
 
     folders = []
 
-    quota_folders = imap.lm(quota_folder)
+    quota_folders = imap.list_folders(quota_folder)
     for quota_folder in quota_folders:
         try:
             (used, quota) = imap.get_quota(quota_folder)
@@ -63,7 +76,10 @@ def execute(*args, **kw):
                     percentage = round(((float)(used)/(float)(quota)) * 100.0, 1)
                     print "%d (Used: %d, Percentage: %d)" % (quota, used, percentage)
             else:
-                print "No quota"
+                if used == None:
+                    print "%d (Used: %d, Percentage: %d)" % (quota, 0, 0)
+                else:
+                    print "No quota"
         except:
             try:
                 (quota_root, used, quota) = imap.get_quota_root(quota_folder)
@@ -76,7 +92,10 @@ def execute(*args, **kw):
                         percentage = round(((float)(used)/(float)(quota)) * 100.0, 1)
                         print "%d (Root: %s, Used: %d, Percentage: %d)" % (quota, quota_root, used, percentage)
                 else:
-                    print "No quota"
+                    if used == None and not quota_root == None:
+                        print "%d (Root: %s, Used: %d, Percentage: %d)" % (quota, quota_root, 0, 0)
+                    else:
+                        print "No quota"
             except:
                 print "Folder: %s" % (quota_folder)
                 print "No quota root"

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -62,4 +62,8 @@ def execute(*args, **kw):
     else:
         folders = imap.lm(folder)
         for folder in folders:
-            imap.set_acl(folder, identifier, '')
+            try:
+                imap.set_acl(folder, identifier, '')
+            except:
+                # Mailbox no longer exists?
+                pass

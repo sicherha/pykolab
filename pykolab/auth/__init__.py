@@ -1,4 +1,4 @@
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -37,14 +37,9 @@ class Auth(pykolab.base.Base):
         """
             Initialize the authentication class.
         """
-        pykolab.base.Base.__init__(self)
+        pykolab.base.Base.__init__(self, domain=domain)
 
         self._auth = None
-
-        if not domain == None:
-            self.domain = domain
-        else:
-            self.domain = conf.get('kolab', 'primary_domain')
 
     def authenticate(self, login):
         """
@@ -97,8 +92,12 @@ class Auth(pykolab.base.Base):
             return
 
         if domain == None:
-            section = 'kolab'
-            domain = conf.get('kolab', 'primary_domain')
+            if not self.domain == None:
+                section = self.domain
+                domain = self.domain
+            else:
+                section = 'kolab'
+                domain = conf.get('kolab', 'primary_domain')
         else:
             self.list_domains()
             section = domain
@@ -160,7 +159,7 @@ class Auth(pykolab.base.Base):
 
         self._auth.connect()
 
-    def disconnect(self):
+    def disconnect(self, domain=None):
         """
             Connect to the domain authentication backend using domain, or fall
             back to the primary domain specified by the configuration.
@@ -228,6 +227,8 @@ class Auth(pykolab.base.Base):
         except:
             if not self.domain == kolab_primary_domain:
                 return [(self.domain, [])]
+            else:
+                domains = []
 
         # If no domains are found, the primary domain is used.
         if len(domains) < 1:
@@ -263,8 +264,8 @@ class Auth(pykolab.base.Base):
     def search_mail_address(self, domain, mail_address):
         return self._auth._search_mail_address(domain, mail_address)
 
-    def set_entry_attribute(self, domain, entry, attribute):
-        return self._auth.set_entry_attribute(entry, attribute)
+    def set_entry_attribute(self, domain, entry, attribute, value):
+        return self._auth.set_entry_attribute(entry, attribute, value)
 
     def set_entry_attributes(self, domain, entry, attributes):
         return self._auth.set_entry_attributes(entry, attributes)

@@ -8,6 +8,7 @@ pykolab_auth_PYTHON = \
 pykolab_auth_ldapdir = $(pythondir)/$(PACKAGE)/auth/ldap
 pykolab_auth_ldap_PYTHON = \
 	auth/ldap/__init__.py \
+	auth/ldap/auth_cache.py \
 	auth/ldap/cache.py \
 	auth/ldap/syncrepl.py
 
@@ -22,6 +23,10 @@ pykolab_clisieve_PYTHON = \
 pykolab_clitelemetrydir = $(pythondir)/$(PACKAGE)/cli/telemetry
 pykolab_clitelemetry_PYTHON = \
 	$(wildcard cli/telemetry/*.py)
+
+pykolab_cliwapdir = $(pythondir)/$(PACKAGE)/cli/wap
+pykolab_cliwap_PYTHON = \
+	$(wildcard cli/wap/*.py)
 
 pykolab_confdir = $(pythondir)/$(PACKAGE)/conf
 pykolab_conf_PYTHON = \
@@ -69,7 +74,6 @@ pykolab_setup_PYTHON = \
 	setup/setup_php.py \
 	setup/setup_roundcube.py \
 	setup/setup_syncroton.py \
-	setup/setup_zpush.py \
 	setup/__init__.py
 
 pykolab_wapclientdir = $(pythondir)/$(PACKAGE)/wap_client

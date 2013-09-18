@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -21,6 +21,7 @@ import getpass
 import grp
 import os
 import pwd
+import struct
 import sys
 
 import pykolab
@@ -126,11 +127,21 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
             else:
                 return True
 
-def ask_menu(question, options={}):
-    print question
+def ask_menu(question, options={}, default=''):
+    if not default == '':
+        print question + " [" + default + "]:"
+    else:
+        print question
+
     answer_correct = False
     max_key_length = 0
 
+    if isinstance(options, list):
+        _options = options
+        options = {}
+        for key in _options:
+            options[key] = key
+        
     keys = options.keys()
     keys.sort()
 
@@ -142,10 +153,29 @@ def ask_menu(question, options={}):
 
         str_format = "%%%ds" % max_key_length
 
-        for key in keys:
-            print " - " + eval("str_format % key") + ": " + options[key]
+        if default == '' or not default in options.keys():
+            for key in keys:
+                if options[key] == key:
+                    print " - " + key
+                else:
+                    print " - " + eval("str_format % key") + ": " + options[key]
 
-        answer = raw_input(_("Choice") + ": ")
+            answer = raw_input(_("Choice") + ": ")
+
+        else:
+            answer = raw_input(_("Choice (type '?' for options)") + ": ")
+
+        if answer == '?':
+            for key in keys:
+                if options[key] == key:
+                    print " - " + key
+                else:
+                    print " - " + eval("str_format % key") + ": " + options[key]
+
+            continue
+
+        if answer == '' and default in options.keys():
+            answer = default
 
         if answer in [str(x) for x in options.keys()]:
             answer_correct = True
@@ -271,20 +301,29 @@ def normalize(_object):
             if type(_object[key]) == list:
                 if _object[key] == None:
                     continue
+
                 if len(_object[key]) == 1:
                     result[key.lower()] = ''.join(_object[key])
                 else:
                     result[key.lower()] = _object[key]
+
             else:
                 if _object[key] == None:
                     continue
+
                 # What the heck?
                 result[key.lower()] = _object[key]
+
+        if result.has_key('objectsid') and not result['objectsid'][0] == "S":
+            result['objectsid'] = sid_to_string(result['objectsid'])
 
         if result.has_key('sn'):
             result['surname'] = result['sn'].replace(' ', '')
 
         if result.has_key('mail'):
+            if isinstance(result['mail'], list):
+                result['mail'] = result['mail'][0]
+
             if len(result['mail']) > 0:
                 if len(result['mail'].split('@')) > 1:
                     result['domain'] = result['mail'].split('@')[1]
@@ -384,6 +423,24 @@ def pop_empty_from_list(_input_list):
     for item in _input_list:
         if not item == '':
             _output_list.append(item)
+
+def sid_to_string(sid):
+    srl = ord(sid[0])
+    number_sub_id = ord(sid[1])
+    iav = struct.unpack('!Q', '\x00\x00' + sid[2:8])[0]
+
+    sub_ids = []
+
+    for i in range(number_sub_id):
+        sub_ids.append(struct.unpack('<I',sid[8+4*i:12+4*i])[0])
+
+    result = 'S-%d-%d-%s' % (
+            srl,
+            iav,
+            '-'.join([str(s) for s in sub_ids]),
+        )
+
+    return result
 
 def standard_root_dn(domain):
     return 'dc=%s' % (',dc='.join(domain.split('.')))

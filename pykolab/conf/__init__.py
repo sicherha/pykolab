@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -123,7 +123,7 @@ class Conf(object):
                 continue
 
             for key in self.defaults.__dict__[section].keys():
-		retval = False
+                retval = False
                 if not config.has_option(section, key):
                     continue
 
@@ -182,7 +182,7 @@ class Conf(object):
             return
 
         for key in config.options('testing'):
-	    retval = False
+            retval = False
 
             if isinstance(self.defaults.__dict__['testing'][key], int):
                 value = config.getint('testing',key)
@@ -596,7 +596,7 @@ class Conf(object):
         if value:
             try:
                 from smtplib import SMTP
-		self.use_mail = value
+                self.use_mail = value
                 return True
             except ImportError:
                 log.error(_("No SMTP class found in the smtplib library."))
@@ -606,8 +606,8 @@ class Conf(object):
         # Attempt to load the suite,
         # Get the suite's options,
         # Set them here.
-	if not hasattr(self,'test_suites'):
-	    self.test_suites = []
+        if not hasattr(self,'test_suites'):
+            self.test_suites = []
 
         if "zpush" in value:
             selectively = False

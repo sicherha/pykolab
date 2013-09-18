@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2012 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -21,6 +21,7 @@ import commands
 
 import pykolab
 
+from pykolab import imap_utf7
 from pykolab.imap import IMAP
 from pykolab.translate import _
 
@@ -42,6 +43,13 @@ def cli_options():
                                 action  = "store_true",
                                 default = False,
                                 help    = _("Display raw IMAP UTF-7 folder names"))
+
+    my_option_group.add_option( '--server',
+                                dest    = "connect_server",
+                                action  = "store",
+                                default = None,
+                                metavar = "SERVER",
+                                help    = _("List mailboxes on server SERVER only."))
 
 def execute(*args, **kw):
     """
@@ -67,13 +75,20 @@ def execute(*args, **kw):
         searches = [ '' ]
 
     imap = IMAP()
-    imap.connect()
+
+    if not conf.connect_server == None:
+        imap.connect(server=conf.connect_server)
+    else:
+        imap.connect()
 
     folders = []
 
     for search in searches:
         log.debug(_("Appending folder search for %r") % (search), level=8)
-        folders.extend(imap.lm(search))
+        folders.extend(imap.lm(imap_utf7.encode(search)))
 
     for folder in folders:
-        print folder
+        if not conf.raw:
+            print imap_utf7.decode(folder)
+        else:
+            print folder

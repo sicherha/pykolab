@@ -1,19 +1,19 @@
 <?php
-    \$rcmail_config['kolab_folders_configuration_default'] = 'Configuration';
-    \$rcmail_config['kolab_folders_event_default'] = 'Calendar';
-    \$rcmail_config['kolab_folders_contact_default'] = 'Contacts';
-    \$rcmail_config['kolab_folders_task_default'] = '';
-    \$rcmail_config['kolab_folders_note_default'] = '';
-    \$rcmail_config['kolab_folders_journal_default'] = '';
-    \$rcmail_config['kolab_folders_mail_inbox'] = 'INBOX';
-    \$rcmail_config['kolab_folders_mail_drafts'] = 'Drafts';
-    \$rcmail_config['kolab_folders_mail_sentitems'] = 'Sent';
-    \$rcmail_config['kolab_folders_mail_junkemail'] = 'Spam';
-    \$rcmail_config['kolab_folders_mail_outbox'] = '';
-    \$rcmail_config['kolab_folders_mail_wastebasket'] = 'Trash';
+    \$config['kolab_folders_configuration_default'] = 'Configuration';
+    \$config['kolab_folders_event_default'] = 'Calendar';
+    \$config['kolab_folders_contact_default'] = 'Contacts';
+    \$config['kolab_folders_task_default'] = '';
+    \$config['kolab_folders_note_default'] = '';
+    \$config['kolab_folders_journal_default'] = '';
+    \$config['kolab_folders_mail_inbox'] = 'INBOX';
+    \$config['kolab_folders_mail_drafts'] = 'Drafts';
+    \$config['kolab_folders_mail_sentitems'] = 'Sent';
+    \$config['kolab_folders_mail_junkemail'] = 'Spam';
+    \$config['kolab_folders_mail_outbox'] = '';
+    \$config['kolab_folders_mail_wastebasket'] = 'Trash';
 
-    if (file_exists(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
-        include_once(RCMAIL_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
+    if (file_exists(RCUBE_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
+        include_once(RCUBE_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
     }
 
 ?>

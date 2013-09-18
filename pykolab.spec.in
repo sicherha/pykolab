@@ -41,6 +41,7 @@ Requires:           kolab-cli = %{version}-%{release}
 Requires:           python-ldap >= 2.4
 Requires:           python-pyasn1
 Requires:           python-pyasn1-modules
+Requires:           python-sqlalchemy
 Requires(pre):      /usr/sbin/useradd
 Requires(pre):      /usr/sbin/usermod
 Requires(pre):      /usr/sbin/groupadd
@@ -301,6 +302,9 @@ rm -rf %{buildroot}
 %{python_sitelib}/pykolab/plugins/defaultfolders
 %{python_sitelib}/pykolab/plugins/dynamicquota
 %{python_sitelib}/pykolab/plugins/recipientpolicy
+# No sieve script management without our modified version of
+# python-sievelib
+%exclude %{python_sitelib}/pykolab/plugins/sievemgmt
 %{python_sitelib}/kolab/
 %{python_sitelib}/cyruslib.py*
 %attr(0775,kolab,kolab-n) %dir %{_localstatedir}/lib/kolab/
@@ -331,6 +335,10 @@ rm -rf %{buildroot}
 %{python_sitelib}/pykolab/cli/*.py
 %{python_sitelib}/pykolab/cli/*.pyc
 %{python_sitelib}/pykolab/cli/*.pyo
+%dir %{python_sitelib}/pykolab/cli/wap
+%{python_sitelib}/pykolab/cli/wap/*.py
+%{python_sitelib}/pykolab/cli/wap/*.pyc
+%{python_sitelib}/pykolab/cli/wap/*.pyo
 %dir %{python_sitelib}/pykolab/setup/
 %{python_sitelib}/pykolab/setup/*.py
 %{python_sitelib}/pykolab/setup/*.pyc
@@ -339,6 +347,9 @@ rm -rf %{buildroot}
 %{python_sitelib}/pykolab/wap_client/*.py
 %{python_sitelib}/pykolab/wap_client/*.pyc
 %{python_sitelib}/pykolab/wap_client/*.pyo
+# No sieve script management without our modified version of
+# python-sievelib
+%exclude %{python_sitelib}/pykolab/cli/sieve
 
 %files -n kolab-saslauthd
 %defattr(-,root,root,-)
