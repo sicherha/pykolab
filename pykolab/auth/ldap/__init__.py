@@ -393,7 +393,12 @@ class LDAP(pykolab.base.Base):
 
         kolab_filter = self._kolab_filter()
         recipient_address_attrs = self.config_get_list("mail_attributes")
-        result_attributes = recipient_address_attrs
+
+        result_attributes = []
+
+        for recipient_address_attr in recipient_address_attrs:
+            result_attributes.append(recipient_address_attr)
+
         result_attributes.append(self.config_get('unique_attribute'))
 
         _filter = "(|"
@@ -2000,7 +2005,7 @@ class LDAP(pykolab.base.Base):
 
         return _filter
 
-    def _list_domains(self):
+    def _list_domains(self, domain=None):
         """
             Find the domains related to this Kolab setup, and return a list of
             DNS domain names.
@@ -2027,6 +2032,9 @@ class LDAP(pykolab.base.Base):
 
         # If we haven't returned already, let's continue searching
         domain_filter = conf.get('ldap', 'domain_filter')
+
+        if not domain == None:
+            domain_filter = domain_filter.replace('*', domain)
 
         if domain_base_dn == None or domain_filter == None:
             return []
@@ -2501,6 +2509,14 @@ class LDAP(pykolab.base.Base):
             Use the priority ordered SUPPORTED_LDAP_CONTROLS and use
             the first one supported.
         """
+
+        supported_controls = conf.get_list('ldap', 'supported_controls')
+
+        if not supported_controls == None and not len(supported_controls) < 1:
+            for control_num in [(int)(x) for x in supported_controls]:
+                self.ldap.supported_controls.append(
+                        SUPPORTED_LDAP_CONTROLS[control_num]['func']
+                    )
 
         if len(self.ldap.supported_controls) < 1:
             for control_num in SUPPORTED_LDAP_CONTROLS.keys():
