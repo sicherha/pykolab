@@ -66,6 +66,7 @@ log = pykolab.getLogger('pykolab.smtp_access_policy')
 
 conf = pykolab.getConf()
 
+auth = None
 mydomains = None
 
 #
@@ -798,16 +799,16 @@ class PolicyRequest(object):
             self.auth = Auth(sasl_domain)
 
         if verify_domain(sasl_domain):
-            if self.auth.secondary_domains.has_key(sasl_domain):
+            if self.auth.domains.has_key(sasl_domain):
                 log.debug(
                         _("Using authentication domain %s instead of %s") % (
-                                self.auth.secondary_domains[sasl_domain],
+                                self.auth.domains[sasl_domain],
                                 sasl_domain
                             ),
                         level=8
                     )
 
-                sasl_domain = self.auth.secondary_domains[sasl_domain]
+                sasl_domain = self.auth.domains[sasl_domain]
             else:
                 log.debug(
                         _("Domain %s is a primary domain") % (
@@ -1221,10 +1222,8 @@ def cache_insert(
             level=8
         )
 
-    cache_cleanup()
-
-    if not recipient == '':
-        recipients.append(recipient)
+    if not recipient == '' and recipients == []:
+        recipients = [recipient]
 
     for recipient in recipients:
         session.add(
@@ -1272,9 +1271,8 @@ def cache_update(
         if record.value == (int)(result):
             records.append(record)
 
-    if not recipient == '':
-        recipients.append(recipient)
-        recipient = ''
+    if not recipient == '' and recipients == []:
+        recipients = [recipient]
 
     for recipient in recipients:
         recipient_found = False
@@ -1324,24 +1322,16 @@ def expand_mydomains():
         Return a list of my domains.
     """
 
-    global mydomains
+    global auth,mydomains
 
     if not mydomains == None:
         return mydomains
 
-    auth = Auth()
     auth.connect()
 
-    mydomains = []
+    mydomains = auth.list_domains()
 
-    _mydomains = auth.list_domains()
-
-    for primary, secondaries in _mydomains:
-        mydomains.append(primary)
-        for secondary in secondaries:
-            mydomains.append(secondary)
-
-    return mydomains
+    return mydomains.keys()
 
 def normalize_address(email_address):
     """
@@ -1399,25 +1389,20 @@ def verify_domain(domain):
         Verify whether the domain is internal (mine) or external.
     """
 
-    global mydomains
+    global auth,mydomains
 
     if not mydomains == None:
-        return domain in mydomains
+        return domain in mydomains.keys()
 
-    auth = Auth()
     auth.connect()
 
     domain_verified = False
 
-    _mydomains = auth.list_domains()
+    mydomains = auth.list_domains()
 
-    for primary, secondaries in _mydomains:
-        if primary == domain:
-            domain_verified = True
-        elif domain in secondaries:
-            domain_verified = True
-
-    if domain_verified == None:
+    if not mydomains == None and mydomains.has_key(domain):
+        domain_verified = True
+    else:
         domain_verified = False
 
     return domain_verified
@@ -1452,6 +1437,8 @@ if __name__ == "__main__":
                             help    = _("Allow unauthenticated senders."))
 
     conf.finalize_conf()
+
+    auth = Auth()
 
     cache = cache_init()
 
