@@ -99,7 +99,7 @@ class Auth(pykolab.base.Base):
                 section = 'kolab'
                 domain = conf.get('kolab', 'primary_domain')
         else:
-            self.list_domains()
+            self.list_domains(domain)
             section = domain
 
         log.debug(
@@ -107,9 +107,9 @@ class Auth(pykolab.base.Base):
                 level=9
             )
 
-        if self.secondary_domains.has_key(domain):
-            section = self.secondary_domains[domain]
-            domain = self.secondary_domains[domain]
+        if not self.domains == None and self.domains.has_key(domain):
+            section = self.domains[domain]
+            domain = self.domains[domain]
 
         log.debug(
                 _("Using section %s and domain %s") % (section,domain),
@@ -207,7 +207,7 @@ class Auth(pykolab.base.Base):
     def find_user(self, attr, value, **kw):
         return self._auth._find_user(attr, value, **kw)
 
-    def list_domains(self):
+    def list_domains(self, domain=None):
         """
             List the domains using the auth_mechanism setting in the kolab
             section of the configuration file, either ldap or sql or (...).
@@ -225,23 +225,27 @@ class Auth(pykolab.base.Base):
         # Find the domains in the authentication backend.
         kolab_primary_domain = conf.get('kolab', 'primary_domain')
 
-        try:
-            domains = self._auth._list_domains()
-        except:
-            if not self.domain == kolab_primary_domain:
-                return [(self.domain, [])]
+        if self.domains == None:
+
+            try:
+                domains = self._auth._list_domains(domain)
+            except:
+                if not self.domain == kolab_primary_domain:
+                    return { self.domain: [] }
+                else:
+                    domains = []
+
+            # If no domains are found, the primary domain is used.
+            if len(domains) < 1:
+                self.domains = { kolab_primary_domain: [] }
             else:
-                domains = []
+                self.domains = {}
+                for primary, secondaries in domains:
+                    self.domains[primary] = primary
+                    for secondary in secondaries:
+                        self.domains[secondary] = primary
 
-        # If no domains are found, the primary domain is used.
-        if len(domains) < 1:
-            domains = [(kolab_primary_domain, [])]
-        else:
-            for primary, secondaries in domains:
-                for secondary in secondaries:
-                    self.secondary_domains[secondary] = primary
-
-        return domains
+        return self.domains
 
     def synchronize(self, mode=0):
         self._auth.synchronize(mode=mode)
