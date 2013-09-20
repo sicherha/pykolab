@@ -48,7 +48,7 @@ except:
 from sqlalchemy.schema import Index
 from sqlalchemy.schema import UniqueConstraint
 
-sys.path = ['..'] + sys.path
+sys.path = ['..','.'] + sys.path
 
 import pykolab
 
@@ -66,13 +66,15 @@ log = pykolab.getLogger('pykolab.smtp_access_policy')
 
 conf = pykolab.getConf()
 
+mydomains = None
+
 #
 # Caching routines using SQLAlchemy.
 #
 # If creating the cache fails, we continue without any caching, significantly
 # increasing the load on LDAP.
 #
-cache_expire = 3600
+cache_expire = 86400
 try:
     metadata = MetaData()
 except:
@@ -767,7 +769,7 @@ class PolicyRequest(object):
                             )
                     )
 
-                return record[0].value
+                return records[0].value
 
         # TODO: Under some conditions, the recipient may not be fully qualified.
         # We'll cross that bridge when we get there, though.
@@ -775,6 +777,20 @@ class PolicyRequest(object):
             sasl_domain = recipient.split('@')[1]
         else:
             sasl_domain = conf.get('kolab', 'primary_domain')
+            recipient = "%s@%s" % (recipient,sasl_domain)
+
+        if not verify_domain(sasl_domain):
+            if not cache == False:
+                cache_update(
+                        function='verify_recipient',
+                        sender=self.sender,
+                        recipient=recipient,
+                        result=(int)(True),
+                        sasl_username=self.sasl_username,
+                        sasl_sender=self.sasl_sender
+                    )
+
+            return True
 
         if self.auth == None:
             self.auth = Auth(sasl_domain)
@@ -819,9 +835,19 @@ class PolicyRequest(object):
                 log.info(
                         _("This recipient address is related to multiple object entries and the SMTP Access Policy can therefore not restrict message flow")
                     )
+
+                cache_update(
+                        function='verify_recipient',
+                        sender=self.sender,
+                        recipient=normalize_address(recipient),
+                        result=(int)(True),
+                        sasl_username=self.sasl_username,
+                        sasl_sender=self.sasl_sender
+                    )
+
                 return True
             elif len(recipients) == 1:
-                recipient = { 'dn': recipients[0] }
+                _recipient = { 'dn': recipients[0] }
             else:
                 log.debug(
                         _("Recipient address %r not found. Allowing since the MTA was configured to accept the recipient.") % (
@@ -830,22 +856,31 @@ class PolicyRequest(object):
                         level=3
                     )
 
+                cache_update(
+                        function='verify_recipient',
+                        sender=self.sender,
+                        recipient=normalize_address(recipient),
+                        result=(int)(True),
+                        sasl_username=self.sasl_username,
+                        sasl_sender=self.sasl_sender
+                    )
+
                 return True
 
         elif isinstance(recipients, basestring):
-            recipient = {
+            _recipient = {
                     'dn': recipients
                 }
 
         # We have gotten an invalid recipient. We need to catch this case,
         # because testing can input invalid recipients, and so can faulty
         # applications, or misconfigured servers.
-        if not recipient['dn']:
+        if not _recipient['dn']:
             if not conf.allow_unauthenticated:
                 cache_update(
                         function='verify_recipient',
                         sender=self.sender,
-                        recipient=recipient,
+                        recipient=normalize_address(recipient),
                         result=(int)(False),
                         sasl_username=self.sasl_username,
                         sasl_sender=self.sasl_sender
@@ -856,7 +891,7 @@ class PolicyRequest(object):
                 cache_update(
                         function='verify_recipient',
                         sender=self.sender,
-                        recipient=recipient,
+                        recipient=normalize_address(recipient),
                         result=(int)(True),
                         sasl_username=self.sasl_username,
                         sasl_sender=self.sasl_sender
@@ -865,15 +900,24 @@ class PolicyRequest(object):
                 log.debug(_("Could not find this user, accepting"), level=8)
                 return True
 
-        if not recipient['dn'] == False:
+        if not _recipient['dn'] == False:
             recipient_policy = self.auth.get_entry_attribute(
                     sasl_domain,
-                    recipient,
+                    _recipient['dn'],
                     'kolabAllowSMTPSender'
                 )
 
         # If no such attribute has been specified, allow
         if recipient_policy == None:
+            cache_update(
+                    function='verify_recipient',
+                    sender=self.sender,
+                    recipient=normalize_address(recipient),
+                    result=(int)(True),
+                    sasl_username=self.sasl_username,
+                    sasl_sender=self.sasl_sender
+                )
+
             recipient_verified = True
 
         # Otherwise, parse the policy obtained with the subject of the policy
@@ -889,7 +933,7 @@ class PolicyRequest(object):
             cache_update(
                     function='verify_recipient',
                     sender=self.sender,
-                    recipient=recipient,
+                    recipient=normalize_address(recipient),
                     result=(int)(recipient_verified),
                     sasl_username=self.sasl_username,
                     sasl_sender=self.sasl_sender
@@ -918,10 +962,11 @@ class PolicyRequest(object):
                 )
 
             if not records == None and len(records) == len(self.recipients):
+                log.debug("Euh, what am I doing here?")
                 for record in records:
                     recipient_found = False
                     for recipient in self.recipients:
-                        if recipient == record['recipient']:
+                        if recipient == record.recipient:
                             recipient_found = True
 
                     if not recipient_found:
@@ -1123,6 +1168,7 @@ def cache_init():
 
     Session = sessionmaker(bind=engine)
     session = Session()
+    cache_cleanup()
 
     return cache
 
@@ -1138,8 +1184,8 @@ def cache_select(
     if not cache == True:
         return None
 
-    if not recipient == '':
-        recipients.append(recipient)
+    if not recipient == '' and recipients == []:
+        recipients = [recipient]
 
     return session.query(
             PolicyResult
@@ -1278,6 +1324,11 @@ def expand_mydomains():
         Return a list of my domains.
     """
 
+    global mydomains
+
+    if not mydomains == None:
+        return mydomains
+
     auth = Auth()
     auth.connect()
 
@@ -1347,6 +1398,11 @@ def verify_domain(domain):
     """
         Verify whether the domain is internal (mine) or external.
     """
+
+    global mydomains
+
+    if not mydomains == None:
+        return domain in mydomains
 
     auth = Auth()
     auth.connect()

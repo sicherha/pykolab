@@ -183,6 +183,9 @@ class Auth(pykolab.base.Base):
         if not domain == None and not self.domain == domain:
             self.connect(domain=domain)
 
+        if not self._auth or self._auth == None:
+            self.connect(domain=domain)
+
         result = self._auth.find_recipient(address)
 
         if isinstance(result, list) and len(result) == 1:
