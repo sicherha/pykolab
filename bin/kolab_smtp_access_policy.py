@@ -1026,9 +1026,10 @@ class PolicyRequest(object):
 
                 return True
 
-        self.verify_authenticity()
-        self.sasl_user_uses_alias = self.verify_alias()
+        if self.verify_authenticity() == False:
+            reject(_("Unverifiable sender."))
 
+        self.sasl_user_uses_alias = self.verify_alias()
 
         if not self.sasl_user_uses_alias:
             log.debug(_("Sender is not using an alias"), level=8)
