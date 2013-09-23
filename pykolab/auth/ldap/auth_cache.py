@@ -71,7 +71,7 @@ entry_table = Table(
         'entries', metadata,
         Column('id', Integer, primary_key=True),
         Column('domain', String(128), index=True, nullable=True),
-        Column('key', String(128), index=True, nullable=False),
+        Column('key', String(512), index=True, nullable=False),
         Column('value', String(128), nullable=False),
         Column('last_change', DateTime, nullable=False, default=datetime.datetime.now())
     )
@@ -114,9 +114,8 @@ def set_entry(key, value):
 
         db.commit()
 
-#def purge_entries():
-    #db = init_db()
-    #db.query(Entry).filter(Entry.last_change <= datetime.datetime.now()).delete()
+def purge_entries(db):
+    db.query(Entry).filter(Entry.last_change <= (datetime.datetime.now() - datetime.timedelta(1))).delete()
 
 def init_db():
     """
@@ -127,12 +126,16 @@ def init_db():
     if not db == None:
         return db
 
-    db_uri = 'sqlite:///%s/auth_cache.db' % (KOLAB_LIB_PATH)
+    db_uri = conf.get('ldap', 'auth_cache_uri')
+    if db_uri == None:
+        db_uri = 'sqlite:///%s/auth_cache.db' % (KOLAB_LIB_PATH)
+
     echo = conf.debuglevel > 8
     engine = create_engine(db_uri, echo=echo)
     metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)
     db = Session()
+    purge_entries(db)
 
     return db

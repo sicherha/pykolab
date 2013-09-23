@@ -169,7 +169,11 @@ class LDAP(pykolab.base.Base):
             else:
                 base_dn = config_base_dn
 
-            auth_cache.set_entry(self.domain, base_dn)
+            try:
+                auth_cache.set_entry(self.domain, base_dn)
+            except Exception, errmsg:
+                log.error(_("Authentication cache failed: %r") % (errmsg))
+                pass
 
         user_filter = self.config_get_raw('user_filter') % ({'base_dn':base_dn})
 
@@ -216,7 +220,11 @@ class LDAP(pykolab.base.Base):
                 # to True!!
                 self.ldap.simple_bind_s(entry_dn, login[1])
                 retval = True
-                auth_cache.set_entry(_filter, entry_dn)
+                try:
+                    auth_cache.set_entry(_filter, entry_dn)
+                except Exception, errmsg:
+                    log.error(_("Authentication cache failed: %r") % (errmsg))
+                    pass
             except:
                 try:
                     log.debug(
