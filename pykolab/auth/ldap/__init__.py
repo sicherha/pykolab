@@ -536,7 +536,10 @@ class LDAP(pykolab.base.Base):
         """
             List alias domain name spaces for the current domain name space.
         """
-        return [s for s, p in self.secondary_domains.iteritems() if p == self.domain]
+        if not self.domains == None:
+            return [s for s in self.domains.keys() if not s in self.domains.values()]
+        else:
+            return []
 
     def recipient_policy(self, entry):
         """
