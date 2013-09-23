@@ -232,7 +232,7 @@ class KolabDaemon(object):
 
             # domains now is a list of tuples, we want the primary_domains
             primary_domains = []
-            for primary_domain, secondary_domains in domains:
+            for primary_domain in list(set(domains.values())):
                 primary_domains.append(primary_domain)
 
             # Now we can check if any changes happened.
