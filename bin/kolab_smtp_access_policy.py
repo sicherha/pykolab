@@ -799,7 +799,7 @@ class PolicyRequest(object):
             self.auth = Auth(sasl_domain)
 
         if verify_domain(sasl_domain):
-            if self.auth.domains.has_key(sasl_domain):
+            if not self.auth.domains == None and self.auth.domains.has_key(sasl_domain):
                 log.debug(
                         _("Using authentication domain %s instead of %s") % (
                                 self.auth.domains[sasl_domain],
