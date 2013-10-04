@@ -365,7 +365,7 @@ ServerAdminPwd = %(admin_pass)s
         fp.close()
 
         fp = open('/var/log/kolab/setup.out.log', 'w')
-        fp.write(stderrdata)
+        fp.write(stdoutdata)
         fp.close()
 
     log.debug(_("Setup DS stdout:"), level=8)

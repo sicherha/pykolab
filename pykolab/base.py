@@ -33,9 +33,10 @@ class Base(object):
 
         # Placeholder primary_domain => [secondary_domains]. Should be updated
         # on auth backend _connect().
-        self.secondary_domains = {}
+        self.domains = None
 
         self.imap = IMAP()
+        self.domain_rootdns = {}
 
     def config_get(self, key1, key2=None):
         if not key2 == None:

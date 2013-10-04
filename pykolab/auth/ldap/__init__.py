@@ -169,7 +169,11 @@ class LDAP(pykolab.base.Base):
             else:
                 base_dn = config_base_dn
 
-            auth_cache.set_entry(self.domain, base_dn)
+            try:
+                auth_cache.set_entry(self.domain, base_dn)
+            except Exception, errmsg:
+                log.error(_("Authentication cache failed: %r") % (errmsg))
+                pass
 
         user_filter = self.config_get_raw('user_filter') % ({'base_dn':base_dn})
 
@@ -216,7 +220,11 @@ class LDAP(pykolab.base.Base):
                 # to True!!
                 self.ldap.simple_bind_s(entry_dn, login[1])
                 retval = True
-                auth_cache.set_entry(_filter, entry_dn)
+                try:
+                    auth_cache.set_entry(_filter, entry_dn)
+                except Exception, errmsg:
+                    log.error(_("Authentication cache failed: %r") % (errmsg))
+                    pass
             except:
                 try:
                     log.debug(
@@ -393,7 +401,12 @@ class LDAP(pykolab.base.Base):
 
         kolab_filter = self._kolab_filter()
         recipient_address_attrs = self.config_get_list("mail_attributes")
-        result_attributes = recipient_address_attrs
+
+        result_attributes = []
+
+        for recipient_address_attr in recipient_address_attrs:
+            result_attributes.append(recipient_address_attr)
+
         result_attributes.append(self.config_get('unique_attribute'))
 
         _filter = "(|"
@@ -523,7 +536,10 @@ class LDAP(pykolab.base.Base):
         """
             List alias domain name spaces for the current domain name space.
         """
-        return [s for s, p in self.secondary_domains.iteritems() if p == self.domain]
+        if not self.domains == None:
+            return [s for s in self.domains.keys() if not s in self.domains.values()]
+        else:
+            return []
 
     def recipient_policy(self, entry):
         """
@@ -1284,14 +1300,14 @@ class LDAP(pykolab.base.Base):
 
         self.imap.connect(domain=self.domain)
 
-        if not self.imap.user_mailbox_exists(entry[result_attribute]):
+        if not self.imap.user_mailbox_exists(entry[result_attribute].lower()):
             folder = self.imap.user_mailbox_create(
                     entry[result_attribute],
                     entry[mailserver_attribute]
                 )
 
         else:
-            folder = "user%s%s" % (self.imap.separator,entry[result_attribute])
+            folder = "user%s%s" % (self.imap.separator,entry[result_attribute].lower())
 
         server = self.imap.user_mailbox_server(folder)
 
@@ -1933,6 +1949,12 @@ class LDAP(pykolab.base.Base):
         return _user_dn
 
     def _kolab_domain_root_dn(self, domain):
+        if not hasattr(self, 'domain_rootdns'):
+            self.domain_rootdns = {}
+
+        if self.domain_rootdns.has_key(domain):
+            return self.domain_rootdns[domain]
+
         self._bind()
 
         log.debug(_("Finding domain root dn for domain %s") % (domain), level=8)
@@ -1963,16 +1985,19 @@ class LDAP(pykolab.base.Base):
                     )
                 _domain_attrs = utils.normalize(_domain_attrs)
                 if _domain_attrs.has_key(domain_rootdn_attribute):
+                    self.domain_rootdns[domain] = _domain_attrs[domain_rootdn_attribute]
                     return _domain_attrs[domain_rootdn_attribute]
                 else:
                     if isinstance(_domain_attrs[domain_name_attribute], list):
                         domain = _domain_attrs[domain_name_attribute][0]
-
+                    else:
+                        domain = _domain_attrs[domain_name_attribute]
         else:
             if conf.has_option('ldap', 'base_dn'):
                 return conf.get('ldap', 'base_dn')
 
-        return utils.standard_root_dn(domain)
+        self.domain_rootdns[domain] = utils.standard_root_dn(domain)
+        return self.domain_rootdns[domain]
 
     def _kolab_filter(self):
         """
@@ -1991,7 +2016,7 @@ class LDAP(pykolab.base.Base):
 
         return _filter
 
-    def _list_domains(self):
+    def _list_domains(self, domain=None):
         """
             Find the domains related to this Kolab setup, and return a list of
             DNS domain names.
@@ -2018,6 +2043,9 @@ class LDAP(pykolab.base.Base):
 
         # If we haven't returned already, let's continue searching
         domain_filter = conf.get('ldap', 'domain_filter')
+
+        if not domain == None:
+            domain_filter = domain_filter.replace('*', domain)
 
         if domain_base_dn == None or domain_filter == None:
             return []
@@ -2492,6 +2520,14 @@ class LDAP(pykolab.base.Base):
             Use the priority ordered SUPPORTED_LDAP_CONTROLS and use
             the first one supported.
         """
+
+        supported_controls = conf.get_list('ldap', 'supported_controls')
+
+        if not supported_controls == None and not len(supported_controls) < 1:
+            for control_num in [(int)(x) for x in supported_controls]:
+                self.ldap.supported_controls.append(
+                        SUPPORTED_LDAP_CONTROLS[control_num]['func']
+                    )
 
         if len(self.ldap.supported_controls) < 1:
             for control_num in SUPPORTED_LDAP_CONTROLS.keys():
