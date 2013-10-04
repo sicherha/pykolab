@@ -25,7 +25,7 @@ import listener
 import logging
 import os
 import sys
-import univention_baseconfig
+from univention.config_registry import ConfigRegistry
 import univention.debug as ulog
 
 sys.path = [
@@ -147,13 +147,17 @@ def handler(*args, **kw):
                 else:
                     log.info("Entry deletion notification for %r does not have a mail server attribute specified." % (dn))
 
-                auth._auth._synchronize_callback(
-                        change_type = 'delete',
-                        previous_dn = None,
-                        change_number = None,
-                        dn = dn,
-                        entry = old
-                    )
+                cfg = ConfigRegistry()
+                cfg.load()
+
+                if cfg.is_true('mail/cyrus/mailbox/delete', True):
+                    auth._auth._synchronize_callback(
+                            change_type = 'delete',
+                            previous_dn = None,
+                            change_number = None,
+                            dn = dn,
+                            entry = old
+                        )
 
         elif isinstance(new, dict) and len(new.keys()) > 0:
             # Old is not a dict (or empty), so the entry is just created
