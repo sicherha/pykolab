@@ -47,7 +47,7 @@ def execute(*args, **kw):
 
     all_folders = []
 
-    for primary_domain,secondary_domains in domains:
+    for primary_domain in list(set(domains.values())):
         log.debug(_("Running for domain %s") % (primary_domain), level=8)
         auth.connect(primary_domain)
         start_time = time.time()
