@@ -53,6 +53,7 @@
             'kolab_addressbook',
             'kolab_auth',
             'kolab_config',
+            'kolab_files',
             'kolab_folders',
             'libkolab',
             'libcalendaring',
