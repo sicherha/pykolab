@@ -1311,6 +1311,22 @@ class LDAP(pykolab.base.Base):
 
         server = self.imap.user_mailbox_server(folder)
 
+        log.debug(
+                _("Entry %s attribute value: %r") % (
+                        mailserver_attribute,
+                        entry[mailserver_attribute]
+                    ),
+                level=8
+            )
+
+        log.debug(
+                _("imap.user_mailbox_server(%r) result: %r") % (
+                        folder,
+                        server
+                    ),
+                level=8
+            )
+
         if not entry[mailserver_attribute] == server:
             self.set_entry_attribute(entry, mailserver_attribute, server)
 

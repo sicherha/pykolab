@@ -166,7 +166,20 @@ class Cyrus(cyruslib.CYRUS):
         log.debug(_("Checking actual backend server for folder %s through annotations") % (mailfolder), level=8)
 
         if self.mbox.has_key(mailfolder):
-            return self.mbox[mailfolder]
+            log.debug(
+                    _(
+                            "Possibly reproducing the find " + \
+                            "mailfolder server answer from " + \
+                            "previously detected and stored " + \
+                            "annotation value: %r"
+                        ) % (
+                                self.mbox[mailfolder]
+                            ),
+                    level=8
+                )
+
+            if not self.mbox[mailfolder] == self.server:
+                return self.mbox[mailfolder]
 
         max_tries = 20
         num_try = 0
