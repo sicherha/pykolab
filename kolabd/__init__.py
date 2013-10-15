@@ -268,6 +268,10 @@ class KolabDaemon(object):
                 domain_auth[domain] = Process(domain)
                 domain_auth[domain].start()
 
+            for domain in removed_domains:
+                domain_auth[domain].terminate()
+                del domain_auth[domain]
+
     def reload_config(self, *args, **kw):
         pass
 
