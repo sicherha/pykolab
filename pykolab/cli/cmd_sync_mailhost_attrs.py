@@ -73,7 +73,49 @@ def execute(*args, **kw):
 
     domains = auth.list_domains()
 
-    for primary,secondaries in domains:
+    folders = imap.lm()
+
+    imap_domains_not_domains = []
+
+    for folder in folders:
+        if len(folder.split('@')) > 1 and not folder.startswith('DELETED'):
+            _folder_domain = folder.split('@')[-1]
+            if not _folder_domain in list(set(domains.keys() + domains.values())):
+                imap_domains_not_domains.append(folder.split('@')[-1])
+
+    imap_domains_not_domains = list(set(imap_domains_not_domains))
+
+    log.debug(_("Domains in IMAP not in LDAP: %r") % (imap_domains_not_domains), level=8)
+
+    if len(imap_domains_not_domains) > 0:
+        for domain in imap_domains_not_domains:
+            folders = []
+
+            folders.extend(imap.lm('shared/%%@%s' % (domain)))
+            folders.extend(imap.lm('user/%%@%s' % (domain)))
+
+            for folder in folders:
+                if conf.delete:
+                    if conf.dry_run:
+                        if not folder.split('/')[0] == 'shared':
+                            log.warning(_("No recipients for '%s' (would have deleted the mailbox if not for --dry-run)!") % ('/'.join(folder.split('/')[1:])))
+                        else:
+                            continue
+                    else:
+                        if not '/'.join(folder.split('/')[0]) == 'shared':
+                            log.info(_("Deleting mailbox '%s' because it has no recipients") % (folder))
+                            try:
+                                imap.dm(folder)
+                            except Exception, errmsg:
+                                log.error(_("An error occurred removing mailbox %r: %r") % (folder, errmsg))
+                        else:
+                            log.info(_("Not automatically deleting shared folder '%s'") % (folder))
+                else:
+                    log.warning(_("No recipients for '%s' (use --delete to delete)!") % ('/'.join(folder.split('/')[1:])))
+
+    for primary in list(set(domains.values())):
+        secondaries = [x for x in domains.keys() if domains[x] == primary]
+
         folders = []
 
         folders.extend(imap.lm('shared/%%@%s' % (primary)))
@@ -103,7 +145,10 @@ def execute(*args, **kw):
                         else:
                             if not '/'.join(folder.split('/')[0]) == 'shared':
                                 log.info(_("Deleting mailbox '%s' because it has no recipients") % (folder))
-                                imap.dm(folder)
+                                try:
+                                    imap.dm(folder)
+                                except Exception, errmsg:
+                                    log.error(_("An error occurred removing mailbox %r: %r") % (folder, errmsg))
                             else:
                                 log.info(_("Not automatically deleting shared folder '%s'") % (folder))
                     else:
