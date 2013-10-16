@@ -25,6 +25,7 @@ import pykolab
 
 from pykolab.imap import IMAP
 from pykolab.translate import _
+from pykolab import imap_utf7
 from pykolab import utils
 
 log = pykolab.getLogger('pykolab.cli')
@@ -93,6 +94,6 @@ def execute(*args, **kw):
         print >> sys.stderr, _("No such folder %r") % (folder)
 
     else:
-        folders = imap.lm(folder)
+        folders = imap.lm(imap_utf7.encode(folder))
         for folder in folders:
-            imap.set_metadata(folder, metadata_path, metadata_value)
+            imap.set_metadata(imap_utf7.decode(folder), metadata_path, metadata_value)
