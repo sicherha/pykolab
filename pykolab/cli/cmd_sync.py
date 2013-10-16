@@ -49,6 +49,7 @@ def execute(*args, **kw):
 
     for primary_domain in list(set(domains.values())):
         log.debug(_("Running for domain %s") % (primary_domain), level=8)
+        auth = Auth(primary_domain)
         auth.connect(primary_domain)
         start_time = time.time()
         auth.synchronize(mode='_paged_search')
