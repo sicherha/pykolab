@@ -52,6 +52,10 @@ def execute(*args, **kw):
 
     delete_folders = imap.list_folders(delete_folder)
 
+    if len(delete_folders) == 0:
+        print >> sys.stderr, _("No such folder(s)")
+        sys.exit(1)
+
     for delete_folder in delete_folders:
         imap.delete_mailfolder(delete_folder)
 
