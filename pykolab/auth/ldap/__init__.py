@@ -2099,10 +2099,10 @@ class LDAP(pykolab.base.Base):
 
             # TODO: Where we use associateddomain is actually configurable
             if type(domain_attrs[dna]) == list:
-                primary_domain = domain_attrs[dna].pop(0)
-                secondary_domains = domain_attrs[dna]
+                primary_domain = domain_attrs[dna].pop(0).lower()
+                secondary_domains = [x.lower() for x in domain_attrs[dna]]
             else:
-                primary_domain = domain_attrs[dna]
+                primary_domain = domain_attrs[dna].lower()
 
             domains.append((primary_domain,secondary_domains))
 

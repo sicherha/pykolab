@@ -241,9 +241,9 @@ class Auth(pykolab.base.Base):
             else:
                 self.domains = {}
                 for primary, secondaries in domains:
-                    self.domains[primary] = primary
+                    self.domains[primary.lower()] = primary.lower()
                     for secondary in secondaries:
-                        self.domains[secondary] = primary
+                        self.domains[secondary.lower()] = primary.lower()
 
         return self.domains
 
