@@ -115,14 +115,16 @@ def execute(*args, **kw):
         return
 
     annotations = [
-            "/vendor/horde/share-params,mailbox,string,backend,value.shared value.priv,a",
+            "/vendor/kolab/activesync,mailbox,string,backend,value.priv,r",
             "/vendor/kolab/color,mailbox,string,backend,value.shared value.priv,a",
+            "/vendor/kolab/displayname,mailbox,string,backend,value.shared value.priv,a",
             "/vendor/kolab/folder-test,mailbox,string,backend,value.shared value.priv,a",
             "/vendor/kolab/folder-type,mailbox,string,backend,value.shared value.priv,a",
             "/vendor/kolab/incidences-for,mailbox,string,backend,value.shared value.priv,a",
             "/vendor/kolab/pxfb-readable-for,mailbox,string,backend,value.shared value.priv,a",
+            "/vendor/kolab/uniqueid,mailbox,string,backend,value.shared value.priv,a",
             "/vendor/kolab/h-share-attr-desc,mailbox,string,backend,value.shared value.priv,a",
-            "/vendor/kolab/activesync,mailbox,string,backend,value.priv,r",
+            "/vendor/horde/share-params,mailbox,string,backend,value.shared value.priv,a",
             "/vendor/x-toltec/test,mailbox,string,backend,value.shared value.priv,a",
         ]
 
