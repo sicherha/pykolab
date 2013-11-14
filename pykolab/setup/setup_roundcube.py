@@ -94,7 +94,7 @@ def execute(*args, **kw):
             'kolab_auth.inc.php',
             'kolab_files.inc.php',
             'kolab_folders.inc.php',
-            'kolab.inc.php',
+            'libkolab.inc.php',
             'managesieve.inc.php',
             'owncloud.inc.php',
             'password.inc.php',
