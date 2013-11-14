@@ -8,6 +8,7 @@
 
     \$config['kolab_cache'] = true;
 
+    \$config['kolab_ssl_verify_host'] = false;
     \$config['kolab_ssl_verify_peer'] = false;
 
     \$config['kolab_use_subscriptions'] = true;
