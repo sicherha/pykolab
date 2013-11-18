@@ -584,6 +584,10 @@ ServerAdminPwd = %(admin_pass)s
             'localhost.localdomain',
             'localhost'
         ]
+
+    # De-duplicate attribute values before attempting to insert the object (#2205)
+    attrs['associateddomain'] = list(set(attrs['associateddomain']))
+
     attrs['aci'] = '(targetattr = "*") (version 3.0;acl "Read Access for %(domain)s Users";allow (read,compare,search)(userdn = "ldap:///%(rootdn)s??sub?(objectclass=*)");)' % (_input)
 
     # Add inetdomainbasedn in case the configured root dn is not the same as the
