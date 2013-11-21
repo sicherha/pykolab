@@ -584,6 +584,10 @@ ServerAdminPwd = %(admin_pass)s
             'localhost.localdomain',
             'localhost'
         ]
+
+    # De-duplicate attribute values before attempting to insert the object (#2205)
+    attrs['associateddomain'] = list(set(attrs['associateddomain']))
+
     attrs['aci'] = '(targetattr = "*") (version 3.0;acl "Read Access for %(domain)s Users";allow (read,compare,search)(userdn = "ldap:///%(rootdn)s??sub?(objectclass=*)");)' % (_input)
 
     # Add inetdomainbasedn in case the configured root dn is not the same as the
@@ -647,9 +651,10 @@ ServerAdminPwd = %(admin_pass)s
     aci = []
 
     if schema_error:
-        aci.append('(targetattr = "homePhone || preferredDeliveryMethod || jpegPhoto || postalAddress || carLicense || userPassword || mobile || displayName || description || labeledURI || homePostalAddress || postOfficeBox || registeredAddress || postalCode || photo || title || street || pager || o || l || initials || telephoneNumber || preferredLanguage || facsimileTelephoneNumber") (version 3.0;acl "Enable self write for common attributes";allow (read,compare,search,write)(userdn = "ldap:///self");)')
+        aci.append('(targetattr = "carLicense || description || displayName || facsimileTelephoneNumber || homePhone || homePostalAddress || initials || jpegPhoto || l || labeledURI || mobile || o || pager || photo || postOfficeBox || postalAddress || postalCode || preferredDeliveryMethod || preferredLanguage || registeredAddress || roomNumber || secretary || seeAlso || st || street || telephoneNumber || telexNumber || title || userCertificate || userPassword || userSMIMECertificate || x500UniqueIdentifier") (version 3.0; acl "Enable self write for common attributes"; allow (read,compare,search,write)(userdn = "ldap:///self");)')
     else:
-        aci.append('(targetattr = "homePhone || preferredDeliveryMethod || jpegPhoto || postalAddress || carLicense || userPassword || mobile || displayName || kolabDelegate || description || labeledURI || homePostalAddress || postOfficeBox || registeredAddress || postalCode || photo || title || street || kolabInvitationPolicy || pager || o || l || initials || kolabAllowSMTPSender || telephoneNumber || preferredLanguage || facsimileTelephoneNumber") (version 3.0;acl "Enable self write for common attributes";allow (read,compare,search,write)(userdn = "ldap:///self");)')
+        aci.append('(targetattr = "carLicense || description || displayName || facsimileTelephoneNumber || homePhone || homePostalAddress || initials || jpegPhoto || l || labeledURI || mobile || o || pager || photo || postOfficeBox || postalAddress || postalCode || preferredDeliveryMethod || preferredLanguage || registeredAddress || roomNumber || secretary || seeAlso || st || street || telephoneNumber || telexNumber || title || userCertificate || userPassword || userSMIMECertificate || x500UniqueIdentifier || kolabDelegate || kolabInvitationPolicy || kolabAllowSMTPSender") (version 3.0; acl "Enable self write for common attributes"; allow (read,compare,search,write)(userdn = "ldap:///self");)')
+
 
     aci.append('(targetattr = "*") (version 3.0;acl "Directory Administrators Group";allow (all)(groupdn = "ldap:///cn=Directory Administrators,%(rootdn)s" or roledn = "ldap:///cn=kolab-admin,%(rootdn)s");)' % (_input))
     aci.append('(targetattr="*")(version 3.0; acl "Configuration Administrators Group"; allow (all) groupdn="ldap:///cn=Configuration Administrators,ou=Groups,ou=TopologyManagement,o=NetscapeRoot";)')

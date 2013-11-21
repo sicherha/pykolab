@@ -19,6 +19,7 @@ if not hasattr(conf, 'defaults'):
 API_HOSTNAME = "localhost"
 API_SCHEME = "http"
 API_PORT = 80
+API_SSL = False
 API_BASE = "/kolab-webadmin/api/"
 
 kolab_wap_url = conf.get('kolab_wap', 'api_url')
@@ -27,6 +28,10 @@ if not kolab_wap_url == None:
     result = urlparse(kolab_wap_url)
 else:
     result = None
+
+if hasattr(result, 'scheme') and result.scheme == 'https':
+    API_SSL = True
+    API_PORT = 443
 
 if hasattr(result, 'hostname'):
     API_HOSTNAME = result.hostname
@@ -40,8 +45,6 @@ if hasattr(result, 'path'):
 session_id = None
 
 conn = None
-
-from connect import connect
 
 def authenticate(username=None, password=None, domain=None):
     global session_id
@@ -71,7 +74,10 @@ def connect():
     global conn
 
     if conn == None:
-        conn = httplib.HTTPConnection(API_HOSTNAME, API_PORT)
+        if API_SSL:
+            conn = httplib.HTTPSConnection(API_HOSTNAME, API_PORT)
+        else:
+            conn = httplib.HTTPConnection(API_HOSTNAME, API_PORT)
         conn.connect()
 
     return conn
