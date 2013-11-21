@@ -18,6 +18,7 @@
 #
 
 import cyruslib
+import sys
 import time
 
 from urlparse import urlparse
@@ -323,10 +324,16 @@ class Cyrus(cyruslib.CYRUS):
 
             target_server = self.find_mailfolder_server(target_folder)
 
-            if not target_server == self.server:
-                self.xfer(undelete_folder,target_server)
+            if hasattr(conf,'dry_run') and not conf.dry_run:
+                if not target_server == self.server:
+                    self.xfer(undelete_folder,target_server)
 
-            self.rename(undelete_folder,target_folder)
+                self.rename(undelete_folder,target_folder)
+            else:
+                if not target_server == self.server:
+                    print >> sys.stdout, _("Would have transfered %s from %s to %s") % (undelete_folder, self.server, target_server)
+
+                print >> sys.stdout, _("Would have renamed %s to %s") % (undelete_folder, target_folder)
 
     def parse_mailfolder(self, mailfolder):
         """

@@ -30,6 +30,14 @@ conf = pykolab.getConf()
 def __init__():
     commands.register('undelete_mailbox', execute, description=description())
 
+def cli_options():
+    my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
+    my_option_group.add_option( '--dry-run',
+                                dest    = "dry_run",
+                                action  = "store_true",
+                                default = False,
+                                help    = _("Do not actually execute, but state what would have been executed."))
+
 def description(*args, **kw):
     return _("Recover mailboxes previously deleted.")
 
