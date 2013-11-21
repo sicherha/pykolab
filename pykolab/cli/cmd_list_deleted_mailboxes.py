@@ -62,10 +62,8 @@ def execute(*args, **kw):
     domains = auth.list_domains()
 
     folders = []
-    for primary,secondaries in domains:
-        folders.extend(imap.lm("DELETED/*@%s" % (primary)))
-        for secondary in secondaries:
-            folders.extend(imap.lm("DELETED/*@%s" % (secondary)))
+    for domain in list(set(domains.keys())):
+        folders.extend(imap.lm("DELETED/*@%s" % (domain)))
 
     folders.extend(imap.lm("DELETED/*"))
 
