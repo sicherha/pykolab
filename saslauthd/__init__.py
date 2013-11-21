@@ -30,6 +30,7 @@ from ConfigParser import SafeConfigParser
 
 import os
 import shutil
+import sys
 import time
 import traceback
 
@@ -86,11 +87,15 @@ class SASLAuthDaemon(object):
 
         conf.finalize_conf()
 
-        utils.ensure_directory(
-                os.path.dirname(conf.pidfile),
-                conf.process_username,
-                conf.process_groupname
-            )
+        try:
+            utils.ensure_directory(
+                    os.path.dirname(conf.pidfile),
+                    conf.process_username,
+                    conf.process_groupname
+                )
+        except Exception, errmsg:
+            log.error(_("Could not create %r: %r") % (os.path.dirname(conf.pidfile), errmsg))
+            sys.exit(1)
 
         self.thread_count = 0
 
@@ -167,7 +172,26 @@ class SASLAuthDaemon(object):
         s.listen(5)
 
         while 1:
-            (clientsocket, address) = s.accept()
+            max_tries = 20
+            cur_tries = 0
+            bound = False
+            while not bound:
+                cur_tries += 1
+                try:
+                    (clientsocket, address) = s.accept()
+                    bound = True
+                except Exception, errmsg:
+                    log.error(
+                            _("kolab-saslauthd could not accept " + \
+                            "connections on socket: %r") % (errmsg)
+                        )
+
+                    if cur_tries >= max_tries:
+                        log.fatal(_("Maximum tries exceeded, exiting"))
+                        sys.exit(1)
+
+                    time.sleep(1)
+
             received = clientsocket.recv(4096)
 
             login = []
