@@ -1000,6 +1000,31 @@ class PolicyRequest(object):
 
         sender_verified = False
 
+        if self.sender == None:
+            # Trusted host?
+            if not hasattr(self, 'client_address') or \
+                    self.client_address == "" or \
+                    self.client_address == None:
+
+                # Nothing to compare to.
+                return False
+
+            try:
+                import netaddr
+
+                networks = conf.get_list(
+                        'kolab_smtp_access_policy',
+                        'empty_sender_hosts'
+                    )
+
+                trusted = False
+                for network in networks:
+                    if netaddr.IPNetwork(self.client_address) in netaddr.IPNetwork(network):
+                        return True
+
+            except ImportError, errmsg:
+                return False
+
         if not cache == False:
             records = cache_select(
                     sender=self.sender,
@@ -1483,17 +1508,23 @@ if __name__ == "__main__":
             sender_allowed = False
             recipient_allowed = False
 
-            if conf.verify_sender:
-                sender_allowed = policy_requests[instance].verify_sender()
-            else:
-                sender_allowed = True
+            try:
+                if conf.verify_sender:
+                    sender_allowed = policy_requests[instance].verify_sender()
+                else:
+                    sender_allowed = True
 
-            if conf.verify_recipient:
-                recipient_allowed = \
-                        policy_requests[instance].verify_recipients()
+                if conf.verify_recipient:
+                    recipient_allowed = \
+                            policy_requests[instance].verify_recipients()
 
-            else:
-                recipient_allowed = True
+                else:
+                    recipient_allowed = True
+
+            except Exception, errmsg:
+                import traceback
+                log.error(_("Unhandled exception caught: %r") % (errmsg))
+                log.error(traceback.format_exc())
 
             if not sender_allowed:
                 reject(_("Sender access denied"))
