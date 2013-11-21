@@ -427,24 +427,33 @@ class IMAP(object):
 
         if not self.domain == None:
             if conf.has_option(self.domain, "autocreate_folders"):
-                    _additional_folders = conf.get_raw(
-                            self.domain,
-                            "autocreate_folders"
-                        )
+                _additional_folders = conf.get_raw(
+                        self.domain,
+                        "autocreate_folders"
+                    )
 
-                    additional_folders = conf.plugins.exec_hook(
-                            "create_user_folders",
-                            kw={
-                                    'folder': folder_name,
-                                    'additional_folders': _additional_folders
-                                }
-                        )
+            elif conf.has_option('kolab', "autocreate_folders"):
+                _additional_folders = conf.get_raw(
+                        'kolab',
+                        "autocreate_folders"
+                    )
+            else:
+                _additional_folders = {}
 
-                    if not additional_folders == None:
-                        self.user_mailbox_create_additional_folders(
-                                mailbox_base_name,
-                                additional_folders
-                            )
+            additional_folders = conf.plugins.exec_hook(
+                    "create_user_folders",
+                    kw={
+                            'folder': folder_name,
+                            'additional_folders': _additional_folders
+                        }
+                )
+
+            if not additional_folders == None:
+                self.user_mailbox_create_additional_folders(
+                        mailbox_base_name,
+                        additional_folders
+                    )
+
             if conf.has_option(self.domain, "sieve_mgmt"):
                 sieve_mgmt_enabled = conf.get(self.domain, 'sieve_mgmt')
                 if utils.true_or_false(sieve_mgmt_enabled):
