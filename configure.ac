@@ -3,7 +3,7 @@ AC_SUBST([RELEASE], 1)
 
 AC_CONFIG_SRCDIR(pykolab/constants.py.in)
 
-ALL_LINGUAS="de es fr nl"
+ALL_LINGUAS="ach af af_ZA ak de de_DE es fr nl"
 
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
