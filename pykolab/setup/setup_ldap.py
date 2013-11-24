@@ -587,6 +587,8 @@ ServerAdminPwd = %(admin_pass)s
 
     # De-duplicate attribute values before attempting to insert the object (#2205)
     attrs['associateddomain'] = list(set(attrs['associateddomain']))
+    attrs['associateddomain'].pop(attrs['associateddomain'].index(_input['domain']))
+    attrs['associateddomain'] = [ _input['domain'] ] + attrs['associateddomain']
 
     attrs['aci'] = '(targetattr = "*") (version 3.0;acl "Read Access for %(domain)s Users";allow (read,compare,search)(userdn = "ldap:///%(rootdn)s??sub?(objectclass=*)");)' % (_input)
 
