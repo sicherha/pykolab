@@ -43,7 +43,7 @@ def execute(*args, **kw):
     schema_files = []
     for root, directories, filenames in os.walk('/usr/share/doc/'):
         for filename in filenames:
-            if filename.startswith('syncroton') and filename.endswith('.sql'):
+            if filename.startswith('mysql.initial') and filename.endswith('.sql'):
                 schema_filepath = os.path.join(root,filename)
                 if not schema_filepath in schema_files:
                     schema_files.append(schema_filepath)

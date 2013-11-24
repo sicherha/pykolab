@@ -142,11 +142,6 @@ def execute(*args, **kw):
                 if not schema_filepath in schema_files:
                     schema_files.append(schema_filepath)
 
-            if filename.startswith('horde_cache') and filename.endswith('.sql'):
-                schema_filepath = os.path.join(root,filename)
-                if not schema_filepath in schema_files:
-                    schema_files.append(schema_filepath)
-
     if os.path.isdir('/usr/share/roundcubemail'):
         rcpath = '/usr/share/roundcubemail/'
     elif os.path.isdir('/usr/share/roundcube'):
