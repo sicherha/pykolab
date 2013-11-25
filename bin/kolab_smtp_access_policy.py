@@ -1332,10 +1332,17 @@ def hold(message, policy_request=None):
 
 def permit(message, policy_request=None):
     log.info(_("Returning action PERMIT: %s") % (message))
+
     if hasattr(policy_request, 'sasl_username'):
-        print "action=PREPEND Sender: %s\naction=PERMIT\n\n" % (policy_request.sasl_username)
-    else:
-        print "action=PERMIT\n\n"
+        sender = conf.get('kolab_smtp_access_policy', 'sender_header')
+        if utils.true_or_false(sender):
+            print "action=PREPEND Sender: %s" % (policy_request.sasl_username)
+
+        xsender = conf.get('kolab_smtp_access_policy', 'xsender_header')
+        if utils.true_or_false(xsender):
+            print "action=PREPEND X-Sender: %s" % (policy_request.sasl_username)
+
+    print "action=PERMIT\n\n"
     sys.exit(0)
 
 def reject(message, policy_request=None):
