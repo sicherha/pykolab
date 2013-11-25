@@ -19,7 +19,6 @@
 
 import datetime
 import icalendar
-import json
 import os
 import pytz
 import random
@@ -29,6 +28,7 @@ from urlparse import urlparse
 import urllib
 
 from email import message_from_string
+from email.parser import Parser
 from email.utils import formataddr
 from email.utils import getaddresses
 
@@ -125,10 +125,11 @@ def execute(*args, **kw):
             os.rename(filepath, new_filepath)
             filepath = new_filepath
 
-    _message = json.load(open(filepath, 'r'))
-    log.debug("Loaded message %r" % (_message), level=9)
-    message = message_from_string(str(_message['data']))
-    recipients = _message['to']
+    # parse message headers
+    # @TODO: make sure we can use True as the 2nd argument here
+    message = Parser().parse(open(filepath, 'r'), True)
+
+    recipients = [address for displayname,address in getaddresses(message.get_all('X-Kolab-To'))]
 
     any_itips = False
     any_resources = False
@@ -449,7 +450,6 @@ def itip_events_from_message(message):
     """
         Obtain the iTip payload from email.message <message>
     """
-
     # Placeholder for any itip_events found in the message.
     itip_events = []
 
@@ -461,7 +461,6 @@ def itip_events_from_message(message):
     # document MUST have (...)" but does not state whether an iTip message must
     # therefore also be multipart.
     if message.is_multipart():
-
         # Check each part
         for part in message.walk():
 

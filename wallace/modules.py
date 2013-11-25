@@ -17,7 +17,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-import json
 import os
 import sys
 import time
@@ -28,6 +27,7 @@ from email.mime.base import MIMEBase
 from email.mime.message import MIMEMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.parser import Parser
 from email.utils import COMMASPACE
 from email.utils import formatdate
 from email.utils import formataddr
@@ -120,8 +120,9 @@ def cb_action_HOLD(module, filepath):
 
 def cb_action_DEFER(module, filepath):
     log.info(_("Deferring message in %s (by module %s)") % (filepath, module))
-    message = json.load(open(filepath, 'r'))
-    message = message_from_string(message['data'])
+
+    # parse message headers
+    message = Parser().parse(open(filepath, 'r'), True)
 
     internal_time = parsedate_tz(message.__getitem__('Date'))
     internal_time = time.mktime(internal_time[:9]) + internal_time[9]
@@ -163,14 +164,14 @@ def cb_action_DEFER(module, filepath):
 def cb_action_REJECT(module, filepath):
     log.info(_("Rejecting message in %s (by module %s)") % (filepath, module))
 
-    _message = json.load(open(filepath, 'r'))
-    message = message_from_string(_message['data'])
+    # parse message headers
+    message = Parser().parse(open(filepath, 'r'), True)
 
     envelope_sender = getaddresses(message.get_all('From', []))
 
     recipients = getaddresses(message.get_all('To', [])) + \
             getaddresses(message.get_all('Cc', [])) + \
-            _message['to']
+            getaddresses(message.get_all('X-Kolab-To', []))
 
     _recipients = []
 
@@ -221,6 +222,12 @@ X-Wallace-Result: REJECT
     part.add_header("Content-Description", "Delivery Report")
     msg.attach(part)
 
+    # @TODO: here I'm not sure message will contain the whole body
+    # when we used headersonly argument of Parser().parse() above
+    # delete X-Kolab-* headers
+    del message['X-Kolab-From']
+    del message['X-Kolab-To']
+
     part = MIMEMessage(message)
     part.add_header("Content-Description", "Undelivered Message")
     msg.attach(part)
@@ -251,23 +258,19 @@ X-Wallace-Result: REJECT
 
 def cb_action_ACCEPT(module, filepath):
     log.info(_("Accepting message in %s (by module %s)") % (filepath, module))
-    try:
-        _message = json.load(open(filepath, 'r'))
-        log.debug(_(u"Message JSON loaded: %r") % (_message), level=9)
-    except Exception, errmsg:
-        log.error(_("Error loading message: %r") % (errmsg))
-        return
-
-    try:
-        message = message_from_string(str(_message['data']).replace('\x00',''))
-    except Exception, errmsg:
-        log.error(_("Error parsing message: %r") % (errmsg))
-        return
 
     log.debug(_("Accepting message in: %r") %(filepath), level=8)
 
-    sender = _message['from']
-    recipients = _message['to']
+    # parse message headers
+    message = Parser().parse(open(filepath, 'r'), True)
+
+    sender = [formataddr(x) for x in getaddresses(message.get_all('X-Kolab-From', []))]
+    recipients = [formataddr(x) for x in getaddresses(message.get_all('X-Kolab-To', []))]
+    log.debug(_("recipients: %r") % (recipients))
+
+    # delete X-Kolab-* headers
+    del message['X-Kolab-From']
+    del message['X-Kolab-To']
 
     smtp = smtplib.SMTP("localhost", 10027)
 
@@ -283,6 +286,7 @@ def cb_action_ACCEPT(module, filepath):
                 #   come from (TODO)
                 # - Third, a character return is inserted somewhere. It
                 #   divides the body from the headers - and we don't like (TODO)
+                # @TODO: check if we need Parser().parse() to load the whole message
                 message.as_string()
             )
 

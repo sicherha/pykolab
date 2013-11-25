@@ -21,7 +21,6 @@ import asyncore
 import binascii
 from distutils import version
 import grp
-import json
 import multiprocessing
 import os
 import pwd
@@ -246,24 +245,25 @@ class WallaceDaemon(object):
             s.shutdown(1)
             s.close()
 
+    def data_header(self, mailfrom, rcpttos):
+        COMMASPACE = ', '
+        return "X-Kolab-From: " + mailfrom + "\r\n" + \
+                "X-Kolab-To: " + COMMASPACE.join(rcpttos) + "\r\n"
+
     def process_message(self, peer, mailfrom, rcpttos, data):
         """
             We have retrieved the message. This should be as fast as possible,
             and not ever block.
         """
-        inheaders = 1
 
-        data = json.dumps(
-                {
-                        'from': mailfrom,
-                        'to': rcpttos,
-                        'data': data
-                   },
-                ensure_ascii=True,
-                indent=4
-            )
+        header = self.data_header(mailfrom, rcpttos)
 
         (fp, filename) = tempfile.mkstemp(dir="/var/spool/pykolab/wallace/")
+
+        # @TODO: and add line separator (\n or \r\n?)
+        # we should make sure there's only one line separator between
+        # kolab headers and the original message (data)
+        os.write(fp, header);
         os.write(fp, data)
         os.close(fp)
 

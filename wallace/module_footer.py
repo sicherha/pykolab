@@ -17,7 +17,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-import json
 import os
 import tempfile
 import time
@@ -25,6 +24,7 @@ import time
 from email import message_from_string
 from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
+from email.parser import Parser
 from email.utils import formataddr
 from email.utils import getaddresses
 
@@ -70,8 +70,9 @@ def execute(*args, **kw):
     os.rename(filepath, new_filepath)
     filepath = new_filepath
 
-    _message = json.load(open(filepath, 'r'))
-    message = message_from_string("%s" % (str(_message['data'])))
+    # parse message headers
+    # @TODO: make sure we can use True as the 2nd argument here
+    message = Parser().parse(open(filepath, 'r'), True)
 
     # Possible footer answers are limited to ACCEPT only
     answers = [ 'ACCEPT' ]
@@ -162,10 +163,8 @@ def execute(*args, **kw):
         log.debug("Footer attached.")
         message.add_header("X-Wallace-Footer", "YES")
 
-    _message['data'] = "%s" % (str(message.as_string()))
-
     (fp, new_filepath) = tempfile.mkstemp(dir="/var/spool/pykolab/wallace/footer/ACCEPT")
-    os.write(fp, json.dumps(_message))
+    os.write(fp, message.as_string())
     os.close(fp)
     os.unlink(filepath)
 
