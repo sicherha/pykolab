@@ -115,14 +115,14 @@
     \$config['log_date_format'] = 'd-M-Y H:i:s,u O';
     \$config['syslog_id'] = 'roundcube';
     \$config['syslog_facility'] = LOG_USER;
-    \$config['smtp_log'] = true;
+    \$config['smtp_log'] = false;
     \$config['log_logins'] = true;
-    \$config['log_session'] = true;
-    \$config['sql_debug'] = true;
-    \$config['memcache_debug'] = true;
-    \$config['imap_debug'] = true;
-    \$config['ldap_debug'] = true;
-    \$config['smtp_debug'] = true;
+    \$config['log_session'] = false;
+    \$config['sql_debug'] = false;
+    \$config['memcache_debug'] = false;
+    \$config['imap_debug'] = false;
+    \$config['ldap_debug'] = false;
+    \$config['smtp_debug'] = false;
 
     \$config['skin'] = 'larry';
     \$config['skin_include_php'] = false;
@@ -205,5 +205,10 @@
     \$config['autocomplete_single'] = true;
 
     \$config['htmleditor'] = 0;
+
+    \$config['kolab_http_request'] = Array(
+            'ssl_verify_host' => false,
+            'ssl_verify_peer' => false,
+        );
 
 ?>
