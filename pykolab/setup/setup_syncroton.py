@@ -42,11 +42,38 @@ def description():
 def execute(*args, **kw):
     schema_files = []
     for root, directories, filenames in os.walk('/usr/share/doc/'):
-        for filename in filenames:
-            if filename.startswith('mysql.initial') and filename.endswith('.sql'):
-                schema_filepath = os.path.join(root,filename)
-                if not schema_filepath in schema_files:
-                    schema_files.append(schema_filepath)
+        for directory in directories:
+            if directory.startswith("kolab-syncroton"):
+                for root, directories, filenames in os.walk(os.path.join('/usr/share/doc/', directory)):
+                    for filename in filenames:
+                        if filename.startswith('mysql.initial') and filename.endswith('.sql'):
+                            schema_filepath = os.path.join(root,filename)
+                            if not schema_filepath in schema_files:
+                                schema_files.append(schema_filepath)
+
+                break
+        break
+
+    if not os.path.isfile('/tmp/kolab-setup-my.cnf'):
+        utils.multiline_message(
+                """Please supply the MySQL root password"""
+            )
+
+        mysql_root_password = utils.ask_question(
+                _("MySQL root password"),
+                password=True
+            )
+
+        data = """
+[mysql]
+user=root
+password='%s'
+""" % (mysql_root_password)
+
+        fp = open('/tmp/kolab-setup-my.cnf', 'w')
+        os.chmod('/tmp/kolab-setup-my.cnf', 0600)
+        fp.write(data)
+        fp.close()
 
     for schema_file in schema_files:
         p1 = subprocess.Popen(['cat', schema_file], stdout=subprocess.PIPE)
