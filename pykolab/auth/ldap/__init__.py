@@ -214,7 +214,7 @@ class LDAP(pykolab.base.Base):
 
             try:
                 log.debug(_("Binding with user_dn %s and password %s")
-                    % (entry_dn, login[1]))
+                    % (entry_dn, '*' * len(login[1])))
 
                 # Needs to be synchronous or succeeds and continues setting retval
                 # to True!!
@@ -238,7 +238,7 @@ class LDAP(pykolab.base.Base):
         else:
             try:
                 log.debug(_("Binding with user_dn %s and password %s")
-                    % (entry_dn, login[1]))
+                    % (entry_dn, '*' * len(login[1])))
 
                 # Needs to be synchronous or succeeds and continues setting retval
                 # to True!!
