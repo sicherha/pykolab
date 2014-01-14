@@ -1277,7 +1277,13 @@ class LDAP(pykolab.base.Base):
         if mailserver_attribute == None:
             mailserver_attribute = 'mailhost'
 
+        mailserver_attribute = mailserver_attribute.lower()
+
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+        if result_attribute == None:
+            result_attribute = 'mail'
+
+        result_attribute = result_attribute.lower()
 
         if not entry.has_key(mailserver_attribute):
             entry[mailserver_attribute] = \
