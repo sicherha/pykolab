@@ -1757,7 +1757,17 @@ class LDAP(pykolab.base.Base):
         """
             A user entry as part of the initial search result set.
         """
+        mailserver_attribute = self.config_get('mailserver_attribute')
+        if mailserver_attribute == None:
+            mailserver_attribute = 'mailhost'
+
+        mailserver_attribute = mailserver_attribute.lower()
+
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+        if result_attribute == None:
+            result_attribute = 'mail'
+
+        result_attribute = result_attribute.lower()
 
         old_canon_attr = None
 
@@ -1792,11 +1802,21 @@ class LDAP(pykolab.base.Base):
 
         self.imap.connect(domain=self.domain)
 
+        server = None
+
+        if not entry.has_key(mailserver_attribute):
+            entry[mailserver_attribute] = self.get_entry_attribute(entry, mailserver_attribute)
+
+        if entry[mailserver_attribute] == "" or entry[mailserver_attribute] == None:
+            server = None
+        else:
+            server = entry[mailserver_attribute].lower()
+
         if entry.has_key(result_attribute) and \
                 not entry.has_key(result_attribute) == None:
 
             if not self.imap.user_mailbox_exists(entry[result_attribute]):
-                folder = self.imap.user_mailbox_create(entry[result_attribute])
+                folder = self.imap.user_mailbox_create(entry[result_attribute], server=server)
                 server = self.imap.user_mailbox_server(folder)
             else:
                 folder = "user%s%s" % (
