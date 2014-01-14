@@ -559,6 +559,10 @@ class IMAP(object):
             for _shared in shared:
                 _tests.append(_shared)
 
+        log.debug(_("Using the following tests for folder subscriptions:"), level=8)
+        for _test in _tests:
+            log.debug(_("    %r") % (_test), level=8)
+
         for _folder in self.lm():
             log.debug(_("Folder %s") % (_folder), level=8)
 
@@ -571,18 +575,12 @@ class IMAP(object):
                 if _folder.startswith(_test):
                     _subscribe = False
 
-                    # If the namespace prefix for "shared" is "", we need to
-                    # catch this.
-                    for __test in _tests:
-                        if _subscribe:
-                            continue
-
-                        if _folder.startswith(__test):
-                            _subscribe = True
-
             if _subscribe:
                 log.debug(_("Subscribing %s to folder %s") % (folder, _folder), level=8)
-                self.subscribe(_folder)
+                try:
+                    self.subscribe(_folder)
+                except Exception, errmsg:
+                    log.error(_("Subscribing %s to folder %s failed: %r") % (folder, _folder, errmsg))
 
         self.logout()
         self.connect(domain=self.domain)
@@ -647,7 +645,9 @@ class IMAP(object):
             log.warning(_("Moving INBOX folder %s won't succeed as target folder %s already exists") % (old_name,new_name))
 
     def user_mailbox_server(self, mailbox):
-        return self.imap.find_mailfolder_server(mailbox.lower())
+        server = self.imap.find_mailfolder_server(mailbox.lower()).lower()
+        log.debug(_("Server for mailbox %r is %r") % (mailbox, server), level=8)
+        return server
 
     def has_folder(self, folder):
         """
