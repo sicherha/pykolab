@@ -17,6 +17,7 @@ PYTHON_FILES = \
 	kolabd.py \
 	saslauthd.py \
 	setup-kolab.py \
+	ucs/listener.py \
 	wallace.py
 
 EXTRA_DIST = \
