@@ -628,17 +628,17 @@ class IMAP(object):
     def user_mailbox_quota(self, mailbox_quota):
         pass
 
-    def user_mailbox_rename(self, old_name, new_name):
+    def user_mailbox_rename(self, old_name, new_name, partition=None):
         old_name = "user%s%s" % (self.get_separator(),old_name)
         new_name = "user%s%s" % (self.get_separator(),new_name)
 
-        if old_name == new_name:
+        if old_name == new_name and partition == None:
             return
 
-        if not self.has_folder(new_name):
+        if not self.has_folder(new_name) or not partition == None:
             log.info(_("Renaming INBOX from %s to %s") % (old_name,new_name))
             try:
-                self.imap.rename(old_name,new_name)
+                self.imap.rename(old_name,new_name,partition)
             except:
                 log.error(_("Could not rename INBOX folder %s to %s") % (old_name,new_name))
         else:

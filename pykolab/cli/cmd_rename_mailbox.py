@@ -44,6 +44,10 @@ def execute(*args, **kw):
         source_folder = conf.cli_args.pop(0)
         try:
             target_folder = conf.cli_args.pop(0)
+            try:
+                partition = conf.cli_args.pop(0)
+            except IndexError, errmsg:
+                partition = None
         except IndexError, errmsg:
             print >> sys.stderr, _("No target mailbox name specified")
     except IndexError, errmsg:
@@ -66,5 +70,5 @@ def execute(*args, **kw):
         print >> sys.stderr, _("Target folder %r already exists") % (target_folder)
         sys.exit(1)
 
-    imap.user_mailbox_rename(source_folder.replace('user/',''), target_folder.replace('user/',''))
+    imap.user_mailbox_rename(source_folder.replace('user/',''), target_folder.replace('user/',''), partition=partition)
 
