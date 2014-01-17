@@ -425,6 +425,18 @@ class IMAP(object):
 
         self.create_folder(folder_name, server)
 
+        # In a Cyrus IMAP Murder topology, wait for the murder to have settled
+        if hasattr(self.imap, 'murder') and self.imap.murder:
+            self.disconnect()
+            self.connect()
+
+        created = False
+        while not created:
+            created = self.has_folder(folder_name)
+            if not created:
+                log.info(_("Waiting for the Cyrus IMAP Murder to settle..."))
+                time.sleep(0.5)
+
         if not self.domain == None:
             if conf.has_option(self.domain, "autocreate_folders"):
                 _additional_folders = conf.get_raw(
