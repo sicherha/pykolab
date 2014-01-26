@@ -305,7 +305,13 @@ class LDAP(pykolab.base.Base):
             return entry_id['dn']
 
         unique_attribute = self.config_get('unique_attribute')
-        base_dn = self.config_get('base_dn')
+        config_base_dn = self.config_get('base_dn')
+        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
+
+        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+            base_dn = ldap_base_dn
+        else:
+            base_dn = config_base_dn
 
         _search = self.ldap.search_ext(
                 base_dn,
@@ -349,9 +355,18 @@ class LDAP(pykolab.base.Base):
 
         self._bind()
 
-        #print entry_id
+        log.debug(_("Entry ID: %r") % (entry_id), level=9)
         entry_dn = self.entry_dn(entry_id)
-        #print entry_dn
+        log.debug(_("Entry DN: %r") % (entry_dn), level=9)
+
+        log.debug(
+                _("ldap search: (%r, %r, filterstr='(objectclass=*)', attrlist=[ 'dn' ] + %r") % (
+                        entry_dn,
+                        ldap.SCOPE_BASE,
+                        attributes
+                    ),
+                level=9
+            )
 
         _search = self.ldap.search_ext(
                 entry_dn,
