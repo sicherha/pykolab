@@ -267,6 +267,9 @@ class KolabDaemon(object):
             for domain in added_domains:
                 domain_auth[domain] = Process(domain)
                 domain_auth[domain].start()
+                # Pause or hammer your LDAP server to death
+                if len(added_domains) >= 5:
+                    time.sleep(10)
 
             for domain in removed_domains:
                 domain_auth[domain].terminate()
