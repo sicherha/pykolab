@@ -207,7 +207,7 @@ class IMAP(object):
             else:
                 log.warning(_("Called imap.disconnect() on a server that we had no connection to."))
 
-    def create_folder(self, folder_path, server=None):
+    def create_folder(self, folder_path, server=None, partition=None):
         folder_path = self.folder_utf7(folder_path)
 
         if not server == None:
@@ -215,7 +215,7 @@ class IMAP(object):
                 self.connect(server=server)
 
             try:
-                self._imap[server].cm(folder_path)
+                self._imap[server].cm(folder_path, partition=partition)
                 return True
             except:
                 log.error(
@@ -228,7 +228,7 @@ class IMAP(object):
 
         else:
             try:
-                self.imap.cm(folder_path)
+                self.imap.cm(folder_path, partition=partition)
                 return True
             except:
                 log.error(_("Could not create folder %r") % (folder_path))
@@ -616,6 +616,13 @@ class IMAP(object):
                         folder_name,
                         additional_folders[additional_folder]['quota']
                     )
+
+            if additional_folders[additional_folder].has_key("partition"):
+                partition = additional_folders[additional_folder]["partition"]
+                try:
+                    self.imap.rename(folder_name, folder_name, partition)
+                except:
+                    log.error(_("Could not rename %s to reside on partition %s") % (folder_name, partition))
 
     def user_mailbox_delete(self, mailbox_base_name):
         """

@@ -42,6 +42,14 @@ def cli_options():
             help    = _("Set metadata for folder to ANNOTATION=VALUE")
         )
 
+    my_option_group.add_option(
+            '--partition',
+            dest    = "partition",
+            action  = "store",
+            default = None,
+            help    = _("Create folder on PARTITION.")
+        )
+
 def description():
     return """Create a mailbox or sub-folder of an existing mailbox."""
 
@@ -63,7 +71,7 @@ def execute(*args, **kw):
     imap = IMAP()
     imap.connect()
 
-    imap.create_folder(mailbox)
+    imap.create_folder(mailbox, partition=conf.partition)
 
     if not conf.metadata == None:
         imap.set_metadata(mailbox, conf.metadata.split('=')[0], conf.metadata.split('=')[1])
