@@ -578,7 +578,7 @@ class LDAP(pykolab.base.Base):
             secondary_mail_attribute = mail_attributes[1]
 
         daemon_rcpt_policy = self.config_get('daemon_rcpt_policy')
-        if not utils.true_or_false(daemon_rcpt_policy) == False and not daemon_rcpt_policy == None:
+        if not utils.true_or_false(daemon_rcpt_policy) and not daemon_rcpt_policy == None:
             log.info(_("Applying recipient policy disabled through configuration"))
             return entry_modifications
 
