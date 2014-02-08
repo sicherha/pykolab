@@ -53,6 +53,7 @@
             'kolab_activesync',
             'kolab_addressbook',
             'kolab_config',
+            'kolab_delegation',
             'kolab_files',
             'kolab_folders',
             'libkolab',
