@@ -45,13 +45,13 @@
 
     // Plugins
     \$config['plugins'] = array(
+            'kolab_auth',
             'acl',
             'archive',
             'calendar',
             'jqueryui',
             'kolab_activesync',
             'kolab_addressbook',
-            'kolab_auth',
             'kolab_config',
             'kolab_files',
             'kolab_folders',
