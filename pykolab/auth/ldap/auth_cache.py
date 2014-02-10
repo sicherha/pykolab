@@ -116,6 +116,7 @@ def set_entry(key, value):
 
 def purge_entries(db):
     db.query(Entry).filter(Entry.last_change <= (datetime.datetime.now() - datetime.timedelta(1))).delete()
+    db.commit()
 
 def init_db():
     """
