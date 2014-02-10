@@ -107,8 +107,17 @@ def delete_entry(domain, entry):
 def get_entry(domain, entry, update=True):
     result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
+    _entry = None
+
     db = init_db(domain)
-    _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
+    try:
+        _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
+    except sqlalchemy.exc.OperationalError, errmsg:
+        db = init_db(domain,reinit=True)
+    except sqlalchemy.exc.InvalidRequestError, errmsg:
+        db = init_db(domain,reinit=True)
+    finally:
+        _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
 
     if not update:
         return _entry
@@ -149,14 +158,19 @@ def get_entry(domain, entry, update=True):
 
     return _entry
 
-def init_db(domain):
+def init_db(domain,reinit=False):
     """
         Returns a SQLAlchemy Session() instance.
     """
     global db
 
-    if not db == None:
+    if not db == None and not reinit:
         return db
+
+    if reinit:
+        import os
+        if os.path.isfile('sqlite:///%s/%s.db' % (KOLAB_LIB_PATH, domain)):
+            os.unlink('sqlite:///%s/%s.db' % (KOLAB_LIB_PATH, domain))
 
     db_uri = 'sqlite:///%s/%s.db' % (KOLAB_LIB_PATH, domain)
     echo = conf.debuglevel > 8
