@@ -243,8 +243,21 @@ class LDAP(pykolab.base.Base):
                 # Needs to be synchronous or succeeds and continues setting retval
                 # to True!!
                 self.ldap.simple_bind_s(entry_dn, login[1])
+                auth_cache.set_entry(_filter, entry_dn)
                 retval = True
-            except:
+            except ldap.NO_SUCH_OBJECT, errmsg:
+                log.debug(_("Error occured, there is no such object: %r") % (errmsg), level=8)
+                self.bind = False
+                try:
+                    auth_cache.del_entry(_filter)
+                except:
+                    log.error(_("Authentication cache failed to clear entry"))
+                    pass
+
+                return self.authenticate(login, realm)
+
+            except Exception, errmsg:
+                log.debug(_("Exception occured: %r") %(errmsg))
                 try:
                     log.debug(
                             _("Failed to authenticate as user %s") % (login[0]),
