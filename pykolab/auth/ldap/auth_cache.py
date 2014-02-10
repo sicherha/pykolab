@@ -86,6 +86,11 @@ mapper(Entry, entry_table)
 ## Functions
 ##
 
+def del_entry(key):
+    db = init_db()
+    _entries = db.query(Entry).filter_by(key=key).delete()
+    db.commit()
+
 def get_entry(key):
     db = init_db()
     _entries = db.query(Entry).filter_by(key=key).all()
@@ -112,6 +117,12 @@ def set_entry(key, value):
                     )
             )
 
+        db.commit()
+    elif len(_entries) == 1:
+        if not _entries[0].value == value:
+            _entries[0].value = value
+
+        _entries[0].last_change = datetime.datetime.now()
         db.commit()
 
 def purge_entries(db):
