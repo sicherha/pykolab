@@ -220,6 +220,15 @@ class KolabDaemon(object):
         while 1:
             primary_auth = Auth(primary_domain)
 
+            connected = False
+            while not connected:
+                try:
+                    connected = primary_auth.connect()
+                except Exception, errmsg:
+                    connected = False
+                    log.error(_("Could not connect to LDAP, is it running?"))
+                    time.sleep(5)
+
             log.debug(_("Listing domains..."), level=5)
 
             start = time.time()
@@ -228,6 +237,11 @@ class KolabDaemon(object):
                 domains = primary_auth.list_domains()
             except:
                 time.sleep(60)
+                continue
+
+            if isinstance(domains, list) and len(domains) < 1:
+                log.error(_("No domains. Not syncing"))
+                time.sleep(5)
                 continue
 
             # domains now is a list of tuples, we want the primary_domains
