@@ -17,6 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import base64
 import getpass
 import grp
 import os
@@ -181,6 +182,29 @@ def ask_menu(question, options={}, default=''):
             answer_correct = True
 
     return answer
+
+def decode(key, enc):
+    if key == None:
+        return enc
+
+    dec = []
+    enc = base64.urlsafe_b64decode(enc)
+    for i in range(len(enc)):
+        key_c = key[i % len(key)]
+        dec_c = chr((256 + ord(enc[i]) - ord(key_c)) % 256)
+        dec.append(dec_c)
+    return "".join(dec)
+
+def encode(key, clear):
+    if key == None:
+        return clear
+
+    enc = []
+    for i in range(len(clear)):
+        key_c = key[i % len(key)]
+        enc_c = chr((ord(clear[i]) + ord(key_c)) % 256)
+        enc.append(enc_c)
+    return base64.urlsafe_b64encode("".join(enc))
 
 def ensure_directory(_dir, _user='root', _group='root'):
     if not os.path.isdir(_dir):

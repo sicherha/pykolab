@@ -1333,14 +1333,124 @@ def hold(message, policy_request=None):
 def permit(message, policy_request=None):
     log.info(_("Returning action PERMIT: %s") % (message))
 
-    if hasattr(policy_request, 'sasl_username'):
-        sender = conf.get('kolab_smtp_access_policy', 'sender_header')
-        if utils.true_or_false(sender):
-            print "action=PREPEND Sender: %s" % (policy_request.sasl_username)
+    # If we have no policy request, we have been called for a reason,
+    # and everything relevant has been figured out already.
+    if policy_request == None:
+        print "action=PERMIT\n\n"
+        sys.exit(0)
 
-        xsender = conf.get('kolab_smtp_access_policy', 'xsender_header')
-        if utils.true_or_false(xsender):
-            print "action=PREPEND X-Sender: %s" % (policy_request.sasl_username)
+    # If the user is not authenticated, there's no reason to do
+    # extra checks here -- to have been performed already.
+    if not hasattr(policy_request, 'sasl_username'):
+        print "action=PERMIT\n\n"
+        sys.exit(0)
+
+    # Same here.
+    if policy_request.sasl_username == None:
+        print "action=PERMIT\n\n"
+        sys.exit(0)
+
+    delegate_sender_header = None
+    alias_sender_header = None
+
+    # If the sender is a delegate of the envelope sender address, take into
+    # account the preferred domain policy for appending the Sender and/or
+    # X-Sender headers.
+    #
+    # Note that a delegatee by very definition is not using an alias.
+    #
+    if policy_request.sasl_user_is_delegate:
+        # Domain-specific setting?
+        if not policy_request.sender_domain == None:
+            delegate_sender_header = conf.get(policy_request.sender_domain, 'delegate_sender_header')
+
+        # Global setting?
+        if delegate_sender_header == None:
+            delegate_sender_header = conf.get('kolab_smtp_access_policy', 'delegate_sender_header')
+
+        # Default
+        if delegate_sender_header == None:
+            delegate_sender_header = True
+
+    # If the sender is using an alias as the envelope sender address, take
+    # into account the preferred domain policy for appending the Sender
+    # and/or X-Sender headers.
+    elif policy_requiest.sasl_user_uses_alias:
+        # Domain-specific setting?
+        if not policy_request.sender_domain == None:
+            alias_sender_header = conf.get(policy_request.sender_domain, 'alias_sender_header')
+
+        # Global setting?
+        if alias_sender_header == None:
+            alias_sender_header = conf.get('kolab_smtp_access_policy', 'alias_sender_header')
+
+        # Default
+        if alias_sender_header == None:
+            alias_sender_header = True
+
+    # Make the values booleans
+    delegate_sender_header = utils.true_or_false(delegate_sender_header)
+    alias_sender_header = utils.true_or_false(alias_sender_header)
+
+    # Do we use a (simple) encryption key to obscure the headers' contents?
+    # Note that using an encryption key voids the actual use of proper Sender
+    # and X-Sender headers such as they could be interpreted by a client
+    # application.
+    enc_key = conf.get(policy_request.sender_domain, 'sender_header_enc_key')
+    if enc_key == None:
+        enc_key = conf.get('kolab_smtp_access_policy', 'sender_header_enc_key')
+
+    sender_header = None
+    xsender_header = None
+
+    if delegate_sender_header or alias_sender_header:
+        # Domain specific?
+        sender_header = conf.get(policy_request.sender_domain, 'sender_header')
+
+        # Global setting?
+        if sender_header == None:
+            sender_header = conf.get('kolab_smtp_access_policy', 'sender_header')
+
+        # Default
+        if sender_header == None:
+            sender_header = True
+
+        # Domain specific?
+        xsender_header = conf.get(policy_request.sender_domain, 'xsender_header')
+
+        # Global setting?
+        if xsender_header == None:
+            xsender_header = conf.get('kolab_smtp_access_policy', 'xsender_header')
+
+        # Default
+        if xsender_header == None:
+            xsender_header = True
+
+    # Note that if the user is not a delegatee, and not using an alias, the sender
+    # address is the envelope sender address, and the defaults for sender_header
+    # and xsender_header being None, ultimately evaluating to False seems
+    # appropriate.
+
+    # Make the values booleans
+    sender_header = utils.true_or_false(sender_header)
+    xsender_header = utils.true_or_false(xsender_header)
+
+    if sender_header or xsender_header:
+        # Do the encoding, if any
+        if not enc_key == None:
+            header = 'X-Authenticated-As'
+            xheader = None
+            sender = utils.encode(enc_key, policy_request.sasl_username)
+        else:
+            header = 'Sender'
+            xheader = 'X-Sender'
+            sender = policy_request.sasl_username
+
+        if sender_header:
+            print "action=PREPEND %s: %s" % (header, sender)
+
+        if xsender_header and not xheader == None:
+            print "action=PREPEND %s: %s" % (xheader, sender)
 
     print "action=PERMIT\n\n"
     sys.exit(0)
