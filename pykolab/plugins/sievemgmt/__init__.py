@@ -109,7 +109,7 @@ class KolabSievemgmt(object):
             active, scripts = result
 
         log.debug(_("Found the following scripts for user %s: %s") % (address, ','.join(scripts)), level=8)
-        log.deubg(_("And the following script is active for user %s: %s") % (address, active), level=8)
+        log.debug(_("And the following script is active for user %s: %s") % (address, active), level=8)
 
         mgmt_required_extensions = []
 
