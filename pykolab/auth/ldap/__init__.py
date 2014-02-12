@@ -1163,7 +1163,7 @@ class LDAP(pykolab.base.Base):
         foldertype_attribute = self.config_get('sharedfolder_type_attribute')
         if not foldertype_attribute == None:
             if not entry.has_key(foldertype_attribute):
-                entry[foldertype_attribute] = self.get_user_attribute(
+                entry[foldertype_attribute] = self.get_entry_attribute(
                         entry['id'],
                         foldertype_attribute
                     )
@@ -1532,7 +1532,7 @@ class LDAP(pykolab.base.Base):
         foldertype_attribute = self.config_get('sharedfolder_type_attribute')
         if not foldertype_attribute == None:
             if not entry.has_key(foldertype_attribute):
-                entry[foldertype_attribute] = self.get_user_attribute(
+                entry[foldertype_attribute] = self.get_entry_attribute(
                         entry['id'],
                         foldertype_attribute
                     )
