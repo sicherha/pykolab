@@ -344,7 +344,9 @@ def execute(*args, **kw):
             mgmt_script.addfilter(rule_name, ['true'], forward_rules)
 
         else:
-            mgmt_script.addfilter(rule_name, [("X-Spam-Status", ":matches", "No,*")], forward_rules)
+            # NOTE: Messages with no X-Spam-Status header need to be matched
+            # too, and this does exactly that.
+            mgmt_script.addfilter(rule_name, [("not", ("X-Spam-Status", ":matches", "Yes,*"))], forward_rules)
 
     if sdf_filter:
         mgmt_script.addfilter('spam_delivery_folder', [("X-Spam-Status", ":matches", "Yes,*")], [("fileinto", "INBOX/Spam"), ("stop")])
