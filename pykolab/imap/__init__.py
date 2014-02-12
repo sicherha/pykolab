@@ -328,6 +328,36 @@ class IMAP(object):
         if short_rights.has_key(acl):
             acl = short_rights[acl]
 
+        # Special treatment for '-' and '+' characters
+        if '+' in acl or '-' in acl:
+            acl_map = {
+                    'set': '',
+                    'subtract': '',
+                    'add': ''
+                }
+
+            mode = 'set'
+            for char in acl:
+                if char == '-':
+                    mode = 'subtract'
+                    continue
+                if char == '+':
+                    continue
+                    mode = 'add'
+
+                acl_map[mode] += char
+
+            current_acls = self.imap.lam(self.folder_utf7(folder))
+            for current_acl in current_acls.keys():
+                if current_acl == identifier:
+                    _acl = current_acls[current_acl]
+                    break
+
+            _acl = _acl + acl_map['set'] + acl_map['add']
+
+            _acl = [x for x in _acl.split() if x not in acl_map['subtract'].split()]
+            acl = ''.join(list(set(_acl)))
+
         self.imap.sam(self.folder_utf7(folder), identifier, acl)
 
     def set_metadata(self, folder, metadata_path, metadata_value, shared=True):

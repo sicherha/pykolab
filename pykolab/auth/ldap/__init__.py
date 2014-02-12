@@ -1265,16 +1265,16 @@ class LDAP(pykolab.base.Base):
                     entry['kolabfoldertype']
                 )
 
-        if entry.has_key(delivery_address_attribute) and \
-                not entry[delivery_address_attribute] == None:
-            self.imap.set_acl(folder_path, 'anyone', 'p')
-
         if entry.has_key('kolabmailfolderaclentry') and \
                 not entry['kolabmailfolderaclentry'] == None:
 
             self.imap._set_kolab_mailfolder_acls(
                     entry['kolabmailfolderaclentry']
                 )
+
+        if entry.has_key(delivery_address_attribute) and \
+                not entry[delivery_address_attribute] == None:
+            self.imap.set_acl(folder_path, 'anyone', '+p')
 
         #if server == None:
             #self.entry_set_attribute(mailserver_attribute, server)
@@ -1782,12 +1782,16 @@ class LDAP(pykolab.base.Base):
                     entry['kolabfoldertype']
                 )
 
-        #if entry.has_key('kolabmailfolderaclentry') and \
-                #not entry['kolabmailfolderaclentry'] == None:
+        if entry.has_key('kolabmailfolderaclentry') and \
+                not entry['kolabmailfolderaclentry'] == None:
 
-            #self.imap._set_kolab_mailfolder_acls(
-                    #entry['kolabmailfolderaclentry']
-                #)
+            self.imap._set_kolab_mailfolder_acls(
+                    entry['kolabmailfolderaclentry']
+                )
+
+        if entry.has_key(delivery_address_attribute) and \
+                not entry[delivery_address_attribute] == None:
+            self.imap.set_acl(folder_path, 'anyone', '+p')
 
         #if server == None:
             #self.entry_set_attribute(mailserver_attribute, server)
