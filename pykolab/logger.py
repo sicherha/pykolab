@@ -37,6 +37,8 @@ class Logger(logging.Logger):
     debuglevel = 0
     fork = False
     loglevel = logging.CRITICAL
+    process_username = 'kolab'
+    process_groupname = 'kolab-n'
 
     if hasattr(sys, 'argv'):
         for arg in sys.argv:
@@ -66,6 +68,26 @@ class Logger(logging.Logger):
                 else:
                     loglevel = logging.DEBUG
 
+            if '-u' == arg or '--user' == arg:
+                process_username = -1
+                continue
+
+            if arg.startswith('--user='):
+                process_username = arg.split('=')[1]
+
+            if process_username == -1:
+                process_username = arg
+
+            if '-g' == arg or '--group' == arg:
+                process_groupname = -1
+                continue
+
+            if arg.startswith('--group='):
+                process_groupname = arg.split('=')[1]
+
+            if process_groupname == -1:
+                process_groupname = arg
+
     def __init__(self, *args, **kw):
         if kw.has_key('name'):
             name = kw['name']
@@ -91,23 +113,81 @@ class Logger(logging.Logger):
 
         # Make sure (read: attempt to change) the permissions
         try:
-            (ruid, euid, suid) = os.getresuid()
-            (rgid, egid, sgid) = os.getresgid()
-        except AttributeError, errmsg:
-            ruid = os.getuid()
-            rgid = os.getgid()
+            try:
+                (ruid, euid, suid) = os.getresuid()
+                (rgid, egid, sgid) = os.getresgid()
+            except AttributeError, errmsg:
+                ruid = os.getuid()
+                rgid = os.getgid()
 
-        if ruid == 0 or rgid == 0:
-            if os.path.isfile(self.logfile):
+            if ruid == 0:
+                # Means we can setreuid() / setregid() / setgroups()
+                if rgid == 0:
+                    # Get group entry details
+                    try:
+                        (
+                                group_name,
+                                group_password,
+                                group_gid,
+                                group_members
+                            ) = grp.getgrnam(self.process_groupname)
+
+                    except KeyError:
+                        print >> sys.stderr, _("Group %s does not exist") % (
+                                self.process_groupname
+                            )
+
+                        sys.exit(1)
+
+                    # Set real and effective group if not the same as current.
+                    if not group_gid == rgid:
+                        self.debug(
+                                _("Switching real and effective group id to %d") % (
+                                        group_gid
+                                    ),
+                                level=8
+                            )
+
+                        os.setregid(group_gid, group_gid)
+
+                if ruid == 0:
+                    # Means we haven't switched yet.
+                    try:
+                        (
+                                user_name,
+                                user_password,
+                                user_uid,
+                                user_gid,
+                                user_gecos,
+                                user_homedir,
+                                user_shell
+                            ) = pwd.getpwnam(self.process_username)
+
+                    except KeyError:
+                        print >> sys.stderr, _("User %s does not exist") % (
+                                self.process_username
+                            )
+
+                        sys.exit(1)
+
                 try:
                     os.chown(
                             self.logfile,
-                            pwd.getpwnam('kolab')[2],
-                            grp.getgrnam('kolab-n')[2]
+                            user_uid,
+                            group_gid
                         )
                     os.chmod(self.logfile, 0660)
-                except:
-                    pass
+                except Exception, errmsg:
+                    self.error(_("Could not change permissions on %s: %r") % (self.logfile, errmsg))
+                    if self.debuglevel > 8:
+                        import traceback
+                        traceback.print_exc()
+
+        except Exception, errmsg:
+            self.error(_("Could not change permissions on %s: %r") % (self.logfile, errmsg))
+            if self.debuglevel > 8:
+                import traceback
+                traceback.print_exc()
 
         # Make sure the log file exists
         try:
