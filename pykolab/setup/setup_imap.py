@@ -111,7 +111,7 @@ def execute(*args, **kw):
         fp.close()
 
     else:
-        log.error(_("Could not write out Cyrus IMAP configuration file /etc/imapd.conf"))
+        log.error(_("Could not write out Cyrus IMAP configuration file /etc/cyrus.conf"))
         return
 
     annotations = [
