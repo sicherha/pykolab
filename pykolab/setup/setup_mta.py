@@ -192,6 +192,26 @@ result_attribute = mail
                         "service_bind_dn": conf.get('ldap', 'service_bind_dn'),
                         "service_bind_pw": conf.get('ldap', 'service_bind_pw'),
                     },
+            "/etc/postfix/ldap/virtual_alias_maps_mailforwarding.cf": """
+server_host = %(server_host)s
+server_port = 389
+version = 3
+search_base = %(base_dn)s
+scope = sub
+
+domain = ldap:/etc/postfix/ldap/mydestination.cf
+
+bind_dn = %(service_bind_dn)s
+bind_pw = %(service_bind_pw)s
+
+query_filter = (&(|(mail=%%s)(alias=%%s))(objectclass=mailrecipient)(objectclass=inetorgperson)(mailforwardingaddress=*))
+result_attribute = mailForwardingAddress
+""" % {
+                        "base_dn": conf.get('ldap', 'base_dn'),
+                        "server_host": server_host,
+                        "service_bind_dn": conf.get('ldap', 'service_bind_dn'),
+                        "service_bind_pw": conf.get('ldap', 'service_bind_pw'),
+                    },
             "/etc/postfix/ldap/virtual_alias_maps_sharedfolders.cf": """
 server_host = %(server_host)s
 server_port = 389
@@ -235,7 +255,7 @@ result_format = shared+%%s
             "local_recipient_maps": "ldap:/etc/postfix/ldap/local_recipient_maps.cf",
             "mydestination": "ldap:/etc/postfix/ldap/mydestination.cf",
             "transport_maps": "ldap:/etc/postfix/ldap/transport_maps.cf, hash:/etc/postfix/transport",
-            "virtual_alias_maps": "$alias_maps, ldap:/etc/postfix/ldap/virtual_alias_maps.cf, ldap:/etc/postfix/ldap/virtual_alias_maps_sharedfolders.cf, ldap:/etc/postfix/ldap/mailenabled_distgroups.cf, ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf",
+            "virtual_alias_maps": "$alias_maps, ldap:/etc/postfix/ldap/virtual_alias_maps.cf, ldap:/etc/postfix/ldap/virtual_alias_maps_mailforwarding.cf, ldap:/etc/postfix/ldap/virtual_alias_maps_sharedfolders.cf, ldap:/etc/postfix/ldap/mailenabled_distgroups.cf, ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf",
             "smtpd_tls_auth_only": "yes",
             "smtpd_tls_security_level": "may",
             "smtp_tls_security_level": "may",
@@ -348,7 +368,7 @@ result_format = shared+%%s
     template_file = None
 
     # On RPM installations, Amavis configuration is contained within a single file.
-    if os.path.isfile("/etc/amavsid/amavisd.conf"):
+    if os.path.isfile("/etc/amavisd/amavisd.conf"):
         if os.path.isfile('/etc/kolab/templates/amavisd.conf.tpl'):
             template_file = '/etc/kolab/templates/amavisd.conf.tpl'
         elif os.path.isfile('/usr/share/kolab/templates/amavisd.conf.tpl'):
