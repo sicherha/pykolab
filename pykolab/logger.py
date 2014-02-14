@@ -111,6 +111,9 @@ class Logger(logging.Logger):
         else:
             self.logfile = '/var/log/kolab/pykolab.log'
 
+        group_gid = 0
+        user_uid = 0
+
         # Make sure (read: attempt to change) the permissions
         try:
             try:
@@ -217,7 +220,7 @@ class Logger(logging.Logger):
             self.console_stdout.close()
             self.removeHandler(self.console_stdout)
 
-    def debug(self, msg, level=1):
+    def debug(self, msg, level=1, *args, **kw):
         self.setLevel(self.loglevel)
         # Work around other applications not using various levels of debugging
         if not self.name.startswith('pykolab') and not self.debuglevel == 9:
