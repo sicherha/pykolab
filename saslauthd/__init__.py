@@ -108,78 +108,9 @@ class SASLAuthDaemon(object):
 
         exitcode = 0
 
-        try:
-            try:
-                (ruid, euid, suid) = os.getresuid()
-                (rgid, egid, sgid) = os.getresgid()
-            except AttributeError, errmsg:
-                ruid = os.getuid()
-                rgid = os.getgid()
+        self._ensure_socket_dir()
 
-            if ruid == 0:
-                # Means we can setreuid() / setregid() / setgroups()
-                if rgid == 0:
-                    # Get group entry details
-                    try:
-                        (
-                                group_name,
-                                group_password,
-                                group_gid,
-                                group_members
-                            ) = grp.getgrnam(conf.process_groupname)
-
-                    except KeyError:
-                        print >> sys.stderr, _("Group %s does not exist") % (
-                                conf.process_groupname
-                            )
-
-                        sys.exit(1)
-
-                    # Set real and effective group if not the same as current.
-                    if not group_gid == rgid:
-                        log.debug(
-                                _("Switching real and effective group id to %d") % (
-                                        group_gid
-                                    ),
-                                level=8
-                            )
-
-                        os.setregid(group_gid, group_gid)
-
-                if ruid == 0:
-                    # Means we haven't switched yet.
-                    try:
-                        (
-                                user_name,
-                                user_password,
-                                user_uid,
-                                user_gid,
-                                user_gecos,
-                                user_homedir,
-                                user_shell
-                            ) = pwd.getpwnam(conf.process_username)
-
-                    except KeyError:
-                        print >> sys.stderr, _("User %s does not exist") % (
-                                conf.process_username
-                            )
-
-                        sys.exit(1)
-
-
-                    # Set real and effective user if not the same as current.
-                    if not user_uid == ruid:
-                        log.debug(
-                                _("Switching real and effective user id to %d") % (
-                                        user_uid
-                                    ),
-                                level=8
-                            )
-
-                        os.setreuid(user_uid, user_uid)
-
-        except:
-            log.error(_("Could not change real and effective uid and/or gid"))
+        self._drop_privileges()
 
         try:
             pid = 1
@@ -227,12 +158,6 @@ class SASLAuthDaemon(object):
         import struct
 
         s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-
-        utils.ensure_directory(
-                '/var/run/saslauthd/',
-                conf.process_username,
-                conf.process_groupname
-            )
 
         # TODO: The saslauthd socket path could be a setting.
         try:
@@ -334,3 +259,84 @@ class SASLAuthDaemon(object):
         fp = open(conf.pidfile,'w')
         fp.write("%d\n" % (pid))
         fp.close()
+
+    def _ensure_socket_dir(self):
+        utils.ensure_directory(
+                '/var/run/saslauthd/',
+                conf.process_username,
+                conf.process_groupname
+            )
+
+    def _drop_privileges(self):
+        try:
+            try:
+                (ruid, euid, suid) = os.getresuid()
+                (rgid, egid, sgid) = os.getresgid()
+            except AttributeError, errmsg:
+                ruid = os.getuid()
+                rgid = os.getgid()
+
+            if ruid == 0:
+                # Means we can setreuid() / setregid() / setgroups()
+                if rgid == 0:
+                    # Get group entry details
+                    try:
+                        (
+                                group_name,
+                                group_password,
+                                group_gid,
+                                group_members
+                            ) = grp.getgrnam(conf.process_groupname)
+
+                    except KeyError:
+                        print >> sys.stderr, _("Group %s does not exist") % (
+                                conf.process_groupname
+                            )
+
+                        sys.exit(1)
+
+                    # Set real and effective group if not the same as current.
+                    if not group_gid == rgid:
+                        log.debug(
+                                _("Switching real and effective group id to %d") % (
+                                        group_gid
+                                    ),
+                                level=8
+                            )
+
+                        os.setregid(group_gid, group_gid)
+
+                if ruid == 0:
+                    # Means we haven't switched yet.
+                    try:
+                        (
+                                user_name,
+                                user_password,
+                                user_uid,
+                                user_gid,
+                                user_gecos,
+                                user_homedir,
+                                user_shell
+                            ) = pwd.getpwnam(conf.process_username)
+
+                    except KeyError:
+                        print >> sys.stderr, _("User %s does not exist") % (
+                                conf.process_username
+                            )
+
+                        sys.exit(1)
+
+
+                    # Set real and effective user if not the same as current.
+                    if not user_uid == ruid:
+                        log.debug(
+                                _("Switching real and effective user id to %d") % (
+                                        user_uid
+                                    ),
+                                level=8
+                            )
+
+                        os.setreuid(user_uid, user_uid)
+
+        except:
+            log.error(_("Could not change real and effective uid and/or gid"))
