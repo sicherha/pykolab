@@ -142,17 +142,6 @@ class Logger(logging.Logger):
 
                         sys.exit(1)
 
-                    # Set real and effective group if not the same as current.
-                    if not group_gid == rgid:
-                        self.debug(
-                                _("Switching real and effective group id to %d") % (
-                                        group_gid
-                                    ),
-                                level=8
-                            )
-
-                        os.setregid(group_gid, group_gid)
-
                 if ruid == 0:
                     # Means we haven't switched yet.
                     try:
