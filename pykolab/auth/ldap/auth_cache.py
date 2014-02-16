@@ -168,7 +168,7 @@ def init_db(reinit=False):
 
         if reinit:
             import os
-            os.path.isfile('%s/auth_cache.db' % (KOLAB_LIB_PATH)):
+            if os.path.isfile('%s/auth_cache.db' % (KOLAB_LIB_PATH)):
                 os.unlink('%s/auth_cache.db' % (KOLAB_LIB_PATH))
 
     echo = conf.debuglevel > 8
