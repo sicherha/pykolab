@@ -88,12 +88,29 @@ mapper(Entry, entry_table)
 
 def del_entry(key):
     db = init_db()
-    _entries = db.query(Entry).filter_by(key=key).delete()
+
+    try:
+        _entries = db.query(Entry).filter_by(key=key).delete()
+    except sqlalchemy.exc.OperationalError, errmsg:
+        db = init_db(reinit=True)
+    except: sqlalchemy.exc.InvalidRequest, errmsg:
+        db = init_db(reinit=True)
+    finally:
+        _entries = db.query(Entry).filter_by(key=key).delete()
+
     db.commit()
 
 def get_entry(key):
     db = init_db()
-    _entries = db.query(Entry).filter_by(key=key).all()
+
+    try:
+        _entries = db.query(Entry).filter_by(key=key).all()
+    except sqlalchemy.exc.OperationalError, errmsg:
+        db = init_db(reinit=True)
+    except: sqlalchemy.exc.InvalidRequest, errmsg:
+        db = init_db(reinit=True)
+    finally:
+        _entries = db.query(Entry).filter_by(key=key).all()
 
     if len(_entries) == 0:
         return None
@@ -107,7 +124,14 @@ def get_entry(key):
 
 def set_entry(key, value):
     db = init_db()
-    _entries = db.query(Entry).filter_by(key=key).all()
+    try:
+        _entries = db.query(Entry).filter_by(key=key).all()
+    except sqlalchemy.exc.OperationalError, errmsg:
+        db = init_db(reinit=True)
+    except: sqlalchemy.exc.InvalidRequest, errmsg:
+        db = init_db(reinit=True)
+    finally:
+        _entries = db.query(Entry).filter_by(key=key).all()
 
     if len(_entries) == 0:
         db.add(
@@ -129,18 +153,23 @@ def purge_entries(db):
     db.query(Entry).filter(Entry.last_change <= (datetime.datetime.now() - datetime.timedelta(1))).delete()
     db.commit()
 
-def init_db():
+def init_db(reinit=False):
     """
         Returns a SQLAlchemy Session() instance.
     """
     global db
 
-    if not db == None:
+    if not db == None and not reinit:
         return db
 
     db_uri = conf.get('ldap', 'auth_cache_uri')
     if db_uri == None:
         db_uri = 'sqlite:///%s/auth_cache.db' % (KOLAB_LIB_PATH)
+
+        if reinit:
+            import os
+            os.path.isfile('%s/auth_cache.db' % (KOLAB_LIB_PATH)):
+                os.unlink('%s/auth_cache.db' % (KOLAB_LIB_PATH))
 
     echo = conf.debuglevel > 8
     engine = create_engine(db_uri, echo=echo)
