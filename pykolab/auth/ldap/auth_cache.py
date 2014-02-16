@@ -93,7 +93,7 @@ def del_entry(key):
         _entries = db.query(Entry).filter_by(key=key).delete()
     except sqlalchemy.exc.OperationalError, errmsg:
         db = init_db(reinit=True)
-    except: sqlalchemy.exc.InvalidRequest, errmsg:
+    except sqlalchemy.exc.InvalidRequest, errmsg:
         db = init_db(reinit=True)
     finally:
         _entries = db.query(Entry).filter_by(key=key).delete()
@@ -107,7 +107,7 @@ def get_entry(key):
         _entries = db.query(Entry).filter_by(key=key).all()
     except sqlalchemy.exc.OperationalError, errmsg:
         db = init_db(reinit=True)
-    except: sqlalchemy.exc.InvalidRequest, errmsg:
+    except sqlalchemy.exc.InvalidRequest, errmsg:
         db = init_db(reinit=True)
     finally:
         _entries = db.query(Entry).filter_by(key=key).all()
@@ -128,7 +128,7 @@ def set_entry(key, value):
         _entries = db.query(Entry).filter_by(key=key).all()
     except sqlalchemy.exc.OperationalError, errmsg:
         db = init_db(reinit=True)
-    except: sqlalchemy.exc.InvalidRequest, errmsg:
+    except sqlalchemy.exc.InvalidRequest, errmsg:
         db = init_db(reinit=True)
     finally:
         _entries = db.query(Entry).filter_by(key=key).all()
