@@ -446,11 +446,15 @@ class Conf(object):
             setattr(self,option,self.cli_parser.defaults[option])
 
     def has_section(self, section):
-        self.read_config()
+        if not self.cfg_parser:
+            self.read_config()
 
         return self.cfg_parser.has_section(section)
 
     def has_option(self, section, option):
+        if not self.cfg_parser:
+            self.read_config()
+
         return self.cfg_parser.has_option(section, option)
 
     def get_list(self, section, key):
