@@ -1375,7 +1375,7 @@ def permit(message, policy_request=None):
     # If the sender is using an alias as the envelope sender address, take
     # into account the preferred domain policy for appending the Sender
     # and/or X-Sender headers.
-    elif policy_requiest.sasl_user_uses_alias:
+    elif policy_request.sasl_user_uses_alias:
         # Domain-specific setting?
         if not policy_request.sender_domain == None:
             alias_sender_header = conf.get(policy_request.sender_domain, 'alias_sender_header')
