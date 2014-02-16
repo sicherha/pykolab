@@ -223,7 +223,8 @@ class KolabDaemon(object):
             connected = False
             while not connected:
                 try:
-                    connected = primary_auth.connect()
+                    primary_auth.connect()
+                    connected = True
                 except Exception, errmsg:
                     connected = False
                     log.error(_("Could not connect to LDAP, is it running?"))
