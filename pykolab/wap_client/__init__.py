@@ -524,3 +524,28 @@ def user_types_list():
 def users_list():
     return request('GET', 'users.list')
 
+def resource_types_list():
+    return request('GET', 'resource_types.list')
+
+def resources_list():
+    return request('GET', 'resources.list')
+
+def resource_info(resource=None):
+    if resource == None:
+        resource = utils.ask_question("Resource DN")
+    return request('GET', 'resource.info', get={ 'id': resource })
+
+def resource_add(params=None):
+    if params == None:
+        params = get_user_input()
+
+    return request('POST', 'resource.add', post=json.dumps(params))
+
+def resource_delete(params=None):
+    if params == None:
+        params = {
+            'id': utils.ask_question("Resource DN to delete", "resource")
+        }
+
+    return request('POST', 'resource.delete', post=json.dumps(params))
+
