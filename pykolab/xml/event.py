@@ -467,7 +467,7 @@ class Event(object):
         return organizer
 
     def get_priority(self):
-        return self.event.priority()
+        return str(self.event.priority())
 
     def get_start(self):
         _datetime = self.event.start()
