@@ -59,8 +59,17 @@ END:VCALENDAR
 
 class TestResourceInvitation(unittest.TestCase):
 
+    john = None
+
     @classmethod
-    def setUpClass(self):
+    def setUp(self):
+        """ Compatibility for twisted.trial.unittest
+        """
+        if not self.john:
+            self.setup_class()
+
+    @classmethod
+    def setup_class(self, *args, **kw):
         from tests.functional.purge_users import purge_users
         purge_users()
 

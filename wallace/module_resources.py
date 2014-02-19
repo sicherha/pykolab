@@ -125,9 +125,8 @@ def execute(*args, **kw):
             os.rename(filepath, new_filepath)
             filepath = new_filepath
 
-    # parse message headers
-    # @TODO: make sure we can use True as the 2nd argument here
-    message = Parser().parse(open(filepath, 'r'), True)
+    # parse full message
+    message = Parser().parse(open(filepath, 'r'))
 
     recipients = [address for displayname,address in getaddresses(message.get_all('X-Kolab-To'))]
 
@@ -165,6 +164,7 @@ def execute(*args, **kw):
     if possibly_any_resources:
         for recipient in recipients:
             if not len(resource_record_from_email_address(recipient)) == 0:
+                resource_recipient = recipient
                 any_resources = True
 
     if any_resources:
@@ -187,7 +187,7 @@ def execute(*args, **kw):
 
     # A simple list of merely resource entry IDs that hold any relevance to the
     # iTip events
-    resource_records = resource_records_from_itip_events(itip_events)
+    resource_records = resource_records_from_itip_events(itip_events, resource_recipient)
 
     # Get the resource details, which includes details on the IMAP folder
     resources = {}
@@ -222,102 +222,31 @@ def execute(*args, **kw):
     start = time.time()
 
     for resource in resources.keys():
+        # skip this for resource collections
         if not resources[resource].has_key('kolabtargetfolder'):
             continue
 
-        mailbox = resources[resource]['kolabtargetfolder']
-
-        resources[resource]['conflict'] = False
-        resources[resource]['conflicting_events'] = []
-
-        log.debug(
-                _("Checking events in resource folder %r") % (mailbox),
-                level=8
-            )
-
+        # sets the 'conflicting' flag and adds a list of conflicting events found
         try:
-            imap.imap.m.select(mailbox)
-        except:
-            log.error(_("Mailbox for resource %r doesn't exist") % (resource))
+            read_resource_calendar(resources[resource], itip_events, imap)
+        except Exception, e:
+            log.error(_("Failed to read resource calendar for %r: %r") % (resource, e))
             continue
-
-        typ, data = imap.imap.m.search(None, 'ALL')
-
-        num_messages = len(data[0].split())
-
-        for num in data[0].split():
-            # For efficiency, makes the routine non-deterministic
-            if resources[resource]['conflict']:
-                continue
-
-            log.debug(
-                    _("Fetching message UID %r from folder %r") % (num, mailbox),
-                    level=9
-                )
-
-            typ, data = imap.imap.m.fetch(num, '(RFC822)')
-
-            event_message = message_from_string(data[0][1])
-
-            if event_message.is_multipart():
-                for part in event_message.walk():
-                    if part.get_content_type() == "application/calendar+xml":
-                        payload = part.get_payload(decode=True)
-                        event = pykolab.xml.event_from_string(payload)
-
-                        for itip in itip_events:
-                            _es = to_dt(event.get_start())
-                            _is = to_dt(itip['start'].dt)
-
-                            _ee = to_dt(event.get_end())
-                            _ie = to_dt(itip['end'].dt)
-
-                            if _es < _is:
-                                if _es <= _ie:
-                                    if _ee <= _is:
-                                        conflict = False
-                                    else:
-                                        conflict = True
-                                else:
-                                    conflict = True
-                            elif _es == _is:
-                                conflict = True
-                            else: # _es > _is
-                                if _es <= _ie:
-                                    conflict = True
-                                else:
-                                    conflict = False
-
-                            if conflict:
-                                log.info(
-                                        _("Event %r conflicts with event " + \
-                                            "%r") % (
-                                                itip['xml'].get_uid(),
-                                                event.get_uid()
-                                            )
-                                    )
-
-                                resources[resource]['conflicting_events'].append(event)
-                                resources[resource]['conflict'] = True
 
     end = time.time()
 
-    log.debug(
-            _("start: %r, end: %r, total: %r, messages: %r") % (
-                    start, end, (end-start), num_messages
-                ),
-            level=1
-        )
+    log.debug(_("start: %r, end: %r, total: %r") % (start, end, (end-start)), level=1)
+
+    done = False
 
     for resource in resources.keys():
         log.debug(_("Polling for resource %r") % (resource), level=9)
 
-        if not resources.has_key(resource):
-            log.debug(
-                    _("Resource %r has been popped from the list") % (resource),
-                    level=9
-                )
+        if done:
+            break
 
+        if not resources.has_key(resource):
+            log.debug(_("Resource %r has been popped from the list") % (resource), level=9)
             continue
 
         if not resources[resource].has_key('conflicting_events'):
@@ -329,13 +258,8 @@ def execute(*args, **kw):
             for itip_event in itip_events:
                 # Now we have the event that was conflicting
                 if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
-                    itip_event['xml'].set_attendee_participant_status(
-                            [a for a in itip_event['xml'].get_attendees() if a.get_email() == resources[resource]['mail']][0],
-                            "DECLINED"
-                        )
-
-                    send_response(resources[resource]['mail'], itip_events)
-                    # TODO: Accept the message to the other attendees
+                    decline_reservation_request(itip_event, resources[resource])
+                    done = True
 
                 else:
                     # This must have been a resource collection originally.
@@ -344,46 +268,19 @@ def execute(*args, **kw):
                     if resources[resource].has_key('memberof'):
                         original_resource = resources[resources[resource]['memberof']]
 
-                        _target_resource = resources[original_resource['uniquemember'][random.randint(0,(len(original_resource['uniquemember'])-1))]]
-
-                        # unset all
-                        for _r in original_resource['uniquemember']:
-                            del resources[_r]
+                        # TODO: shuffle existing bookings of collection members in order
+                        # to make one availale for the requested time
 
                     if original_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
-                        itip_event['xml'].set_attendee_participant_status(
-                                [a for a in itip_event['xml'].get_attendees() if a.get_email() == original_resource['mail']][0],
-                                "DECLINED"
-                            )
-
-                        send_response(original_resource['mail'], itip_events)
-                        # TODO: Accept the message to the other attendees
+                        decline_reservation_request(itip_event, original_resource)
+                        done = True
 
         else:
             # No conflicts, go accept
             for itip_event in itip_events:
                 if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
-                    itip_event['xml'].set_attendee_participant_status(
-                            [a for a in itip_event['xml'].get_attendees() if a.get_email() == resources[resource]['mail']][0],
-                            "ACCEPTED"
-                        )
-
-                    log.debug(
-                            _("Adding event to %r") % (
-                                    resources[resource]['kolabtargetfolder']
-                                ),
-                            level=9
-                        )
-
-                    imap.imap.m.setacl(resources[resource]['kolabtargetfolder'], "cyrus-admin", "lrswipkxtecda")
-                    imap.imap.m.append(
-                            resources[resource]['kolabtargetfolder'],
-                            None,
-                            None,
-                            itip_event['xml'].to_message().as_string()
-                        )
-
-                    send_response(resources[resource]['mail'], itip_event)
+                    accept_reservation_request(itip_event, resources[resource], imap)
+                    done = True
 
                 else:
                     # This must have been a resource collection originally.
@@ -392,13 +289,8 @@ def execute(*args, **kw):
                     if resources[resource].has_key('memberof'):
                         original_resource = resources[resources[resource]['memberof']]
 
-                        # Randomly selects a target resource from the resource
-                        # collection.
+                        # Randomly selects a target resource from the resource collection.
                         _target_resource = resources[original_resource['uniquemember'][random.randint(0,(len(original_resource['uniquemember'])-1))]]
-
-                        # Remove all resources from the collection.
-                        for _r in original_resource['uniquemember']:
-                            del resources[_r]
 
                     if original_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
                         #
@@ -407,35 +299,10 @@ def execute(*args, **kw):
                         # - delegator: the original resource collection
                         # - delegatee: the target resource
                         #
+                        itip_event['xml'].delegate(original_resource['mail'], _target_resource['mail'])
 
-                        itip_event['xml'].delegate(
-                                original_resource['mail'],
-                                _target_resource['mail']
-                            )
-
-                        itip_event['xml'].set_attendee_participant_status(
-                                [a for a in itip_event['xml'].get_attendees() if a.get_email() == _target_resource['mail']][0],
-                                "ACCEPTED"
-                            )
-
-                        log.debug(
-                                _("Adding event to %r") % (
-                                        _target_resource['kolabtargetfolder']
-                                    ),
-                                level=9
-                            )
-
-                        # TODO: The Cyrus IMAP (or Dovecot) Administrator login
-                        # name comes from configuration.
-                        imap.imap.m.setacl(_target_resource['kolabtargetfolder'], "cyrus-admin", "lrswipkxtecda")
-                        imap.imap.m.append(
-                                _target_resource['kolabtargetfolder'],
-                                None,
-                                None,
-                                itip_event['xml'].to_message().as_string()
-                            )
-
-                        send_response(original_resource['mail'], itip_event)
+                        accept_reservation_request(itip_event, _target_resource, imap)
+                        done = True
 
     auth.disconnect()
     del auth
@@ -445,6 +312,130 @@ def execute(*args, **kw):
     del imap
 
     os.unlink(filepath)
+
+
+def read_resource_calendar(resource_rec, itip_events, imap):
+    """
+        Read all booked events from the given resource's calendar
+        and check for conflicts with the given list if itip events
+    """
+
+    resource_rec['conflict'] = False
+    resource_rec['conflicting_events'] = []
+
+    mailbox = resource_rec['kolabtargetfolder']
+
+    log.debug(
+        _("Checking events in resource folder %r") % (mailbox),
+        level=8
+    )
+
+    # might raise an exception, let that bubble
+    imap.imap.m.select(mailbox)
+    typ, data = imap.imap.m.search(None, 'ALL')
+
+    num_messages = len(data[0].split())
+
+    for num in data[0].split():
+        # For efficiency, makes the routine non-deterministic
+        if resource_rec['conflict']:
+            continue
+
+        log.debug(
+            _("Fetching message UID %r from folder %r") % (num, mailbox),
+            level=9
+        )
+
+        typ, data = imap.imap.m.fetch(num, '(RFC822)')
+
+        event_message = message_from_string(data[0][1])
+
+        if event_message.is_multipart():
+            for part in event_message.walk():
+                if part.get_content_type() == "application/calendar+xml":
+                    payload = part.get_payload(decode=True)
+                    event = pykolab.xml.event_from_string(payload)
+
+                    for itip in itip_events:
+                        _es = to_dt(event.get_start())
+                        _is = to_dt(itip['start'].dt)
+
+                        _ee = to_dt(event.get_end())
+                        _ie = to_dt(itip['end'].dt)
+
+                        if _es < _is:
+                            if _es <= _ie:
+                                if _ee <= _is:
+                                    conflict = False
+                                else:
+                                    conflict = True
+                            else:
+                                conflict = True
+                        elif _es == _is:
+                            conflict = True
+                        else: # _es > _is
+                            if _es <= _ie:
+                                conflict = True
+                            else:
+                                conflict = False
+
+                        if conflict:
+                            log.info(
+                                _("Event %r conflicts with event %r") % (
+                                    itip['xml'].get_uid(),
+                                    event.get_uid()
+                                )
+                            )
+
+                            resource_rec['conflicting_events'].append(event)
+                            resource_rec['conflict'] = True
+
+    return resource_rec['conflict']
+
+
+def accept_reservation_request(itip_event, resource, imap):
+    """
+        Accepts the given iTip event by booking it into the resource's
+        calendar. Then set the attendee status of the given resource to
+        ACCEPTED and sends an iTip reply message to the organizer.
+    """
+
+    itip_event['xml'].set_attendee_participant_status(
+        itip_event['xml'].get_attendee_by_email(resource['mail']),
+        "ACCEPTED"
+    )
+
+    log.debug(
+        _("Adding event to %r") % (resource['kolabtargetfolder']),
+        level=9
+    )
+
+    # TODO: The Cyrus IMAP (or Dovecot) Administrator login
+    # name comes from configuration.
+    imap.imap.m.setacl(resource['kolabtargetfolder'], "cyrus-admin", "lrswipkxtecda")
+    imap.imap.m.append(
+            resource['kolabtargetfolder'],
+            None,
+            None,
+            itip_event['xml'].to_message().as_string()
+        )
+
+    send_response(resource['mail'], itip_event)
+
+
+def decline_reservation_request(itip_event, resource):
+    """
+        Set the attendee status of the given resource to
+        DECLINED and send an according iTip reply to the organizer.
+    """
+
+    itip_event['xml'].set_attendee_participant_status(
+        itip_event['xml'].get_attendee_by_email(resource['mail']),
+        "DECLINED"
+    )
+
+    send_response(resource, itip_event)
+
 
 def itip_events_from_message(message):
     """
@@ -561,48 +552,39 @@ def reject(filepath):
     filepath = new_filepath
     exec('modules.cb_action_REJECT(%r, %r)' % ('resources',filepath))
 
+
 def resource_record_from_email_address(email_address):
+    """
+        Resolves the given email address to a resource entity
+    """
+
     auth = Auth()
     auth.connect()
     resource_records = []
 
     log.debug(
-            _("Checking if email address %r belongs to a resource (collection)") % (
-                    email_address
-                ),
-            level=8
-        )
+        _("Checking if email address %r belongs to a resource (collection)") % (email_address),
+        level=8
+    )
 
     resource_records = auth.find_resource(email_address)
 
     if isinstance(resource_records, list):
-        if len(resource_records) == 0:
-            log.debug(
-                    _("No resource (collection) records found for %r") % (
-                            email_address
-                        ),
-                    level=9
-                )
-
+        if len(resource_records) > 0:
+            log.debug(_("Resource record(s): %r") % (resource_records), level=8)
         else:
-            log.debug(
-                    _("Resource record(s): %r") % (resource_records),
-                    level=8
-                )
+            log.debug(_("No resource (collection) records found for %r") % (email_address), level=9)
 
     elif isinstance(resource_records, basestring):
-        log.debug(
-                _("Resource record: %r") % (resource_records),
-                level=8
-            )
-
         resource_records = [ resource_records ]
+        log.debug(_("Resource record: %r") % (resource_records), level=8)
 
     auth.disconnect()
 
     return resource_records
 
-def resource_records_from_itip_events(itip_events):
+
+def resource_records_from_itip_events(itip_events, recipient_email=None):
     """
         Given a list of itip_events, determine which resources have been
         invited as attendees and/or resources.
@@ -641,103 +623,81 @@ def resource_records_from_itip_events(itip_events):
     #
     attendees = [x.split(':')[-1] for x in attendees_raw]
 
+    # Limit the attendee resources to the one that is actually invited
+    # with the current message. Considering all invited resources would result in
+    # duplicate responses from every iTip message sent to a resource.
+    if recipient_email is not None:
+        attendees = [a for a in attendees if a == recipient_email]
+
     for attendee in attendees:
-        log.debug(
-                _("Checking if attendee %r is a resource (collection)") % (
-                        attendee
-                    ),
-                level=8
-            )
+        log.debug(_("Checking if attendee %r is a resource (collection)") % (attendee), level=8)
 
         _resource_records = auth.find_resource(attendee)
 
         if isinstance(_resource_records, list):
-            if len(_resource_records) == 0:
-                log.debug(
-                        _("No resource (collection) records found for %r") % (
-                                attendee
-                            ),
-                        level=9
-                    )
-
-            else:
-                log.debug(
-                        _("Resource record(s): %r") % (_resource_records),
-                        level=8
-                    )
-
+            if len(_resource_records) > 0:
                 resource_records.extend(_resource_records)
-        elif isinstance(_resource_records, basestring):
-            log.debug(
-                    _("Resource record: %r") % (_resource_records),
-                    level=8
-                )
-
-            resource_records.append(_resource_records)
-        else:
-            log.warning(
-                    _("Resource reservation made but no resource records found")
-                )
-
-    # TODO: Escape the non-implementation of the free-form, undefined RESOURCES
-    # list(s) in iTip. We don't know how to handle this yet!
-    resources_raw = []
-
-    # TODO: We expect the format of an resource line to literally be:
-    #
-    #   RESOURCES:MAILTO:resource-car@kolabsys.com
-    #
-    # which makes the resources_raw contain:
-    #
-    #   MAILTO:resource-car@kolabsys.com
-    #
-    resources = [x.split(':')[-1] for x in resources_raw]
-    for resource in resources:
-        log.debug(
-                _("Checking if resource %r is a resource (collection)") % (
-                        resource
-                    ),
-                level=8
-            )
-
-        _resource_records = auth.find_resource(resource)
-        if isinstance(_resource_records, list):
-            if len(_resource_records) == 0:
-                log.debug(
-                        _("No resource (collection) records found for %r") % (
-                                resource
-                            ),
-                        level=8
-                    )
-
+                log.debug(_("Resource record(s): %r") % (_resource_records), level=8)
             else:
-                log.debug(
-                        _("Resource record(s): %r") % (_resource_records),
-                        level=8
-                    )
+                log.debug(_("No resource (collection) records found for %r") % (attendee), level=9)
 
-                resource_records.extend(_resource_records)
         elif isinstance(_resource_records, basestring):
             resource_records.append(_resource_records)
             log.debug(_("Resource record: %r") % (_resource_records), level=8)
-        else:
-            log.warning(
-                    _("Resource reservation made but no resource records found")
-                )
 
-    log.debug(
-            _("The following resources are being referred to in the " + \
-                "iTip: %r") % (
-                    resource_records
-                ),
-            level=8
-        )
+        else:
+            log.warning(_("Resource reservation made but no resource records found"))
+
+    # Escape the non-implementation of the free-form, undefined RESOURCES
+    # list(s) in iTip.
+    if len(resource_records) == 0:
+
+        # TODO: We don't know how to handle this yet!
+        # We expect the format of an resource line to literally be:
+        #   RESOURCES:MAILTO:resource-car@kolabsys.com
+        resources_raw = []
+
+        resources = [x.split(':')[-1] for x in resources_raw]
+
+        # Limit the attendee resources to the one that is actually invited
+        # with the current message.
+        if recipient_email is not None:
+            resources = [a for a in resources if a == recipient_email]
+
+        for resource in resources:
+            log.debug(_("Checking if resource %r is a resource (collection)") % (resource), level=8)
+
+            _resource_records = auth.find_resource(resource)
+            if isinstance(_resource_records, list):
+                if len(_resource_records) > 0:
+                    resource_records.extend(_resource_records)
+                    log.debug(_("Resource record(s): %r") % (_resource_records), level=8)
+
+                else:
+                    log.debug(_("No resource (collection) records found for %r") % (resource), level=8)
+
+            elif isinstance(_resource_records, basestring):
+                resource_records.append(_resource_records)
+                log.debug(_("Resource record: %r") % (_resource_records), level=8)
+            else:
+                log.warning(_("Resource reservation made but no resource records found"))
+
+
+    log.debug(_("The following resources are being referred to in the " + \
+                "iTip: %r") % (resource_records), level=8)
 
     auth.disconnect()
 
     return resource_records
 
+
 def send_response(from_address, itip_events):
+    """
+        Send the given iCal events as a valid iTip response to the organizer.
+        In case the invited resource coolection was delegated to a concrete
+        resource, this will send an additional DELEGATED response message.
+    """
+
     import smtplib
     smtp = smtplib.SMTP("localhost", 10027)
 
@@ -748,12 +708,12 @@ def send_response(from_address, itip_events):
         itip_events = [ itip_events ]
 
     for itip_event in itip_events:
-        attendee = itip_event['xml'].get_attendee(from_address)
+        attendee = itip_event['xml'].get_attendee_by_email(from_address)
         participant_status = itip_event['xml'].get_ical_attendee_participant_status(attendee)
 
         if participant_status == "DELEGATED":
             # Extra actions to take
-            delegator = itip_event['xml'].get_attendee(from_address)
+            delegator = itip_event['xml'].get_attendee_by_email(from_address)
             delegatee = [a for a in itip_event['xml'].get_attendees() if from_address in [b.email() for b in a.get_delegated_from()]][0]
 
             message = itip_event['xml'].to_message_itip(delegatee.get_email(), method="REPLY", participant_status=itip_event['xml'].get_ical_attendee_participant_status(delegatee))

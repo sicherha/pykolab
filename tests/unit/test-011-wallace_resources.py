@@ -47,6 +47,8 @@ DESCRIPTION:test
 ORGANIZER;CN=3D"Doe, John":mailto:john.doe@example.org
 ATTENDEE;ROLE=3DREQ-PARTICIPANT;PARTSTAT=3DNEEDS-ACTION;RSVP=3DTRUE:mailt=
 o:resource-collection-car@example.org
+ATTENDEE;ROLE=3DOPTIONAL;PARTSTAT=3DNEEDS-ACTION;RSVP=3DTRUE:mailto:anoth=
+er-resource@example.org
 TRANSP:OPAQUE
 END:VEVENT
 END:VCALENDAR
@@ -305,15 +307,20 @@ class TestWallaceResources(unittest.TestCase):
 
     def test_002_resource_record_from_email_address(self):
         res = module_resources.resource_record_from_email_address("doe@example.org")
-        # assert call to (pathced) pykolab.auth.Auth.find_resource()
+        # assert call to (patched) pykolab.auth.Auth.find_resource()
         self.assertEqual(len(res), 1);
         self.assertEqual("uid=doe,dc=example,dc=org", res[0]);
 
 
     def test_003_resource_records_from_itip_events(self):
-        itips = module_resources.itip_events_from_message(message_from_string(itip_multipart))
+        message = message_from_string(itip_multipart)
+        itips = module_resources.itip_events_from_message(message)
+
         res = module_resources.resource_records_from_itip_events(itips)
-        self.assertEqual(len(res), 1);
+        self.assertEqual(len(res), 2, "Return all attendee resources");
+
+        res = module_resources.resource_records_from_itip_events(itips, message['To'])
+        self.assertEqual(len(res), 1, "Return only recipient resource");
         self.assertEqual("uid=resource-collection-car,dc=example,dc=org", res[0]);
 
 
