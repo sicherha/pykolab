@@ -686,7 +686,12 @@ class Event(object):
                 else:
                     rsvp = None
 
-                self.add_attendee(address, name=name, rsvp=rsvp, role=role, participant_status=partstat)
+                if params.has_key('CUTYPE'):
+                    cutype = params['CUTYPE']
+                else:
+                    cutype = kolabformat.CutypeIndividual
+
+                self.add_attendee(address, name=name, rsvp=rsvp, role=role, participant_status=partstat, cutype=cutype)
 
     def set_ical_dtend(self, dtend):
         self.set_end(dtend)
