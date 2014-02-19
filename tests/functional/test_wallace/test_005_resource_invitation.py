@@ -124,6 +124,35 @@ class TestResourceInvitation(unittest.TestCase):
 
             time.sleep(1)
 
+        imap.disconnect()
+
+        return found
+
+    def check_resource_calendar_event(self, mailbox, uid=None):
+        imap = IMAP()
+        imap.connect()
+
+        imap.imap.m.select(u'"'+mailbox+'"')
+        typ, data = imap.imap.m.search(None, '(UNDELETED HEADER SUBJECT "%s")' % (uid) if uid else '(UNDELETED HEADER X-Kolab-Type "application/x-vnd.kolab.event")')
+
+        found = None
+
+        for num in data[0].split():
+            typ, data = imap.imap.m.fetch(num, '(RFC822)')
+            event_message = message_from_string(data[0][1])
+
+            for part in event_message.walk():
+                # return matching UID or first event found
+                if (not uid or event_message['subject'] == uid) and part.get_content_type() == "application/calendar+xml":
+                    payload = part.get_payload(decode=True)
+                    found = pykolab.xml.event_from_string(payload)
+                    break
+
+            if found:
+                break
+
+        imap.disconnect()
+
         return found
 
 
@@ -143,3 +172,6 @@ class TestResourceInvitation(unittest.TestCase):
         response = self.check_message_received("Meeting Request ACCEPTED")
         self.assertIsInstance(response, email.message.Message)
 
+        event = self.check_resource_calendar_event(self.audi['kolabtargetfolder'], '626421779C777FBE9C9B85A80D04DDFA-A4BF5BBB9FEAA271')
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_summary(), "test")

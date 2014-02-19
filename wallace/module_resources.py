@@ -334,8 +334,6 @@ def read_resource_calendar(resource_rec, itip_events, imap):
     imap.imap.m.select(mailbox)
     typ, data = imap.imap.m.search(None, 'ALL')
 
-    num_messages = len(data[0].split())
-
     for num in data[0].split():
         # For efficiency, makes the routine non-deterministic
         if resource_rec['conflict']:
