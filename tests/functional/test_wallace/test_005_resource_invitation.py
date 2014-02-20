@@ -2,6 +2,8 @@ import time
 import pykolab
 import smtplib
 import email
+import datetime
+import uuid
 
 from pykolab import wap_client
 from pykolab.auth import Auth
@@ -43,10 +45,10 @@ PRODID:-//Roundcube Webmail 0.9-0.3.el6.kolab_3.0//NONSGML Calendar//EN
 CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
-UID:626421779C777FBE9C9B85A80D04DDFA-A4BF5BBB9FEAA271
+UID:%s
 DTSTAMP:20120713T1254140
-DTSTART;TZID=Europe/London:20140713T100000
-DTEND;TZID=Europe/London:20140713T160000
+DTSTART;TZID=Europe/London:%s
+DTEND;TZID=Europe/London:%s
 SUMMARY:test
 DESCRIPTION:test
 ORGANIZER;CN="Doe, John":mailto:john.doe@example.org
@@ -76,7 +78,8 @@ class TestResourceInvitation(unittest.TestCase):
         self.john = {
             'displayname': 'John Doe',
             'mail': 'john.doe@example.org',
-            'sender': 'John Doe <john.doe@example.org>'
+            'sender': 'John Doe <john.doe@example.org>',
+            'mailbox': 'user/john.doe@example.org'
         }
 
         from tests.functional.user_add import user_add
@@ -99,14 +102,28 @@ class TestResourceInvitation(unittest.TestCase):
         smtp = smtplib.SMTP('localhost', 10026)
         smtp.sendmail(from_addr, to_addr, msg_source)
 
-    def send_itip_invitation(self, resource_email):
-        self.send_message(itip_invitation % (resource_email, resource_email), resource_email)
+    def send_itip_invitation(self, resource_email, start=None):
+        if start is None:
+            start = datetime.datetime.now()
 
-    def check_message_received(self, subject):
+        uid = str(uuid.uuid4())
+        end = start + datetime.timedelta(hours=4)
+        self.send_message(itip_invitation % (
+                resource_email,
+                uid,
+                start.strftime('%Y%m%dT%H%M%S'),
+                end.strftime('%Y%m%dT%H%M%S'),
+                resource_email
+            ),
+            resource_email)
+
+        return uid
+
+    def check_message_received(self, subject, from_addr=None):
         imap = IMAP()
         imap.connect()
-        imap.set_acl("user/john.doe@example.org", "cyrus-admin", "lrs")
-        imap.imap.m.select("user/john.doe@example.org")
+        imap.set_acl(self.john['mailbox'], "cyrus-admin", "lrs")
+        imap.imap.m.select(self.john['mailbox'])
 
         found = None
         max_tries = 20
@@ -114,7 +131,7 @@ class TestResourceInvitation(unittest.TestCase):
         while not found and max_tries > 0:
             max_tries -= 1
 
-            typ, data = imap.imap.m.search(None, 'ALL')
+            typ, data = imap.imap.m.search(None, '(UNDELETED HEADER FROM "%s")' % (from_addr) if from_addr else 'UNDELETED')
             for num in data[0].split():
                 typ, msg = imap.imap.m.fetch(num, '(RFC822)')
                 message = message_from_string(msg[0][1])
@@ -141,9 +158,12 @@ class TestResourceInvitation(unittest.TestCase):
             typ, data = imap.imap.m.fetch(num, '(RFC822)')
             event_message = message_from_string(data[0][1])
 
+            # return matching UID or first event found
+            if uid and event_message['subject'] != uid:
+                continue
+
             for part in event_message.walk():
-                # return matching UID or first event found
-                if (not uid or event_message['subject'] == uid) and part.get_content_type() == "application/calendar+xml":
+                if part.get_content_type() == "application/calendar+xml":
                     payload = part.get_payload(decode=True)
                     found = pykolab.xml.event_from_string(payload)
                     break
@@ -154,6 +174,19 @@ class TestResourceInvitation(unittest.TestCase):
         imap.disconnect()
 
         return found
+
+    def purge_mailbox(self, mailbox):
+        imap = IMAP()
+        imap.connect()
+        imap.set_acl(mailbox, "cyrus-admin", "lrwcdest")
+        imap.imap.m.select(u'"'+mailbox+'"')
+
+        typ, data = imap.imap.m.search(None, 'ALL')
+        for num in data[0].split():
+            imap.imap.m.store(num, '+FLAGS', '\\Deleted')
+
+        imap.imap.m.expunge()
+        imap.disconnect()
 
 
     def test_001_resource_from_email_address(self):
@@ -167,11 +200,39 @@ class TestResourceInvitation(unittest.TestCase):
 
 
     def test_002_invite_resource(self):
-        self.send_itip_invitation(self.audi['mail'])
+        uid = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,7,13, 10,0,0))
 
-        response = self.check_message_received("Meeting Request ACCEPTED")
+        response = self.check_message_received("Meeting Request ACCEPTED", self.audi['mail'])
         self.assertIsInstance(response, email.message.Message)
 
-        event = self.check_resource_calendar_event(self.audi['kolabtargetfolder'], '626421779C777FBE9C9B85A80D04DDFA-A4BF5BBB9FEAA271')
+        event = self.check_resource_calendar_event(self.audi['kolabtargetfolder'], uid)
         self.assertIsInstance(event, pykolab.xml.Event)
         self.assertEqual(event.get_summary(), "test")
+
+
+    def test_003_invite_resource_conflict(self):
+        uid = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,7,13, 12,0,0))
+
+        response = self.check_message_received("Meeting Request DECLINED", self.audi['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+        self.assertEqual(self.check_resource_calendar_event(self.audi['kolabtargetfolder'], uid), None)
+
+
+    def test_004_invite_resource_collection(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        uid = self.send_itip_invitation(self.cars['mail'], datetime.datetime(2014,7,13, 12,0,0))
+
+        # one of the collection members accepted the reservation
+        accept = self.check_message_received("Meeting Request ACCEPTED")
+        self.assertIsInstance(accept, email.message.Message)
+        self.assertIn(accept['from'], [ self.passat['mail'], self.boxter['mail'] ])
+
+        # check booking in the delegatee's resource calendar
+        delegatee = self.passat if accept['from'] == self.passat['mail'] else self.boxter
+        self.assertIsInstance(self.check_resource_calendar_event(delegatee['kolabtargetfolder'], uid), pykolab.xml.Event)
+
+        # resource collection respons with a DELEGATED message
+        response = self.check_message_received("Meeting Request DELEGATED", self.cars['mail'])
+        self.assertIsInstance(response, email.message.Message)

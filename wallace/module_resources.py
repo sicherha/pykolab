@@ -187,19 +187,19 @@ def execute(*args, **kw):
 
     # A simple list of merely resource entry IDs that hold any relevance to the
     # iTip events
-    resource_records = resource_records_from_itip_events(itip_events, resource_recipient)
+    resource_dns = resource_records_from_itip_events(itip_events, resource_recipient)
 
     # Get the resource details, which includes details on the IMAP folder
     resources = {}
-    for resource_record in list(set(resource_records)):
+    for resource_dn in list(set(resource_dns)):
         # Get the attributes for the record
         # See if it is a resource collection
         #   If it is, expand to individual resources
         #   If it is not, ...
-        resource_attrs = auth.get_entry_attributes(None, resource_record, ['*'])
+        resource_attrs = auth.get_entry_attributes(None, resource_dn, ['*'])
         if not 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
             if resource_attrs.has_key('uniquemember'):
-                resources[resource_record] = resource_attrs
+                resources[resource_dn] = resource_attrs
                 for uniquemember in resource_attrs['uniquemember']:
                     resource_attrs = auth.get_entry_attributes(
                             None,
@@ -209,11 +209,12 @@ def execute(*args, **kw):
 
                     if 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
                         resources[uniquemember] = resource_attrs
-                        resources[uniquemember]['memberof'] = resource_record
+                        resources[uniquemember]['memberof'] = resource_dn
+                        resource_dns.append(uniquemember)
         else:
-            resources[resource_record] = resource_attrs
+            resources[resource_dn] = resource_attrs
 
-    log.debug(_("Resources: %r") % (resources), level=8)
+    log.debug(_("Resources: %r, %r") % (resource_dns, resources), level=8)
 
     # For each resource, determine if any of the events in question is in
     # conflict.
@@ -239,11 +240,8 @@ def execute(*args, **kw):
 
     done = False
 
-    for resource in resources.keys():
+    for resource in resource_dns:
         log.debug(_("Polling for resource %r") % (resource), level=9)
-
-        if done:
-            break
 
         if not resources.has_key(resource):
             log.debug(_("Resource %r has been popped from the list") % (resource), level=9)
@@ -251,9 +249,30 @@ def execute(*args, **kw):
 
         if not resources[resource].has_key('conflicting_events'):
             log.debug(_("Resource is a collection"), level=9)
+
+            # check if there are non-conflicting collection members
+            conflicting_members = [x for x in resources[resource]['uniquemember'] if resources[x]['conflict']]
+
+            # found at least one non-conflicting member, remove the conflicting ones and continue
+            if len(conflicting_members) < len(resources[resource]['uniquemember']):
+                for member in conflicting_members:
+                    resources[resource]['uniquemember'] = [x for x in resources[resource]['uniquemember'] if x != member]
+                    del resources[member]
+
+                log.debug(_("Removed conflicting resources from %r: (%r) => %r") % (
+                    resource, conflicting_members, resources[resource]['uniquemember']
+                ), level=9)
+
+            else:
+                # TODO: shuffle existing bookings of collection members in order
+                # to make one availale for the requested time
+                pass
+
             continue
 
         if len(resources[resource]['conflicting_events']) > 0:
+            log.debug(_("Conflicting events: %r for resource %r") % (resources[resource]['conflicting_events'], resource), level=9)
+
             # This is the event being conflicted with!
             for itip_event in itip_events:
                 # Now we have the event that was conflicting
@@ -268,9 +287,6 @@ def execute(*args, **kw):
                     if resources[resource].has_key('memberof'):
                         original_resource = resources[resources[resource]['memberof']]
 
-                        # TODO: shuffle existing bookings of collection members in order
-                        # to make one availale for the requested time
-
                     if original_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
                         decline_reservation_request(itip_event, original_resource)
                         done = True
@@ -279,6 +295,7 @@ def execute(*args, **kw):
             # No conflicts, go accept
             for itip_event in itip_events:
                 if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
+                    log.debug(_("Accept invitation for individual resource %r / %r") % (resource, resources[resource]['mail']), level=9)
                     accept_reservation_request(itip_event, resources[resource], imap)
                     done = True
 
@@ -292,6 +309,8 @@ def execute(*args, **kw):
                         # Randomly selects a target resource from the resource collection.
                         _target_resource = resources[original_resource['uniquemember'][random.randint(0,(len(original_resource['uniquemember'])-1))]]
 
+                        log.debug(_("Delegate invitation for resource collection %r to %r") % (original_resource['mail'], _target_resource['mail']), level=9)
+
                     if original_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
                         #
                         # Delegate:
@@ -301,8 +320,13 @@ def execute(*args, **kw):
                         #
                         itip_event['xml'].delegate(original_resource['mail'], _target_resource['mail'])
 
-                        accept_reservation_request(itip_event, _target_resource, imap)
+                        accept_reservation_request(itip_event, _target_resource, imap, delegator=original_resource)
                         done = True
+
+        if done:
+            break
+
+        # for resource in resource_dns:
 
     auth.disconnect()
     del auth
@@ -391,7 +415,7 @@ def read_resource_calendar(resource_rec, itip_events, imap):
     return resource_rec['conflict']
 
 
-def accept_reservation_request(itip_event, resource, imap):
+def accept_reservation_request(itip_event, resource, imap, delegator=None):
     """
         Accepts the given iTip event by booking it into the resource's
         calendar. Then set the attendee status of the given resource to
@@ -418,7 +442,7 @@ def accept_reservation_request(itip_event, resource, imap):
             itip_event['xml'].to_message().as_string()
         )
 
-    send_response(resource['mail'], itip_event)
+    send_response(delegator['mail'] if delegator else resource['mail'], itip_event)
 
 
 def decline_reservation_request(itip_event, resource):
@@ -432,7 +456,7 @@ def decline_reservation_request(itip_event, resource):
         "DECLINED"
     )
 
-    send_response(resource, itip_event)
+    send_response(resource['mail'], itip_event)
 
 
 def itip_events_from_message(message):
