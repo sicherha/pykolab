@@ -135,5 +135,17 @@ END:VCALENDAR
         self.assertEqual(event.get_attendee_by_email("max@imum.com").get_cutype(), kolabformat.CutypeResource)
         self.assertEqual(event.get_sequence(), 2)
 
+    def test_019_as_string_itip(self):
+        self.event.set_summary("test")
+        self.event.set_start(datetime.datetime(2014, 05, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
+        self.event.set_end(datetime.datetime(2014, 05, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
+
+        ical = icalendar.Calendar.from_ical(self.event.as_string_itip())
+        event = ical.walk('VEVENT')[0]
+
+        self.assertEqual(event['uid'], self.event.get_uid())
+        self.assertEqual(event['summary'], "test")
+        self.assertIsInstance(event['dtstamp'].dt, datetime.datetime)
+
 if __name__ == '__main__':
     unittest.main()

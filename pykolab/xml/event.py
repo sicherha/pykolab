@@ -404,9 +404,8 @@ class Event(object):
         return self.get_end()
 
     def get_ical_dtstamp(self):
-        return
         try:
-            retval = self.event.lastModified()
+            retval = self.get_lastmodified()
             if retval == None or retval == "":
                 return datetime.datetime.now()
         except:
