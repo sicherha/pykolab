@@ -560,7 +560,7 @@ def itip_events_from_message(message):
         # The iTip part MUST be Content-Type: text/calendar (RFC 6047, section 2.4)
         # But in real word, other mime-types are used as well
         if part.get_content_type() in [ "text/calendar", "text/x-vcalendar", "application/ics" ]:
-            if not part.get_param('method').upper() in itip_methods:
+            if not str(part.get_param('method')).upper() in itip_methods:
                 log.error(
                         _("Method %r not really interesting for us.") % (
                                 part.get_param('method')
@@ -664,9 +664,12 @@ def resource_record_from_email_address(email_address):
     """
         Resolves the given email address to a resource entity
     """
+    global auth
 
-    auth = Auth()
-    auth.connect()
+    if not auth:
+        auth = Auth()
+        auth.connect()
+
     resource_records = []
 
     log.debug(
@@ -696,9 +699,11 @@ def resource_records_from_itip_events(itip_events, recipient_email=None):
         Given a list of itip_events, determine which resources have been
         invited as attendees and/or resources.
     """
+    global auth
 
-    auth = Auth()
-    auth.connect()
+    if not auth:
+        auth = Auth()
+        auth.connect()
 
     resource_records = []
 
