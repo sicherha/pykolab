@@ -52,7 +52,7 @@ DTEND;TZID=Europe/London:%s
 SUMMARY:test
 DESCRIPTION:test
 ORGANIZER;CN="Doe, John":mailto:john.doe@example.org
-ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:%s
+ATTENDEE;ROLE=REQ-PARTICIPANT;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:%s
 TRANSP:OPAQUE
 END:VEVENT
 END:VCALENDAR
@@ -94,7 +94,7 @@ SEQUENCE:2
 SUMMARY:test
 DESCRIPTION:test
 ORGANIZER;CN="Doe, John":mailto:john.doe@example.org
-ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:%s
+ATTENDEE;ROLE=REQ-PARTICIPANT;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:%s
 TRANSP:OPAQUE
 END:VEVENT
 END:VCALENDAR
@@ -305,7 +305,7 @@ class TestResourceInvitation(unittest.TestCase):
     def test_002_invite_resource(self):
         uid = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,7,13, 10,0,0))
 
-        response = self.check_message_received("Meeting Request ACCEPTED", self.audi['mail'])
+        response = self.check_message_received("Reservation Request for test was ACCEPTED", self.audi['mail'])
         self.assertIsInstance(response, email.message.Message)
 
         event = self.check_resource_calendar_event(self.audi['kolabtargetfolder'], uid)
@@ -316,7 +316,7 @@ class TestResourceInvitation(unittest.TestCase):
     def test_003_invite_resource_conflict(self):
         uid = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,7,13, 12,0,0))
 
-        response = self.check_message_received("Meeting Request DECLINED", self.audi['mail'])
+        response = self.check_message_received("Reservation Request for test was DECLINED", self.audi['mail'])
         self.assertIsInstance(response, email.message.Message)
 
         self.assertEqual(self.check_resource_calendar_event(self.audi['kolabtargetfolder'], uid), None)
@@ -328,29 +328,30 @@ class TestResourceInvitation(unittest.TestCase):
         uid = self.send_itip_invitation(self.cars['mail'], datetime.datetime(2014,7,13, 12,0,0))
 
         # one of the collection members accepted the reservation
-        accept = self.check_message_received("Meeting Request ACCEPTED")
+        accept = self.check_message_received("Reservation Request for test was ACCEPTED")
         self.assertIsInstance(accept, email.message.Message)
-        self.assertIn(accept['from'], [ self.passat['mail'], self.boxter['mail'] ])
+
+        delegatee = self.passat if accept['from'].find(self.passat['mail']) >= 0 else self.boxter
+        self.assertIn(delegatee['mail'], accept['from'])
 
         # check booking in the delegatee's resource calendar
-        delegatee = self.passat if accept['from'] == self.passat['mail'] else self.boxter
         self.assertIsInstance(self.check_resource_calendar_event(delegatee['kolabtargetfolder'], uid), pykolab.xml.Event)
 
-        # resource collection respons with a DELEGATED message
-        response = self.check_message_received("Meeting Request DELEGATED", self.cars['mail'])
+        # resource collection responds with a DELEGATED message
+        response = self.check_message_received("Reservation Request for test was DELEGATED", self.cars['mail'])
         self.assertIsInstance(response, email.message.Message)
 
 
     def test_005_rescheduling_reservation(self):
         uid = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,5,1, 10,0,0))
 
-        response = self.check_message_received("Meeting Request ACCEPTED", self.audi['mail'])
+        response = self.check_message_received("Reservation Request for test was ACCEPTED", self.audi['mail'])
         self.assertIsInstance(response, email.message.Message)
 
         self.purge_mailbox(self.john['mailbox'])
         self.send_itip_update(self.audi['mail'], uid, datetime.datetime(2014,5,1, 12,0,0)) # conflict with myself
 
-        response = self.check_message_received("Meeting Request ACCEPTED", self.audi['mail'])
+        response = self.check_message_received("Reservation Request for test was ACCEPTED", self.audi['mail'])
         self.assertIsInstance(response, email.message.Message)
 
         event = self.check_resource_calendar_event(self.audi['kolabtargetfolder'], uid)
@@ -371,5 +372,5 @@ class TestResourceInvitation(unittest.TestCase):
         # make new reservation to the now free'd slot
         self.send_itip_invitation(self.boxter['mail'], datetime.datetime(2014,5,1, 9,0,0))
 
-        response = self.check_message_received("Meeting Request ACCEPTED", self.boxter['mail'])
+        response = self.check_message_received("Reservation Request for test was ACCEPTED", self.boxter['mail'])
         self.assertIsInstance(response, email.message.Message)

@@ -358,7 +358,7 @@ def execute(*args, **kw):
                         # - delegator: the original resource collection
                         # - delegatee: the target resource
                         #
-                        itip_event['xml'].delegate(original_resource['mail'], _target_resource['mail'])
+                        itip_event['xml'].delegate(original_resource['mail'], _target_resource['mail'], _target_resource['cn'])
 
                         accept_reservation_request(itip_event, _target_resource, original_resource)
                         done = True
@@ -822,6 +822,7 @@ def send_response(from_address, itip_events):
     for itip_event in itip_events:
         attendee = itip_event['xml'].get_attendee_by_email(from_address)
         participant_status = itip_event['xml'].get_ical_attendee_participant_status(attendee)
+        message_text = None
 
         if participant_status == "DELEGATED":
             # Extra actions to take
@@ -834,9 +835,14 @@ def send_response(from_address, itip_events):
             # restore list of attendees after to_message_itip()
             itip_event['xml']._attendees = [ delegator, delegatee ]
             itip_event['xml'].event.setAttendees(itip_event['xml']._attendees)
-            participant_status = "DELEGATED"
 
-        message = itip_event['xml'].to_message_itip(from_address, method="REPLY", participant_status=participant_status)
+            participant_status = "DELEGATED"
+            message_text = _("""
+                Your reservation request was delegated to "%s"
+                which is available for the requested time.
+            """) % (delegatee.get_name())
+
+        message = itip_event['xml'].to_message_itip(from_address, method="REPLY", participant_status=participant_status, message_text=message_text)
         smtp.sendmail(message['From'], message['To'], message.as_string())
 
     smtp.quit()

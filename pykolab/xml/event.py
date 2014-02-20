@@ -153,12 +153,15 @@ class Event(object):
         elif hasattr(cal, 'as_string'):
             return cal.as_string()
 
-    def delegate(self, delegators, delegatees):
+    def delegate(self, delegators, delegatees, names=None):
         if not isinstance(delegators, list):
             delegators = [delegators]
 
         if not isinstance(delegatees, list):
             delegatees = [delegatees]
+
+        if not isinstance(names, list):
+            names = [names]
 
         _delegators = []
         for delegator in delegators:
@@ -166,12 +169,12 @@ class Event(object):
 
         _delegatees = []
 
-        for delegatee in delegatees:
+        for i,delegatee in enumerate(delegatees):
             try:
                 _delegatees.append(self.get_attendee(delegatee))
             except:
                 # TODO: An iTip needs to be sent out to the new attendee
-                self.add_attendee(delegatee)
+                self.add_attendee(delegatee, names[i] if i < len(names) else None)
                 _delegatees.append(self.get_attendee(delegatee))
 
         for delegator in _delegators:
@@ -916,7 +919,7 @@ class Event(object):
 
         return msg
 
-    def to_message_itip(self, from_address, method="REQUEST", participant_status="ACCEPTED"):
+    def to_message_itip(self, from_address, method="REQUEST", participant_status="ACCEPTED", subject=None, message_text=None):
         from email.MIMEMultipart import MIMEMultipart
         from email.MIMEBase import MIMEBase
         from email.MIMEText import MIMEText
@@ -979,18 +982,18 @@ class Event(object):
 
         msg['Date'] = formatdate(localtime=True)
 
-        # TODO: Should allow for localization
-        text = utils.multiline_message("""
-                    This is a response to one of your event requests.
-            """)
+        if subject is None:
+            subject = _("Reservation Request for %s was %s") % (self.get_summary(), participant_status)
 
-        msg.attach( MIMEText(text) )
+        msg["Subject"] = subject
+
+        if message_text is None:
+            message_text = _("""This is an automated response to one of your event requests.""")
+
+        msg.attach(MIMEText(utils.multiline_message(message_text)))
 
         part = MIMEBase('text', 'calendar', charset='UTF-8', method=method)
         del part['MIME-Version']  # mime parts don't need this
-
-        # TODO: Should allow for localization
-        msg["Subject"] = "Meeting Request %s" % (participant_status)
 
         part.set_payload(self.as_string_itip(method=method))
 
