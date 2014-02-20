@@ -114,7 +114,7 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(hasattr(_start,'tzinfo'), False)
         self.assertEqual(self.event.get_start().__str__(), "2012-05-23")
 
-    def test_018_from_ical_cutype(self):
+    def test_018_load_from_ical(self):
         ical_str = """BEGIN:VCALENDAR
 VERSION:2.0
 CALSCALE:GREGORIAN
@@ -126,12 +126,14 @@ ATTENDEE;CN="Doe, Jane";CUTYPE=INDIVIDUAL;PARTSTAT=ACCEPTED
  ;ROLE=REQ-PARTICIPANT;RSVP=FALSE:MAILTO:jane@doe.org
 ATTENDEE;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION
  ;ROLE=OPTIONAL;RSVP=FALSE:MAILTO:max@imum.com
+SEQUENCE:2
 END:VEVENT
 END:VCALENDAR
 """
         ical = icalendar.Calendar.from_ical(ical_str)
         event = event_from_ical(ical.walk('VEVENT')[0].to_ical())
         self.assertEqual(event.get_attendee_by_email("max@imum.com").get_cutype(), kolabformat.CutypeResource)
+        self.assertEqual(event.get_sequence(), 2)
 
 if __name__ == '__main__':
     unittest.main()

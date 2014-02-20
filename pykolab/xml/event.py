@@ -434,6 +434,9 @@ class Event(object):
         if status in self.status_map.values():
             return [k for k, v in self.status_map.iteritems() if v == status][0]
 
+    def get_ical_sequence(self):
+        return str(self.event.sequence()) if self.event.sequence() else None
+
     def get_lastmodified(self):
         try:
             _datetime = self.event.lastModified()
@@ -523,6 +526,9 @@ class Event(object):
         else:
             self.set_uid(uuid.uuid4())
             return self.get_uid()
+
+    def get_sequence(self):
+        return self.event.sequence()
 
     def set_attendee_participant_status(self, attendee, status):
         """
@@ -646,6 +652,8 @@ class Event(object):
             self.set_ical_summary(value)
         elif attr == "priority":
             self.set_ical_priority(value)
+        elif attr == "sequence":
+            self.set_ical_sequence(value)
         elif attr == "attendee":
             self.set_ical_attendee(value)
         elif attr == "organizer":
@@ -720,6 +728,9 @@ class Event(object):
     def set_ical_priority(self, priority):
         self.set_priority(priority)
 
+    def set_ical_sequence(self, sequence):
+        self.set_sequence(sequence)
+
     def set_ical_status(self, status):
         if status in self.status_map.keys():
             self.event.setStatus(self.status_map[status])
@@ -785,6 +796,9 @@ class Event(object):
 
     def set_priority(self, priority):
         self.event.setPriority(priority)
+
+    def set_sequence(self, sequence):
+        self.event.setSequence(int(sequence))
 
     def set_recurrence(self, recurrence):
         self.event.setRecurrenceRule(recurrence)
