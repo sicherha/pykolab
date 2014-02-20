@@ -46,7 +46,7 @@ CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
 UID:%s
-DTSTAMP:20120713T1254140
+DTSTAMP:20140213T1254140
 DTSTART;TZID=Europe/London:%s
 DTEND;TZID=Europe/London:%s
 SUMMARY:test
@@ -57,6 +57,78 @@ TRANSP:OPAQUE
 END:VEVENT
 END:VCALENDAR
 --=_c8894dbdb8baeedacae836230e3436fd--
+"""
+
+itip_update = """MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="=_c8894dbdb8baeedacae836230e3436fd"
+From: "Doe, John" <john.doe@example.org>
+Date: Tue, 25 Feb 2014 13:54:14 +0100
+Message-ID: <240fe7ae7e139129e9eb95213c1016d7@example.org>
+User-Agent: Roundcube Webmail/0.9-0.3.el6.kolab_3.0
+To: %s
+Subject: "test" has been updated
+
+--=_c8894dbdb8baeedacae836230e3436fd
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+
+*test* updated
+
+--=_c8894dbdb8baeedacae836230e3436fd
+Content-Type: text/calendar; charset=UTF-8; method=REQUEST; name=event.ics
+Content-Disposition: attachment; filename=event.ics
+Content-Transfer-Encoding: 8bit
+
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Roundcube Webmail 0.9-0.3.el6.kolab_3.0//NONSGML Calendar//EN
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:%s
+DTSTAMP:20140215T1254140
+DTSTART;TZID=Europe/London:%s
+DTEND;TZID=Europe/London:%s
+SEQUENCE:2
+SUMMARY:test
+DESCRIPTION:test
+ORGANIZER;CN="Doe, John":mailto:john.doe@example.org
+ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:%s
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
+--=_c8894dbdb8baeedacae836230e3436fd--
+"""
+
+itip_cancellation = """Return-Path: <john.doe@example.org>
+Content-Type: text/calendar; method=CANCEL; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+To: %s
+From: john.doe@example.org
+Date: Mon, 24 Feb 2014 11:27:28 +0100
+Message-ID: <1a3aa8995e83dd24cf9247e538ac91ff@example.org>
+Subject: "test" cancelled
+
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Roundcube Webmail 0.9-0.3.el6.kolab_3.0//NONSGML Calendar//EN
+CALSCALE:GREGORIAN
+METHOD:CANCEL
+BEGIN:VEVENT
+UID:%s
+DTSTAMP:20140218T1254140
+DTSTART;TZID=3DEurope/London:20120713T100000
+DTEND;TZID=3DEurope/London:20120713T110000
+SUMMARY:test
+DESCRIPTION:test
+ORGANIZER;CN=3D"Doe, John":mailto:john.doe@example.org
+ATTENDEE;ROLE=3DREQ-PARTICIPANT;PARTSTAT=3DACCEPTED;RSVP=3DTRUE:mailt=
+o:%s
+TRANSP:OPAQUE
+SEQUENCE:3
+END:VEVENT
+END:VCALENDAR
 """
 
 class TestResourceInvitation(unittest.TestCase):
@@ -119,6 +191,33 @@ class TestResourceInvitation(unittest.TestCase):
 
         return uid
 
+    def send_itip_update(self, resource_email, uid, start=None):
+        if start is None:
+            start = datetime.datetime.now()
+
+        end = start + datetime.timedelta(hours=4)
+        self.send_message(itip_update % (
+                resource_email,
+                uid,
+                start.strftime('%Y%m%dT%H%M%S'),
+                end.strftime('%Y%m%dT%H%M%S'),
+                resource_email
+            ),
+            resource_email)
+
+        return uid
+
+    def send_itip_cancel(self, resource_email, uid):
+        self.send_message(itip_cancellation % (
+                resource_email,
+                uid,
+                resource_email
+            ),
+            resource_email)
+
+        return uid
+
+
     def check_message_received(self, subject, from_addr=None):
         imap = IMAP()
         imap.connect()
@@ -126,10 +225,10 @@ class TestResourceInvitation(unittest.TestCase):
         imap.imap.m.select(self.john['mailbox'])
 
         found = None
-        max_tries = 20
+        retries = 10
 
-        while not found and max_tries > 0:
-            max_tries -= 1
+        while not found and retries > 0:
+            retries -= 1
 
             typ, data = imap.imap.m.search(None, '(UNDELETED HEADER FROM "%s")' % (from_addr) if from_addr else 'UNDELETED')
             for num in data[0].split():
@@ -150,28 +249,32 @@ class TestResourceInvitation(unittest.TestCase):
         imap.connect()
 
         imap.imap.m.select(u'"'+mailbox+'"')
-        typ, data = imap.imap.m.search(None, '(UNDELETED HEADER SUBJECT "%s")' % (uid) if uid else '(UNDELETED HEADER X-Kolab-Type "application/x-vnd.kolab.event")')
 
         found = None
+        retries = 10
 
-        for num in data[0].split():
-            typ, data = imap.imap.m.fetch(num, '(RFC822)')
-            event_message = message_from_string(data[0][1])
+        while not found and retries > 0:
+            retries -= 1
 
-            # return matching UID or first event found
-            if uid and event_message['subject'] != uid:
-                continue
+            typ, data = imap.imap.m.search(None, '(UNDELETED HEADER SUBJECT "%s")' % (uid) if uid else '(UNDELETED HEADER X-Kolab-Type "application/x-vnd.kolab.event")')
+            for num in data[0].split():
+                typ, data = imap.imap.m.fetch(num, '(RFC822)')
+                event_message = message_from_string(data[0][1])
 
-            for part in event_message.walk():
-                if part.get_content_type() == "application/calendar+xml":
-                    payload = part.get_payload(decode=True)
-                    found = pykolab.xml.event_from_string(payload)
+                # return matching UID or first event found
+                if uid and event_message['subject'] != uid:
+                    continue
+
+                for part in event_message.walk():
+                    if part.get_content_type() == "application/calendar+xml":
+                        payload = part.get_payload(decode=True)
+                        found = pykolab.xml.event_from_string(payload)
+                        break
+
+                if found:
                     break
 
-            if found:
-                break
-
-        imap.disconnect()
+            time.sleep(1)
 
         return found
 
@@ -235,4 +338,38 @@ class TestResourceInvitation(unittest.TestCase):
 
         # resource collection respons with a DELEGATED message
         response = self.check_message_received("Meeting Request DELEGATED", self.cars['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+
+    def test_005_rescheduling_reservation(self):
+        uid = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,5,1, 10,0,0))
+
+        response = self.check_message_received("Meeting Request ACCEPTED", self.audi['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+        self.purge_mailbox(self.john['mailbox'])
+        self.send_itip_update(self.audi['mail'], uid, datetime.datetime(2014,5,1, 12,0,0)) # conflict with myself
+
+        response = self.check_message_received("Meeting Request ACCEPTED", self.audi['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+        event = self.check_resource_calendar_event(self.audi['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_start().hour, 12)
+        self.assertEqual(event.get_sequence(), 2)
+
+
+    def test_006_cancelling_revervation(self):
+        uid = self.send_itip_invitation(self.boxter['mail'], datetime.datetime(2014,5,1, 10,0,0))
+        self.assertIsInstance(self.check_resource_calendar_event(self.boxter['kolabtargetfolder'], uid), pykolab.xml.Event)
+
+        self.send_itip_cancel(self.boxter['mail'], uid)
+
+        time.sleep(2)  # wait for IMAP to update
+        self.assertEqual(self.check_resource_calendar_event(self.boxter['kolabtargetfolder'], uid), None)
+
+        # make new reservation to the now free'd slot
+        self.send_itip_invitation(self.boxter['mail'], datetime.datetime(2014,5,1, 9,0,0))
+
+        response = self.check_message_received("Meeting Request ACCEPTED", self.boxter['mail'])
         self.assertIsInstance(response, email.message.Message)

@@ -62,6 +62,7 @@ def accept(filepath):
             os.path.basename(filepath)
         )
 
+    cleanup()
     os.rename(filepath, new_filepath)
     filepath = new_filepath
     exec('modules.cb_action_ACCEPT(%r, %r)' % ('resources',filepath))
@@ -69,7 +70,21 @@ def accept(filepath):
 def description():
     return """Resource management module."""
 
+def cleanup():
+    global auth, imap
+
+    log.debug("cleanup(): %r, %r" % (auth, imap), level=9)
+
+    auth.disconnect()
+    del auth
+
+    # Disconnect IMAP or we lock the mailbox almost constantly
+    imap.disconnect()
+    del imap
+
 def execute(*args, **kw):
+    global auth, imap
+
     if not os.path.isdir(mybasepath):
         os.makedirs(mybasepath)
 
@@ -216,6 +231,25 @@ def execute(*args, **kw):
 
     log.debug(_("Resources: %r, %r") % (resource_dns, resources), level=8)
 
+
+    # process CANCEL messages
+    done = False
+    for itip_event in itip_events:
+        if itip_event['method'] == "CANCEL":
+            for resource in resource_dns:
+                if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
+                    delete_resource_event(itip_event['uid'], resources[resource])
+
+                # TODO: handle cancellations sent to resource collections. Really?
+
+            done = True
+
+    if done:
+        os.unlink(filepath)
+        cleanup()
+        return
+
+
     # For each resource, determine if any of the events in question is in
     # conflict.
     #
@@ -229,7 +263,7 @@ def execute(*args, **kw):
 
         # sets the 'conflicting' flag and adds a list of conflicting events found
         try:
-            read_resource_calendar(resources[resource], itip_events, imap)
+            read_resource_calendar(resources[resource], itip_events)
         except Exception, e:
             log.error(_("Failed to read resource calendar for %r: %r") % (resource, e))
             continue
@@ -238,8 +272,9 @@ def execute(*args, **kw):
 
     log.debug(_("start: %r, end: %r, total: %r") % (start, end, (end-start)), level=1)
 
-    done = False
 
+    # For each resource (collections are first!)
+    # check conflicts and either accept or decline the reservation request
     for resource in resource_dns:
         log.debug(_("Polling for resource %r") % (resource), level=9)
 
@@ -295,8 +330,13 @@ def execute(*args, **kw):
             # No conflicts, go accept
             for itip_event in itip_events:
                 if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
+                    # replace existing copy of this event
+                    if len(resources[resource]['existing_events']) > 0:
+                        for uid in resources[resource]['existing_events']:
+                            delete_resource_event(uid, resources[resource])
+
                     log.debug(_("Accept invitation for individual resource %r / %r") % (resource, resources[resource]['mail']), level=9)
-                    accept_reservation_request(itip_event, resources[resource], imap)
+                    accept_reservation_request(itip_event, resources[resource])
                     done = True
 
                 else:
@@ -320,32 +360,29 @@ def execute(*args, **kw):
                         #
                         itip_event['xml'].delegate(original_resource['mail'], _target_resource['mail'])
 
-                        accept_reservation_request(itip_event, _target_resource, imap, delegator=original_resource)
+                        accept_reservation_request(itip_event, _target_resource, original_resource)
                         done = True
 
         if done:
             break
 
-        # for resource in resource_dns:
+    # end for resource in resource_dns:
 
-    auth.disconnect()
-    del auth
-
-    # Disconnect IMAP or we lock the mailbox almost constantly
-    imap.disconnect()
-    del imap
+    cleanup()
 
     os.unlink(filepath)
 
 
-def read_resource_calendar(resource_rec, itip_events, imap):
+def read_resource_calendar(resource_rec, itip_events):
     """
         Read all booked events from the given resource's calendar
         and check for conflicts with the given list if itip events
     """
+    global imap
 
     resource_rec['conflict'] = False
     resource_rec['conflicting_events'] = []
+    resource_rec['existing_events'] = []
 
     mailbox = resource_rec['kolabtargetfolder']
 
@@ -401,6 +438,13 @@ def read_resource_calendar(resource_rec, itip_events, imap):
                             else:
                                 conflict = False
 
+                        if event.get_uid() == itip['uid']:
+                            resource_rec['existing_events'].append(itip['uid'])
+
+                            # don't register conflict for updates
+                            if itip['sequence'] > event.get_sequence():
+                                conflict = False
+
                         if conflict:
                             log.info(
                                 _("Event %r conflicts with event %r") % (
@@ -409,13 +453,13 @@ def read_resource_calendar(resource_rec, itip_events, imap):
                                 )
                             )
 
-                            resource_rec['conflicting_events'].append(event)
+                            resource_rec['conflicting_events'].append(event.get_uid())
                             resource_rec['conflict'] = True
 
     return resource_rec['conflict']
 
 
-def accept_reservation_request(itip_event, resource, imap, delegator=None):
+def accept_reservation_request(itip_event, resource, delegator=None):
     """
         Accepts the given iTip event by booking it into the resource's
         calendar. Then set the attendee status of the given resource to
@@ -427,20 +471,12 @@ def accept_reservation_request(itip_event, resource, imap, delegator=None):
         "ACCEPTED"
     )
 
+    saved = save_resource_event(itip_event, resource)
+
     log.debug(
-        _("Adding event to %r") % (resource['kolabtargetfolder']),
+        _("Adding event to %r: %r") % (resource['kolabtargetfolder'], saved),
         level=9
     )
-
-    # TODO: The Cyrus IMAP (or Dovecot) Administrator login
-    # name comes from configuration.
-    imap.imap.m.setacl(resource['kolabtargetfolder'], "cyrus-admin", "lrswipkxtecda")
-    imap.imap.m.append(
-            resource['kolabtargetfolder'],
-            None,
-            None,
-            itip_event['xml'].to_message().as_string()
-        )
 
     send_response(delegator['mail'] if delegator else resource['mail'], itip_event)
 
@@ -457,6 +493,49 @@ def decline_reservation_request(itip_event, resource):
     )
 
     send_response(resource['mail'], itip_event)
+
+
+def save_resource_event(itip_event, resource):
+    """
+        Append the given event object to the resource's calendar
+    """
+    try:
+        # TODO: The Cyrus IMAP (or Dovecot) Administrator login
+        # name comes from configuration.
+        imap.imap.m.setacl(resource['kolabtargetfolder'], "cyrus-admin", "lrswipkxtecda")
+        result = imap.imap.m.append(
+            resource['kolabtargetfolder'],
+            None,
+            None,
+            itip_event['xml'].to_message().as_string()
+        )
+        return result
+
+    except Exception, e:
+        log.error(_("Failed to save event to resource calendar at %r: %r") % (
+            resource['kolabtargetfolder'], e
+        ))
+
+    return False
+
+
+def delete_resource_event(uid, resource):
+    """
+        Removes the IMAP object with the given UID from a resource's calendar folder
+    """
+    imap.imap.m.setacl(resource['kolabtargetfolder'], "cyrus-admin", "lrswipkxtecda")
+    imap.imap.m.select(resource['kolabtargetfolder'])
+
+    typ, data = imap.imap.m.search(None, '(HEADER SUBJECT "%s")' % uid)
+
+    log.debug(_("Delete resource calendar object %r in %r: %r") % (
+        uid, resource['kolabtargetfolder'], data
+    ), level=9)
+
+    for num in data[0].split():
+        imap.imap.m.store(num, '+FLAGS', '\\Deleted')
+
+    imap.imap.m.expunge()
 
 
 def itip_events_from_message(message):
@@ -481,7 +560,7 @@ def itip_events_from_message(message):
         # The iTip part MUST be Content-Type: text/calendar (RFC 6047, section 2.4)
         # But in real word, other mime-types are used as well
         if part.get_content_type() in [ "text/calendar", "text/x-vcalendar", "application/ics" ]:
-            if not part.get_param('method') in itip_methods:
+            if not part.get_param('method').upper() in itip_methods:
                 log.error(
                         _("Method %r not really interesting for us.") % (
                                 part.get_param('method')
@@ -514,6 +593,8 @@ def itip_events_from_message(message):
 
                     # From the event, take the following properties:
                     #
+                    # - method
+                    # - uid
                     # - start
                     # - end (if any)
                     # - duration (if any)
@@ -523,6 +604,9 @@ def itip_events_from_message(message):
                     # - TODO: recurrence rules (if any)
                     #   Where are these stored actually?
                     #
+
+                    itip['uid'] = str(c['uid'])
+                    itip['method'] = str(cal['method']).upper()
 
                     if c.has_key('dtstart'):
                         itip['start'] = c['dtstart']
@@ -535,6 +619,7 @@ def itip_events_from_message(message):
 
                     if c.has_key('duration'):
                         itip['duration'] = c['duration']
+                        # TODO: translate start + duration into end
 
                     itip['organizer'] = c['organizer']
 

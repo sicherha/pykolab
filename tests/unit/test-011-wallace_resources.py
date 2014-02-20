@@ -291,6 +291,7 @@ class TestWallaceResources(unittest.TestCase):
     def test_001_itip_events_from_message(self):
         itips1 = module_resources.itip_events_from_message(message_from_string(itip_multipart))
         self.assertEqual(len(itips1), 1, "Multipart iTip message with text/calendar")
+        self.assertEqual(itips1[0]['method'], "REQUEST", "iTip request method property")
 
         itips2 = module_resources.itip_events_from_message(message_from_string(itip_non_multipart))
         self.assertEqual(len(itips2), 1, "Detect non-multipart iTip messages")
