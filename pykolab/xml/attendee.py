@@ -26,7 +26,7 @@ class Attendee(kolabformat.Attendee):
             "REQ-PARTICIPANT": kolabformat.Required,
             "CHAIR": kolabformat.Chair,
             "OPTIONAL": kolabformat.Optional,
-            "NONPARTICIPANT": kolabformat.NonParticipant,
+            "NON-PARTICIPANT": kolabformat.NonParticipant,
         }
 
     rsvp_map = {
