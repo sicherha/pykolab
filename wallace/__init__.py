@@ -55,7 +55,7 @@ def pickup_message(filepath, *args, **kw):
             modules.execute(kw['module'], filepath)
 
     for module in wallace_modules:
-        modules.execute(module, filepath)
+        filepath = modules.execute(module, filepath)
 
 def worker_process(*args, **kw):
     log.debug(_("Worker process %s initializing") % (multiprocessing.current_process().name), level=1)
