@@ -44,8 +44,8 @@ class Event(object):
 
         self.uid = self.get_uid()
 
-    def add_attendee(self, email, name=None, rsvp=False, role=None, participant_status=None, cutype="INDIVIDUAL"):
-        attendee = Attendee(email, name, rsvp, role, participant_status, cutype)
+    def add_attendee(self, email, name=None, rsvp=False, role=None, participant_status=None, cutype="INDIVIDUAL", params=None):
+        attendee = Attendee(email, name, rsvp, role, participant_status, cutype, params)
         self._attendees.append(attendee)
         self.event.setAttendees(self._attendees)
 
@@ -701,7 +701,7 @@ class Event(object):
                 else:
                     cutype = kolabformat.CutypeIndividual
 
-                self.add_attendee(address, name=name, rsvp=rsvp, role=role, participant_status=partstat, cutype=cutype)
+                att = self.add_attendee(address, name=name, rsvp=rsvp, role=role, participant_status=partstat, cutype=cutype, params=params)
 
     def set_ical_dtend(self, dtend):
         self.set_end(dtend)
