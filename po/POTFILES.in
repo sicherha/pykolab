@@ -54,6 +54,7 @@ pykolab/cli/cmd_set_language.py
 pykolab/cli/cmd_set_mailbox_acl.py
 pykolab/cli/cmd_set_mailbox_metadata.py
 pykolab/cli/cmd_set_mail.py
+pykolab/cli/cmd_set_quota.py
 pykolab/cli/cmd_sync_mailhost_attrs.py
 pykolab/cli/cmd_sync.py
 pykolab/cli/cmd_transfer_mailbox.py
@@ -117,6 +118,7 @@ setup-kolab.py
 tests/functional/__init__.py
 tests/functional/purge_imap.py
 tests/functional/purge_users.py
+tests/functional/resource_func.py
 tests/functional/synchronize.py
 tests/functional/test_auth/__init__.py
 tests/functional/test_auth/test_001_ldap.py
@@ -133,6 +135,8 @@ tests/functional/test_wallace/test_001_user_add.py
 tests/functional/test_wallace/test_002_footer.py
 tests/functional/test_wallace/test_003_nonascii_subject.py
 tests/functional/test_wallace/test_004_nonascii_addresses.py
+tests/functional/test_wallace/test_005_resource_add.py
+tests/functional/test_wallace/test_005_resource_invitation.py
 tests/functional/test_wap_client/__init__.py
 tests/functional/test_wap_client/test_001_connect.py
 tests/functional/test_wap_client/test_002_user_add.py
@@ -141,6 +145,7 @@ tests/functional/test_wap_client/test_004_user_add_es_ES.py
 tests/functional/test_wap_client/test_005_user_add_de_CH.py
 tests/functional/test_wap_client/test_006_form_value_select_options.py
 tests/functional/test_wap_client/test_007_policy_uid.py
+tests/functional/test_wap_client/test_008_resource_add.py
 tests/functional/user_add.py
 tests/__init__.py
 tests/unit/__init__.py
@@ -155,6 +160,7 @@ tests/unit/test-007-ldap_syncrepl.py
 tests/unit/test-008-sievelib.py
 tests/unit/test-009-parse_ldap_uri.py
 tests/unit/test-010-transliterate.py
+tests/unit/test-011-wallace_resources.py
 test-wallace.py
 ucs/kolab_sieve.py
 ucs/listener.py

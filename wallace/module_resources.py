@@ -865,7 +865,7 @@ def send_response(from_address, itip_events):
 
             participant_status = "DELEGATED"
             message_text = _("""
-                Your reservation request was delegated to "%s"
+                Your reservation was delegated to "%s"
                 which is available for the requested time.
             """) % (delegatee.get_name())
 
