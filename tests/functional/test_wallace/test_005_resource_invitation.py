@@ -318,7 +318,6 @@ class TestResourceInvitation(unittest.TestCase):
 
         imap.imap.m.expunge()
         imap.disconnect()
-        time.sleep(1)
 
 
     def find_resource_by_email(self, email):
@@ -380,6 +379,7 @@ class TestResourceInvitation(unittest.TestCase):
         # resource collection responds with a DELEGATED message
         response = self.check_message_received("Reservation Request for test was DELEGATED", self.cars['mail'])
         self.assertIsInstance(response, email.message.Message)
+        self.assertIn("ROLE=NON-PARTICIPANT;RSVP=FALSE", str(response))
 
 
     def test_005_rescheduling_reservation(self):

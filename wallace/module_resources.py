@@ -373,6 +373,11 @@ def execute(*args, **kw):
                         #
                         itip_event['xml'].delegate(original_resource['mail'], _target_resource['mail'], _target_resource['cn'])
 
+                        # set delegator to NON-PARTICIPANT and RSVP=FALSE
+                        delegator = itip_event['xml'].get_attendee_by_email(original_resource['mail'])
+                        delegator.set_role(kolabformat.NonParticipant)
+                        delegator.set_rsvp(False)
+
                         accept_reservation_request(itip_event, _target_resource, original_resource)
                         done = True
 
@@ -437,6 +442,8 @@ def read_resource_calendar(resource_rec, itip_events):
                         _ee = to_dt(event.get_end())
                         _ie = to_dt(itip['end'].dt)
 
+                        # TODO: add margin for all-day dates (+13h; -12h)
+
                         if _es < _is:
                             if _es <= _ie:
                                 if _ee <= _is:
@@ -457,7 +464,7 @@ def read_resource_calendar(resource_rec, itip_events):
                             resource_rec['existing_events'].append(itip['uid'])
 
                             # don't register conflict for updates
-                            if itip['sequence'] > event.get_sequence():
+                            if itip['sequence'] > 0 and itip['sequence'] >= event.get_sequence():
                                 conflict = False
 
                         if conflict:
