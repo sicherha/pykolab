@@ -167,6 +167,9 @@ class Attendee(kolabformat.Attendee):
         else:
             raise InvalidAttendeeRoleError, _("Invalid role %r") % (role)
 
+    def set_rsvp(self, rsvp):
+        self.setRSVP(rsvp)
+
     def __str__(self):
         return self.email
 
