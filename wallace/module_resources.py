@@ -35,6 +35,7 @@ from email.utils import getaddresses
 import modules
 
 import pykolab
+import kolabformat
 
 from pykolab.auth import Auth
 from pykolab.conf import Conf
@@ -229,18 +230,30 @@ def execute(*args, **kw):
         else:
             resources[resource_dn] = resource_attrs
 
-    log.debug(_("Resources: %r, %r") % (resource_dns, resources), level=8)
+    log.debug(_("Resources: %r; %r") % (resource_dns, resources), level=8)
 
 
-    # process CANCEL messages
     done = False
+    receiving_resource = resources[resource_dns[0]]
+
     for itip_event in itip_events:
-        if itip_event['method'] == "CANCEL":
+        try:
+            receiving_attendee = itip_event['xml'].get_attendee_by_email(receiving_resource['mail'])
+            log.debug(_("Receiving Resource: %r; %r") % (receiving_resource, receiving_attendee), level=9)
+        except Exception, e:
+            log.error("Could not find envelope attendee: %r" % (e))
+            continue
+
+        # ignore updates and cancellations to resource collections who already delegated the event
+        if receiving_attendee.get_delegated_to().size() > 0 or receiving_attendee.get_role() == kolabformat.NonParticipant:
+            done = True
+            log.debug(_("Recipient %r is non-participant, ignoring message") % (receiving_resource['mail']), level=8)
+
+        # process CANCEL messages
+        if not done and itip_event['method'] == "CANCEL":
             for resource in resource_dns:
                 if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
                     delete_resource_event(itip_event['uid'], resources[resource])
-
-                # TODO: handle cancellations sent to resource collections. Really?
 
             done = True
 
@@ -263,14 +276,14 @@ def execute(*args, **kw):
 
         # sets the 'conflicting' flag and adds a list of conflicting events found
         try:
-            read_resource_calendar(resources[resource], itip_events)
+            num_messages = read_resource_calendar(resources[resource], itip_events)
         except Exception, e:
             log.error(_("Failed to read resource calendar for %r: %r") % (resource, e))
             continue
 
     end = time.time()
 
-    log.debug(_("start: %r, end: %r, total: %r") % (start, end, (end-start)), level=1)
+    log.debug(_("start: %r, end: %r, total: %r, messages: %d") % (start, end, (end-start), num_messages), level=9)
 
 
     # For each resource (collections are first!)
@@ -335,7 +348,7 @@ def execute(*args, **kw):
                         for uid in resources[resource]['existing_events']:
                             delete_resource_event(uid, resources[resource])
 
-                    log.debug(_("Accept invitation for individual resource %r / %r") % (resource, resources[resource]['mail']), level=9)
+                    log.debug(_("Accept invitation for individual resource %r / %r") % (resource, resources[resource]['mail']), level=8)
                     accept_reservation_request(itip_event, resources[resource])
                     done = True
 
@@ -349,7 +362,7 @@ def execute(*args, **kw):
                         # Randomly selects a target resource from the resource collection.
                         _target_resource = resources[original_resource['uniquemember'][random.randint(0,(len(original_resource['uniquemember'])-1))]]
 
-                        log.debug(_("Delegate invitation for resource collection %r to %r") % (original_resource['mail'], _target_resource['mail']), level=9)
+                        log.debug(_("Delegate invitation for resource collection %r to %r") % (original_resource['mail'], _target_resource['mail']), level=8)
 
                     if original_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
                         #
@@ -394,6 +407,8 @@ def read_resource_calendar(resource_rec, itip_events):
     # might raise an exception, let that bubble
     imap.imap.m.select(mailbox)
     typ, data = imap.imap.m.search(None, 'ALL')
+
+    num_messages = len(data[0].split())
 
     for num in data[0].split():
         # For efficiency, makes the routine non-deterministic
@@ -456,7 +471,7 @@ def read_resource_calendar(resource_rec, itip_events):
                             resource_rec['conflicting_events'].append(event.get_uid())
                             resource_rec['conflict'] = True
 
-    return resource_rec['conflict']
+    return num_messages
 
 
 def accept_reservation_request(itip_event, resource, delegator=None):
@@ -570,7 +585,7 @@ def itip_events_from_message(message):
             # Get the itip_payload
             itip_payload = part.get_payload(decode=True)
 
-            log.debug(_("Raw iTip payload: %s") % (itip_payload))
+            log.debug(_("Raw iTip payload: %s") % (itip_payload), level=9)
 
             # Python iCalendar prior to 3.0 uses "from_string".
             if hasattr(icalendar.Calendar, 'from_ical'):
@@ -588,13 +603,14 @@ def itip_events_from_message(message):
                     itip = {}
 
                     if c['uid'] in seen_uids:
-                        log.debug(_("Duplicate iTip event: %s") % (c['uid']))
+                        log.debug(_("Duplicate iTip event: %s") % (c['uid']), level=9)
                         continue
 
                     # From the event, take the following properties:
                     #
                     # - method
                     # - uid
+                    # - sequence
                     # - start
                     # - end (if any)
                     # - duration (if any)
@@ -607,6 +623,7 @@ def itip_events_from_message(message):
 
                     itip['uid'] = str(c['uid'])
                     itip['method'] = str(cal['method']).upper()
+                    itip['sequence'] = int(c['sequence']) if c.has_key('sequence') else 0
 
                     if c.has_key('dtstart'):
                         itip['start'] = c['dtstart']
@@ -629,7 +646,12 @@ def itip_events_from_message(message):
                         itip['resources'] = c['resources']
 
                     itip['raw'] = itip_payload
-                    itip['xml'] = event_from_ical(c.to_ical())
+
+                    try:
+                        itip['xml'] = event_from_ical(c.to_ical())
+                    except Exception, e:
+                        log.error("event_from_ical() exception: %r" % (e))
+                        continue
 
                     itip_events.append(itip)
 
@@ -797,8 +819,6 @@ def resource_records_from_itip_events(itip_events, recipient_email=None):
 
     log.debug(_("The following resources are being referred to in the " + \
                 "iTip: %r") % (resource_records), level=8)
-
-    auth.disconnect()
 
     return resource_records
 
