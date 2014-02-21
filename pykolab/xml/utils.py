@@ -12,8 +12,7 @@ def to_dt(dt):
     else:
         if dt.tzinfo == None:
             return dt.replace(tzinfo=pytz.utc)
-        else:
 
-            return dt
+    return dt
 
 
