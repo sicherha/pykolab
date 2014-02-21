@@ -10,6 +10,7 @@ import uuid
 import pykolab
 from pykolab import constants
 from pykolab import utils
+from pykolab.xml import utils as xmlutils
 from pykolab.translate import _
 
 from attendee import Attendee
@@ -68,33 +69,7 @@ class Event(object):
         if not valid_datetime:
             raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance")
 
-        (
-                year,
-                month,
-                day,
-            ) = (
-                    _datetime.year,
-                    _datetime.month,
-                    _datetime.day,
-                )
-        if hasattr(_datetime, 'hour'):
-            (
-                    hour,
-                    minute,
-                    second
-                ) = (
-                        _datetime.hour,
-                        _datetime.minute,
-                        _datetime.second
-                    )
-            _cdatetime = kolabformat.cDateTime(year, month, day, hour, minute, second)
-        else:
-            _cdatetime = kolabformat.cDateTime(year, month, day)
-
-        if hasattr(_datetime, "tzinfo"):
-            _cdatetime.setTimezone(_datetime.tzinfo.__str__())
-
-        self.event.addExceptionDate(_cdatetime)
+        self.event.addExceptionDate(xmlutils.to_cdatetime(_datetime, True))
 
     def as_string_itip(self, method="REQUEST"):
         cal = icalendar.Calendar()
@@ -252,69 +227,16 @@ class Event(object):
         return self.classification()
 
     def get_created(self):
-        _datetime = self.event.created()
-
-        (
-                year,
-                month,
-                day,
-                hour,
-                minute,
-                second
-            ) = (
-                    _datetime.year(),
-                    _datetime.month(),
-                    _datetime.day(),
-                    _datetime.hour(),
-                    _datetime.minute(),
-                    _datetime.second()
-                )
-
         try:
-            result = datetime.datetime(year, month, day, hour, minute, second)
+            return xmlutils.from_cdatetime(self.event.created(), False)
         except ValueError:
-            result = datetime.datetime.now()
+            return datetime.datetime.now()
 
     def get_description(self):
         return self.event.description()
 
     def get_end(self):
-        _datetime = self.event.end()
-
-        (
-                year,
-                month,
-                day,
-            ) = (
-                    _datetime.year(),
-                    _datetime.month(),
-                    _datetime.day(),
-                )
-
-        if not _datetime.hour() == None and not _datetime.hour() < 0:
-            (
-                    hour,
-                    minute,
-                    second
-                ) = (
-                        _datetime.hour(),
-                        _datetime.minute(),
-                        _datetime.second()
-                    )
-
-        _timezone = _datetime.timezone()
-
-        if _timezone == '':
-            _timezone = pytz.utc
-        elif _timezone == None:
-            _timezone = pytz.utc
-        else:
-            _timezone = pytz.timezone(_timezone)
-
-        if _datetime.hour() == None or _datetime.hour() < 0:
-            return datetime.date(year, month, day)
-        else:
-            return datetime.datetime(year, month, day, hour, minute, second, tzinfo=_timezone)
+        return xmlutils.from_cdatetime(self.event.end(), True)
 
     def get_exception_dates(self):
         return self.event.exceptionDates()
@@ -447,25 +369,7 @@ class Event(object):
         except:
             self.__str__()
 
-        _datetime = self.event.lastModified()
-
-        (
-                year,
-                month,
-                day,
-                hour,
-                minute,
-                second
-            ) = (
-                    _datetime.year(),
-                    _datetime.month(),
-                    _datetime.day(),
-                    _datetime.hour(),
-                    _datetime.minute(),
-                    _datetime.second()
-                )
-
-        return datetime.datetime(year, month, day, hour, minute, second)
+        return xmlutils.from_cdatetime(self.event.lastModified(), False)
 
     def get_organizer(self):
         organizer = self.event.organizer()
@@ -475,42 +379,7 @@ class Event(object):
         return str(self.event.priority())
 
     def get_start(self):
-        _datetime = self.event.start()
-
-        (
-                year,
-                month,
-                day,
-            ) = (
-                    _datetime.year(),
-                    _datetime.month(),
-                    _datetime.day(),
-                )
-
-        if not _datetime.hour() == None and not _datetime.hour() < 0:
-            (
-                    hour,
-                    minute,
-                    second
-                ) = (
-                        _datetime.hour(),
-                        _datetime.minute(),
-                        _datetime.second()
-                    )
-
-        _timezone = _datetime.timezone()
-
-        if _timezone == '':
-            _timezone = pytz.utc
-        elif _timezone == None:
-            _timezone = pytz.utc
-        else:
-            _timezone = pytz.timezone(_timezone)
-
-        if _datetime.hour() == None or _datetime.hour() < 0:
-            return datetime.date(year, month, day)
-        else:
-            return datetime.datetime(year, month, day, hour, minute, second, tzinfo=_timezone)
+        return xmlutils.from_cdatetime(self.event.start(), True)
 
     def get_status(self):
         status = self.event.status()
@@ -552,49 +421,13 @@ class Event(object):
         if _datetime == None:
             _datetime = datetime.datetime.now()
 
-        (
-                year,
-                month,
-                day,
-                hour,
-                minute,
-                second
-            ) = (
-                    _datetime.year,
-                    _datetime.month,
-                    _datetime.day,
-                    _datetime.hour,
-                    _datetime.minute,
-                    _datetime.second
-                )
-
-        self.event.setCreated(
-                kolabformat.cDateTime(year, month, day, hour, minute, second)
-            )
+        self.event.setCreated(xmlutils.to_cdatetime(_datetime, False))
 
     def set_description(self, description):
         self.event.setDescription(description)
 
     def set_dtstamp(self, _datetime):
-        (
-                year,
-                month,
-                day,
-                hour,
-                minute,
-                second
-            ) = (
-                    _datetime.year,
-                    _datetime.month,
-                    _datetime.day,
-                    _datetime.hour,
-                    _datetime.minute,
-                    _datetime.second
-                )
-
-        self.event.setLastModified(
-                kolabformat.cDateTime(year, month, day, hour, minute, second)
-            )
+        self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False))
 
     def set_end(self, _datetime):
         valid_datetime = False
@@ -611,33 +444,7 @@ class Event(object):
         if not valid_datetime:
             raise InvalidEventDateError, _("Event end needs datetime.date or datetime.datetime instance")
 
-        (
-                year,
-                month,
-                day,
-            ) = (
-                    _datetime.year,
-                    _datetime.month,
-                    _datetime.day,
-                )
-        if hasattr(_datetime, 'hour'):
-            (
-                    hour,
-                    minute,
-                    second
-                ) = (
-                        _datetime.hour,
-                        _datetime.minute,
-                        _datetime.second
-                    )
-            _cdatetime = kolabformat.cDateTime(year, month, day, hour, minute, second)
-        else:
-            _cdatetime = kolabformat.cDateTime(year, month, day)
-
-        if hasattr(_datetime, "tzinfo"):
-            _cdatetime.setTimezone(_datetime.tzinfo.__str__())
-
-        self.event.setEnd(_cdatetime)
+        self.event.setEnd(xmlutils.to_cdatetime(_datetime, True))
 
     def set_exception_dates(self, _datetimes):
         for _datetime in _datetimes:
@@ -762,29 +569,7 @@ class Event(object):
         if not valid_datetime:
             raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance")
 
-        (
-                year,
-                month,
-                day,
-            ) = (
-                    _datetime.year,
-                    _datetime.month,
-                    _datetime.day,
-                )
-        if hasattr(_datetime, 'hour'):
-            (
-                    hour,
-                    minute,
-                    second
-                ) = (
-                        _datetime.hour,
-                        _datetime.minute,
-                        _datetime.second
-                    )
-        else:
-            (hour, minute, second) = (0,0,0)
-
-        self.event.setLastModified(kolabformat.cDateTime(year, month, day, hour, minute, second))
+        self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False))
 
     def set_location(self, location):
         self.event.setLocation(location)
@@ -806,7 +591,6 @@ class Event(object):
         self.event.setRecurrenceRule(recurrence)
 
     def set_start(self, _datetime):
-
         valid_datetime = False
         if isinstance(_datetime, datetime.date):
             valid_datetime = True
@@ -821,33 +605,7 @@ class Event(object):
         if not valid_datetime:
             raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance")
 
-        (
-                year,
-                month,
-                day,
-            ) = (
-                    _datetime.year,
-                    _datetime.month,
-                    _datetime.day,
-                )
-        if hasattr(_datetime, 'hour'):
-            (
-                    hour,
-                    minute,
-                    second
-                ) = (
-                        _datetime.hour,
-                        _datetime.minute,
-                        _datetime.second
-                    )
-            _cdatetime = kolabformat.cDateTime(year, month, day, hour, minute, second)
-        else:
-            _cdatetime = kolabformat.cDateTime(year, month, day)
-
-        if hasattr(_datetime, "tzinfo"):
-            _cdatetime.setTimezone(_datetime.tzinfo.__str__())
-
-        self.event.setStart(_cdatetime)
+        self.event.setStart(xmlutils.to_cdatetime(_datetime, True))
 
     def set_status(self, status):
         if status in self.status_map.keys():
