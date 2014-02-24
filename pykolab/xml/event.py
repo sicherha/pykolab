@@ -708,7 +708,7 @@ class Event(object):
             params = {}
 
         if params.has_key('CN'):
-            cn = params['CN']
+            cn = str(params['CN'])
 
         self.set_organizer(str(address), name=cn)
 
@@ -774,7 +774,7 @@ class Event(object):
     def set_organizer(self, email, name=None):
         contactreference = ContactReference(email)
         if not name == None:
-            contactreference.set_name(name)
+            contactreference.setName(name)
 
         self.event.setOrganizer(contactreference)
 
