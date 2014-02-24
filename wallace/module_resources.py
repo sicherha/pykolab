@@ -452,93 +452,100 @@ def itip_events_from_message(message):
     """
     # Placeholder for any itip_events found in the message.
     itip_events = []
+    seen_uids = []
 
     # iTip methods we are actually interested in. Other methods will be ignored.
     itip_methods = [ "REQUEST", "REPLY", "ADD", "CANCEL" ]
 
-    # TODO: Are all iTip messages multipart? RFC 6047, section 2.4 states "A
+    # Are all iTip messages multipart? No! RFC 6047, section 2.4 states "A
     # MIME body part containing content information that conforms to this
     # document MUST have (...)" but does not state whether an iTip message must
     # therefore also be multipart.
-    if message.is_multipart():
-        # Check each part
-        for part in message.walk():
 
-            # The iTip part MUST be Content-Type: text/calendar (RFC 6047,
-            # section 2.4)
-            if part.get_content_type() == "text/calendar":
-                if not part.get_param('method') in itip_methods:
-                    log.error(
-                            _("Method %r not really interesting for us.") % (
-                                    part.get_param('method')
-                                )
-                        )
+    # Check each part
+    for part in message.walk():
 
-                # Get the itip_payload
-                itip_payload = part.get_payload(decode=True)
+        # The iTip part MUST be Content-Type: text/calendar (RFC 6047, section 2.4)
+        # But in real word, other mime-types are used as well
+        if part.get_content_type() in [ "text/calendar", "text/x-vcalendar", "application/ics" ]:
+            if not part.get_param('method') in itip_methods:
+                log.error(
+                        _("Method %r not really interesting for us.") % (
+                                part.get_param('method')
+                            )
+                    )
 
-                log.debug(_("Raw iTip payload: %s") % (itip_payload))
+            # Get the itip_payload
+            itip_payload = part.get_payload(decode=True)
 
-                # Python iCalendar prior to 3.0 uses "from_string".
-                if hasattr(icalendar.Calendar, 'from_ical'):
-                    cal = icalendar.Calendar.from_ical(itip_payload)
-                elif hasattr(icalendar.Calendar, 'from_string'):
-                    cal = icalendar.Calendar.from_string(itip_payload)
+            log.debug(_("Raw iTip payload: %s") % (itip_payload))
 
-                # If we can't read it, we're out
-                else:
-                    log.error(_("Could not read iTip from message."))
-                    return []
+            # Python iCalendar prior to 3.0 uses "from_string".
+            if hasattr(icalendar.Calendar, 'from_ical'):
+                cal = icalendar.Calendar.from_ical(itip_payload)
+            elif hasattr(icalendar.Calendar, 'from_string'):
+                cal = icalendar.Calendar.from_string(itip_payload)
 
-                for c in cal.walk():
-                    if c.name == "VEVENT":
-                        itip = {}
+            # If we can't read it, we're out
+            else:
+                log.error(_("Could not read iTip from message."))
+                return []
 
-                        # From the event, take the following properties:
-                        #
-                        # - start
-                        # - end (if any)
-                        # - duration (if any)
-                        # - organizer
-                        # - attendees (if any)
-                        # - resources (if any)
-                        # - TODO: recurrence rules (if any)
-                        #   Where are these stored actually?
-                        #
+            for c in cal.walk():
+                if c.name == "VEVENT":
+                    itip = {}
 
-                        if c.has_key('dtstart'):
-                            itip['start'] = c['dtstart']
-                        else:
-                            log.error(_("iTip event without a start"))
-                            continue
+                    if c['uid'] in seen_uids:
+                        log.debug(_("Duplicate iTip event: %s") % (c['uid']))
+                        continue
 
-                        if c.has_key('dtend'):
-                            itip['end'] = c['dtend']
+                    # From the event, take the following properties:
+                    #
+                    # - start
+                    # - end (if any)
+                    # - duration (if any)
+                    # - organizer
+                    # - attendees (if any)
+                    # - resources (if any)
+                    # - TODO: recurrence rules (if any)
+                    #   Where are these stored actually?
+                    #
 
-                        if c.has_key('duration'):
-                            itip['duration'] = c['duration']
+                    if c.has_key('dtstart'):
+                        itip['start'] = c['dtstart']
+                    else:
+                        log.error(_("iTip event without a start"))
+                        continue
 
-                        itip['organizer'] = c['organizer']
+                    if c.has_key('dtend'):
+                        itip['end'] = c['dtend']
 
-                        itip['attendees'] = c['attendee']
+                    if c.has_key('duration'):
+                        itip['duration'] = c['duration']
 
-                        if c.has_key('resources'):
-                            itip['resources'] = c['resources']
+                    itip['organizer'] = c['organizer']
 
-                        itip['raw'] = itip_payload
-                        itip['xml'] = event_from_ical(c.to_ical())
+                    itip['attendees'] = c['attendee']
 
-                        itip_events.append(itip)
+                    if c.has_key('resources'):
+                        itip['resources'] = c['resources']
 
-                    # end if c.name == "VEVENT"
+                    itip['raw'] = itip_payload
+                    itip['xml'] = event_from_ical(c.to_ical())
 
-                # end for c in cal.walk()
+                    itip_events.append(itip)
 
-            # end if part.get_content_type() == "text/calendar"
+                    seen_uids.append(c['uid'])
 
-        # end for part in message.walk()
+                # end if c.name == "VEVENT"
 
-    else: # if message.is_multipart()
+            # end for c in cal.walk()
+
+        # end if part.get_content_type() == "text/calendar"
+
+    # end for part in message.walk()
+
+    if not len(itip_events) and not message.is_multipart():
         log.debug(_("Message is not an iTip message (non-multipart message)"), level=5)
 
     return itip_events
@@ -741,20 +748,21 @@ def send_response(from_address, itip_events):
         itip_events = [ itip_events ]
 
     for itip_event in itip_events:
-        attendee = [a for a in itip_event['xml'].get_attendees() if a.get_email() == from_address][0]
+        attendee = itip_event['xml'].get_attendee(from_address)
         participant_status = itip_event['xml'].get_ical_attendee_participant_status(attendee)
 
         if participant_status == "DELEGATED":
             # Extra actions to take
-            delegator = [a for a in itip_event['xml'].get_attendees() if a.get_email() == from_address][0]
+            delegator = itip_event['xml'].get_attendee(from_address)
             delegatee = [a for a in itip_event['xml'].get_attendees() if from_address in [b.email() for b in a.get_delegated_from()]][0]
-
-            itip_event['xml'].event.setAttendees([ delegator, delegatee ])
 
             message = itip_event['xml'].to_message_itip(delegatee.get_email(), method="REPLY", participant_status=itip_event['xml'].get_ical_attendee_participant_status(delegatee))
             smtp.sendmail(message['From'], message['To'], message.as_string())
 
-        itip_event['xml'].event.setAttendees([a for a in itip_event['xml'].get_attendees() if a.get_email() == from_address])
+            # restore list of attendees after to_message_itip()
+            itip_event['xml']._attendees = [ delegator, delegatee ]
+            itip_event['xml'].event.setAttendees(itip_event['xml']._attendees)
+            participant_status = "DELEGATED"
 
         message = itip_event['xml'].to_message_itip(from_address, method="REPLY", participant_status=participant_status)
         smtp.sendmail(message['From'], message['To'], message.as_string())
