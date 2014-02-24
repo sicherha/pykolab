@@ -45,7 +45,7 @@ class Event(object):
         self.uid = self.get_uid()
 
     def add_attendee(self, email, name=None, rsvp=False, role=None, participant_status=None, cutype="INDIVIDUAL"):
-        attendee = Attendee(email, name, rsvp, role, participant_status)
+        attendee = Attendee(email, name, rsvp, role, participant_status, cutype)
         self._attendees.append(attendee)
         self.event.setAttendees(self._attendees)
 
@@ -667,7 +667,7 @@ class Event(object):
                     params = {}
 
                 if params.has_key('CN'):
-                    name = params['CN']
+                    name = str(params['CN'])
                 else:
                     name = None
 
@@ -968,8 +968,8 @@ class Event(object):
 
         msg.attach( MIMEText(text) )
 
-        part = MIMEBase('text', "calendar")
-        part.set_charset('UTF-8')
+        part = MIMEBase('text', 'calendar', charset='UTF-8', method=method)
+        del part['MIME-Version']  # mime parts don't need this
 
         # TODO: Should allow for localization
         msg["Subject"] = "Meeting Request %s" % (participant_status)
@@ -977,7 +977,7 @@ class Event(object):
         part.set_payload(self.as_string_itip(method=method))
 
         part.add_header('Content-Disposition', 'attachment; filename="event.ics"')
-        part.replace_header('Content-Transfer-Encoding', '8bit')
+        part.add_header('Content-Transfer-Encoding', '8bit')
 
         msg.attach(part)
 
