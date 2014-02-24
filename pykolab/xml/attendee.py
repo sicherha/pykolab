@@ -78,6 +78,8 @@ class Attendee(kolabformat.Attendee):
             if not isinstance(delegator, Attendee):
                 raise ValueError, _("Not a valid attendee")
             else:
+                self.set_role(delegator.get_role())
+                self.set_cutype(delegator.get_cutype())
                 crefs.append(delegator.contactreference)
 
         if len(crefs) == 0:
