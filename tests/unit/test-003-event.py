@@ -2,6 +2,7 @@ import datetime
 import pytz
 import sys
 import unittest
+import kolabformat
 
 from pykolab.xml import Attendee
 from pykolab.xml import Event
@@ -40,8 +41,8 @@ class TestEventXML(unittest.TestCase):
         self.assertIsInstance(self.event.get_attendees(), list)
         self.assertEqual(len(self.event.get_attendees()), 1)
 
-    def test_005_attendee_add_name(self):
-        self.event.add_attendee("jane@doe.org", "Doe, Jane")
+    def test_005_attendee_add_name_and_props(self):
+        self.event.add_attendee("jane@doe.org", "Doe, Jane", role="OPTIONAL", cutype="RESOURCE")
         self.assertIsInstance(self.event.get_attendees(), list)
         self.assertEqual(len(self.event.get_attendees()), 2)
 
@@ -51,6 +52,10 @@ class TestEventXML(unittest.TestCase):
     def test_007_get_attendee_by_email(self):
         self.assertIsInstance(self.event.get_attendee_by_email("jane@doe.org"), Attendee)
         self.assertIsInstance(self.event.get_attendee("jane@doe.org"), Attendee)
+
+    def test_007_get_attendee_props(self):
+        self.assertEqual(self.event.get_attendee("jane@doe.org").get_cutype(), kolabformat.CutypeResource)
+        self.assertEqual(self.event.get_attendee("jane@doe.org").get_role(), kolabformat.Optional)
 
     def test_007_get_nonexistent_attendee_by_email(self):
         self.assertRaises(ValueError, self.event.get_attendee_by_email, "nosuchattendee@invalid.domain")
@@ -77,7 +82,10 @@ class TestEventXML(unittest.TestCase):
         self.event.delegate("jane@doe.org", "max@imum.com")
 
     def test_013_delegatee_is_now_attendee(self):
-        self.assertIsInstance(self.event.get_attendee("max@imum.com"), Attendee)
+        delegatee = self.event.get_attendee("max@imum.com")
+        self.assertIsInstance(delegatee, Attendee)
+        self.assertEqual(delegatee.get_role(), kolabformat.Optional)
+        self.assertEqual(delegatee.get_cutype(), kolabformat.CutypeResource)
 
     def test_014_delegate_attendee_adds(self):
         self.assertEqual(len(self.event.get_attendee("jane@doe.org").get_delegated_to()), 1)
