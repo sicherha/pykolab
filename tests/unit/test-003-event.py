@@ -3,12 +3,14 @@ import pytz
 import sys
 import unittest
 import kolabformat
+import icalendar
 
 from pykolab.xml import Attendee
 from pykolab.xml import Event
 from pykolab.xml import EventIntegrityError
 from pykolab.xml import InvalidAttendeeParticipantStatusError
 from pykolab.xml import InvalidEventDateError
+from pykolab.xml import event_from_ical
 
 class TestEventXML(unittest.TestCase):
     event = Event()
@@ -111,6 +113,25 @@ class TestEventXML(unittest.TestCase):
         self.event.set_start(_start)
         self.assertEqual(hasattr(_start,'tzinfo'), False)
         self.assertEqual(self.event.get_start().__str__(), "2012-05-23")
+
+    def test_018_from_ical_cutype(self):
+        ical_str = """BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+DTSTART;TZID=Europe/Zurich;VALUE=DATE-TIME:20140523T110000
+DTEND;TZID=Europe/Zurich;VALUE=DATE-TIME:20140523T130000
+UID:7a35527d-f783-4b58-b404-b1389bd2fc57
+ATTENDEE;CN="Doe, Jane";CUTYPE=INDIVIDUAL;PARTSTAT=ACCEPTED
+ ;ROLE=REQ-PARTICIPANT;RSVP=FALSE:MAILTO:jane@doe.org
+ATTENDEE;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION
+ ;ROLE=OPTIONAL;RSVP=FALSE:MAILTO:max@imum.com
+END:VEVENT
+END:VCALENDAR
+"""
+        ical = icalendar.Calendar.from_ical(ical_str)
+        event = event_from_ical(ical.walk('VEVENT')[0].to_ical())
+        self.assertEqual(event.get_attendee_by_email("max@imum.com").get_cutype(), kolabformat.CutypeResource)
 
 if __name__ == '__main__':
     unittest.main()
