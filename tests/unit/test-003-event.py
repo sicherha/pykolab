@@ -2,12 +2,15 @@ import datetime
 import pytz
 import sys
 import unittest
+import kolabformat
+import icalendar
 
 from pykolab.xml import Attendee
 from pykolab.xml import Event
 from pykolab.xml import EventIntegrityError
 from pykolab.xml import InvalidAttendeeParticipantStatusError
 from pykolab.xml import InvalidEventDateError
+from pykolab.xml import event_from_ical
 
 class TestEventXML(unittest.TestCase):
     event = Event()
@@ -40,8 +43,8 @@ class TestEventXML(unittest.TestCase):
         self.assertIsInstance(self.event.get_attendees(), list)
         self.assertEqual(len(self.event.get_attendees()), 1)
 
-    def test_005_attendee_add_name(self):
-        self.event.add_attendee("jane@doe.org", "Doe, Jane")
+    def test_005_attendee_add_name_and_props(self):
+        self.event.add_attendee("jane@doe.org", "Doe, Jane", role="OPTIONAL", cutype="RESOURCE")
         self.assertIsInstance(self.event.get_attendees(), list)
         self.assertEqual(len(self.event.get_attendees()), 2)
 
@@ -51,6 +54,10 @@ class TestEventXML(unittest.TestCase):
     def test_007_get_attendee_by_email(self):
         self.assertIsInstance(self.event.get_attendee_by_email("jane@doe.org"), Attendee)
         self.assertIsInstance(self.event.get_attendee("jane@doe.org"), Attendee)
+
+    def test_007_get_attendee_props(self):
+        self.assertEqual(self.event.get_attendee("jane@doe.org").get_cutype(), kolabformat.CutypeResource)
+        self.assertEqual(self.event.get_attendee("jane@doe.org").get_role(), kolabformat.Optional)
 
     def test_007_get_nonexistent_attendee_by_email(self):
         self.assertRaises(ValueError, self.event.get_attendee_by_email, "nosuchattendee@invalid.domain")
@@ -77,7 +84,10 @@ class TestEventXML(unittest.TestCase):
         self.event.delegate("jane@doe.org", "max@imum.com")
 
     def test_013_delegatee_is_now_attendee(self):
-        self.assertIsInstance(self.event.get_attendee("max@imum.com"), Attendee)
+        delegatee = self.event.get_attendee("max@imum.com")
+        self.assertIsInstance(delegatee, Attendee)
+        self.assertEqual(delegatee.get_role(), kolabformat.Optional)
+        self.assertEqual(delegatee.get_cutype(), kolabformat.CutypeResource)
 
     def test_014_delegate_attendee_adds(self):
         self.assertEqual(len(self.event.get_attendee("jane@doe.org").get_delegated_to()), 1)
@@ -103,6 +113,39 @@ class TestEventXML(unittest.TestCase):
         self.event.set_start(_start)
         self.assertEqual(hasattr(_start,'tzinfo'), False)
         self.assertEqual(self.event.get_start().__str__(), "2012-05-23")
+
+    def test_018_load_from_ical(self):
+        ical_str = """BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+DTSTART;TZID=Europe/Zurich;VALUE=DATE-TIME:20140523T110000
+DTEND;TZID=Europe/Zurich;VALUE=DATE-TIME:20140523T130000
+UID:7a35527d-f783-4b58-b404-b1389bd2fc57
+ATTENDEE;CN="Doe, Jane";CUTYPE=INDIVIDUAL;PARTSTAT=ACCEPTED
+ ;ROLE=REQ-PARTICIPANT;RSVP=FALSE:MAILTO:jane@doe.org
+ATTENDEE;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION
+ ;ROLE=OPTIONAL;RSVP=FALSE:MAILTO:max@imum.com
+SEQUENCE:2
+END:VEVENT
+END:VCALENDAR
+"""
+        ical = icalendar.Calendar.from_ical(ical_str)
+        event = event_from_ical(ical.walk('VEVENT')[0].to_ical())
+        self.assertEqual(event.get_attendee_by_email("max@imum.com").get_cutype(), kolabformat.CutypeResource)
+        self.assertEqual(event.get_sequence(), 2)
+
+    def test_019_as_string_itip(self):
+        self.event.set_summary("test")
+        self.event.set_start(datetime.datetime(2014, 05, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
+        self.event.set_end(datetime.datetime(2014, 05, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
+
+        ical = icalendar.Calendar.from_ical(self.event.as_string_itip())
+        event = ical.walk('VEVENT')[0]
+
+        self.assertEqual(event['uid'], self.event.get_uid())
+        self.assertEqual(event['summary'], "test")
+        self.assertIsInstance(event['dtstamp'].dt, datetime.datetime)
 
 if __name__ == '__main__':
     unittest.main()

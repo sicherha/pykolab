@@ -45,7 +45,7 @@ class Event(object):
         self.uid = self.get_uid()
 
     def add_attendee(self, email, name=None, rsvp=False, role=None, participant_status=None, cutype="INDIVIDUAL"):
-        attendee = Attendee(email, name, rsvp, role, participant_status)
+        attendee = Attendee(email, name, rsvp, role, participant_status, cutype)
         self._attendees.append(attendee)
         self.event.setAttendees(self._attendees)
 
@@ -153,12 +153,15 @@ class Event(object):
         elif hasattr(cal, 'as_string'):
             return cal.as_string()
 
-    def delegate(self, delegators, delegatees):
+    def delegate(self, delegators, delegatees, names=None):
         if not isinstance(delegators, list):
             delegators = [delegators]
 
         if not isinstance(delegatees, list):
             delegatees = [delegatees]
+
+        if not isinstance(names, list):
+            names = [names]
 
         _delegators = []
         for delegator in delegators:
@@ -166,12 +169,12 @@ class Event(object):
 
         _delegatees = []
 
-        for delegatee in delegatees:
+        for i,delegatee in enumerate(delegatees):
             try:
                 _delegatees.append(self.get_attendee(delegatee))
             except:
                 # TODO: An iTip needs to be sent out to the new attendee
-                self.add_attendee(delegatee)
+                self.add_attendee(delegatee, names[i] if i < len(names) else None)
                 _delegatees.append(self.get_attendee(delegatee))
 
         for delegator in _delegators:
@@ -404,9 +407,8 @@ class Event(object):
         return self.get_end()
 
     def get_ical_dtstamp(self):
-        return
         try:
-            retval = self.event.lastModified()
+            retval = self.get_lastmodified()
             if retval == None or retval == "":
                 return datetime.datetime.now()
         except:
@@ -433,6 +435,9 @@ class Event(object):
 
         if status in self.status_map.values():
             return [k for k, v in self.status_map.iteritems() if v == status][0]
+
+    def get_ical_sequence(self):
+        return str(self.event.sequence()) if self.event.sequence() else None
 
     def get_lastmodified(self):
         try:
@@ -467,7 +472,7 @@ class Event(object):
         return organizer
 
     def get_priority(self):
-        return self.event.priority()
+        return str(self.event.priority())
 
     def get_start(self):
         _datetime = self.event.start()
@@ -523,6 +528,9 @@ class Event(object):
         else:
             self.set_uid(uuid.uuid4())
             return self.get_uid()
+
+    def get_sequence(self):
+        return self.event.sequence()
 
     def set_attendee_participant_status(self, attendee, status):
         """
@@ -646,6 +654,8 @@ class Event(object):
             self.set_ical_summary(value)
         elif attr == "priority":
             self.set_ical_priority(value)
+        elif attr == "sequence":
+            self.set_ical_sequence(value)
         elif attr == "attendee":
             self.set_ical_attendee(value)
         elif attr == "organizer":
@@ -667,7 +677,7 @@ class Event(object):
                     params = {}
 
                 if params.has_key('CN'):
-                    name = params['CN']
+                    name = str(params['CN'])
                 else:
                     name = None
 
@@ -686,7 +696,12 @@ class Event(object):
                 else:
                     rsvp = None
 
-                self.add_attendee(address, name=name, rsvp=rsvp, role=role, participant_status=partstat)
+                if params.has_key('CUTYPE'):
+                    cutype = params['CUTYPE']
+                else:
+                    cutype = kolabformat.CutypeIndividual
+
+                self.add_attendee(address, name=name, rsvp=rsvp, role=role, participant_status=partstat, cutype=cutype)
 
     def set_ical_dtend(self, dtend):
         self.set_end(dtend)
@@ -708,12 +723,15 @@ class Event(object):
             params = {}
 
         if params.has_key('CN'):
-            cn = params['CN']
+            cn = str(params['CN'])
 
         self.set_organizer(str(address), name=cn)
 
     def set_ical_priority(self, priority):
         self.set_priority(priority)
+
+    def set_ical_sequence(self, sequence):
+        self.set_sequence(sequence)
 
     def set_ical_status(self, status):
         if status in self.status_map.keys():
@@ -774,12 +792,15 @@ class Event(object):
     def set_organizer(self, email, name=None):
         contactreference = ContactReference(email)
         if not name == None:
-            contactreference.set_name(name)
+            contactreference.setName(name)
 
         self.event.setOrganizer(contactreference)
 
     def set_priority(self, priority):
         self.event.setPriority(priority)
+
+    def set_sequence(self, sequence):
+        self.event.setSequence(int(sequence))
 
     def set_recurrence(self, recurrence):
         self.event.setRecurrenceRule(recurrence)
@@ -898,7 +919,7 @@ class Event(object):
 
         return msg
 
-    def to_message_itip(self, from_address, method="REQUEST", participant_status="ACCEPTED"):
+    def to_message_itip(self, from_address, method="REQUEST", participant_status="ACCEPTED", subject=None, message_text=None):
         from email.MIMEMultipart import MIMEMultipart
         from email.MIMEBase import MIMEBase
         from email.MIMEText import MIMEText
@@ -961,23 +982,23 @@ class Event(object):
 
         msg['Date'] = formatdate(localtime=True)
 
-        # TODO: Should allow for localization
-        text = utils.multiline_message("""
-                    This is a response to one of your event requests.
-            """)
+        if subject is None:
+            subject = _("Reservation Request for %s was %s") % (self.get_summary(), participant_status)
 
-        msg.attach( MIMEText(text) )
+        msg["Subject"] = subject
 
-        part = MIMEBase('text', "calendar")
-        part.set_charset('UTF-8')
+        if message_text is None:
+            message_text = _("""This is an automated response to one of your event requests.""")
 
-        # TODO: Should allow for localization
-        msg["Subject"] = "Meeting Request %s" % (participant_status)
+        msg.attach(MIMEText(utils.multiline_message(message_text)))
+
+        part = MIMEBase('text', 'calendar', charset='UTF-8', method=method)
+        del part['MIME-Version']  # mime parts don't need this
 
         part.set_payload(self.as_string_itip(method=method))
 
         part.add_header('Content-Disposition', 'attachment; filename="event.ics"')
-        part.replace_header('Content-Transfer-Encoding', '8bit')
+        part.add_header('Content-Transfer-Encoding', '8bit')
 
         msg.attach(part)
 
