@@ -139,7 +139,7 @@ def execute(*args, **kw):
     for root, directories, filenames in os.walk('/usr/share/doc/'):
         for directory in directories:
             if directory.startswith("roundcubemail"):
-                for root, directories, filenames in os.walk(os.path.join('/usr/share/doc/', directory)):
+                for root, directories, filenames in os.walk(os.path.join(root, directory)):
                     for filename in filenames:
                         if filename.startswith('mysql.initial') and filename.endswith('.sql'):
                             schema_filepath = os.path.join(root,filename)
