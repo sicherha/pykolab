@@ -383,15 +383,18 @@ result_format = shared+%%s
 
             t = Template(template_definition, searchList=[amavisd_settings])
 
+        fp = None
         if os.path.isdir('/etc/amavisd'):
             fp = open('/etc/amavisd/amavisd.conf', 'w')
         elif os.path.isdir('/etc/amavis'):
             fp = open('/etc/amavis/amavisd.conf', 'w')
+
+        if not fp == None:
             fp.write(t.__str__())
             fp.close()
 
         else:
-            log.error(_("Could not write out Amavis configuration file /etc/amavisd/amavisd.conf"))
+            log.error(_("Could not write out Amavis configuration file amavisd.conf"))
             return
 
     # On APT installations, /etc/amavis/conf.d/ is a directory with many more files.
