@@ -317,6 +317,8 @@ ServerAdminPwd = %(admin_pass)s
         setup_ds_admin = "/usr/sbin/setup-ds-admin.pl"
     #elif os.path.isfile("/usr/sbin/setup-ds-admin"):
         #setup_ds_admin = "/usr/sbin/setup-ds-admin"
+    elif os.path.isfile("/usr/sbin/setup-ds.pl"):
+        setup_ds_admin = "/usr/sbin/setup-ds.pl"
     elif os.path.isfile("/usr/sbin/setup-ds"):
         setup_ds_admin = "/usr/sbin/setup-ds"
     else:
