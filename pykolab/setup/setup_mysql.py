@@ -64,7 +64,7 @@ def execute(*args, **kw):
         }
 
     answer = 0
-    if os.path.exists('/var/run/mysqld/mysqld.sock'):
+    if os.path.exists('/var/run/mysqld/mysqld.sock') or os.path.exists('/var/run/mysql/mysql.sock'):
         answer = utils.ask_menu(_("What MySQL server are we setting up?"), options)
 
     if answer == "1" or answer == 1:
