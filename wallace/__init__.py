@@ -39,6 +39,11 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.wallace')
 conf = pykolab.getConf()
 
+#conf.finalize_conf()
+#if conf.debuglevel > 8:
+#    max_threads = 1
+#else:
+#    max_threads = 24
 max_threads = 24
 
 def pickup_message(filepath, *args, **kw):

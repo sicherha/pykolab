@@ -193,10 +193,10 @@ def execute(*args, **kw):
             pass
     else:
         if not any_itips:
-            log.debug(_("No itips, no resources, pass along"), level=5)
+            log.debug(_("No itips, no resources, pass along %r") % (filepath), level=5)
             return filepath
         else:
-            log.debug(_("iTips, but no resources, pass along"), level=5)
+            log.debug(_("iTips, but no resources, pass along %r") % (filepath), level=5)
             return filepath
 
     # A simple list of merely resource entry IDs that hold any relevance to the

@@ -113,7 +113,7 @@ def execute(name, *args, **kw):
         log.error(_("No such module %r in modules %r (2).") %(name, modules))
         sys.exit(1)
 
-    modules[name]['function'](*args, **kw)
+    return modules[name]['function'](*args, **kw)
 
 def cb_action_HOLD(module, filepath):
     log.info(_("Holding message in queue for manual review (%s by %s)") % (filepath, module))
