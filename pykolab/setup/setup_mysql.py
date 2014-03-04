@@ -64,10 +64,10 @@ def execute(*args, **kw):
         }
 
     answer = 0
-    if os.path.exists('/var/lib/mysql/mysql.sock') or \         # Regular old-fashioned Enterprise Linux
-            os.path.exists('/var/run/mysqld/mysqld.sock') or \  # Debian
-            os.path.exists('/var/run/mysql/mysql.sock') or \    # (open)SUSE
-            os.path.exists('/var/run/mysqld/mysqld.pid'):       # "Unbreakable" Linux from Oracle
+    if os.path.exists('/var/lib/mysql/mysql.sock') or \
+            os.path.exists('/var/run/mysqld/mysqld.sock') or \
+            os.path.exists('/var/run/mysql/mysql.sock') or \
+            os.path.exists('/var/run/mysqld/mysqld.pid'):
         answer = utils.ask_menu(_("What MySQL server are we setting up?"), options)
 
     if answer == "1" or answer == 1:
