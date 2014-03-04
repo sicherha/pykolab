@@ -48,6 +48,8 @@ def pickup_message(filepath, *args, **kw):
         # Cause the previous modules to be skipped
         wallace_modules = wallace_modules[(wallace_modules.index(kw['module'])+1):]
 
+        log.debug(_("Wallace modules: %r") % (wallace_modules), level=8)
+
         # Execute the module
         if kw.has_key('stage'):
             modules.execute(kw['module'], filepath, stage=kw['stage'])
@@ -55,7 +57,9 @@ def pickup_message(filepath, *args, **kw):
             modules.execute(kw['module'], filepath)
 
     for module in wallace_modules:
-        filepath = modules.execute(module, filepath)
+        result_filepath = modules.execute(module, filepath)
+        if not result_filepath == None and not result_filepath == False:
+            filepath = result_filepath
 
 def worker_process(*args, **kw):
     log.debug(_("Worker process %s initializing") % (multiprocessing.current_process().name), level=1)
