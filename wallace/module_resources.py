@@ -152,7 +152,11 @@ def execute(*args, **kw):
 
     # An iTip message may contain multiple events. Later on, test if the message
     # is an iTip message by checking the length of this list.
-    itip_events = itip_events_from_message(message)
+    try:
+        itip_events = itip_events_from_message(message)
+    except Exception, e:
+        log.error(_("Failed to parse iTip events from message: %r" % (e)))
+        itip_events = []
 
     if not len(itip_events) > 0:
         log.info(
@@ -586,7 +590,7 @@ def itip_events_from_message(message):
     seen_uids = []
 
     # iTip methods we are actually interested in. Other methods will be ignored.
-    itip_methods = [ "REQUEST", "REPLY", "ADD", "CANCEL" ]
+    itip_methods = [ "REQUEST", "CANCEL" ]
 
     # Are all iTip messages multipart? No! RFC 6047, section 2.4 states "A
     # MIME body part containing content information that conforms to this
@@ -600,11 +604,8 @@ def itip_events_from_message(message):
         # But in real word, other mime-types are used as well
         if part.get_content_type() in [ "text/calendar", "text/x-vcalendar", "application/ics" ]:
             if not str(part.get_param('method')).upper() in itip_methods:
-                log.error(
-                        _("Method %r not really interesting for us.") % (
-                                part.get_param('method')
-                            )
-                    )
+                log.error(_("Method %r not really interesting for us.") % (part.get_param('method')))
+                continue
 
             # Get the itip_payload
             itip_payload = part.get_payload(decode=True)

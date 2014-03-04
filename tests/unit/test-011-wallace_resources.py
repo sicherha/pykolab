@@ -305,6 +305,15 @@ class TestWallaceResources(unittest.TestCase):
         itips5 = module_resources.itip_events_from_message(message_from_string(itip_empty))
         self.assertEqual(len(itips5), 0, "Simple plain text message")
 
+        # invalid itip blocks
+        self.assertRaises(Exception, module_resources.itip_events_from_message, message_from_string(itip_multipart.replace("BEGIN:VEVENT", "")))
+
+        itips6 = module_resources.itip_events_from_message(message_from_string(itip_multipart.replace("DTSTART;", "X-DTSTART;")))
+        self.assertEqual(len(itips6), 0, "Event with not DTSTART")
+
+        itips7 = module_resources.itip_events_from_message(message_from_string(itip_non_multipart.replace("METHOD:REQUEST", "METHOD:PUBLISH").replace("method=REQUEST", "method=PUBLISH")))
+        self.assertEqual(len(itips7), 0, "Invalid METHOD")
+
 
     def test_002_resource_record_from_email_address(self):
         res = module_resources.resource_record_from_email_address("doe@example.org")
