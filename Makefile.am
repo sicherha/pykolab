@@ -39,7 +39,6 @@ EXTRA_DIST = \
 
 SUBDIRS = \
 	conf \
-	kolab \
 	kolabd \
 	po \
 	pykolab \
