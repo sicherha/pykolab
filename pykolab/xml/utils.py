@@ -1,16 +1,17 @@
 import datetime
 import pytz
 import kolabformat
+from dateutil.tz import tzlocal
 
 def to_dt(dt):
     """
         Convert a naive date or datetime to a tz-aware datetime.
     """
 
-    if isinstance(dt, datetime.date) and not isinstance(dt, datetime.datetime) or not hasattr(dt, 'hour'):
-        dt = datetime.datetime(dt.year, dt.month, dt.day, 0, 0, 0, 0)
+    if isinstance(dt, datetime.date) and not isinstance(dt, datetime.datetime) or dt is not None and not hasattr(dt, 'hour'):
+        dt = datetime.datetime(dt.year, dt.month, dt.day, 0, 0, 0, 0, tzinfo=tzlocal())
 
-    else:
+    elif isinstance(dt, datetime.datetime):
         if dt.tzinfo == None:
             return dt.replace(tzinfo=pytz.utc)
 

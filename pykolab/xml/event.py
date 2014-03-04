@@ -624,6 +624,10 @@ class Event(object):
     def set_recurrence(self, recurrence):
         self.event.setRecurrenceRule(recurrence)
 
+        # reset eventcal instance
+        if hasattr(self, 'eventcal'):
+            del self.eventcal
+
     def set_start(self, _datetime):
         valid_datetime = False
         if isinstance(_datetime, datetime.date):
@@ -808,7 +812,13 @@ class Event(object):
             self.eventcal = self.to_event_cal()
 
         next_cdatetime = self.eventcal.getNextOccurence(xmlutils.to_cdatetime(datetime, True))
-        return xmlutils.from_cdatetime(next_cdatetime, True) if next_cdatetime is not None else None
+        next_datetime  = xmlutils.from_cdatetime(next_cdatetime, True) if next_cdatetime is not None else None
+
+        # cut infinite recurrence at a reasonable point
+        if next_datetime and not self.get_last_occurrence() and next_datetime > self._recurrence_end():
+            next_datetime = None
+
+        return next_datetime
 
     def get_occurence_end_date(self, datetime):
         if not datetime:
@@ -820,12 +830,18 @@ class Event(object):
         end_cdatetime = self.eventcal.getOccurenceEndDate(xmlutils.to_cdatetime(datetime, True))
         return xmlutils.from_cdatetime(end_cdatetime, True) if end_cdatetime is not None else None
 
-    def get_last_occurrence(self):
+    def get_last_occurrence(self, force=False):
         if not hasattr(self, 'eventcal'):
             self.eventcal = self.to_event_cal()
 
         last = self.eventcal.getLastOccurrence()
-        return xmlutils.from_cdatetime(last, True) if last is not None else None
+        last_datetime = xmlutils.from_cdatetime(last, True) if last is not None else None
+
+        # we're forced to return some date
+        if last_datetime is None and force:
+            last_datetime = self._recurrence_end()
+
+        return last_datetime
 
     def get_next_instance(self, datetime):
         next_start = self.get_next_occurence(datetime)
@@ -841,6 +857,22 @@ class Event(object):
             return instance
 
         return None
+
+    def _recurrence_end(self):
+        """
+            Determine a reasonable end date for infinitely recurring events
+        """
+        rrule = self.event.recurrenceRule()
+        if rrule.isValid() and rrule.count() < 0 and not rrule.end().isValid():
+            now = datetime.datetime.now()
+            switch = {
+                kolabformat.RecurrenceRule.Yearly: 100,
+                kolabformat.RecurrenceRule.Monthly: 20
+            }
+            intvl = switch[rrule.frequency()] if rrule.frequency() in switch else 10
+            return self.get_start().replace(year=now.year + intvl)
+
+        return xmlutils.from_cdatetime(rrule.end(), True)
 
 
 class EventIntegrityError(Exception):

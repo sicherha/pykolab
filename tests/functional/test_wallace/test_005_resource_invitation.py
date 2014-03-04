@@ -128,6 +128,27 @@ END:VCALENDAR
 """
 
 
+itip_recurring = """
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Apple Inc.//Mac OS X 10.9.2//EN
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:%s
+DTSTAMP:20140213T1254140
+DTSTART;TZID=Europe/Zurich:%s
+DTEND;TZID=Europe/Zurich:%s
+RRULE:FREQ=WEEKLY;INTERVAL=1;COUNT=10
+SUMMARY:test
+DESCRIPTION:test
+ORGANIZER;CN="Doe, John":mailto:john.doe@example.org
+ATTENDEE;ROLE=REQ-PARTICIPANT;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:%s
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
+"""
+
 mime_message = """MIME-Version: 1.0
 Content-Type: multipart/mixed;
  boundary="=_c8894dbdb8baeedacae836230e3436fd"
@@ -196,22 +217,22 @@ class TestResourceInvitation(unittest.TestCase):
         smtp = smtplib.SMTP('localhost', 10026)
         smtp.sendmail(from_addr, to_addr, mime_message % (to_addr, itip_payload))
 
-    def send_itip_invitation(self, resource_email, start=None, allday=False):
+    def send_itip_invitation(self, resource_email, start=None, allday=False, template=None):
         if start is None:
             start = datetime.datetime.now()
 
         uid = str(uuid.uuid4())
 
         if allday:
-            template = itip_allday
+            default_template = itip_allday
             end = start + datetime.timedelta(days=1)
             date_format = '%Y%m%d'
         else:
             end = start + datetime.timedelta(hours=4)
-            template = itip_invitation
+            default_template = itip_invitation
             date_format = '%Y%m%dT%H%M%S'
 
-        self.send_message(template % (
+        self.send_message((template if template is not None else default_template) % (
                 uid,
                 start.strftime(date_format),
                 end.strftime(date_format),
@@ -461,3 +482,26 @@ class TestResourceInvitation(unittest.TestCase):
         uid2 = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,6,2, 16,0,0))
         response = self.check_message_received("Reservation Request for test was DECLINED", self.audi['mail'])
         self.assertIsInstance(response, email.message.Message)
+
+
+    def test_009_recurring_events(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        # register an infinitely recurring resource invitation
+        uid = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,2,20, 12,0,0),
+            template=itip_recurring.replace(";COUNT=10", ""))
+
+        accept = self.check_message_received("Reservation Request for test was ACCEPTED")
+        self.assertIsInstance(accept, email.message.Message)
+
+        # check non-recurring against recurring
+        uid2 = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,3,13, 10,0,0))
+        response = self.check_message_received("Reservation Request for test was DECLINED", self.audi['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+        self.purge_mailbox(self.john['mailbox'])
+
+        # check recurring against recurring
+        uid3 = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,2,22, 8,0,0), template=itip_recurring)
+        accept = self.check_message_received("Reservation Request for test was ACCEPTED")
+        self.assertIsInstance(accept, email.message.Message)

@@ -11,4 +11,5 @@
 * python-kolabformat
 * python-kolab
 * python-nose
+* python-dateutil
 * python-twisted-core

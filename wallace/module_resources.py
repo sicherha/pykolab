@@ -435,28 +435,24 @@ def read_resource_calendar(resource_rec, itip_events):
 
                     for itip in itip_events:
                         _es = to_dt(event.get_start())
-                        _is = to_dt(itip['start'].dt)
-
                         _ee = to_dt(event.get_end())
-                        _ie = to_dt(itip['end'].dt)
 
-                        # TODO: add margin for all-day dates (+13h; -12h)
+                        conflict = False
 
-                        if _es < _is:
-                            if _es <= _ie:
-                                if _ee <= _is:
-                                    conflict = False
-                                else:
-                                    conflict = True
-                            else:
-                                conflict = True
-                        elif _es == _is:
-                            conflict = True
-                        else: # _es > _is
-                            if _es <= _ie:
-                                conflict = True
-                            else:
-                                conflict = False
+                        # naive loops to check for collisions in (recurring) events
+                        # TODO: compare recurrence rules directly (e.g. matching time slot or weekday or monthday)
+                        while not conflict and _es is not None:
+                            _is = to_dt(itip['start'])
+                            _ie = to_dt(itip['end'])
+
+                            while not conflict and _is is not None:
+                                log.debug("* Comparing event dates at %s/%s with %s/%s" % (_es, _ee, _is, _ie), level=9)
+                                conflict = check_date_conflict(_es, _ee, _is, _ie)
+                                _is = to_dt(itip['xml'].get_next_occurence(_is)) if event.is_recurring() else None
+                                _ie = to_dt(itip['xml'].get_occurence_end_date(_is))
+
+                            _es = to_dt(event.get_next_occurence(_es)) if event.is_recurring() else None
+                            _ee = to_dt(event.get_occurence_end_date(_es))
 
                         if event.get_uid() == itip['uid']:
                             resource_rec['existing_events'].append(itip['uid'])
@@ -477,6 +473,29 @@ def read_resource_calendar(resource_rec, itip_events):
                             resource_rec['conflict'] = True
 
     return num_messages
+
+def check_date_conflict(_es, _ee, _is, _ie):
+    conflict = False
+
+    # TODO: add margin for all-day dates (+13h; -12h)
+
+    if _es < _is:
+        if _es <= _ie:
+            if _ee <= _is:
+                conflict = False
+            else:
+                conflict = True
+        else:
+            conflict = True
+    elif _es == _is:
+        conflict = True
+    else: # _es > _is
+        if _es <= _ie:
+            conflict = True
+        else:
+            conflict = False
+    
+    return conflict
 
 
 def accept_reservation_request(itip_event, resource, delegator=None):
@@ -622,8 +641,6 @@ def itip_events_from_message(message):
                     # - organizer
                     # - attendees (if any)
                     # - resources (if any)
-                    # - TODO: recurrence rules (if any)
-                    #   Where are these stored actually?
                     #
 
                     itip['uid'] = str(c['uid'])
@@ -631,17 +648,17 @@ def itip_events_from_message(message):
                     itip['sequence'] = int(c['sequence']) if c.has_key('sequence') else 0
 
                     if c.has_key('dtstart'):
-                        itip['start'] = c['dtstart']
+                        itip['start'] = c['dtstart'].dt
                     else:
                         log.error(_("iTip event without a start"))
                         continue
 
                     if c.has_key('dtend'):
-                        itip['end'] = c['dtend']
+                        itip['end'] = c['dtend'].dt
 
                     if c.has_key('duration'):
-                        itip['duration'] = c['duration']
-                        # TODO: translate start + duration into end
+                        itip['duration'] = c['duration'].dt
+                        itip['end'] = itip['start'] + c['duration'].dt
 
                     itip['organizer'] = c['organizer']
 

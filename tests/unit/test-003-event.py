@@ -190,6 +190,14 @@ END:VCALENDAR
 
         self.assertEqual(self.event.get_next_occurence(last_date), None)
 
+        # check infinite recurrence
+        rrule = kolabformat.RecurrenceRule()
+        rrule.setFrequency(kolabformat.RecurrenceRule.Monthly)
+        self.event.set_recurrence(rrule);
+
+        self.assertEqual(self.event.get_last_occurrence(), None)
+        self.assertIsInstance(self.event.get_last_occurrence(force=True), datetime.datetime)
+
         # check get_next_instance() which returns a clone of the base event
         next_instance = self.event.get_next_instance(next_date)
         self.assertIsInstance(next_instance, Event)
