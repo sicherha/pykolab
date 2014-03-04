@@ -147,5 +147,52 @@ END:VCALENDAR
         self.assertEqual(event['summary'], "test")
         self.assertIsInstance(event['dtstamp'].dt, datetime.datetime)
 
+    def test_020_calendaring_recurrence(self):
+        rrule = kolabformat.RecurrenceRule()
+        rrule.setFrequency(kolabformat.RecurrenceRule.Monthly)
+        rrule.setCount(10)
+
+        self.event = Event()
+        self.event.set_recurrence(rrule);
+
+        _start = datetime.datetime(2014, 5, 1, 11, 30, 00, tzinfo=pytz.timezone("Europe/London"))
+        self.event.set_start(_start)
+        self.event.set_end(_start + datetime.timedelta(hours=2))
+
+        next_date = self.event.get_next_occurence(_start)
+        self.assertIsInstance(next_date, datetime.datetime)
+        self.assertEqual(next_date.month, 6)
+        self.assertEqual(next_date.day, 1)
+
+        end_date = self.event.get_occurence_end_date(next_date)
+        self.assertIsInstance(end_date, datetime.datetime)
+        self.assertEqual(end_date.month, 6)
+        self.assertEqual(end_date.hour, 13)
+
+        self.assertEqual(self.event.get_next_occurence(next_date).month, 7)
+
+        last_date = self.event.get_last_occurrence()
+        self.assertIsInstance(last_date, datetime.datetime)
+        self.assertEqual(last_date.year, 2015)
+        self.assertEqual(last_date.month, 2)
+
+        self.assertEqual(self.event.get_next_occurence(last_date), None)
+
+        # check get_next_instance() which returns a clone of the base event
+        next_instance = self.event.get_next_instance(next_date)
+        self.assertIsInstance(next_instance, Event)
+        self.assertEqual(self.event.get_summary(), next_instance.get_summary())
+        self.assertEqual(next_instance.get_start().month, 7)
+
+    def test_021_calendaring_no_recurrence(self):
+        _start = datetime.datetime(2014, 2, 1, 14, 30, 00, tzinfo=pytz.timezone("Europe/London"))
+        self.event = Event()
+        self.event.set_start(_start)
+        self.event.set_end(_start + datetime.timedelta(hours=2))
+
+        self.assertEqual(self.event.get_next_occurence(_start), None)
+        self.assertEqual(self.event.get_last_occurrence(), None)
+
+
 if __name__ == '__main__':
     unittest.main()

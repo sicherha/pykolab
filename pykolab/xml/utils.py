@@ -21,6 +21,9 @@ def from_cdatetime(_cdatetime, with_timezone=True):
     """
         Convert from kolabformat.cDateTime to datetime.date(time)
     """
+    if not _cdatetime.isValid():
+        return None
+
     (
         year,
         month,

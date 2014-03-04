@@ -9,4 +9,6 @@
 
 * python-icalendar
 * python-kolabformat
+* python-kolab
 * python-nose
+* python-twisted-core

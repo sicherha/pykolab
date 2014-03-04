@@ -762,6 +762,47 @@ class Event(object):
 
         return msg
 
+    def to_event_cal(self):
+        from kolab.calendaring import EventCal
+        return EventCal(self.event)
+
+    def get_next_occurence(self, datetime):
+        if not hasattr(self, 'eventcal'):
+            self.eventcal = self.to_event_cal()
+
+        next_cdatetime = self.eventcal.getNextOccurence(xmlutils.to_cdatetime(datetime, True))
+        return xmlutils.from_cdatetime(next_cdatetime, True) if next_cdatetime is not None else None
+
+    def get_occurence_end_date(self, datetime):
+        if not hasattr(self, 'eventcal'):
+            return None
+
+        end_cdatetime = self.eventcal.getOccurenceEndDate(xmlutils.to_cdatetime(datetime, True))
+        return xmlutils.from_cdatetime(end_cdatetime, True) if end_cdatetime is not None else None
+
+    def get_last_occurrence(self):
+        if not hasattr(self, 'eventcal'):
+            self.eventcal = self.to_event_cal()
+
+        last = self.eventcal.getLastOccurrence()
+        return xmlutils.from_cdatetime(last, True) if last is not None else None
+
+    def get_next_instance(self, datetime):
+        next_start = self.get_next_occurence(datetime)
+        if next_start:
+            instance = Event(from_string=str(self))
+            instance.set_start(next_start)
+            instance.set_recurrence(kolabformat.RecurrenceRule())  # remove recurrence rules
+            instance.event.setRecurrenceID(instance.event.start(), False)
+            next_end = self.get_occurence_end_date(next_start)
+            if next_end:
+                instance.set_end(next_end)
+
+            return instance
+
+        return None
+
+
 class EventIntegrityError(Exception):
     def __init__(self, message):
         Exception.__init__(self, message)
