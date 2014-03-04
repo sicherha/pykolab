@@ -183,12 +183,13 @@ class Event(object):
             if ical_event.has_key(attr):
                 self.set_from_ical(attr.lower(), ical_event[attr])
 
-        # HACK: use libkolab::EventCal::fromICal() to parse RRULEs
+        # HACK: use calendaring::EventCal::fromICal() to parse RRULEs
         if ical_event.has_key('RRULE'):
             from kolab.calendaring import EventCal
             event_xml = EventCal()
             event_xml.fromICal("BEGIN:VCALENDAR\nVERSION:2.0\n" + ical + "\nEND:VCALENDAR")
             self.event.setRecurrenceRule(event_xml.recurrenceRule())
+            self.event.setExceptionDates(event_xml.exceptionDates())
 
     def get_attendee_participant_status(self, attendee):
         return attendee.get_participant_status()
@@ -242,11 +243,30 @@ class Event(object):
     def get_description(self):
         return self.event.description()
 
+    def get_duration(self):
+        duration = self.event.duration()
+        if duration and duration.isValid():
+            dtd = datetime.timedelta(
+                days=duration.days(),
+                seconds=duration.seconds(),
+                minutes=duration.minutes(),
+                hours=duration.hours(),
+                weeks=duration.weeks()
+            )
+            return dtd
+
+        return None
+
     def get_end(self):
-        return xmlutils.from_cdatetime(self.event.end(), True)
+        dt = xmlutils.from_cdatetime(self.event.end(), True)
+        if not dt:
+            duration = self.get_duration()
+            if duration is not None:
+                dt = self.get_start() + duration
+        return dt
 
     def get_exception_dates(self):
-        return self.event.exceptionDates()
+        return map(lambda _: xmlutils.from_cdatetime(_, True), self.event.exceptionDates())
 
     def get_ical_attendee(self):
         # TODO: Formatting, aye? See also the example snippet:
@@ -462,6 +482,8 @@ class Event(object):
             self.set_ical_dtend(value.dt)
         elif attr == "dtstart":
             self.set_ical_dtstart(value.dt)
+        elif attr == "duration":
+            self.set_ical_duration(value)
         elif attr == "status":
             self.set_ical_status(value)
         elif attr == "summary":
@@ -525,6 +547,11 @@ class Event(object):
 
     def set_ical_dtstart(self, dtstart):
         self.set_start(dtstart)
+
+    def set_ical_duration(self, value):
+        if value.dt:
+            duration = kolabformat.Duration(value.dt.days, 0, 0, value.dt.seconds, False)
+            self.event.setDuration(duration)
 
     def set_ical_organizer(self, organizer):
         address = str(organizer).split(':')[-1]

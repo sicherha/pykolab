@@ -117,10 +117,14 @@ class TestEventXML(unittest.TestCase):
     def test_018_load_from_ical(self):
         ical_str = """BEGIN:VCALENDAR
 VERSION:2.0
+PRODID:-//Apple Inc.//Mac OS X 10.9.2//EN
 CALSCALE:GREGORIAN
 BEGIN:VEVENT
 DTSTART;TZID=Europe/Zurich;VALUE=DATE-TIME:20140523T110000
-DTEND;TZID=Europe/Zurich;VALUE=DATE-TIME:20140523T130000
+DURATION:PT1H30M0S
+RRULE:FREQ=WEEKLY;INTERVAL=1;COUNT=10
+EXDATE;TZID=Europe/Zurich;VALUE=DATE-TIME:20140530T110000
+EXDATE;TZID=Europe/Zurich;VALUE=DATE-TIME:20140620T110000
 UID:7a35527d-f783-4b58-b404-b1389bd2fc57
 ATTENDEE;CN="Doe, Jane";CUTYPE=INDIVIDUAL;PARTSTAT=ACCEPTED
  ;ROLE=REQ-PARTICIPANT;RSVP=FALSE:MAILTO:jane@doe.org
@@ -134,6 +138,12 @@ END:VCALENDAR
         event = event_from_ical(ical.walk('VEVENT')[0].to_ical())
         self.assertEqual(event.get_attendee_by_email("max@imum.com").get_cutype(), kolabformat.CutypeResource)
         self.assertEqual(event.get_sequence(), 2)
+        self.assertTrue(event.is_recurring())
+        self.assertIsInstance(event.get_duration(), datetime.timedelta)
+        self.assertIsInstance(event.get_end(), datetime.datetime)
+        self.assertEqual(str(event.get_end()), "2014-05-23 12:30:00+01:00")
+        self.assertEqual(len(event.get_exception_dates()), 2)
+        self.assertIsInstance(event.get_exception_dates()[0], datetime.datetime)
 
     def test_019_as_string_itip(self):
         self.event.set_summary("test")
