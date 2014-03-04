@@ -270,6 +270,7 @@ def execute(*args, **kw):
     #
     # Store the (first) conflicting event(s) alongside the resource information.
     start = time.time()
+    num_messages = 0
 
     for resource in resources.keys():
         # skip this for resource collections
@@ -278,10 +279,9 @@ def execute(*args, **kw):
 
         # sets the 'conflicting' flag and adds a list of conflicting events found
         try:
-            num_messages = read_resource_calendar(resources[resource], itip_events)
+            num_messages += read_resource_calendar(resources[resource], itip_events)
         except Exception, e:
             log.error(_("Failed to read resource calendar for %r: %r") % (resource, e))
-            continue
 
     end = time.time()
 
