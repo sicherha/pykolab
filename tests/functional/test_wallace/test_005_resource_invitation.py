@@ -18,27 +18,7 @@ import tests.functional.resource_func as funcs
 
 conf = pykolab.getConf()
 
-itip_invitation = """MIME-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="=_c8894dbdb8baeedacae836230e3436fd"
-From: "Doe, John" <john.doe@example.org>
-Date: Tue, 25 Feb 2014 13:54:14 +0100
-Message-ID: <240fe7ae7e139129e9eb95213c1016d7@example.org>
-User-Agent: Roundcube Webmail/0.9-0.3.el6.kolab_3.0
-To: %s
-Subject: "test" has been created
-
---=_c8894dbdb8baeedacae836230e3436fd
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-
-*test*
-
---=_c8894dbdb8baeedacae836230e3436fd
-Content-Type: text/calendar; charset=UTF-8; method=REQUEST; name=event.ics
-Content-Disposition: attachment; filename=event.ics
-Content-Transfer-Encoding: 8bit
-
+itip_invitation = """
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Roundcube Webmail 0.9-0.3.el6.kolab_3.0//NONSGML Calendar//EN
@@ -56,30 +36,9 @@ ATTENDEE;ROLE=REQ-PARTICIPANT;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:ma
 TRANSP:OPAQUE
 END:VEVENT
 END:VCALENDAR
---=_c8894dbdb8baeedacae836230e3436fd--
 """
 
-itip_update = """MIME-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="=_c8894dbdb8baeedacae836230e3436fd"
-From: "Doe, John" <john.doe@example.org>
-Date: Tue, 25 Feb 2014 13:54:14 +0100
-Message-ID: <240fe7ae7e139129e9eb95213c1016d7@example.org>
-User-Agent: Roundcube Webmail/0.9-0.3.el6.kolab_3.0
-To: %s
-Subject: "test" has been updated
-
---=_c8894dbdb8baeedacae836230e3436fd
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-
-*test* updated
-
---=_c8894dbdb8baeedacae836230e3436fd
-Content-Type: text/calendar; charset=UTF-8; method=REQUEST; name=event.ics
-Content-Disposition: attachment; filename=event.ics
-Content-Transfer-Encoding: 8bit
-
+itip_update = """
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Roundcube Webmail 0.9-0.3.el6.kolab_3.0//NONSGML Calendar//EN
@@ -98,18 +57,35 @@ ATTENDEE;ROLE=REQ-PARTICIPANT;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:ma
 TRANSP:OPAQUE
 END:VEVENT
 END:VCALENDAR
---=_c8894dbdb8baeedacae836230e3436fd--
 """
 
-itip_cancellation = """Return-Path: <john.doe@example.org>
-Content-Type: text/calendar; method=CANCEL; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-To: %s
-From: john.doe@example.org
-Date: Mon, 24 Feb 2014 11:27:28 +0100
-Message-ID: <1a3aa8995e83dd24cf9247e538ac91ff@example.org>
-Subject: "test" cancelled
+itip_delegated = """
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Roundcube//Roundcube libcalendaring 1.0-git//Sabre//Sabre VObject
+  2.1.3//EN
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:%s
+DTSTAMP;VALUE=DATE-TIME:20140227T141939Z
+DTSTART;VALUE=DATE-TIME;TZID=Europe/London:%s
+DTEND;VALUE=DATE-TIME;TZID=Europe/London:%s
+SUMMARY:test
+SEQUENCE:4
+ATTENDEE;CN=Company Cars;PARTSTAT=DELEGATED;ROLE=NON-PARTICIPANT;CUTYPE=IND
+ IVIDUAL;RSVP=TRUE;DELEGATED-TO=resource-car-audia4@example.org:mailto:reso
+ urce-collection-companycars@example.org
+ATTENDEE;CN=Audi A4;PARTSTAT=ACCEPTED;ROLE=REQ-PARTICIPANT;CUTYPE=INDIVIDUA
+ L;RSVP=TRUE;DELEGATED-FROM=resource-collection-companycars@example.org:mai
+ lto:resource-car-audia4@example.org
+ORGANIZER;CN=:mailto:john.doe@example.org
+DESCRIPTION:Sent to %s
+END:VEVENT
+END:VCALENDAR
+"""
 
+itip_cancellation = """
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Roundcube Webmail 0.9-0.3.el6.kolab_3.0//NONSGML Calendar//EN
@@ -118,17 +94,63 @@ METHOD:CANCEL
 BEGIN:VEVENT
 UID:%s
 DTSTAMP:20140218T1254140
-DTSTART;TZID=3DEurope/London:20120713T100000
-DTEND;TZID=3DEurope/London:20120713T110000
+DTSTART;TZID=Europe/London:20120713T100000
+DTEND;TZID=Europe/London:20120713T110000
 SUMMARY:test
 DESCRIPTION:test
-ORGANIZER;CN=3D"Doe, John":mailto:john.doe@example.org
-ATTENDEE;ROLE=3DREQ-PARTICIPANT;PARTSTAT=3DACCEPTED;RSVP=3DTRUE:mailt=
-o:%s
+ORGANIZER;CN="Doe, John":mailto:john.doe@example.org
+ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE:mailt=
+ o:%s
 TRANSP:OPAQUE
 SEQUENCE:3
 END:VEVENT
 END:VCALENDAR
+"""
+
+itip_allday = """
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Roundcube Webmail 0.9-0.3.el6.kolab_3.0//NONSGML Calendar//EN
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:%s
+DTSTAMP:20140213T1254140
+DTSTART;VALUE=DATE:%s
+DTEND;VALUE=DATE:%s
+SUMMARY:test
+DESCRIPTION:test
+ORGANIZER;CN="Doe, John":mailto:john.doe@example.org
+ATTENDEE;ROLE=REQ-PARTICIPANT;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:%s
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
+"""
+
+
+mime_message = """MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="=_c8894dbdb8baeedacae836230e3436fd"
+From: "Doe, John" <john.doe@example.org>
+Date: Tue, 25 Feb 2014 13:54:14 +0100
+Message-ID: <240fe7ae7e139129e9eb95213c1016d7@example.org>
+User-Agent: Roundcube Webmail/0.9-0.3.el6.kolab_3.0
+To: %s
+Subject: "test"
+
+--=_c8894dbdb8baeedacae836230e3436fd
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+
+*test*
+
+--=_c8894dbdb8baeedacae836230e3436fd
+Content-Type: text/calendar; charset=UTF-8; method=REQUEST; name=event.ics
+Content-Disposition: attachment; filename=event.ics
+Content-Transfer-Encoding: 8bit
+
+%s
+--=_c8894dbdb8baeedacae836230e3436fd--
 """
 
 class TestResourceInvitation(unittest.TestCase):
@@ -167,37 +189,44 @@ class TestResourceInvitation(unittest.TestCase):
         from tests.functional.synchronize import synchronize_once
         synchronize_once()
 
-    def send_message(self, msg_source, to_addr, from_addr=None):
+    def send_message(self, itip_payload, to_addr, from_addr=None):
         if from_addr is None:
             from_addr = self.john['mail']
 
         smtp = smtplib.SMTP('localhost', 10026)
-        smtp.sendmail(from_addr, to_addr, msg_source)
+        smtp.sendmail(from_addr, to_addr, mime_message % (to_addr, itip_payload))
 
-    def send_itip_invitation(self, resource_email, start=None):
+    def send_itip_invitation(self, resource_email, start=None, allday=False):
         if start is None:
             start = datetime.datetime.now()
 
         uid = str(uuid.uuid4())
-        end = start + datetime.timedelta(hours=4)
-        self.send_message(itip_invitation % (
-                resource_email,
+
+        if allday:
+            template = itip_allday
+            end = start + datetime.timedelta(days=1)
+            date_format = '%Y%m%d'
+        else:
+            end = start + datetime.timedelta(hours=4)
+            template = itip_invitation
+            date_format = '%Y%m%dT%H%M%S'
+
+        self.send_message(template % (
                 uid,
-                start.strftime('%Y%m%dT%H%M%S'),
-                end.strftime('%Y%m%dT%H%M%S'),
+                start.strftime(date_format),
+                end.strftime(date_format),
                 resource_email
             ),
             resource_email)
 
         return uid
 
-    def send_itip_update(self, resource_email, uid, start=None):
+    def send_itip_update(self, resource_email, uid, start=None, template=None):
         if start is None:
             start = datetime.datetime.now()
 
         end = start + datetime.timedelta(hours=4)
-        self.send_message(itip_update % (
-                resource_email,
+        self.send_message((template if template is not None else itip_update) % (
                 uid,
                 start.strftime('%Y%m%dT%H%M%S'),
                 end.strftime('%Y%m%dT%H%M%S'),
@@ -209,7 +238,6 @@ class TestResourceInvitation(unittest.TestCase):
 
     def send_itip_cancel(self, resource_email, uid):
         self.send_message(itip_cancellation % (
-                resource_email,
                 uid,
                 resource_email
             ),
@@ -292,6 +320,17 @@ class TestResourceInvitation(unittest.TestCase):
         imap.disconnect()
 
 
+    def find_resource_by_email(self, email):
+        resource = None
+        if (email.find(self.audi['mail']) >= 0):
+            resource = self.audi
+        if (email.find(self.passat['mail']) >= 0):
+            resource = self.passat
+        if (email.find(self.boxter['mail']) >= 0):
+            resource = self.boxter
+        return resource
+
+
     def test_001_resource_from_email_address(self):
         resource = module_resources.resource_record_from_email_address(self.audi['mail'])
         self.assertEqual(len(resource), 1)
@@ -331,7 +370,7 @@ class TestResourceInvitation(unittest.TestCase):
         accept = self.check_message_received("Reservation Request for test was ACCEPTED")
         self.assertIsInstance(accept, email.message.Message)
 
-        delegatee = self.passat if accept['from'].find(self.passat['mail']) >= 0 else self.boxter
+        delegatee = self.find_resource_by_email(accept['from'])
         self.assertIn(delegatee['mail'], accept['from'])
 
         # check booking in the delegatee's resource calendar
@@ -340,16 +379,19 @@ class TestResourceInvitation(unittest.TestCase):
         # resource collection responds with a DELEGATED message
         response = self.check_message_received("Reservation Request for test was DELEGATED", self.cars['mail'])
         self.assertIsInstance(response, email.message.Message)
+        self.assertIn("ROLE=NON-PARTICIPANT;RSVP=FALSE", str(response))
 
 
     def test_005_rescheduling_reservation(self):
-        uid = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,5,1, 10,0,0))
+        self.purge_mailbox(self.john['mailbox'])
+
+        uid = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,4,1, 10,0,0))
 
         response = self.check_message_received("Reservation Request for test was ACCEPTED", self.audi['mail'])
         self.assertIsInstance(response, email.message.Message)
 
         self.purge_mailbox(self.john['mailbox'])
-        self.send_itip_update(self.audi['mail'], uid, datetime.datetime(2014,5,1, 12,0,0)) # conflict with myself
+        self.send_itip_update(self.audi['mail'], uid, datetime.datetime(2014,4,1, 12,0,0)) # conflict with myself
 
         response = self.check_message_received("Reservation Request for test was ACCEPTED", self.audi['mail'])
         self.assertIsInstance(response, email.message.Message)
@@ -361,6 +403,8 @@ class TestResourceInvitation(unittest.TestCase):
 
 
     def test_006_cancelling_revervation(self):
+        self.purge_mailbox(self.john['mailbox'])
+
         uid = self.send_itip_invitation(self.boxter['mail'], datetime.datetime(2014,5,1, 10,0,0))
         self.assertIsInstance(self.check_resource_calendar_event(self.boxter['kolabtargetfolder'], uid), pykolab.xml.Event)
 
@@ -373,4 +417,47 @@ class TestResourceInvitation(unittest.TestCase):
         self.send_itip_invitation(self.boxter['mail'], datetime.datetime(2014,5,1, 9,0,0))
 
         response = self.check_message_received("Reservation Request for test was ACCEPTED", self.boxter['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+
+    def test_007_update_delegated(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        dt = datetime.datetime(2014,8,1, 12,0,0)
+        uid = self.send_itip_invitation(self.cars['mail'], dt)
+
+        # wait for accept notification
+        accept = self.check_message_received("Reservation Request for test was ACCEPTED")
+        self.assertIsInstance(accept, email.message.Message)
+        delegatee = self.find_resource_by_email(accept['from'])
+
+        # send update message to all attendees (collection and delegatee)
+        self.purge_mailbox(self.john['mailbox'])
+        update_template = itip_delegated.replace("resource-car-audia4@example.org", delegatee['mail'])
+        self.send_itip_update(self.cars['mail'], uid, dt, template=update_template)
+        self.send_itip_update(delegatee['mail'], uid, dt, template=update_template)
+
+        # get response from delegatee
+        accept = self.check_message_received("Reservation Request for test was ACCEPTED")
+        self.assertIsInstance(accept, email.message.Message)
+        self.assertIn(delegatee['mail'], accept['from'])
+
+        # no delegation response on updates
+        self.assertEqual(self.check_message_received("Reservation Request for test was DELEGATED", self.cars['mail']), None)
+
+
+    def test_008_allday_reservation(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        uid = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,6,2), True)
+
+        accept = self.check_message_received("Reservation Request for test was ACCEPTED")
+        self.assertIsInstance(accept, email.message.Message)
+
+        event = self.check_resource_calendar_event(self.audi['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertIsInstance(event.get_start(), datetime.date)
+
+        uid2 = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,6,2, 16,0,0))
+        response = self.check_message_received("Reservation Request for test was DECLINED", self.audi['mail'])
         self.assertIsInstance(response, email.message.Message)

@@ -26,7 +26,7 @@ class Attendee(kolabformat.Attendee):
             "REQ-PARTICIPANT": kolabformat.Required,
             "CHAIR": kolabformat.Chair,
             "OPTIONAL": kolabformat.Optional,
-            "NONPARTICIPANT": kolabformat.NonParticipant,
+            "NON-PARTICIPANT": kolabformat.NonParticipant,
         }
 
     rsvp_map = {
@@ -41,7 +41,8 @@ class Attendee(kolabformat.Attendee):
             rsvp=False,
             role=None,
             participant_status=None,
-            cutype=None
+            cutype=None,
+            ical_params=None
         ):
 
         self.email = email
@@ -62,11 +63,17 @@ class Attendee(kolabformat.Attendee):
         if not role == None:
             self.set_role(role)
 
-        if not participant_status == None:
-            self.set_participant_status(participant_status)
-
         if not cutype == None:
             self.set_cutype(cutype)
+
+        if ical_params and ical_params.has_key('DELEGATED-FROM'):
+            self.delegate_from(Attendee(str(ical_params['DELEGATED-FROM'])))
+
+        if ical_params and ical_params.has_key('DELEGATED-TO'):
+            self.delegate_to(Attendee(str(ical_params['DELEGATED-TO'])))
+
+        if not participant_status == None:
+            self.set_participant_status(participant_status)
 
     def delegate_from(self, delegators):
         crefs = []
@@ -159,6 +166,9 @@ class Attendee(kolabformat.Attendee):
             self.setRole(role)
         else:
             raise InvalidAttendeeRoleError, _("Invalid role %r") % (role)
+
+    def set_rsvp(self, rsvp):
+        self.setRSVP(rsvp)
 
     def __str__(self):
         return self.email
