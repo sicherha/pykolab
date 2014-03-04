@@ -105,12 +105,12 @@ def list_modules(*args, **kw):
 
 def execute(name, *args, **kw):
     if not modules.has_key(name):
-        log.error(_("No such module."))
+        log.error(_("No such module %r in modules %r (1).") % (name, modules))
         sys.exit(1)
 
     if not modules[name].has_key('function') and \
         not modules[name].has_key('group'):
-        log.error(_("No such module."))
+        log.error(_("No such module %r in modules %r (2).") %(name, modules))
         sys.exit(1)
 
     modules[name]['function'](*args, **kw)
