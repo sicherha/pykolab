@@ -183,6 +183,13 @@ class Event(object):
             if ical_event.has_key(attr):
                 self.set_from_ical(attr.lower(), ical_event[attr])
 
+        # HACK: use libkolab::EventCal::fromICal() to parse RRULEs
+        if ical_event.has_key('RRULE'):
+            from kolab.calendaring import EventCal
+            event_xml = EventCal()
+            event_xml.fromICal("BEGIN:VCALENDAR\nVERSION:2.0\n" + ical + "\nEND:VCALENDAR")
+            self.event.setRecurrenceRule(event_xml.recurrenceRule())
+
     def get_attendee_participant_status(self, attendee):
         return attendee.get_participant_status()
 
@@ -762,6 +769,9 @@ class Event(object):
 
         return msg
 
+    def is_recurring(self):
+        return self.event.recurrenceRule().isValid()
+
     def to_event_cal(self):
         from kolab.calendaring import EventCal
         return EventCal(self.event)
@@ -774,6 +784,9 @@ class Event(object):
         return xmlutils.from_cdatetime(next_cdatetime, True) if next_cdatetime is not None else None
 
     def get_occurence_end_date(self, datetime):
+        if not datetime:
+            return None
+
         if not hasattr(self, 'eventcal'):
             return None
 

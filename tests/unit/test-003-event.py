@@ -159,6 +159,8 @@ END:VCALENDAR
         self.event.set_start(_start)
         self.event.set_end(_start + datetime.timedelta(hours=2))
 
+        self.assertTrue(self.event.is_recurring())
+
         next_date = self.event.get_next_occurence(_start)
         self.assertIsInstance(next_date, datetime.datetime)
         self.assertEqual(next_date.month, 6)
@@ -183,6 +185,7 @@ END:VCALENDAR
         self.assertIsInstance(next_instance, Event)
         self.assertEqual(self.event.get_summary(), next_instance.get_summary())
         self.assertEqual(next_instance.get_start().month, 7)
+        self.assertFalse(next_instance.is_recurring())
 
     def test_021_calendaring_no_recurrence(self):
         _start = datetime.datetime(2014, 2, 1, 14, 30, 00, tzinfo=pytz.timezone("Europe/London"))
