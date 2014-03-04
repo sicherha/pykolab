@@ -126,7 +126,7 @@ def execute(*args, **kw):
                         )
                 )
 
-            return
+            return filepath
     else:
         # Move to incoming
         new_filepath = os.path.join(
@@ -186,19 +186,17 @@ def execute(*args, **kw):
         if not any_itips:
             log.debug(_("Not an iTip message, but sent to resource nonetheless. Reject message"), level=5)
             reject(filepath)
-            return
+            return False
         else:
             # Continue. Resources and iTips. We like.
             pass
     else:
         if not any_itips:
             log.debug(_("No itips, no resources, pass along"), level=5)
-            accept(filepath)
-            return
+            return filepath
         else:
             log.debug(_("iTips, but no resources, pass along"), level=5)
-            accept(filepath)
-            return
+            return filepath
 
     # A simple list of merely resource entry IDs that hold any relevance to the
     # iTip events
@@ -671,6 +669,14 @@ def resource_record_from_email_address(email_address):
         auth.connect()
 
     resource_records = []
+
+    local_domains = auth.list_domains()
+
+    if not local_domains == None:
+        local_domains = list(set(local_domains.keys()))
+
+    if not email_address.split('@')[1] in local_domains:
+        return []
 
     log.debug(
         _("Checking if email address %r belongs to a resource (collection)") % (email_address),
