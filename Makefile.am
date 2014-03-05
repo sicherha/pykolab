@@ -13,7 +13,7 @@ PYTHON_FILES = \
 	bin/kolab_smtp_access_policy.py \
 	cyruslib.py \
 	conf.py \
-	kolab.py \
+	kolab-cli.py \
 	kolabd.py \
 	saslauthd.py \
 	setup-kolab.py \
@@ -194,7 +194,7 @@ if ENTERPRISE
 	mkdir -p $(DESTDIR)/$(sysconfdir)/kolab/entitlement.d
 endif
 	$(INSTALL) -p -m 755 conf.py $(DESTDIR)/$(sbindir)/kolab-conf
-	$(INSTALL) -p -m 755 kolab.py $(DESTDIR)/$(sbindir)/kolab
+	$(INSTALL) -p -m 755 kolab-cli.py $(DESTDIR)/$(sbindir)/kolab
 	$(INSTALL) -p -m 755 kolabd.py $(DESTDIR)/$(sbindir)/kolabd
 	$(INSTALL) -p -m 755 saslauthd.py $(DESTDIR)/$(sbindir)/kolab-saslauthd
 	$(INSTALL) -p -m 755 wallace.py $(DESTDIR)/$(sbindir)/wallaced
