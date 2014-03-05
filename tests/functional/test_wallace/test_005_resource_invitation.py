@@ -505,3 +505,18 @@ class TestResourceInvitation(unittest.TestCase):
         uid3 = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,2,22, 8,0,0), template=itip_recurring)
         accept = self.check_message_received("Reservation Request for test was ACCEPTED")
         self.assertIsInstance(accept, email.message.Message)
+
+
+    def test_010_invalid_bookings(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        itip_other = itip_invitation.replace("mailto:%s", "mailto:some-other-resource@example.org\nDESCRIPTION: Sent to %s")
+        self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,3,22, 8,0,0), template=itip_other)
+
+        time.sleep(1)
+
+        itip_invalid = itip_invitation.replace("DTSTART;", "X-DTSTART;")
+        self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,3,24, 19,30,0), template=itip_invalid)
+
+        self.assertEqual(self.check_message_received("Reservation Request for test was ACCEPTED", self.audi['mail']), None)
+

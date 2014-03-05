@@ -206,6 +206,13 @@ def execute(*args, **kw):
     # iTip events
     resource_dns = resource_records_from_itip_events(itip_events, resource_recipient)
 
+    # check if resource attendees match the envelope recipient
+    if len(resource_dns) == 0:
+        log.info(_("No resource attendees matching envelope recipient %s, Reject message") % (resource_recipient))
+        reject(filepath)
+        return False
+
+
     # Get the resource details, which includes details on the IMAP folder
     resources = {}
     for resource_dn in list(set(resource_dns)):
