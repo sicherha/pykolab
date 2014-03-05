@@ -234,6 +234,8 @@ def execute(*args, **kw):
                     if 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
                         resources[uniquemember] = resource_attrs
                         resources[uniquemember]['memberof'] = resource_dn
+                        if not resource_attrs.has_key('owner') and resources[resource_dn].has_key('owner'):
+                            resources[uniquemember]['owner'] = resources[resource_dn]['owner']
                         resource_dns.append(uniquemember)
         else:
             resources[resource_dn] = resource_attrs
@@ -528,7 +530,7 @@ def accept_reservation_request(itip_event, resource, delegator=None):
         level=9
     )
 
-    send_response(delegator['mail'] if delegator else resource['mail'], itip_event)
+    send_response(delegator['mail'] if delegator else resource['mail'], itip_event, get_resource_owner(resource))
 
 
 def decline_reservation_request(itip_event, resource):
@@ -542,7 +544,7 @@ def decline_reservation_request(itip_event, resource):
         "DECLINED"
     )
 
-    send_response(resource['mail'], itip_event)
+    send_response(resource['mail'], itip_event, get_resource_owner(resource))
 
 
 def save_resource_event(itip_event, resource):
@@ -550,9 +552,8 @@ def save_resource_event(itip_event, resource):
         Append the given event object to the resource's calendar
     """
     try:
-        # TODO: The Cyrus IMAP (or Dovecot) Administrator login
-        # name comes from configuration.
-        imap.imap.m.setacl(resource['kolabtargetfolder'], "cyrus-admin", "lrswipkxtecda")
+        # Administrator login name comes from configuration.
+        imap.imap.m.setacl(resource['kolabtargetfolder'], conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
         result = imap.imap.m.append(
             resource['kolabtargetfolder'],
             None,
@@ -573,7 +574,7 @@ def delete_resource_event(uid, resource):
     """
         Removes the IMAP object with the given UID from a resource's calendar folder
     """
-    imap.imap.m.setacl(resource['kolabtargetfolder'], "cyrus-admin", "lrswipkxtecda")
+    imap.imap.m.setacl(resource['kolabtargetfolder'], conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
     imap.imap.m.select(resource['kolabtargetfolder'])
 
     typ, data = imap.imap.m.search(None, '(HEADER SUBJECT "%s")' % uid)
@@ -861,7 +862,33 @@ def resource_records_from_itip_events(itip_events, recipient_email=None):
     return resource_records
 
 
-def send_response(from_address, itip_events):
+def get_resource_owner(resource):
+    """
+        Get this resource's owner record
+    """
+    global auth
+
+    if not auth:
+        auth = Auth()
+        auth.connect()
+
+    if resource.has_key('owner'):
+        if not isinstance(resource['owner'], list):
+            resource['owner'] = [ resource['owner'] ]
+
+        for dn in resource['owner']:
+            owner = auth.get_entry_attributes(None, dn, ['cn','mail','telephoneNumber'])
+            if owner is not None:
+                return owner
+
+    else:
+        # TODO: get owner attribute from collection
+        pass
+
+    return None
+
+
+def send_response(from_address, itip_events, owner=None):
     """
         Send the given iCal events as a valid iTip response to the organizer.
         In case the invited resource coolection was delegated to a concrete
@@ -880,14 +907,20 @@ def send_response(from_address, itip_events):
     for itip_event in itip_events:
         attendee = itip_event['xml'].get_attendee_by_email(from_address)
         participant_status = itip_event['xml'].get_ical_attendee_participant_status(attendee)
-        message_text = None
+
+        message_text = reservation_response_text(participant_status, owner)
 
         if participant_status == "DELEGATED":
             # Extra actions to take
             delegator = itip_event['xml'].get_attendee_by_email(from_address)
             delegatee = [a for a in itip_event['xml'].get_attendees() if from_address in [b.email() for b in a.get_delegated_from()]][0]
+            delegatee_status = itip_event['xml'].get_ical_attendee_participant_status(delegatee)
 
-            message = itip_event['xml'].to_message_itip(delegatee.get_email(), method="REPLY", participant_status=itip_event['xml'].get_ical_attendee_participant_status(delegatee))
+            message = itip_event['xml'].to_message_itip(delegatee.get_email(),
+                method="REPLY",
+                participant_status=delegatee_status,
+                message_text=reservation_response_text(delegatee_status, owner)
+            )
             smtp.sendmail(message['From'], message['To'], message.as_string())
 
             # restore list of attendees after to_message_itip()
@@ -896,11 +929,32 @@ def send_response(from_address, itip_events):
 
             participant_status = "DELEGATED"
             message_text = _("""
-                Your reservation was delegated to "%s"
-                which is available for the requested time.
+                *** This is an automated response, please do not reply! ***
+
+                Your reservation was delegated to "%s" which is available for the requested time.
             """) % (delegatee.get_name())
 
-        message = itip_event['xml'].to_message_itip(from_address, method="REPLY", participant_status=participant_status, message_text=message_text)
+        message = itip_event['xml'].to_message_itip(from_address,
+            method="REPLY",
+            participant_status=participant_status,
+            message_text=message_text
+        )
         smtp.sendmail(message['From'], message['To'], message.as_string())
 
     smtp.quit()
+
+
+def reservation_response_text(status, owner):
+    message_text = _("""
+        *** This is an automated response, please do not reply! ***
+        
+        We hereby inform you that your reservation was %s.
+    """) % (_(status))
+
+    if owner:
+        message_text += _("""
+            If you have questions about this reservation, please contact
+            %s <%s> %s
+        """) % (owner['cn'], owner['mail'], owner['telephoneNumber'] if owner.has_key('telephoneNumber') else '')
+    
+    return message_text

@@ -4,7 +4,7 @@ from pykolab import wap_client
 
 conf = pykolab.getConf()
 
-def resource_add(type, cn, members=None):
+def resource_add(type, cn, members=None, owner=None):
     if type == None or type == '':
         raise Exception
 
@@ -14,7 +14,8 @@ def resource_add(type, cn, members=None):
     resource_details = {
         'cn': cn,
         'kolabtargetfolder': "shared/Resources/" + cn + "@example.org",
-        'uniquemember': members
+        'uniquemember': members,
+        'owner': owner
     }
 
     result = wap_client.authenticate(conf.get('ldap', 'bind_dn'), conf.get('ldap', 'bind_pw'), conf.get('kolab', 'primary_domain'))

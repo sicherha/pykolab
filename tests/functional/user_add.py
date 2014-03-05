@@ -49,7 +49,7 @@ def user_add(givenname, sn, preferredlanguage='en_US'):
         attr_details = user_type_info['form_fields'][attribute]
 
         if isinstance(attr_details, dict):
-            if not attr_details.has_key('optional') or attr_details['optional'] == False:
+            if not attr_details.has_key('optional') or attr_details['optional'] == False or user_details.has_key(attribute):
                 params[attribute] = user_details[attribute]
         elif isinstance(attr_details, list):
             params[attribute] = user_details[attribute]

@@ -280,8 +280,6 @@ def generate_password():
     return output
 
 def multiline_message(message):
-    _msg = ""
-
     column_width = 80
 
     # First, replace all occurences of "\n"
@@ -289,8 +287,6 @@ def multiline_message(message):
     message = message.replace("\n", " ")
 
     lines = []
-    line_length = 0
-
     line = ""
     for word in message.split():
         if (len(line) + len(word)) > column_width:
@@ -303,6 +299,13 @@ def multiline_message(message):
                 line += " %s" % (word)
 
     lines.append(line)
+
+    return "\n%s\n" % ("\n".join(lines))
+
+def stripped_message(message):
+    lines = []
+    for line in message.strip().split("\n"):
+        lines.append(multiline_message(line).strip())
 
     return "\n%s\n" % ("\n".join(lines))
 

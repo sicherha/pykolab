@@ -194,17 +194,31 @@ class TestResourceInvitation(unittest.TestCase):
             'displayname': 'John Doe',
             'mail': 'john.doe@example.org',
             'sender': 'John Doe <john.doe@example.org>',
-            'mailbox': 'user/john.doe@example.org'
+            'mailbox': 'user/john.doe@example.org',
+            'dn': 'uid=doe,ou=People,dc=example,dc=org'
+        }
+
+        self.jane = {
+            'displayname': 'Jane Manager',
+            'mail': 'jane.manager@example.org',
+            'sender': 'Jane Manager <jane.manager@example.org>',
+            'mailbox': 'user/jane.manager@example.org',
+            'dn': 'uid=manager,ou=People,dc=example,dc=org'
         }
 
         from tests.functional.user_add import user_add
         user_add("John", "Doe")
+        user_add("Jane", "Manager")
 
         funcs.purge_resources()
         self.audi = funcs.resource_add("car", "Audi A4")
         self.passat = funcs.resource_add("car", "VW Passat")
         self.boxter = funcs.resource_add("car", "Porsche Boxter S")
         self.cars = funcs.resource_add("collection", "Company Cars", [ self.audi['dn'], self.passat['dn'], self.boxter['dn'] ])
+
+        self.room1 = funcs.resource_add("confroom", "Room 101", owner=self.jane['dn'])
+        self.room2 = funcs.resource_add("confroom", "Conference Room B-222")
+        self.rooms = funcs.resource_add("collection", "Rooms", [ self.room1['dn'], self.room2['dn'] ], self.jane['dn'])
 
         time.sleep(1)
         from tests.functional.synchronize import synchronize_once
@@ -267,11 +281,14 @@ class TestResourceInvitation(unittest.TestCase):
         return uid
 
 
-    def check_message_received(self, subject, from_addr=None):
+    def check_message_received(self, subject, from_addr=None, mailbox=None):
+        if mailbox is None:
+            mailbox = self.john['mailbox']
+
         imap = IMAP()
         imap.connect()
-        imap.set_acl(self.john['mailbox'], "cyrus-admin", "lrs")
-        imap.imap.m.select(self.john['mailbox'])
+        imap.set_acl(mailbox, "cyrus-admin", "lrs")
+        imap.imap.m.select(mailbox)
 
         found = None
         retries = 10
@@ -520,3 +537,33 @@ class TestResourceInvitation(unittest.TestCase):
 
         self.assertEqual(self.check_message_received("Reservation Request for test was ACCEPTED", self.audi['mail']), None)
 
+
+    def test_011_owner_info(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        self.send_itip_invitation(self.room1['mail'], datetime.datetime(2014,6,19, 16,0,0))
+
+        accept = self.check_message_received("Reservation Request for test was ACCEPTED", self.room1['mail'])
+        self.assertIsInstance(accept, email.message.Message)
+        respose_text = str(accept.get_payload(0))
+        self.assertIn(self.jane['mail'], respose_text)
+        self.assertIn(self.jane['displayname'], respose_text)
+
+
+    def TODO_test_012_owner_notification(self):
+        self.purge_mailbox(self.john['mailbox'])
+        self.purge_mailbox(self.jane['mailbox'])
+
+        self.send_itip_invitation(self.room1['mail'], datetime.datetime(2014,5,4, 13,0,0))
+
+        # check notification message sent to resource owner (jane)
+        notify = self.check_message_received("Reservation Request for test was ACCEPTED", self.room1['mail'], self.jane['mailbox'])
+        self.assertIsInstance(notify, email.message.Message)
+        self.assertEqual(notify['From'], self.room1['mail'])
+        self.assertEqual(notify['Cc'], self.jane['mail'])
+
+        # check notification sent to collection owner (jane)
+        self.send_itip_invitation(self.rooms['mail'], datetime.datetime(2014,5,4, 12,30,0))
+
+        notify = self.check_message_received("Reservation Request for test was ACCEPTED", self.room2['mail'], self.jane['mailbox'])
+        self.assertIsInstance(notify, email.message.Message)

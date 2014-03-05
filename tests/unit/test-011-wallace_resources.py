@@ -245,6 +245,7 @@ class TestWallaceResources(unittest.TestCase):
         self.patch(pykolab.auth.Auth, "connect", self._mock_nop)
         self.patch(pykolab.auth.Auth, "disconnect", self._mock_nop)
         self.patch(pykolab.auth.Auth, "find_resource", self._mock_find_resource)
+        self.patch(pykolab.auth.Auth, "get_entry_attributes", self._mock_get_entry_attributes)
 
         # intercept calls to smtplib.SMTP.sendmail()
         import smtplib
@@ -261,6 +262,10 @@ class TestWallaceResources(unittest.TestCase):
         (prefix, domain) = address.split('@')
         entry_dn = "uid=" + prefix + ",dc=" + ",dc=".join(domain.split('.'))
         return [ entry_dn ];
+
+    def _mock_get_entry_attributes(self, domain, entry, attributes):
+        (_, uid) = entry.split(',')[0].split('=')
+        return { 'cn': uid, 'mail': uid + "@example.org", '_attrib': attributes }
 
     def _mock_smtp_init(self, host=None, port=None, local_hostname=None, timeout=0):
         pass
@@ -334,7 +339,21 @@ class TestWallaceResources(unittest.TestCase):
         self.assertEqual("uid=resource-collection-car,dc=example,dc=org", res[0]);
 
 
-    def test_004_send_response_accept(self):
+    def test_004_get_resource_owner(self):
+        owner1 = module_resources.get_resource_owner({ 'owner': "uid=foo,ou=People,cd=example,dc=org" })
+        self.assertIsInstance(owner1, dict)
+        self.assertEqual("foo@example.org", owner1['mail'])
+        self.assertIn("telephoneNumber", owner1['_attrib'])
+
+        owner2 = module_resources.get_resource_owner({ 'owner': ["uid=john,ou=People,cd=example,dc=org", "uid=jane,ou=People,cd=example,dc=org"] })
+        self.assertIsInstance(owner2, dict)
+        self.assertEqual("john@example.org", owner2['mail'])
+
+        owner3 = module_resources.get_resource_owner({ 'dn': "uid=cars,ou=Resources,cd=example,dc=org" })
+        self.assertEqual(owner3, None)
+
+
+    def test_005_send_response_accept(self):
         itip_event = module_resources.itip_events_from_message(message_from_string(itip_non_multipart))
         module_resources.send_response("resource-collection-car@example.org", itip_event)
 
@@ -352,7 +371,7 @@ class TestWallaceResources(unittest.TestCase):
         self.assertEqual(ics_part.get_param('method'), "REPLY")
 
 
-    def test_005_send_response_delegate(self):
+    def test_006_send_response_delegate(self):
         # delegate resource-collection-car@example.org => resource-car-audi-a4@example.org
         itip_event = module_resources.itip_events_from_message(message_from_string(itip_non_multipart))[0]
         itip_event['xml'].delegate('resource-collection-car@example.org', 'resource-car-audi-a4@example.org')

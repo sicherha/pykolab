@@ -779,14 +779,14 @@ class Event(object):
         msg['Date'] = formatdate(localtime=True)
 
         if subject is None:
-            subject = _("Reservation Request for %s was %s") % (self.get_summary(), participant_status)
+            subject = _("Reservation Request for %s was %s") % (self.get_summary(), _(participant_status))
 
         msg["Subject"] = subject
 
         if message_text is None:
             message_text = _("""This is an automated response to one of your event requests.""")
 
-        msg.attach(MIMEText(utils.multiline_message(message_text)))
+        msg.attach(MIMEText(utils.stripped_message(message_text)))
 
         part = MIMEBase('text', 'calendar', charset='UTF-8', method=method)
         del part['MIME-Version']  # mime parts don't need this
