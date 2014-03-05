@@ -24,6 +24,7 @@ import grp
 import multiprocessing
 import os
 import pwd
+import traceback
 from smtpd import SMTPChannel
 import socket
 import struct
@@ -62,9 +63,16 @@ def pickup_message(filepath, *args, **kw):
             modules.execute(kw['module'], filepath)
 
     for module in wallace_modules:
-        result_filepath = modules.execute(module, filepath)
+        try:
+            result_filepath = modules.execute(module, filepath)
+        except:
+            log.error(_("Module %s.execute() failed on message %r with error: %s" % (module, filepath, traceback.format_exc())))
+            result_filepath = False
+
         if not result_filepath == None and not result_filepath == False:
             filepath = result_filepath
+        else:
+            break
 
 def worker_process(*args, **kw):
     log.debug(_("Worker process %s initializing") % (multiprocessing.current_process().name), level=1)
