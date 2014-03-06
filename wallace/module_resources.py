@@ -96,10 +96,7 @@ def execute(*args, **kw):
     log.debug(_("Resource Management called for %r, %r") % (args, kw), level=9)
 
     auth = Auth()
-    auth.connect()
-
     imap = IMAP()
-    imap.connect()
 
     # TODO: Test for correct call.
     filepath = args[0]
@@ -182,6 +179,8 @@ def execute(*args, **kw):
             possibly_any_resources = False
 
     if possibly_any_resources:
+        auth.connect()
+
         for recipient in recipients:
             if not len(resource_record_from_email_address(recipient)) == 0:
                 resource_recipient = recipient
@@ -234,6 +233,7 @@ def execute(*args, **kw):
 
     log.debug(_("Resources: %r; %r") % (resource_dns, resources), level=8)
 
+    imap.connect()
 
     done = False
     receiving_resource = resources[resource_dns[0]]
