@@ -23,9 +23,9 @@ class Attendee(kolabformat.Attendee):
         }
 
     role_map = {
-            "REQ-PARTICIPANT": kolabformat.Required,
             "CHAIR": kolabformat.Chair,
-            "OPTIONAL": kolabformat.Optional,
+            "REQ-PARTICIPANT": kolabformat.Required,
+            "OPT-PARTICIPANT": kolabformat.Optional,
             "NON-PARTICIPANT": kolabformat.NonParticipant,
         }
 
