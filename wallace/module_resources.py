@@ -221,6 +221,7 @@ def execute(*args, **kw):
         #   If it is, expand to individual resources
         #   If it is not, ...
         resource_attrs = auth.get_entry_attributes(None, resource_dn, ['*'])
+        resource_attrs['dn'] = resource_dn
         if not 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
             if resource_attrs.has_key('uniquemember'):
                 resources[resource_dn] = resource_attrs
@@ -232,6 +233,7 @@ def execute(*args, **kw):
                         )
 
                     if 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
+                        resource_attrs['dn'] = uniquemember
                         resources[uniquemember] = resource_attrs
                         resources[uniquemember]['memberof'] = resource_dn
                         if not resource_attrs.has_key('owner') and resources[resource_dn].has_key('owner'):
@@ -872,18 +874,30 @@ def get_resource_owner(resource):
         auth = Auth()
         auth.connect()
 
+    owners = []
+
     if resource.has_key('owner'):
         if not isinstance(resource['owner'], list):
-            resource['owner'] = [ resource['owner'] ]
-
-        for dn in resource['owner']:
-            owner = auth.get_entry_attributes(None, dn, ['cn','mail','telephoneNumber'])
-            if owner is not None:
-                return owner
+            owners = [ resource['owner'] ]
+        else:
+            owners = resource['owner']
 
     else:
-        # TODO: get owner attribute from collection
-        pass
+        # get owner attribute from collection
+        collections = auth.search_entry_by_attribute('uniquemember', resource['dn'])
+        if not isinstance(collections, list):
+            collections = [ collections ]
+
+        for dn,collection in collections:
+            if collection.has_key('owner') and isinstance(collection['owner'], list):
+                owners += collection['owner']
+            elif collection.has_key('owner'):
+                owners.append(collection['owner'])
+
+    for dn in owners:
+        owner = auth.get_entry_attributes(None, dn, ['cn','mail','telephoneNumber'])
+        if owner is not None:
+            return owner
 
     return None
 

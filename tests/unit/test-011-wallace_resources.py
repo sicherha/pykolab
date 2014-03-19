@@ -247,6 +247,7 @@ class TestWallaceResources(unittest.TestCase):
         self.patch(pykolab.auth.Auth, "disconnect", self._mock_nop)
         self.patch(pykolab.auth.Auth, "find_resource", self._mock_find_resource)
         self.patch(pykolab.auth.Auth, "get_entry_attributes", self._mock_get_entry_attributes)
+        self.patch(pykolab.auth.Auth, "search_entry_by_attribute", self._mock_search_entry_by_attribute)
 
         # intercept calls to smtplib.SMTP.sendmail()
         import smtplib
@@ -267,6 +268,12 @@ class TestWallaceResources(unittest.TestCase):
     def _mock_get_entry_attributes(self, domain, entry, attributes):
         (_, uid) = entry.split(',')[0].split('=')
         return { 'cn': uid, 'mail': uid + "@example.org", '_attrib': attributes }
+
+    def _mock_search_entry_by_attribute(self, attr, value, **kw):
+        results = []
+        if value == "cn=Room 101,ou=Resources,dc=example,dc=org":
+            results.append({ 'dn': 'cn=Rooms,ou=Resources,dc=example,dc=org', attr: value, 'owner': 'uid=doe,ou=People,dc=example,dc=org' })
+        return results
 
     def _mock_smtp_init(self, host=None, port=None, local_hostname=None, timeout=0):
         pass
@@ -352,6 +359,9 @@ class TestWallaceResources(unittest.TestCase):
 
         owner3 = module_resources.get_resource_owner({ 'dn': "uid=cars,ou=Resources,cd=example,dc=org" })
         self.assertEqual(owner3, None)
+
+        owner4 = module_resources.get_resource_owner({ 'dn': "cn=Room 101,ou=Resources,dc=example,dc=org" })
+        self.assertEqual("doe@example.org", owner4['mail'])
 
 
     def test_005_send_response_accept(self):

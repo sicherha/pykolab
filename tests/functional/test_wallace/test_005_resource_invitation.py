@@ -550,6 +550,18 @@ class TestResourceInvitation(unittest.TestCase):
         self.assertIn(self.jane['displayname'], respose_text)
 
 
+    def test_011_owner_info_from_collection(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        self.send_itip_invitation(self.room2['mail'], datetime.datetime(2014,6,19, 16,0,0))
+
+        accept = self.check_message_received("Reservation Request for test was ACCEPTED", self.room2['mail'])
+        self.assertIsInstance(accept, email.message.Message)
+        respose_text = str(accept.get_payload(0))
+        self.assertIn(self.jane['mail'], respose_text)
+        self.assertIn(self.jane['displayname'], respose_text)
+
+
     def TODO_test_012_owner_notification(self):
         self.purge_mailbox(self.john['mailbox'])
         self.purge_mailbox(self.jane['mailbox'])
