@@ -1,5 +1,6 @@
 import pykolab
 import logging
+import datetime
 
 from icalendar import Calendar
 from email import message
@@ -47,7 +48,7 @@ DESCRIPTION:test
 ORGANIZER;CN=3D"Doe, John":mailto:john.doe@example.org
 ATTENDEE;ROLE=3DREQ-PARTICIPANT;PARTSTAT=3DNEEDS-ACTION;RSVP=3DTRUE:mailt=
 o:resource-collection-car@example.org
-ATTENDEE;ROLE=3DOPTIONAL;PARTSTAT=3DNEEDS-ACTION;RSVP=3DTRUE:mailto:anoth=
+ATTENDEE;ROLE=3DOPT-PARTICIPANT;PARTSTAT=3DNEEDS-ACTION;RSVP=3DTRUE:mailto:anoth=
 er-resource@example.org
 TRANSP:OPAQUE
 END:VEVENT
@@ -395,4 +396,32 @@ class TestWallaceResources(unittest.TestCase):
         self.assertIn("DELEGATED", response2['subject'], "Delegation message subject")
         self.assertEqual(ical2['attendee'], "MAILTO:resource-collection-car@example.org")
         self.assertEqual(ical2['attendee'].params['PARTSTAT'], "DELEGATED")
+
+
+    def test_007_check_date_conflict(self):
+        astart = datetime.datetime(2014,7,13, 10,0,0)
+        aend   = astart + datetime.timedelta(hours=2)
+
+        bstart = datetime.datetime(2014,7,13, 10,0,0)
+        bend   = astart + datetime.timedelta(hours=1)
+        self.assertTrue(module_resources.check_date_conflict(astart, aend, bstart, bend))
+
+        bstart = datetime.datetime(2014,7,13, 11,0,0)
+        bend   = astart + datetime.timedelta(minutes=30)
+        self.assertTrue(module_resources.check_date_conflict(astart, aend, bstart, bend))
+
+        bend   = astart + datetime.timedelta(hours=2)
+        self.assertTrue(module_resources.check_date_conflict(astart, aend, bstart, bend))
+
+        bstart = datetime.datetime(2014,7,13, 12,0,0)
+        bend   = astart + datetime.timedelta(hours=1)
+        self.assertFalse(module_resources.check_date_conflict(astart, aend, bstart, bend))
+
+        bstart = datetime.datetime(2014,6,13, 10,0,0)
+        bend   = datetime.datetime(2014,6,14, 12,0,0)
+        self.assertFalse(module_resources.check_date_conflict(astart, aend, bstart, bend))
+
+        bstart = datetime.datetime(2014,7,10, 12,0,0)
+        bend   = datetime.datetime(2014,7,14, 14,0,0)
+        self.assertTrue(module_resources.check_date_conflict(astart, aend, bstart, bend))
 
