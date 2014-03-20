@@ -761,8 +761,8 @@ class Event(object):
 
         elif method == "REQUEST":
             organizer = self.get_organizer()
-            email = organizer.get_email()
-            name = organizer.get_name()
+            email = organizer.email()
+            name = organizer.name()
             if not name:
                 msg_from = email
             else:
