@@ -67,7 +67,7 @@ class Attendee(kolabformat.Attendee):
             self.set_cutype(cutype)
 
         if ical_params and ical_params.has_key('DELEGATED-FROM'):
-            self.delegate_from(Attendee(str(ical_params['DELEGATED-FROM'])))
+            self.delegate_from(Attendee(str(ical_params['DELEGATED-FROM']), role=self.get_role(), cutype=self.get_cutype()))
 
         if ical_params and ical_params.has_key('DELEGATED-TO'):
             self.delegate_to(Attendee(str(ical_params['DELEGATED-TO'])))
