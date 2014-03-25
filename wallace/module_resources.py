@@ -447,7 +447,7 @@ def read_resource_calendar(resource_rec, itip_events):
     )
 
     # might raise an exception, let that bubble
-    imap.imap.m.select(mailbox)
+    imap.imap.m.select(imap.folder_quote(mailbox))
     typ, data = imap.imap.m.search(None, 'ALL')
 
     num_messages = len(data[0].split())
@@ -579,9 +579,10 @@ def save_resource_event(itip_event, resource):
     """
     try:
         # Administrator login name comes from configuration.
-        imap.imap.m.setacl(resource['kolabtargetfolder'], conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
+        targetfolder = imap.folder_quote(resource['kolabtargetfolder'])
+        imap.imap.m.setacl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
         result = imap.imap.m.append(
-            resource['kolabtargetfolder'],
+            targetfolder,
             None,
             None,
             itip_event['xml'].to_message().as_string()
@@ -600,8 +601,9 @@ def delete_resource_event(uid, resource):
     """
         Removes the IMAP object with the given UID from a resource's calendar folder
     """
-    imap.imap.m.setacl(resource['kolabtargetfolder'], conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
-    imap.imap.m.select(resource['kolabtargetfolder'])
+    targetfolder = imap.folder_quote(resource['kolabtargetfolder'])
+    imap.imap.m.setacl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
+    imap.imap.m.select(targetfolder)
 
     typ, data = imap.imap.m.search(None, '(HEADER SUBJECT "%s")' % uid)
 

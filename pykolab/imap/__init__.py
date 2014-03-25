@@ -253,6 +253,9 @@ class IMAP(object):
         from pykolab import imap_utf7
         return imap_utf7.decode(folder)
 
+    def folder_quote(self, folder):
+        return u'"' + str(folder).strip('"') + '"'
+
     def get_metadata(self, folder):
         """
             Obtain all metadata entries on a folder
