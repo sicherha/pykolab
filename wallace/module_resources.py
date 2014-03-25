@@ -443,7 +443,7 @@ def read_resource_calendar(resource_rec, itip_events):
 
     log.debug(
         _("Checking events in resource folder %r") % (mailbox),
-        level=8
+        level=9
     )
 
     # might raise an exception, let that bubble
@@ -553,7 +553,7 @@ def accept_reservation_request(itip_event, resource, delegator=None):
 
     log.debug(
         _("Adding event to %r: %r") % (resource['kolabtargetfolder'], saved),
-        level=9
+        level=8
     )
 
     send_response(delegator['mail'] if delegator else resource['mail'], itip_event, get_resource_owner(resource))
