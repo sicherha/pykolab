@@ -76,9 +76,9 @@ SEQUENCE:4
 ATTENDEE;CN=Company Cars;PARTSTAT=DELEGATED;ROLE=NON-PARTICIPANT;CUTYPE=IND
  IVIDUAL;RSVP=TRUE;DELEGATED-TO=resource-car-audia4@example.org:mailto:reso
  urce-collection-companycars@example.org
-ATTENDEE;CN=Audi A4;PARTSTAT=ACCEPTED;ROLE=REQ-PARTICIPANT;CUTYPE=INDIVIDUA
- L;RSVP=TRUE;DELEGATED-FROM=resource-collection-companycars@example.org:mai
- lto:resource-car-audia4@example.org
+ATTENDEE;CN=The Delegate;PARTSTAT=ACCEPTED;ROLE=REQ-PARTICIPANT;CUTYPE=INDI
+ VIDUAL;RSVP=TRUE;DELEGATED-FROM=resource-collection-companycars@example.or
+ g:mailto:resource-car-audia4@example.org
 ORGANIZER;CN=:mailto:john.doe@example.org
 DESCRIPTION:Sent to %s
 END:VEVENT
@@ -438,6 +438,44 @@ class TestResourceInvitation(unittest.TestCase):
         self.assertIsInstance(event, pykolab.xml.Event)
         self.assertEqual(event.get_start().hour, 12)
         self.assertEqual(event.get_sequence(), 2)
+
+
+    def test_005_rescheduling_collection(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        uid = self.send_itip_invitation(self.cars['mail'], datetime.datetime(2014,4,24, 12,0,0))
+
+        # one of the collection members accepted the reservation
+        accept = self.check_message_received("Reservation Request for test was ACCEPTED")
+        self.assertIsInstance(accept, email.message.Message)
+        delegatee = self.find_resource_by_email(accept['from'])
+
+        # book that resource for the next day
+        self.send_itip_invitation(delegatee['mail'], datetime.datetime(2014,4,25, 14,0,0))
+        accept2 = self.check_message_received("Reservation Request for test was ACCEPTED")
+
+        # re-schedule first booking to a conflicting date
+        self.purge_mailbox(self.john['mailbox'])
+        update_template = itip_delegated.replace("resource-car-audia4@example.org", delegatee['mail'])
+        self.send_itip_update(delegatee['mail'], uid, datetime.datetime(2014,4,25, 12,0,0), template=update_template)
+
+        # expect response from another member of the initially delegated collection
+        new_accept = self.check_message_received("Reservation Request for test was ACCEPTED")
+        self.assertIsInstance(new_accept, email.message.Message)
+
+        new_delegatee = self.find_resource_by_email(new_accept['from'])
+        self.assertNotEqual(delegatee['mail'], new_delegatee['mail'])
+
+        # event now booked into new delegate's calendar
+        event = self.check_resource_calendar_event(new_delegatee['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+
+        # old resource responds with a DELEGATED message
+        response = self.check_message_received("Reservation Request for test was DELEGATED", delegatee['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+        # old reservation was removed from old delegate's calendar
+        self.assertEqual(self.check_resource_calendar_event(delegatee['kolabtargetfolder'], uid), None)
 
 
     def test_006_cancelling_revervation(self):

@@ -214,33 +214,8 @@ def execute(*args, **kw):
 
 
     # Get the resource details, which includes details on the IMAP folder
-    resources = {}
-    for resource_dn in list(set(resource_dns)):
-        # Get the attributes for the record
-        # See if it is a resource collection
-        #   If it is, expand to individual resources
-        #   If it is not, ...
-        resource_attrs = auth.get_entry_attributes(None, resource_dn, ['*'])
-        resource_attrs['dn'] = resource_dn
-        if not 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
-            if resource_attrs.has_key('uniquemember'):
-                resources[resource_dn] = resource_attrs
-                for uniquemember in resource_attrs['uniquemember']:
-                    resource_attrs = auth.get_entry_attributes(
-                            None,
-                            uniquemember,
-                            ['*']
-                        )
-
-                    if 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
-                        resource_attrs['dn'] = uniquemember
-                        resources[uniquemember] = resource_attrs
-                        resources[uniquemember]['memberof'] = resource_dn
-                        if not resource_attrs.has_key('owner') and resources[resource_dn].has_key('owner'):
-                            resources[uniquemember]['owner'] = resources[resource_dn]['owner']
-                        resource_dns.append(uniquemember)
-        else:
-            resources[resource_dn] = resource_attrs
+    # This may append resource collection members to recource_dns
+    resources = get_resource_records(resource_dns)
 
     log.debug(_("Resources: %r; %r") % (resource_dns, resources), level=8)
 
@@ -276,12 +251,68 @@ def execute(*args, **kw):
         return
 
 
-    # For each resource, determine if any of the events in question is in
-    # conflict.
-    #
+    # do the magic for the receiving attendee
+    (available_resource, itip_event) = check_availability(itip_events, resource_dns, resources, receiving_attendee)
+
+    # accept reservation
+    if available_resource is not None:
+        if available_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
+            # replace existing copy of this event
+            if len(available_resource['existing_events']) > 0:
+                for uid in available_resource['existing_events']:
+                    delete_resource_event(uid, available_resource)
+
+            log.debug(_("Accept invitation for individual resource %r / %r") % (available_resource['dn'], available_resource['mail']), level=8)
+
+            # check if reservation was delegated
+            original_resource = None
+            if available_resource['mail'] != receiving_resource['mail'] and receiving_attendee.get_participant_status() == kolabformat.PartDelegated:
+                original_resource = receiving_resource
+
+            accept_reservation_request(itip_event, available_resource, original_resource)
+
+        else:
+            # This must have been a resource collection originally.
+            # We have inserted the reference to the original resource
+            # record in 'memberof'.
+            if available_resource.has_key('memberof'):
+                original_resource = resources[available_resource['memberof']]
+
+                if original_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
+                    #
+                    # Delegate:
+                    # - delegator: the original resource collection
+                    # - delegatee: the target resource
+                    #
+                    itip_event['xml'].delegate(original_resource['mail'], available_resource['mail'], available_resource['cn'])
+
+                    # set delegator to NON-PARTICIPANT and RSVP=FALSE
+                    delegator = itip_event['xml'].get_attendee_by_email(original_resource['mail'])
+                    delegator.set_role(kolabformat.NonParticipant)
+                    delegator.set_rsvp(False)
+
+                    log.debug(_("Delegate invitation for resource collection %r to %r") % (original_resource['mail'], available_resource['mail']), level=8)
+                    accept_reservation_request(itip_event, available_resource, original_resource)
+
+    # decline reservation
+    else:
+        resource = resources[resource_dns[0]]  # this is the receiving resource record
+        decline_reservation_request(itip_event, resource)
+
+    cleanup()
+
+    os.unlink(filepath)
+
+
+def check_availability(itip_events, resource_dns, resources, receiving_attendee=None):
+    """
+        For each resource, determine if any of the events in question are in conflict.
+    """
+
     # Store the (first) conflicting event(s) alongside the resource information.
     start = time.time()
     num_messages = 0
+    available_resource = None
 
     for resource in resources.keys():
         # skip this for resource collections
@@ -338,31 +369,44 @@ def execute(*args, **kw):
             for itip_event in itip_events:
                 # Now we have the event that was conflicting
                 if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
-                    decline_reservation_request(itip_event, resources[resource])
+                    # this resource initially was delegated from a collection ?
+                    if receiving_attendee and receiving_attendee.get_email() == resources[resource]['mail'] \
+                            and len(receiving_attendee.get_delegated_from()) > 0:
+                        for delegator in receiving_attendee.get_delegated_from():
+                            collection_data = get_resource_collection(delegator.email())
+                            if collection_data is not None:
+                                # check if another collection member is available
+                                (available_resource, dummy) = check_availability(itip_events, collection_data[0], collection_data[1])
+                                break
+
+                        if available_resource is not None:
+                            log.debug(_("Delegate to another resource collection member: %r to %r") % \
+                                (resources[resource]['mail'], available_resource['mail']), level=8)
+
+                            # set this new resource as delegate for the receiving_attendee
+                            itip_event['xml'].delegate(resources[resource]['mail'], available_resource['mail'], available_resource['cn'])
+
+                            # set delegator to NON-PARTICIPANT and RSVP=FALSE
+                            receiving_attendee.set_role(kolabformat.NonParticipant)
+                            receiving_attendee.set_rsvp(False)
+                            receiving_attendee.setDelegatedFrom([])
+
+                            # remove existing_events as we now delegated back to the collection
+                            if len(resources[resource]['existing_events']) > 0:
+                                for uid in resources[resource]['existing_events']:
+                                    delete_resource_event(uid, resources[resource])
+
                     done = True
 
-                else:
-                    # This must have been a resource collection originally.
-                    # We have inserted the reference to the original resource
-                    # record in 'memberof'.
-                    if resources[resource].has_key('memberof'):
-                        original_resource = resources[resources[resource]['memberof']]
-
-                    if original_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
-                        decline_reservation_request(itip_event, original_resource)
-                        done = True
+                if done:
+                    break
 
         else:
             # No conflicts, go accept
             for itip_event in itip_events:
+                # directly invited resource
                 if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
-                    # replace existing copy of this event
-                    if len(resources[resource]['existing_events']) > 0:
-                        for uid in resources[resource]['existing_events']:
-                            delete_resource_event(uid, resources[resource])
-
-                    log.debug(_("Accept invitation for individual resource %r / %r") % (resource, resources[resource]['mail']), level=8)
-                    accept_reservation_request(itip_event, resources[resource])
+                    available_resource = resources[resource]
                     done = True
 
                 else:
@@ -372,26 +416,8 @@ def execute(*args, **kw):
                     if resources[resource].has_key('memberof'):
                         original_resource = resources[resources[resource]['memberof']]
 
-                        # Randomly selects a target resource from the resource collection.
-                        _target_resource = resources[original_resource['uniquemember'][random.randint(0,(len(original_resource['uniquemember'])-1))]]
-
-                        log.debug(_("Delegate invitation for resource collection %r to %r") % (original_resource['mail'], _target_resource['mail']), level=8)
-
-                    if original_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
-                        #
-                        # Delegate:
-                        #
-                        # - delegator: the original resource collection
-                        # - delegatee: the target resource
-                        #
-                        itip_event['xml'].delegate(original_resource['mail'], _target_resource['mail'], _target_resource['cn'])
-
-                        # set delegator to NON-PARTICIPANT and RSVP=FALSE
-                        delegator = itip_event['xml'].get_attendee_by_email(original_resource['mail'])
-                        delegator.set_role(kolabformat.NonParticipant)
-                        delegator.set_rsvp(False)
-
-                        accept_reservation_request(itip_event, _target_resource, original_resource)
+                        # Randomly select a target resource from the resource collection.
+                        available_resource = resources[original_resource['uniquemember'][random.randint(0,(len(original_resource['uniquemember'])-1))]]
                         done = True
 
         if done:
@@ -399,9 +425,7 @@ def execute(*args, **kw):
 
     # end for resource in resource_dns:
 
-    cleanup()
-
-    os.unlink(filepath)
+    return (available_resource, itip_event)
 
 
 def read_resource_calendar(resource_rec, itip_events):
@@ -862,6 +886,57 @@ def resource_records_from_itip_events(itip_events, recipient_email=None):
                 "iTip: %r") % (resource_records), level=8)
 
     return resource_records
+
+
+def get_resource_records(resource_dns):
+    """
+        Get the resource details, which includes details on the IMAP folder
+    """
+    global auth
+
+    resources = {}
+    for resource_dn in list(set(resource_dns)):
+        # Get the attributes for the record
+        # See if it is a resource collection
+        #   If it is, expand to individual resources
+        #   If it is not, ...
+        resource_attrs = auth.get_entry_attributes(None, resource_dn, ['*'])
+        resource_attrs['dn'] = resource_dn
+        if not 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
+            if resource_attrs.has_key('uniquemember'):
+                resources[resource_dn] = resource_attrs
+                for uniquemember in resource_attrs['uniquemember']:
+                    resource_attrs = auth.get_entry_attributes(
+                            None,
+                            uniquemember,
+                            ['*']
+                        )
+
+                    if 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
+                        resource_attrs['dn'] = uniquemember
+                        resources[uniquemember] = resource_attrs
+                        resources[uniquemember]['memberof'] = resource_dn
+                        if not resource_attrs.has_key('owner') and resources[resource_dn].has_key('owner'):
+                            resources[uniquemember]['owner'] = resources[resource_dn]['owner']
+                        resource_dns.append(uniquemember)
+        else:
+            resources[resource_dn] = resource_attrs
+
+    return resources
+
+
+def get_resource_collection(email_address):
+    """
+        
+    """
+    resource_dns = resource_record_from_email_address(email_address)
+    if len(resource_dns) == 1:
+        resource_attrs = auth.get_entry_attributes(None, resource_dns[0], ['objectclass'])
+        if not 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
+            resources = get_resource_records(resource_dns)
+            return (resource_dns, resources)
+
+    return None
 
 
 def get_resource_owner(resource):
