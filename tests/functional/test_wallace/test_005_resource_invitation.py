@@ -5,12 +5,9 @@ import email
 import datetime
 import uuid
 
-from pykolab import wap_client
-from pykolab.auth import Auth
 from pykolab.imap import IMAP
 from wallace import module_resources
 
-from icalendar import Calendar
 from email import message_from_string
 from twisted.trial import unittest
 
