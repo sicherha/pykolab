@@ -91,6 +91,7 @@ def execute(*args, **kw):
             'acl.inc.php',
             'calendar.inc.php',
             'config.inc.php',
+            'kolab_addressbook.inc.php',
             'kolab_auth.inc.php',
             'kolab_delegation.inc.php',
             'kolab_files.inc.php',
