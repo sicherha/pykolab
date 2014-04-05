@@ -10,6 +10,7 @@
     \$config['managesieve_replace_delimiter'] = '';
     \$config['managesieve_disabled_extensions'] = array();
     \$config['managesieve_debug'] = true;
+    \$config['managesieve_vacation'] = 1;
 
     if (file_exists(RCUBE_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
         include_once(RCUBE_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
