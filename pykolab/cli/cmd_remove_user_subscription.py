@@ -74,7 +74,7 @@ def execute(*args, **kw):
         sys.exit(1)
 
     _folders = imap.lm(folder_pattern)
-    _subscribed_folders = imap.lsub(folder_pattern)
+    _subscribed_folders = imap.lsub()
     unsubscribed_folders = []
 
     for _folder in _folders:
@@ -89,7 +89,7 @@ def execute(*args, **kw):
 
         print "\n".join(unsubscribed_folders)
     else:
-        print >> sys.stderr, _("User %s not be unsubscribed from any folders.") % (
+        print >> sys.stderr, _("User %s was not unsubscribed from any folders.") % (
                 user
             )
 
