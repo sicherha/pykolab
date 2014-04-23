@@ -1436,6 +1436,15 @@ class LDAP(pykolab.base.Base):
         self.imap.user_mailbox_delete(entry[result_attribute])
         self.imap.cleanup_acls(entry[result_attribute])
 
+        # let plugins act upon this deletion
+        conf.plugins.exec_hook(
+            'user_delete',
+            kw = {
+                'user': entry,
+                'domain': self.domain
+            }
+        )
+
     def _change_moddn_group(self, entry, change):
         # TODO: If the rdn attribute is the same as the result attribute...
         pass
