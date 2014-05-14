@@ -312,6 +312,8 @@ def request_raw(method, api_uri, get=None, post=None, headers={}):
     if conf.debuglevel > 8:
         conn.set_debuglevel(9)
 
+    conn.set_debuglevel(9)
+
     if not get == None:
         _get = "?%s" % (urllib.urlencode(get))
     else:
@@ -326,6 +328,7 @@ def request_raw(method, api_uri, get=None, post=None, headers={}):
     data = response.read()
 
     log.debug(_("Got response: %r") % (data), level=8)
+
     try:
         response_data = json.loads(data)
     except ValueError, e:
@@ -362,7 +365,7 @@ def user_add(params=None):
 def user_delete(params=None):
     if params == None:
         params = {
-                'user': utils.ask_question("Username for user to delete", "user")
+                'id': utils.ask_question("Username for user to delete", "user")
             }
 
     post = json.dumps(params)
@@ -372,11 +375,11 @@ def user_delete(params=None):
 def user_edit(user = None, attributes={}):
     if user == None:
         get = {
-                'user': utils.ask_question("Username for user to edit", "user")
+                'id': utils.ask_question("Username for user to edit", "user")
             }
     else:
         get = {
-                'user': user
+                'id': user
             }
 
     user_info = request('GET', 'user.info', get=get)
@@ -514,8 +517,11 @@ def user_form_value_generate_userpassword(*args, **kw):
 def user_info(user=None):
     if user == None:
         user = utils.ask_question("User email address")
-    _params = { 'user': user }
+
+    _params = { 'id': user }
+
     user = request('GET', 'user.info', get=_params)
+
     return user
 
 def user_types_list():

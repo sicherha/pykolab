@@ -37,6 +37,7 @@ class TestKolabDaemon(unittest.TestCase):
         self.assertEqual(recipient, "uid=doe,ou=People,dc=example,dc=org")
 
         result = wap_client.user_info(recipient)
+
         self.assertEqual(result['mail'], 'john.doe@example.org')
         self.assertEqual(result['alias'], ['doe@example.org', 'j.doe@example.org'])
 
@@ -82,7 +83,8 @@ class TestKolabDaemon(unittest.TestCase):
         imap = IMAP()
         imap.connect()
 
-        exec("ac_folders = %s" % (conf.get_raw(conf.get('kolab', 'primary_domain'), 'autocreate_folders')))
+        ac_folders = conf.get_raw('kolab', 'autocreate_folders')
+        exec("ac_folders = %s" % (ac_folders))
 
         folders = imap.lm('user/%(local)s/*@%(domain)s' % (self.user))
 
@@ -92,7 +94,8 @@ class TestKolabDaemon(unittest.TestCase):
         imap = IMAP()
         imap.connect()
 
-        exec("ac_folders = %s" % (conf.get_raw(conf.get('kolab', 'primary_domain'), 'autocreate_folders')))
+        ac_folders = conf.get_raw('kolab', 'autocreate_folders')
+        exec("ac_folders = %s" % (ac_folders))
 
         folders = []
         folders.extend(imap.lm('user/%(local)s@%(domain)s' % (self.user)))
