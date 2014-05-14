@@ -32,7 +32,6 @@ bin/rebuild.sh
 Makefile
 pykolab.spec
 conf/Makefile
-kolab/Makefile
 kolabd/Makefile
 po/Makefile.in
 pykolab/constants.py
