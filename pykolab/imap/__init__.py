@@ -384,10 +384,10 @@ class IMAP(object):
             Create a shared folder.
         """
 
-        folder_name = "shared%s%s" % (self.imap.separator, folder_path)
+        folder_name = "shared%s%s" % (self.get_separator(), folder_path)
 
         # Correct folder_path being supplied with "shared/shared/" for example
-        if folder_name.startswith("shared%s" % (self.imap.separator) * 2):
+        if folder_name.startswith("shared%s" % (self.get_separator()) * 2):
             folder_name = folder_name[7:]
 
         log.info(_("Creating new shared folder %s") %(folder_name))
@@ -397,19 +397,19 @@ class IMAP(object):
         """
             Check if a shared mailbox exists.
         """
-        folder_name = 'shared%s%s' % (self.imap.separator, folder_path)
+        folder_name = 'shared%s%s' % (self.get_separator(), folder_path)
 
         # Correct folder_path being supplied with "shared/shared/" for example
-        if folder_name.startswith("shared%s" % (self.imap.separator) * 2):
+        if folder_name.startswith("shared%s" % (self.get_separator()) * 2):
             folder_name = folder_name[7:]
 
         return self.has_folder(folder_name)
 
     def shared_folder_set_type(self, folder_path, folder_type):
-        folder_name = 'shared%s%s' % (self.imap.separator, folder_path)
+        folder_name = 'shared%s%s' % (self.get_separator(), folder_path)
 
         # Correct folder_path being supplied with "shared/shared/" for example
-        if folder_name.startswith("shared%s" % (self.imap.separator) * 2):
+        if folder_name.startswith("shared%s" % (self.get_separator()) * 2):
             folder_name = folder_name[7:]
 
         self.set_metadata(folder_name, '/shared/vendor/kolab/folder-type', folder_type)
@@ -419,10 +419,10 @@ class IMAP(object):
             Create a shared folder.
         """
 
-        folder_name = "shared%s%s" % (self.imap.separator, mailbox_base_name)
+        folder_name = "shared%s%s" % (self.get_separator(), mailbox_base_name)
 
         # Correct folder_path being supplied with "shared/shared/" for example
-        if folder_name.startswith("shared%s" % (self.imap.separator) * 2):
+        if folder_name.startswith("shared%s" % (self.get_separator()) * 2):
             folder_name = folder_name[7:]
 
         log.info(_("Creating new shared folder %s") %(mailbox_base_name))
@@ -432,10 +432,10 @@ class IMAP(object):
         """
             Check if a shared mailbox exists.
         """
-        folder_name = "shared%s%s" % (self.imap.separator, mailbox_base_name)
+        folder_name = "shared%s%s" % (self.get_separator(), mailbox_base_name)
 
         # Correct folder_path being supplied with "shared/shared/" for example
-        if folder_name.startswith("shared%s" % (self.imap.separator) * 2):
+        if folder_name.startswith("shared%s" % (self.get_separator()) * 2):
             folder_name = folder_name[7:]
 
         return self.has_folder(folder_name)
@@ -453,7 +453,7 @@ class IMAP(object):
             log.warning(_("Downcasing mailbox name %r") % (mailbox_base_name))
             mailbox_base_name = mailbox_base_name.lower()
 
-        folder_name = "user%s%s" % (self.imap.separator, mailbox_base_name)
+        folder_name = "user%s%s" % (self.get_separator(), mailbox_base_name)
         log.info(_("Creating new mailbox for user %s") %(mailbox_base_name))
 
         self.create_folder(folder_name, server)
@@ -637,9 +637,9 @@ class IMAP(object):
                 folder_name = additional_folder
 
             folder_name = "user%s%s%s%s%s" % (
-                    self.imap.separator,
+                    self.get_separator(),
                     localpart,
-                    self.imap.separator,
+                    self.get_separator(),
                     folder_name,
                     domain_suffix
                 )
@@ -663,7 +663,7 @@ class IMAP(object):
         """
         self.connect()
 
-        folder = "user%s%s" %(self.imap.separator,mailbox_base_name)
+        folder = "user%s%s" %(self.get_separator(),mailbox_base_name)
         self.delete_mailfolder(folder)
         self.cleanup_acls(mailbox_base_name)
 
@@ -675,7 +675,7 @@ class IMAP(object):
             log.warning(_("Downcasing mailbox name %r") % (mailbox_base_name))
             mailbox_base_name = mailbox_base_name.lower()
 
-        return self.has_folder('user%s%s' %(self.imap.separator, mailbox_base_name))
+        return self.has_folder('user%s%s' %(self.get_separator(), mailbox_base_name))
 
     def user_mailbox_quota(self, mailbox_quota):
         pass
@@ -686,6 +686,9 @@ class IMAP(object):
 
         if old_name == new_name and partition == None:
             return
+
+        if not self.has_folder(old_name):
+            log.error(_("INBOX folder to rename (%s) does not exist") % (old_name))
 
         if not self.has_folder(new_name) or not partition == None:
             log.info(_("Renaming INBOX from %s to %s") % (old_name,new_name))
@@ -1023,9 +1026,9 @@ class IMAP(object):
                 #if acceptable:
                     #folder_name = "%s@%s" % (folder.split(self.separator)[1].split('@')[0],folder.split('@')[1])
 
-                folder_name = "%s@%s" % (folder.split(self.imap.separator)[1].split('@')[0],folder.split('@')[1])
+                folder_name = "%s@%s" % (folder.split(self.get_separator())[1].split('@')[0],folder.split('@')[1])
             else:
-                folder_name = "%s" % (folder.split(self.imap.separator)[1])
+                folder_name = "%s" % (folder.split(self.get_separator())[1])
 
             if not folder_name == None:
                 if not folder_name in folders:

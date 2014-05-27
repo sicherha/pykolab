@@ -1346,7 +1346,7 @@ class LDAP(pykolab.base.Base):
                 )
 
         else:
-            folder = "user%s%s" % (self.imap.separator,entry[result_attribute].lower())
+            folder = "user%s%s" % (self.imap.get_separator(),entry[result_attribute].lower())
 
         server = self.imap.user_mailbox_server(folder)
 
@@ -1685,19 +1685,31 @@ class LDAP(pykolab.base.Base):
 
         if entry_changes.has_key(result_attribute):
             if not entry_changes[result_attribute] == old_canon_attr:
-                self.imap.user_mailbox_rename(
-                        old_canon_attr,
-                        entry_changes[result_attribute]
-                    )
+                if old_canon_attr == None:
+                    self.imap.user_mailbox_create(
+                            entry_changes[result_attribute]
+                        )
+
+                else:
+                    self.imap.user_mailbox_rename(
+                            old_canon_attr,
+                            entry_changes[result_attribute]
+                        )
 
                 entry[result_attribute] = entry_changes[result_attribute]
                 cache.get_entry(self.domain, entry)
         elif entry.has_key(result_attribute):
             if not entry[result_attribute] == old_canon_attr:
-                self.imap.user_mailbox_rename(
-                        old_canon_attr,
-                        entry[result_attribute]
-                    )
+                if old_canon_attr == None:
+                    self.imap.user_mailbox_create(
+                            entry[result_attribute]
+                        )
+
+                else:
+                    self.imap.user_mailbox_rename(
+                            old_canon_attr,
+                            entry[result_attribute]
+                        )
 
                 cache.get_entry(self.domain, entry)
 
@@ -1873,7 +1885,7 @@ class LDAP(pykolab.base.Base):
                 server = self.imap.user_mailbox_server(folder)
             else:
                 folder = "user%s%s" % (
-                        self.imap.separator,
+                        self.imap.get_separator(),
                         entry[result_attribute]
                     )
 
