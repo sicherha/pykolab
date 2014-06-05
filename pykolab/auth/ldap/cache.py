@@ -150,11 +150,12 @@ def get_entry(domain, entry, update=True):
             db.commit()
             _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
 
-        if not _entry.result_attribute == entry[result_attribute]:
-            log.debug(_("Updating result_attribute for cache entry %r") % (entry['id']), level=8)
-            _entry.result_attribute = entry[result_attribute]
-            db.commit()
-            _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
+        if entry.has_key(result_attribute):
+            if not _entry.result_attribute == entry[result_attribute]:
+                log.debug(_("Updating result_attribute for cache entry %r") % (entry['id']), level=8)
+                _entry.result_attribute = entry[result_attribute]
+                db.commit()
+                _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
 
     return _entry
 
