@@ -102,13 +102,22 @@ def transliterate(_input, lang, _output_expected=None):
 
     _output = ''
 
-    for char in _input.decode('utf-8'):
-        if translit_map[_translit_name].has_key(char):
-            _output += translit_map[_translit_name][char]
-        elif char in [repr(x) for x in translit_map[_translit_name].keys()]:
-            _output += translit_map[_translit_name][[char in [raw(x) for x in translit_map[_translit_name].keys()]][0]]
-        else:
-            _output += char
+    if not isinstance(_input, unicode):
+        for char in _input.decode('utf-8'):
+            if translit_map[_translit_name].has_key(char):
+                _output += translit_map[_translit_name][char]
+            elif char in [repr(x) for x in translit_map[_translit_name].keys()]:
+                _output += translit_map[_translit_name][[char in [raw(x) for x in translit_map[_translit_name].keys()]][0]]
+            else:
+                _output += char
+    else:
+        for char in _input:
+            if translit_map[_translit_name].has_key(char):
+                _output += translit_map[_translit_name][char]
+            elif char in [repr(x) for x in translit_map[_translit_name].keys()]:
+                _output += translit_map[_translit_name][[char in [raw(x) for x in translit_map[_translit_name].keys()]][0]]
+            else:
+                _output += char
 
     return _output
 
