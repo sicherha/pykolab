@@ -44,7 +44,7 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(len(self.event.get_attendees()), 1)
 
     def test_005_attendee_add_name_and_props(self):
-        self.event.add_attendee("jane@doe.org", "Doe, Jane", role="OPTIONAL", cutype="RESOURCE")
+        self.event.add_attendee("jane@doe.org", "Doe, Jane", role="OPT-PARTICIPANT", cutype="RESOURCE")
         self.assertIsInstance(self.event.get_attendees(), list)
         self.assertEqual(len(self.event.get_attendees()), 2)
 
@@ -129,7 +129,7 @@ UID:7a35527d-f783-4b58-b404-b1389bd2fc57
 ATTENDEE;CN="Doe, Jane";CUTYPE=INDIVIDUAL;PARTSTAT=ACCEPTED
  ;ROLE=REQ-PARTICIPANT;RSVP=FALSE:MAILTO:jane@doe.org
 ATTENDEE;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION
- ;ROLE=OPTIONAL;RSVP=FALSE:MAILTO:max@imum.com
+ ;ROLE=OPT-PARTICIPANT;RSVP=FALSE:MAILTO:max@imum.com
 SEQUENCE:2
 END:VEVENT
 END:VCALENDAR
