@@ -22,6 +22,7 @@ class Attendee(kolabformat.Attendee):
             #"IN-PROCESS": ,
         }
 
+    # See RFC 2445, 5445
     role_map = {
             "CHAIR": kolabformat.Chair,
             "REQ-PARTICIPANT": kolabformat.Required,
