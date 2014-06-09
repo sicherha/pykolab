@@ -377,6 +377,11 @@ class Conf(object):
         self.cfg_parser = SafeConfigParser()
         self.cfg_parser.read(value)
 
+        if hasattr(self, 'cli_keywords') and hasattr(self.cli_keywords, 'config_file'):
+            self.cli_keywords.config_file = value
+        self.defaults.config_file = value
+        self.config_file = value
+
     def command_get(self, *args, **kw):
         """
             Get a configuration option.
@@ -413,10 +418,21 @@ class Conf(object):
         if not self.cfg_parser.has_section(args[0]):
             log.error(_("No section '%s' exists.") % (args[0]))
 
-        self.cfg_parser.set(args[0], args[1], args[2])
-        fp = open(self.cli_keywords.config_file, "w+")
-        self.cfg_parser.write(fp)
-        fp.close()
+        if '%' in args[2]:
+            value = args[2].replace('%', '%%')
+        else:
+            value = args[2]
+
+        self.cfg_parser.set(args[0], args[1], value)
+
+        if hasattr(self, 'cli_keywords') and hasattr(self.cli_keywords, 'config_file'):
+            fp = open(self.cli_keywords.config_file, "w+")
+            self.cfg_parser.write(fp)
+            fp.close()
+        else:
+            fp = open(self.config_file, "w+")
+            self.cfg_parser.write(fp)
+            fp.close()
 
     def create_logger(self):
         """
