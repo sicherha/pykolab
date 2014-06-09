@@ -79,13 +79,13 @@ class TestEventXML(unittest.TestCase):
     def test_016_role_map_forward_lookup(self):
         self.assertEqual(self.attendee.role_map["REQ-PARTICIPANT"], 0)
         self.assertEqual(self.attendee.role_map["CHAIR"], 1)
-        self.assertEqual(self.attendee.role_map["OPTIONAL"], 2)
+        self.assertEqual(self.attendee.role_map["OPT-PARTICIPANT"], 2)
         self.assertEqual(self.attendee.role_map["NON-PARTICIPANT"], 3)
 
     def test_017_role_map_reverse_lookup(self):
         self.assertEqual([k for k,v in self.attendee.role_map.iteritems() if v == 0][0], "REQ-PARTICIPANT")
         self.assertEqual([k for k,v in self.attendee.role_map.iteritems() if v == 1][0], "CHAIR")
-        self.assertEqual([k for k,v in self.attendee.role_map.iteritems() if v == 2][0], "OPTIONAL")
+        self.assertEqual([k for k,v in self.attendee.role_map.iteritems() if v == 2][0], "OPT-PARTICIPANT")
         self.assertEqual([k for k,v in self.attendee.role_map.iteritems() if v == 3][0], "NON-PARTICIPANT")
 
     def test_015_cutype_map_length(self):
