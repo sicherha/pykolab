@@ -15,10 +15,10 @@
 
     \$config['calendar_resources_directory'] = array(
             'name'                  => 'Kolab Resources',
-            'hosts'                 => 'localhost,
+            'hosts'                 => 'localhost',
             'port'                  => 389,
             'use_tls'               => false,
-            'base_dn'               => '$ldap_resources_base_dn',
+            'base_dn'               => '$ldap_resource_base_dn',
             'user_specific'         => true,
             'bind_dn'               => '%dn',
             'bind_pass'             => '',
