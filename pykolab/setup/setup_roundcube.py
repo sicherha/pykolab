@@ -77,6 +77,8 @@ def execute(*args, **kw):
             'ldap_group_base_dn': conf.get('ldap', 'group_base_dn'),
             'ldap_group_filter': conf.get('ldap', 'group_filter'),
             'ldap_ldap_uri': conf.get('ldap', 'ldap_uri'),
+            'ldap_resource_base_dn': conf.get('ldap', 'resource_base_dn'),
+            'ldap_resource_filter': conf.get('ldap', 'resource_filter'),
             'ldap_service_bind_dn': conf.get('ldap', 'service_bind_dn'),
             'ldap_service_bind_pw': conf.get('ldap', 'service_bind_pw'),
             'ldap_user_base_dn': conf.get('ldap', 'user_base_dn'),

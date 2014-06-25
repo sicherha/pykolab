@@ -9,6 +9,52 @@
     \$config['calendar_event_coloring'] = 0;
     \$config['calendar_caldav_url'] = 'http://' . \$_SERVER['HTTP_HOST'] . '/iRony/calendars/%u/%i';
 
+    \$config['calendar_contact_birthdays'] = true;
+
+    \$config['calendar_resources_driver'] = 'ldap';
+
+    \$config['calendar_resources_directory'] = array(
+            'name'                  => 'Kolab Resources',
+            'hosts'                 => 'localhost,
+            'port'                  => 389,
+            'use_tls'               => false,
+            'base_dn'               => '$ldap_resources_base_dn',
+            'user_specific'         => true,
+            'bind_dn'               => '%dn',
+            'bind_pass'             => '',
+            'search_base_dn'        => '$ldap_user_base_dn',
+            'search_bind_dn'        => '$ldap_service_bind_dn',
+            'search_bind_pw'        => '$ldap_service_bind_pw',
+            'search_filter'         => '(&(objectClass=inetOrgPerson)(mail=%fu))',
+            'ldap_version'          => 3,
+            'filter'                => '$ldap_resource_filter',
+            'search_fields'         => array('cn'),
+            'sort'                  => array('cn'),
+            'scope'                 => 'sub',
+            'fuzzy_search'          => true,
+            'fieldmap'              => array(
+                    // Internal     => LDAP
+                    'name'          => 'cn',
+                    'email'         => 'mail',
+                    'owner'         => 'owner',
+                    'description'   => 'description',
+                    'attributes'    => 'kolabdescattribute',
+                    'members'       => 'uniquemember',
+                    // these mappings are required for owner display
+                    'phone'         => 'telephoneNumber',
+                    'mobile'        => 'mobile',
+                ),
+
+            'class_type_map'        => array(
+                    'kolabsharedfolder'     => 'resource',
+                    'groupofuniquenames'    => 'collection',
+                ),
+
+            'groups'                => array(
+                    'name_attr'     => 'cn',
+                ),
+        );
+
     if (file_exists(RCUBE_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
         include_once(RCUBE_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
     }
