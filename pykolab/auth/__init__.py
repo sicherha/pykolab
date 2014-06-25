@@ -231,13 +231,13 @@ class Auth(pykolab.base.Base):
                 domains = self._auth._list_domains(domain)
             except:
                 if not self.domain == kolab_primary_domain:
-                    return { self.domain: [] }
+                    return { self.domain: self.domain }
                 else:
-                    domains = []
+                    domains = {}
 
             # If no domains are found, the primary domain is used.
             if len(domains) < 1:
-                self.domains = { kolab_primary_domain: [] }
+                self.domains = { kolab_primary_domain: kolab_primary_domain }
             else:
                 self.domains = {}
                 for primary, secondaries in domains:
