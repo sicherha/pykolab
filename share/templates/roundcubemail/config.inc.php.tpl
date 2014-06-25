@@ -56,6 +56,7 @@
             'kolab_delegation',
             'kolab_files',
             'kolab_folders',
+            'kolab_notes',
             'libkolab',
             'libcalendaring',
             'managesieve',
