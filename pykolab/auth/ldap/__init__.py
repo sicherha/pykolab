@@ -1179,16 +1179,18 @@ class LDAP(pykolab.base.Base):
 
         # A delivery address is postuser+targetfolder
         delivery_address_attribute = self.config_get('sharedfolder_delivery_address_attribute')
-        if not delivery_address_attribute == None:
-            if not entry.has_key(delivery_address_attribute):
-                entry[delivery_address_attribute] = self.get_entry_attribute(
-                        entry['id'],
-                        delivery_address_attribute
-                    )
+        if delivery_address_attribute == None:
+            delivery_address_attribute = 'mail'
 
-            if not entry[delivery_address_attribute] == None:
-                if len(entry[delivery_address_attribute].split('+')) > 1:
-                    entry['kolabtargetfolder'] = entry[delivery_address_attribute].split('+')[1]
+        if not entry.has_key(delivery_address_attribute):
+            entry[delivery_address_attribute] = self.get_entry_attribute(
+                    entry['id'],
+                    delivery_address_attribute
+                )
+
+        if not entry[delivery_address_attribute] == None:
+            if len(entry[delivery_address_attribute].split('+')) > 1:
+                entry['kolabtargetfolder'] = entry[delivery_address_attribute].split('+')[1]
 
         if not entry.has_key('kolabtargetfolder'):
             entry['kolabtargetfolder'] = self.get_entry_attribute(
