@@ -312,8 +312,6 @@ def request_raw(method, api_uri, get=None, post=None, headers={}):
     if conf.debuglevel > 8:
         conn.set_debuglevel(9)
 
-    conn.set_debuglevel(9)
-
     if not get == None:
         _get = "?%s" % (urllib.urlencode(get))
     else:
