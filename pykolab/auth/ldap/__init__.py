@@ -1987,16 +1987,17 @@ class LDAP(pykolab.base.Base):
                 else:
                     return _type
 
-    def _find_user_dn(self, login, realm):
+    def _find_user_dn(self, login, kolabuser=False):
         """
-            Find the distinguished name (DN) for an entry in LDAP.
+            Find the distinguished name (DN) for a (Kolab) user entry in LDAP.
         """
 
+        conf_prefix = 'kolab_' if kolabuser else ''
         domain_root_dn = self._kolab_domain_root_dn(self.domain)
 
-        base_dn = self.config_get('user_base_dn')
-        if base_dn == None:
-            base_dn = self.config_get('base_dn')
+        user_base_dn = self.config_get(conf_prefix + 'user_base_dn')
+        if user_base_dn == None:
+            user_base_dn = self.config_get('base_dn')
 
         auth_attrs = self.config_get_list('auth_attributes')
 
@@ -2004,17 +2005,20 @@ class LDAP(pykolab.base.Base):
 
         for auth_attr in auth_attrs:
             auth_search_filter.append('(%s=%s)' % (auth_attr,login))
-            auth_search_filter.append(
-                    '(%s=%s@%s)' % (
-                            auth_attr,
-                            login,
-                            self.domain
-                        )
-                )
+            if not '@' in login:
+                auth_search_filter.append(
+                        '(%s=%s@%s)' % (
+                                auth_attr,
+                                login,
+                                self.domain
+                            )
+                    )
 
         auth_search_filter.append(')')
 
         auth_search_filter = ''.join(auth_search_filter)
+
+        user_filter = self.config_get(conf_prefix + 'user_filter')
 
         search_filter = "(&%s%s)" % (
                 auth_search_filter,

@@ -205,7 +205,10 @@ class Auth(pykolab.base.Base):
             return result
 
     def find_user(self, attr, value, **kw):
-        return self._auth._find_user(attr, value, **kw)
+        return self._auth.search_entry_by_attribute(attr, value, **kw)
+
+    def find_user_dn(self, login, kolabuser=False):
+        return self._auth._find_user_dn(login, kolabuser);
 
     def list_domains(self, domain=None):
         """
