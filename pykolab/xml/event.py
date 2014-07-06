@@ -725,6 +725,7 @@ class Event(object):
         msg = MIMEMultipart()
 
         msg_from = None
+        attendees = None
 
         if method == "REPLY":
             # TODO: Make user friendly name <email>
@@ -737,6 +738,7 @@ class Event(object):
                 if attendee.get_email() == from_address:
                     # Only the attendee is supposed to be listed in a reply
                     attendee.set_participant_status(participant_status)
+                    attendee.set_rsvp(False)
 
                     self._attendees = [attendee]
                     self.event.setAttendees(self._attendees)
@@ -779,7 +781,7 @@ class Event(object):
         msg['Date'] = formatdate(localtime=True)
 
         if subject is None:
-            subject = _("Reservation Request for %s was %s") % (self.get_summary(), _(participant_status))
+            subject = _("Invitation for %s was %s") % (self.get_summary(), _(participant_status))
 
         msg["Subject"] = subject
 
@@ -797,6 +799,12 @@ class Event(object):
         part.add_header('Content-Transfer-Encoding', '8bit')
 
         msg.attach(part)
+
+        # restore the original list of attendees
+        # attendees being reduced to the replying attendee above
+        if attendees is not None:
+            self._attendees = attendees
+            self.event.setAttendees(self._attendees)
 
         return msg
 
