@@ -151,6 +151,7 @@ class Attendee(kolabformat.Attendee):
 
     def set_name(self, name):
         self.contactreference.set_name(name)
+        self.setContact(self.contactreference)
 
     def set_participant_status(self, participant_status):
         if participant_status in self.participant_status_map.keys():
