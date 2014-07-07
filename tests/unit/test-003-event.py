@@ -11,6 +11,7 @@ from pykolab.xml import EventIntegrityError
 from pykolab.xml import InvalidAttendeeParticipantStatusError
 from pykolab.xml import InvalidEventDateError
 from pykolab.xml import event_from_ical
+from pykolab.xml import event_from_string
 
 class TestEventXML(unittest.TestCase):
     event = Event()
@@ -149,12 +150,14 @@ END:VCALENDAR
         self.event.set_summary("test")
         self.event.set_start(datetime.datetime(2014, 05, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
         self.event.set_end(datetime.datetime(2014, 05, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
+        self.event.set_sequence(3)
 
         ical = icalendar.Calendar.from_ical(self.event.as_string_itip())
         event = ical.walk('VEVENT')[0]
 
         self.assertEqual(event['uid'], self.event.get_uid())
         self.assertEqual(event['summary'], "test")
+        self.assertEqual(event['sequence'], 3)
         self.assertIsInstance(event['dtstamp'].dt, datetime.datetime)
 
     def test_020_calendaring_recurrence(self):
@@ -213,6 +216,90 @@ END:VCALENDAR
 
         self.assertEqual(self.event.get_next_occurence(_start), None)
         self.assertEqual(self.event.get_last_occurrence(), None)
+
+    def test_022_load_from_xml(self):
+        xml = """
+<icalendar xmlns="urn:ietf:params:xml:ns:icalendar-2.0">
+  <vcalendar>
+    <properties>
+      <prodid>
+        <text>Libkolabxml-1.1</text>
+      </prodid>
+      <version>
+        <text>2.0</text>
+      </version>
+      <x-kolab-version>
+        <text>3.1.0</text>
+      </x-kolab-version>
+    </properties>
+    <components>
+      <vevent>
+        <properties>
+          <uid>
+            <text>75c740bb-b3c6-442c-8021-ecbaeb0a025e</text>
+          </uid>
+          <created>
+            <date-time>2014-07-07T01:28:23Z</date-time>
+          </created>
+          <dtstamp>
+            <date-time>2014-07-07T01:28:23Z</date-time>
+          </dtstamp>
+          <sequence>
+            <integer>1</integer>
+          </sequence>
+          <class>
+            <text>PUBLIC</text>
+          </class>
+          <dtstart>
+            <parameters>
+              <tzid>
+                <text>/kolab.org/Europe/London</text>
+              </tzid>
+            </parameters>
+            <date-time>2014-08-13T10:00:00</date-time>
+          </dtstart>
+          <dtend>
+            <parameters>
+              <tzid><text>/kolab.org/Europe/London</text></tzid>
+            </parameters>
+            <date-time>2014-08-13T14:00:00</date-time>
+          </dtend>
+          <summary>
+            <text>test</text>
+          </summary>
+          <organizer>
+            <parameters>
+              <cn><text>Doe, John</text></cn>
+            </parameters>
+            <cal-address>mailto:%3Cjohn%40example.org%3E</cal-address>
+          </organizer>
+          <attendee>
+            <parameters>
+              <partstat><text>ACCEPTED</text></partstat>
+              <role><text>REQ-PARTICIPANT</text></role>
+              <rsvp><boolean>true</boolean></rsvp>
+            </parameters>
+            <cal-address>mailto:%3Cjane%40example.org%3E</cal-address>
+          </attendee>
+          <attendee>
+            <parameters>
+              <partstat><text>TENTATIVE</text></partstat>
+              <role><text>OPT-PARTICIPANT</text></role>
+            </parameters>
+            <cal-address>mailto:%3Csomebody%40else.com%3E</cal-address>
+          </attendee>
+        </properties>
+      </vevent>
+    </components>
+  </vcalendar>
+</icalendar>
+"""
+        event = event_from_string(xml)
+        self.assertEqual(event.uid, '75c740bb-b3c6-442c-8021-ecbaeb0a025e')
+        self.assertEqual(event.get_attendee_by_email("jane@example.org").get_participant_status(), kolabformat.PartAccepted)
+        self.assertEqual(event.get_sequence(), 1)
+        self.assertIsInstance(event.get_start(), datetime.datetime)
+        self.assertEqual(str(event.get_start()), "2014-08-13 10:00:00+00:00")
 
 
 if __name__ == '__main__':

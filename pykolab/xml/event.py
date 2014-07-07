@@ -40,10 +40,15 @@ class Event(object):
                 self.event = kolabformat.Event()
             else:
                 self.event = kolabformat.readEvent(from_string, False)
+                self._load_attendees()
         else:
             self.from_ical(from_ical)
 
         self.uid = self.get_uid()
+
+    def _load_attendees(self):
+        for a in self.event.attendees():
+            self._attendees.append(Attendee(a.contact().email(), a.contact().name(), a.rsvp(), a.role(), a.partStat(), a.cutype()))
 
     def add_attendee(self, email, name=None, rsvp=False, role=None, participant_status=None, cutype="INDIVIDUAL", params=None):
         attendee = Attendee(email, name, rsvp, role, participant_status, cutype, params)
