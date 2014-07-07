@@ -4,7 +4,7 @@ from pykolab import wap_client
 
 conf = pykolab.getConf()
 
-def user_add(givenname, sn, preferredlanguage='en_US'):
+def user_add(givenname, sn, preferredlanguage='en_US', **kw):
     if givenname == None:
         raise Exception
 
@@ -24,6 +24,8 @@ def user_add(givenname, sn, preferredlanguage='en_US'):
             'ou': 'ou=People,dc=example,dc=org',
             'userpassword': 'Welcome2KolabSystems'
         }
+
+    user_details.update(kw)
 
     login = conf.get('ldap', 'bind_dn')
     password = conf.get('ldap', 'bind_pw')
