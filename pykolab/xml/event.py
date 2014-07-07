@@ -665,6 +665,7 @@ class Event(object):
         self.event.setSummary(summary)
 
     def set_uid(self, uid):
+        self.uid = uid
         self.event.setUid(str(uid))
 
     def set_transparency(self, transp):
