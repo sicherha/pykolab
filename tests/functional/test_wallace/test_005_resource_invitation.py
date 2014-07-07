@@ -8,6 +8,7 @@ import uuid
 from pykolab.imap import IMAP
 from wallace import module_resources
 
+from pykolab.xml import event_from_message
 from email import message_from_string
 from twisted.trial import unittest
 
@@ -23,7 +24,7 @@ CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
 UID:%s
-DTSTAMP:20140213T1254140
+DTSTAMP:20140213T125414Z
 DTSTART;TZID=Europe/London:%s
 DTEND;TZID=Europe/London:%s
 SUMMARY:test
@@ -43,7 +44,7 @@ CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
 UID:%s
-DTSTAMP:20140215T1254140
+DTSTAMP:20140215T125414Z
 DTSTART;TZID=Europe/London:%s
 DTEND;TZID=Europe/London:%s
 SEQUENCE:2
@@ -90,7 +91,7 @@ CALSCALE:GREGORIAN
 METHOD:CANCEL
 BEGIN:VEVENT
 UID:%s
-DTSTAMP:20140218T1254140
+DTSTAMP:20140218T125414Z
 DTSTART;TZID=Europe/London:20120713T100000
 DTEND;TZID=Europe/London:20120713T110000
 SUMMARY:test
@@ -112,7 +113,7 @@ CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
 UID:%s
-DTSTAMP:20140213T1254140
+DTSTAMP:20140213T125414Z
 DTSTART;VALUE=DATE:%s
 DTEND;VALUE=DATE:%s
 SUMMARY:test
@@ -133,7 +134,7 @@ CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
 UID:%s
-DTSTAMP:20140213T1254140
+DTSTAMP:20140213T125414Z
 DTSTART;TZID=Europe/Zurich:%s
 DTEND;TZID=Europe/Zurich:%s
 RRULE:FREQ=WEEKLY;INTERVAL=1;COUNT=10
@@ -328,12 +329,7 @@ class TestResourceInvitation(unittest.TestCase):
                 if uid and event_message['subject'] != uid:
                     continue
 
-                for part in event_message.walk():
-                    if part.get_content_type() == "application/calendar+xml":
-                        payload = part.get_payload(decode=True)
-                        found = pykolab.xml.event_from_string(payload)
-                        break
-
+                found = event_from_message(event_message)
                 if found:
                     break
 

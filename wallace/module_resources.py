@@ -40,8 +40,8 @@ import kolabformat
 from pykolab.auth import Auth
 from pykolab.conf import Conf
 from pykolab.imap import IMAP
-from pykolab.xml import event_from_string
 from pykolab.xml import to_dt
+from pykolab.xml import event_from_message
 from pykolab.itip import events_from_message
 from pykolab.itip import check_event_conflict
 from pykolab.translate import _
@@ -467,28 +467,29 @@ def read_resource_calendar(resource_rec, itip_events):
 
         event_message = message_from_string(data[0][1])
 
-        if event_message.is_multipart():
-            for part in event_message.walk():
-                if part.get_content_type() == "application/calendar+xml":
-                    payload = part.get_payload(decode=True)
-                    event = pykolab.xml.event_from_string(payload)
+        try:
+            event = event_from_message(message_from_string(data[0][1]))
+        except Exception, e:
+            log.error(_("Failed to parse event from message %s/%s: %r") % (mailbox, num, e))
+            continue
 
-                    for itip in itip_events:
-                        conflict = check_event_conflict(event, itip)
+        if event:
+            for itip in itip_events:
+                conflict = check_event_conflict(event, itip)
 
-                        if event.get_uid() == itip['uid']:
-                            resource_rec['existing_events'].append(itip['uid'])
+                if event.get_uid() == itip['uid']:
+                    resource_rec['existing_events'].append(itip['uid'])
 
-                        if conflict:
-                            log.info(
-                                _("Event %r conflicts with event %r") % (
-                                    itip['xml'].get_uid(),
-                                    event.get_uid()
-                                )
-                            )
+                if conflict:
+                    log.info(
+                        _("Event %r conflicts with event %r") % (
+                            itip['xml'].get_uid(),
+                            event.get_uid()
+                        )
+                    )
 
-                            resource_rec['conflicting_events'].append(event.get_uid())
-                            resource_rec['conflict'] = True
+                    resource_rec['conflicting_events'].append(event.get_uid())
+                    resource_rec['conflict'] = True
 
     return num_messages
 

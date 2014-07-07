@@ -39,7 +39,7 @@ from pykolab.auth import Auth
 from pykolab.conf import Conf
 from pykolab.imap import IMAP
 from pykolab.xml import to_dt
-from pykolab.xml import event_from_string
+from pykolab.xml import event_from_message
 from pykolab.itip import events_from_message
 from pykolab.itip import check_event_conflict
 from pykolab.itip import send_reply
@@ -619,15 +619,12 @@ def find_existing_event(itip_event, user_rec):
         for num in reversed(data[0].split()):
             typ, data = imap.imap.m.fetch(num, '(RFC822)')
 
-            event_message = message_from_string(data[0][1])
-
-            if event_message.is_multipart():
-                for part in event_message.walk():
-                    if part.get_content_type() == "application/calendar+xml":
-                        payload = part.get_payload(decode=True)
-                        event = event_from_string(payload)
-                        setattr(event, '_imap_folder', folder)
-                        break
+            try:
+                event = event_from_message(message_from_string(data[0][1]))
+                setattr(event, '_imap_folder', folder)
+            except Exception, e:
+                log.error(_("Failed to parse event from message %s/%s: %r") % (folder, num, e))
+                continue
 
             if event and event.uid == itip_event['uid']:
                 return event
@@ -659,20 +656,18 @@ def check_availability(itip_event, receiving_user):
             event = None
             typ, data = imap.imap.m.fetch(num, '(RFC822)')
 
-            event_message = message_from_string(data[0][1])
+            try:
+                event = event_from_message(message_from_string(data[0][1]))
+                setattr(event, '_imap_folder', folder)
+            except Exception, e:
+                log.error(_("Failed to parse event from message %s/%s: %r") % (folder, num, e))
+                continue
 
-            if event_message.is_multipart():
-                for part in event_message.walk():
-                    if part.get_content_type() == "application/calendar+xml":
-                        payload = part.get_payload(decode=True)
-                        event = event_from_string(payload)
-                        break
-
-                if event and event.uid:
-                    conflict = check_event_conflict(event, itip_event)
-                    if conflict:
-                        log.info(_("Existing event %r conflicts with invitation %r") % (event.uid, itip_event['uid']))
-                        break
+            if event and event.uid:
+                conflict = check_event_conflict(event, itip_event)
+                if conflict:
+                    log.info(_("Existing event %r conflicts with invitation %r") % (event.uid, itip_event['uid']))
+                    break
 
         if conflict:
             break

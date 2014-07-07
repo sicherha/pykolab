@@ -11,6 +11,7 @@ from pykolab.imap import IMAP
 from wallace import module_resources
 
 from pykolab.translate import _
+from pykolab.xml import event_from_message
 from email import message_from_string
 from twisted.trial import unittest
 
@@ -26,7 +27,7 @@ CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
 UID:%(uid)s
-DTSTAMP:20140213T1254140
+DTSTAMP:20140213T125414Z
 DTSTART;TZID=Europe/Berlin:%(start)s
 DTEND;TZID=Europe/Berlin:%(end)s
 SUMMARY:%(summary)s
@@ -48,7 +49,7 @@ CALSCALE:GREGORIAN
 METHOD:CANCEL
 BEGIN:VEVENT
 UID:%(uid)s
-DTSTAMP:20140218T1254140
+DTSTAMP:20140218T125414Z
 DTSTART;TZID=Europe/Berlin:20120713T100000
 DTEND;TZID=Europe/Berlin:20120713T110000
 SUMMARY:%(summary)s
@@ -69,7 +70,7 @@ CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
 UID:%(uid)s
-DTSTAMP:20140213T1254140
+DTSTAMP:20140213T125414Z
 DTSTART;TZID=Europe/Zurich:%(start)s
 DTEND;TZID=Europe/Zurich:%(end)s
 RRULE:FREQ=WEEKLY;INTERVAL=1;COUNT=10
@@ -295,6 +296,14 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         event.set_summary(summary)
         event.set_sequence(sequence)
 
+        # create event with attachment
+        vattach = event.get_attachments()
+        attachment = kolabformat.Attachment()
+        attachment.setLabel('attach.txt')
+        attachment.setData('This is a text attachment', 'text/plain')
+        vattach.append(attachment)
+        event.event.setAttachments(vattach)
+
         imap = IMAP()
         imap.connect()
 
@@ -365,12 +374,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
                 if uid and event_message['subject'] != uid:
                     continue
 
-                for part in event_message.walk():
-                    if part.get_content_type() == "application/calendar+xml":
-                        payload = part.get_payload(decode=True)
-                        found = pykolab.xml.event_from_string(payload)
-                        break
-
+                found = event_from_message(event_message)
                 if found:
                     break
 
@@ -505,6 +509,11 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         attendee = event.get_attendee(self.jane['mail'])
         self.assertIsInstance(attendee, pykolab.xml.Attendee)
         self.assertEqual(attendee.get_participant_status(), kolabformat.PartAccepted)
+
+        # check attachments in update event
+        attachments = event.get_attachments()
+        self.assertEqual(len(attachments), 1)
+        self.assertEqual(event.get_attachment_data(0), 'This is a text attachment')
 
 
     def test_007_invitation_cancel(self):
