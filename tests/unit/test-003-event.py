@@ -389,6 +389,7 @@ METHOD:REQUEST
         self.assertEqual(parts[3]['Content-ID'].strip('<>'), attachments[0].uri()[4:])
         self.assertEqual(parts[4].get_content_type(), 'text/plain')
         self.assertEqual(parts[4]['Content-ID'].strip('<>'), attachments[1].uri()[4:])
+        self.assertEqual(event.get_attachment_data(1), 'This is a text file')
 
     def test_024_bogus_itip_data(self):
         # DTSTAMP contains an invalid date/time value

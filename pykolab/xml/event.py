@@ -303,6 +303,22 @@ class Event(object):
     def get_attachments(self):
         return self.event.attachments()
 
+    def get_attachment_data(self, i):
+        vattach = self.event.attachments()
+        if i < len(vattach):
+            attachment = vattach[i]
+            uri = attachment.uri()
+            if uri and uri[0:4] == 'cid:':
+                # get data from MIME part with matching content-id
+                cid = '<' + uri[4:] + '>'
+                for p in self._attachment_parts:
+                    if p['Content-ID'] == cid:
+                        return p.get_payload(decode=True)
+            else:
+                return attachment.data()
+
+        return None
+
     def get_alarms(self):
         return self.event.alarms()
 
