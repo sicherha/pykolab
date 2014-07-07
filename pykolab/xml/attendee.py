@@ -132,8 +132,17 @@ class Attendee(kolabformat.Attendee):
     def get_name(self):
         return self.contactreference.get_name()
 
-    def get_participant_status(self):
-        return self.partStat()
+    def get_displayname(self):
+        name = self.contactreference.get_name()
+        email = self.contactreference.get_email()
+        return "%s <%s>" % (name, email) if name is not None else email
+
+    def get_participant_status(self, translated=False):
+        partstat = self.partStat()
+        if translated:
+            partstat_name_map = dict([(v, k) for (k, v) in self.participant_status_map.iteritems()])
+            return partstat_name_map[partstat] if partstat_name_map.has_key(partstat) else 'UNKNOWN'
+        return partstat
 
     def get_role(self):
         return self.role()

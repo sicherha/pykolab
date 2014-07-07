@@ -10,6 +10,7 @@ import kolabformat
 from pykolab.imap import IMAP
 from wallace import module_resources
 
+from pykolab.translate import _
 from email import message_from_string
 from twisted.trial import unittest
 
@@ -129,6 +130,7 @@ Content-Transfer-Encoding: 8bit
 class TestWallaceInvitationpolicy(unittest.TestCase):
 
     john = None
+    itip_reply_subject = None
 
     @classmethod
     def setUp(self):
@@ -139,6 +141,8 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
     @classmethod
     def setup_class(self, *args, **kw):
+        self.itip_reply_subject = _('"%(summary)s" has been %(status)s')
+
         from tests.functional.purge_users import purge_users
         purge_users()
 
@@ -147,9 +151,10 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             'mail': 'john.doe@example.org',
             'sender': 'John Doe <john.doe@example.org>',
             'dn': 'uid=doe,ou=People,dc=example,dc=org',
+            'preferredlanguage': 'en_US',
             'mailbox': 'user/john.doe@example.org',
             'kolabtargetfolder': 'user/john.doe/Calendar@example.org',
-            'kolabinvitationpolicy': ['ACT_UPDATE', 'ACT_MANUAL']
+            'kolabinvitationpolicy': ['ACT_UPDATE_AND_NOTIFY','ACT_MANUAL']
         }
 
         self.jane = {
@@ -157,14 +162,27 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             'mail': 'jane.manager@example.org',
             'sender': 'Jane Manager <jane.manager@example.org>',
             'dn': 'uid=manager,ou=People,dc=example,dc=org',
+            'preferredlanguage': 'en_US',
             'mailbox': 'user/jane.manager@example.org',
             'kolabtargetfolder': 'user/jane.manager/Calendar@example.org',
-            'kolabinvitationpolicy': ['ACT_ACCEPT_IF_NO_CONFLICT','ACT_REJECT_IF_CONFLICT', 'ACT_UPDATE']
+            'kolabinvitationpolicy': ['ACT_ACCEPT_IF_NO_CONFLICT','ACT_REJECT_IF_CONFLICT','ACT_UPDATE']
+        }
+
+        self.jack = {
+            'displayname': 'Jack Tentative',
+            'mail': 'jack.tentative@example.org',
+            'sender': 'Jack Tentative <jack.tentative@example.org>',
+            'dn': 'uid=tentative,ou=People,dc=example,dc=org',
+            'preferredlanguage': 'en_US',
+            'mailbox': 'user/jack.tentative@example.org',
+            'kolabtargetfolder': 'user/jack.tentative/Calendar@example.org',
+            'kolabinvitationpolicy': ['ACT_TENTATIVE_IF_NO_CONFLICT','ACT_SAVE_TO_CALENDAR','ACT_UPDATE']
         }
 
         from tests.functional.user_add import user_add
-        user_add("John", "Doe", kolabinvitationpolicy=self.john['kolabinvitationpolicy'])
-        user_add("Jane", "Manager", kolabinvitationpolicy=self.jane['kolabinvitationpolicy'])
+        user_add("John", "Doe", kolabinvitationpolicy=self.john['kolabinvitationpolicy'], preferredlanguage=self.john['preferredlanguage'])
+        user_add("Jane", "Manager", kolabinvitationpolicy=self.jane['kolabinvitationpolicy'], preferredlanguage=self.jane['preferredlanguage'])
+        user_add("Jack", "Tentative", kolabinvitationpolicy=self.jack['kolabinvitationpolicy'], preferredlanguage=self.jack['preferredlanguage'])
 
         time.sleep(1)
         from tests.functional.synchronize import synchronize_once
@@ -223,7 +241,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         return uid
 
-    def send_itip_reply(self, uid, mailto, attendee_email, start=None, template=None, summary="test", sequence=1, partstat='ACCEPTED'):
+    def send_itip_reply(self, uid, attendee_email, mailto, start=None, template=None, summary="test", sequence=1, partstat='ACCEPTED'):
         if start is None:
             start = datetime.datetime.now()
 
@@ -256,13 +274,13 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         return uid
 
-    def create_calendar_event(self, start=None, summary="test", sequence=0, user=None, attendee=None):
+    def create_calendar_event(self, start=None, summary="test", sequence=0, user=None, attendees=None):
         if start is None:
             start = datetime.datetime.now(pytz.timezone("Europe/Berlin"))
         if user is None:
             user = self.john
-        if attendee is None:
-            attendee = self.jane
+        if attendees is None:
+            attendees = [self.jane]
 
         end = start + datetime.timedelta(hours=4)
 
@@ -270,7 +288,10 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         event.set_start(start)
         event.set_end(end)
         event.set_organizer(user['mail'], user['displayname'])
-        event.add_attendee(attendee['mail'], attendee['displayname'], role="REQ-PARTICIPANT", participant_status="NEEDS-ACTION", rsvp=True)
+
+        for attendee in attendees:
+            event.add_attendee(attendee['mail'], attendee['displayname'], role="REQ-PARTICIPANT", participant_status="NEEDS-ACTION", rsvp=True)
+
         event.set_summary(summary)
         event.set_sequence(sequence)
 
@@ -372,11 +393,11 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         imap.disconnect()
 
 
-    def test_001_invite_user(self):
+    def test_001_invite_accept_udate(self):
         start = datetime.datetime(2014,8,13, 10,0,0)
         uid = self.send_itip_invitation(self.jane['mail'], start)
 
-        response = self.check_message_received('"test" has been ACCEPTED', self.jane['mail'])
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':_('ACCEPTED') }, self.jane['mail'])
         self.assertIsInstance(response, email.message.Message)
 
         event = self.check_user_calendar_event(self.jane['kolabtargetfolder'], uid)
@@ -394,10 +415,10 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
 
     # @depends on test_001_invite_user
-    def test_002_invite_conflict(self):
+    def test_002_invite_conflict_reject(self):
         uid = self.send_itip_invitation(self.jane['mail'], datetime.datetime(2014,8,13, 11,0,0), summary="test2")
 
-        response = self.check_message_received('"test2" has been DECLINED', self.jane['mail'])
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test2', 'status':_('DECLINED') }, self.jane['mail'])
         self.assertIsInstance(response, email.message.Message)
 
         event = self.check_user_calendar_event(self.jane['kolabtargetfolder'], uid)
@@ -405,11 +426,40 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertEqual(event.get_summary(), "test2")
 
 
-    def test_003_invite_rescheduling(self):
+    def test_003_invite_accept_tentative(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        uid = self.send_itip_invitation(self.jack['mail'], datetime.datetime(2014,7,24, 8,0,0))
+
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':_('TENTATIVE') }, self.jack['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+
+    def test_004_copy_to_calendar(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        self.send_itip_invitation(self.jack['mail'], datetime.datetime(2014,7,29, 8,0,0))
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':_('TENTATIVE') }, self.jack['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+        # send conflicting request to jack
+        uid = self.send_itip_invitation(self.jack['mail'], datetime.datetime(2014,7,29, 10,0,0), summary="test2")
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test2', 'status':_('DECLINED') }, self.jack['mail'])
+        self.assertEqual(response, None, "No reply expected")
+
+        event = self.check_user_calendar_event(self.jack['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_summary(), "test2")
+        self.assertEqual(event.get_attendee(self.jack['mail']).get_participant_status(), kolabformat.PartNeedsAction)
+
+
+    def test_005_invite_rescheduling_accept(self):
+        self.purge_mailbox(self.john['mailbox'])
+
         start = datetime.datetime(2014,8,14, 9,0,0, tzinfo=pytz.timezone("Europe/Berlin"))
         uid = self.send_itip_invitation(self.jane['mail'], start)
 
-        response = self.check_message_received('"test" has been ACCEPTED', self.jane['mail'])
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':_('ACCEPTED') }, self.jane['mail'])
         self.assertIsInstance(response, email.message.Message)
 
         event = self.check_user_calendar_event(self.jane['kolabtargetfolder'], uid)
@@ -422,7 +472,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         new_start = datetime.datetime(2014,8,15, 15,0,0, tzinfo=pytz.timezone("Europe/Berlin"))
         self.send_itip_update(self.jane['mail'], uid, new_start, summary="test", sequence=1)
 
-        response = self.check_message_received('"test" has been ACCEPTED', self.jane['mail'])
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':_('ACCEPTED') }, self.jane['mail'])
         self.assertIsInstance(response, email.message.Message)
 
         event = self.check_user_calendar_event(self.jane['kolabtargetfolder'], uid)
@@ -431,7 +481,13 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertEqual(event.get_sequence(), 1)
 
 
-    def test_004_invitation_reply(self):
+    def test_005_invite_rescheduling_reject(self):
+        pass
+
+
+    def test_006_invitation_reply(self):
+        self.purge_mailbox(self.john['mailbox'])
+
         start = datetime.datetime(2014,8,18, 14,30,0, tzinfo=pytz.timezone("Europe/Berlin"))
         uid = self.create_calendar_event(start, user=self.john)
 
@@ -439,7 +495,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertIsInstance(event, pykolab.xml.Event)
 
         # send a reply from jane to john
-        self.send_itip_reply(uid, self.john['mail'], self.jane['mail'], start=start)
+        self.send_itip_reply(uid, self.jane['mail'], self.john['mail'], start=start)
 
         # check for the updated event in john's calendar
         time.sleep(10)
@@ -450,10 +506,13 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertIsInstance(attendee, pykolab.xml.Attendee)
         self.assertEqual(attendee.get_participant_status(), kolabformat.PartAccepted)
 
-    def test_005_invitation_cancel(self):
+
+    def test_007_invitation_cancel(self):
+        self.purge_mailbox(self.john['mailbox'])
+
         uid = self.send_itip_invitation(self.jane['mail'], summary="cancelled")
 
-        response = self.check_message_received('"cancelled" has been ACCEPTED', self.jane['mail'])
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'cancelled', 'status':_('ACCEPTED') }, self.jane['mail'])
         self.assertIsInstance(response, email.message.Message)
 
         self.send_itip_cancel(self.jane['mail'], uid, summary="cancelled")
@@ -465,4 +524,33 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertEqual(event.get_status(), 'CANCELLED')
         self.assertTrue(event.get_transparency())
 
-        
+
+    def test_008_inivtation_reply_notify(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        start = datetime.datetime(2014,8,12, 16,0,0, tzinfo=pytz.timezone("Europe/Berlin"))
+        uid = self.create_calendar_event(start, user=self.john, attendees=[self.jane, self.jack])
+
+        # send a reply from jane to john
+        self.send_itip_reply(uid, self.jane['mail'], self.john['mail'], start=start)
+
+        # check for notification message
+        # TODO: this notification should be suppressed until jack has replied, too
+        notification = self.check_message_received(_('"%s" has been updated') % ('test'), self.john['mail'])
+        self.assertIsInstance(notification, email.message.Message)
+
+        notification_text = str(notification.get_payload());
+        self.assertIn(self.jane['mail'], notification_text)
+        self.assertIn(_("PENDING"), notification_text)
+
+        self.purge_mailbox(self.john['mailbox'])
+
+        # send a reply from jack to john
+        self.send_itip_reply(uid, self.jack['mail'], self.john['mail'], start=start, partstat='TENTATIVE')
+
+        notification = self.check_message_received(_('"%s" has been updated') % ('test'), self.john['mail'])
+        self.assertIsInstance(notification, email.message.Message)
+
+        notification_text = str(notification.get_payload());
+        self.assertIn(self.jack['mail'], notification_text)
+        self.assertNotIn(_("PENDING"), notification_text)

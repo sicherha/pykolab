@@ -34,6 +34,7 @@ import modules
 import pykolab
 import kolabformat
 
+from pykolab import utils
 from pykolab.auth import Auth
 from pykolab.conf import Conf
 from pykolab.imap import IMAP
@@ -45,21 +46,22 @@ from pykolab.itip import send_reply
 from pykolab.translate import _
 
 # define some contstants used in the code below
-MOD_IF_AVAILABLE   = 32
-MOD_IF_CONFLICT    = 64
-MOD_TENTATIVE      = 128
-MOD_NOTIFY         = 256
+COND_IF_AVAILABLE  = 32
+COND_IF_CONFLICT   = 64
+COND_TENTATIVE     = 128
+COND_NOTIFY        = 256
 ACT_MANUAL         = 1
 ACT_ACCEPT         = 2
 ACT_DELEGATE       = 4
 ACT_REJECT         = 8
 ACT_UPDATE         = 16
-ACT_TENTATIVE                = ACT_ACCEPT + MOD_TENTATIVE
-ACT_ACCEPT_IF_NO_CONFLICT    = ACT_ACCEPT + MOD_IF_AVAILABLE
-ACT_TENTATIVE_IF_NO_CONFLICT = ACT_ACCEPT + MOD_TENTATIVE + MOD_IF_AVAILABLE
-ACT_DELEGATE_IF_CONFLICT     = ACT_DELEGATE + MOD_IF_CONFLICT
-ACT_REJECT_IF_CONFLICT       = ACT_REJECT + MOD_IF_CONFLICT
-ACT_UPDATE_AND_NOTIFY        = ACT_UPDATE + MOD_NOTIFY
+ACT_TENTATIVE                = ACT_ACCEPT + COND_TENTATIVE
+ACT_ACCEPT_IF_NO_CONFLICT    = ACT_ACCEPT + COND_IF_AVAILABLE
+ACT_TENTATIVE_IF_NO_CONFLICT = ACT_ACCEPT + COND_TENTATIVE + COND_IF_AVAILABLE
+ACT_DELEGATE_IF_CONFLICT     = ACT_DELEGATE + COND_IF_CONFLICT
+ACT_REJECT_IF_CONFLICT       = ACT_REJECT + COND_IF_CONFLICT
+ACT_UPDATE_AND_NOTIFY        = ACT_UPDATE + COND_NOTIFY
+ACT_SAVE_TO_CALENDAR         = 512
 
 FOLDER_TYPE_ANNOTATION = '/vendor/kolab/folder-type'
 
@@ -77,7 +79,8 @@ policy_name_map = {
     'ACT_REJECT':                   ACT_REJECT,
     'ACT_REJECT_IF_CONFLICT':       ACT_REJECT_IF_CONFLICT,
     'ACT_UPDATE':                   ACT_UPDATE,
-    'ACT_UPDATE_AND_NOTIFY':        ACT_UPDATE_AND_NOTIFY
+    'ACT_UPDATE_AND_NOTIFY':        ACT_UPDATE_AND_NOTIFY,
+    'ACT_SAVE_TO_CALENDAR':         ACT_SAVE_TO_CALENDAR
 }
 
 policy_value_map = dict([(v, k) for (k, v) in policy_name_map.iteritems()])
@@ -241,7 +244,11 @@ def execute(*args, **kw):
         return filepath
 
     receiving_user = auth.get_entry_attributes(None, recipient_user_dn, ['*'])
-    log.debug(_("Receiving user: %r") % (receiving_user), level=9)
+    log.debug(_("Receiving user: %r") % (receiving_user), level=8)
+
+    # change gettext language to the preferredlanguage setting of the receiving user
+    if receiving_user.has_key('preferredlanguage'):
+        pykolab.translate.setUserLanguage(receiving_user['preferredlanguage'])
 
     # find user's kolabInvitationPolicy settings and the matching policy values
     sender_domain = str(sender_email).split('@')[-1]
@@ -318,9 +325,9 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
 
     # if scheduling: check availability
     if scheduling_required:
-        if policy & (MOD_IF_AVAILABLE | MOD_IF_CONFLICT):
+        if policy & (COND_IF_AVAILABLE | COND_IF_CONFLICT):
             condition_fulfilled = check_availability(itip_event, receiving_user)
-        if policy & MOD_IF_CONFLICT:
+        if policy & COND_IF_CONFLICT:
             condition_fulfilled = not condition_fulfilled
 
         log.debug(_("Precondition for event %r fulfilled: %r") % (itip_event['uid'], condition_fulfilled), level=5)
@@ -329,15 +336,15 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
     if rsvp or scheduling_required:
         respond_with = None
         if policy & ACT_ACCEPT and condition_fulfilled:
-            respond_with = 'TENTATIVE' if policy & MOD_TENTATIVE else 'ACCEPTED'
+            respond_with = 'TENTATIVE' if policy & COND_TENTATIVE else 'ACCEPTED'
 
         elif policy & ACT_REJECT and condition_fulfilled:
             respond_with = 'DECLINED'
             # TODO: only save declined invitation when a certain config option is set?
 
         elif policy & ACT_DELEGATE and condition_fulfilled:
-            # TODO: save and delegate (but to whom?)
-            pass
+            # TODO: delegate (but to whom?)
+            return None
 
         # send iTip reply
         if respond_with is not None:
@@ -349,9 +356,9 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
             send_reply(recipient_email, itip_event, invitation_response_text(),
                 subject=_('"%(summary)s" has been %(status)s'))
 
-        # elif partstat == kolabformat.PartNeedsAction and conf.get('wallace','invitationpolicy_always_copy_to_calendar'):
-            # TODO: copy the invitation into the user's calendar with unchanged PARTSTAT
-            # TODO: or use ACT_POSTPONE for this?
+        elif policy & ACT_SAVE_TO_CALENDAR:
+            # copy the invitation into the user's calendar with unchanged PARTSTAT
+            save_event = True
 
         else:
             # policy doesn't match, pass on to next one
@@ -413,7 +420,9 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
 
             # update the organizer's copy of the event
             if update_event(existing, receiving_user):
-                # TODO: send (consolidated) notification to organizer if policy & ACT_UPDATE_AND_NOTIFY:
+                if policy & COND_NOTIFY:
+                    send_reply_notification(existing, receiving_user)
+
                 # TODO: update all other attendee's copies if conf.get('wallace','invitationpolicy_autoupdate_other_attendees_on_reply'):
                 return MESSAGE_PROCESSED
 
@@ -740,6 +749,65 @@ def delete_event(existing):
         imap.imap.m.store(num, '+FLAGS', '\\Deleted')
 
     imap.imap.m.expunge()
+
+
+def send_reply_notification(event, receiving_user):
+    """
+        Send a (consolidated) notification about the current participant status to organizer
+    """
+    import smtplib
+    from email.MIMEText import MIMEText
+    from email.Utils import formatdate
+
+    log.debug(_("Compose participation status summary for event %r to user %r") % (
+        event.uid, receiving_user['mail']
+    ), level=8)
+
+    partstats = { 'ACCEPTED':[], 'TENTATIVE':[], 'DECLINED':[], 'DELEGATED':[], 'PENDING':[] }
+    for attendee in event.get_attendees():
+        parstat = attendee.get_participant_status(True)
+        if partstats.has_key(parstat):
+            partstats[parstat].append(attendee.get_displayname())
+        else:
+            partstats['PENDING'].append(attendee.get_displayname())
+
+    # TODO: for every attendee, look-up its kolabinvitationpolicy and skip notification
+    # until we got replies from all automatically responding attendees
+
+    roundup = ''
+    for status,attendees in partstats.iteritems():
+        if len(attendees) > 0:
+            roundup += "\n" + _(status) + ":\n" + "\n".join(attendees) + "\n"
+
+    message_text = """
+        The event '%(summary)s' at %(start)s has been updated in your calendar.
+        %(roundup)s
+    """ % {
+        'summary': event.get_summary(),
+        'start': event.get_start().strftime('%Y-%m-%d %H:%M %Z'),
+        'roundup': roundup
+    }
+
+    # compose mime message
+    msg = MIMEText(utils.stripped_message(message_text))
+
+    msg['To'] = receiving_user['mail']
+    msg['Date'] = formatdate(localtime=True)
+    msg['Subject'] = _('"%s" has been updated') % (event.get_summary())
+
+    organizer = event.get_organizer()
+    orgemail = organizer.email()
+    orgname = organizer.name()
+
+    msg['From'] = '"%s" <%s>' % (orgname, orgemail) if orgname else orgemail
+
+    smtp = smtplib.SMTP("localhost", 10027)
+
+    if conf.debuglevel > 8:
+        smtp.set_debuglevel(True)
+
+    smtp.sendmail(orgemail, receiving_user['mail'], msg.as_string())
+    smtp.quit()
 
 
 def invitation_response_text():
