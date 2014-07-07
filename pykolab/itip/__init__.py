@@ -100,6 +100,9 @@ def objects_from_message(message, objname, methods=None):
 
                     itip['attendees'] = c['attendee']
 
+                    if itip.has_key('attendee') and not isinstance(itip['attendees'], list):
+                        itip['attendees'] = [c['attendee']]
+
                     if c.has_key('resources'):
                         itip['resources'] = c['resources']
 
