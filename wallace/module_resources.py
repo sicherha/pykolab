@@ -809,7 +809,7 @@ def get_resource_owner(resource):
         if not isinstance(collections, list):
             collections = [ collections ]
 
-        for collection in collections:
+        for dn,collection in collections:
             if collection.has_key('owner') and isinstance(collection['owner'], list):
                 owners += collection['owner']
             elif collection.has_key('owner'):

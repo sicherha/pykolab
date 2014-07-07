@@ -127,7 +127,7 @@ class TestWallaceResources(unittest.TestCase):
     def _mock_search_entry_by_attribute(self, attr, value, **kw):
         results = []
         if value == "cn=Room 101,ou=Resources,dc=example,dc=org":
-            results.append({ 'dn': 'cn=Rooms,ou=Resources,dc=example,dc=org', attr: value, 'owner': 'uid=doe,ou=People,dc=example,dc=org' })
+            results.append(('cn=Rooms,ou=Resources,dc=example,dc=org', { attr: value, 'owner': 'uid=doe,ou=People,dc=example,dc=org' }))
         return results
 
     def _mock_smtp_init(self, host=None, port=None, local_hostname=None, timeout=0):
