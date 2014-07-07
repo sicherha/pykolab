@@ -303,7 +303,8 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
     nonpart = receiving_attendee.get_role() == kolabformat.NonParticipant
     partstat = receiving_attendee.get_participant_status()
     save_event = not nonpart or not partstat == kolabformat.PartNeedsAction
-    scheduling_required = receiving_attendee.get_rsvp() or partstat == kolabformat.PartNeedsAction
+    rsvp = receiving_attendee.get_rsvp()
+    scheduling_required = rsvp or partstat == kolabformat.PartNeedsAction
     condition_fulfilled = True
 
     # find existing event in user's calendar
@@ -325,7 +326,7 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
         log.debug(_("Precondition for event %r fulfilled: %r") % (itip_event['uid'], condition_fulfilled), level=5)
 
     # if RSVP, send an iTip REPLY
-    if scheduling_required:
+    if rsvp or scheduling_required:
         respond_with = None
         if policy & ACT_ACCEPT and condition_fulfilled:
             respond_with = 'TENTATIVE' if policy & MOD_TENTATIVE else 'ACCEPTED'
@@ -347,6 +348,10 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
             receiving_attendee.set_participant_status(respond_with)
             send_reply(recipient_email, itip_event, invitation_response_text(),
                 subject=_('"%(summary)s" has been %(status)s'))
+
+        # elif partstat == kolabformat.PartNeedsAction and conf.get('wallace','invitationpolicy_always_copy_to_calendar'):
+            # TODO: copy the invitation into the user's calendar with unchanged PARTSTAT
+            # TODO: or use ACT_POSTPONE for this?
 
         else:
             # policy doesn't match, pass on to next one
@@ -407,8 +412,7 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
                 return MESSAGE_FORWARD
 
             # update the organizer's copy of the event
-            delete_event(existing)
-            if store_event(existing, receiving_user, existing._imap_folder):
+            if update_event(existing, receiving_user):
                 # TODO: send (consolidated) notification to organizer if policy & ACT_UPDATE_AND_NOTIFY:
                 # TODO: update all other attendee's copies if conf.get('wallace','invitationpolicy_autoupdate_other_attendees_on_reply'):
                 return MESSAGE_PROCESSED
@@ -430,9 +434,23 @@ def process_itip_cancel(itip_event, policy, recipient_email, sender_email, recei
         log.info(_("Pass cancellation for manual processing"))
         return MESSAGE_FORWARD
 
-    # update_event_in_user_calendar(itip_event, receiving_user)
+    # auto-update the local copy with STATUS=CANCELLED
+    if policy & ACT_UPDATE:
+        # find existing event in user's calendar
+        existing = find_existing_event(itip_event, receiving_user)
 
-    return MESSAGE_PROCESSED
+        if existing:
+            existing.set_status('CANCELLED')
+            existing.set_transparency(True)
+            if update_event(existing, receiving_user):
+                # TODO: send cancellation notification if policy & ACT_UPDATE_AND_NOTIFY: ?
+                return MESSAGE_PROCESSED
+
+        else:
+            log.error(_("The event referred by this reply was not found in the user's calendars. Forwarding to Inbox."))
+            return MESSAGE_FORWARD
+
+    return None
 
 
 def user_dn_from_email_address(email_address):
@@ -657,6 +675,17 @@ def check_availability(itip_event, receiving_user):
     itip_event['_conflicts'] = conflict
 
     return not conflict
+
+
+def update_event(event, user_rec):
+    """
+        Update the given event in IMAP (i.e. delete + append)
+    """
+    if hasattr(event, '_imap_folder'):
+        delete_event(event)
+        return store_event(event, user_rec, event._imap_folder)
+
+    return False
 
 
 def store_event(event, user_rec, targetfolder=None):

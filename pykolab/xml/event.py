@@ -433,6 +433,9 @@ class Event(object):
     def get_sequence(self):
         return self.event.sequence()
 
+    def get_transparency(self):
+        return self.event.transparency()
+
     def set_attendee_participant_status(self, attendee, status):
         """
             Set the participant status of an attendee to status.
@@ -663,6 +666,9 @@ class Event(object):
 
     def set_uid(self, uid):
         self.event.setUid(str(uid))
+
+    def set_transparency(self, transp):
+        return self.event.setTransparency(transp)
 
     def __str__(self):
         event_xml = kolabformat.writeEvent(self.event)

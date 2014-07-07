@@ -159,7 +159,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             'dn': 'uid=manager,ou=People,dc=example,dc=org',
             'mailbox': 'user/jane.manager@example.org',
             'kolabtargetfolder': 'user/jane.manager/Calendar@example.org',
-            'kolabinvitationpolicy': ['ACT_ACCEPT_IF_NO_CONFLICT','ACT_REJECT_IF_CONFLICT']
+            'kolabinvitationpolicy': ['ACT_ACCEPT_IF_NO_CONFLICT','ACT_REJECT_IF_CONFLICT', 'ACT_UPDATE']
         }
 
         from tests.functional.user_add import user_add
@@ -240,16 +240,19 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             },
             mailto,
             attendee_email,
-            method="REPLY")
+            method='REPLY')
 
         return uid
 
-    def send_itip_cancel(self, resource_email, uid):
-        self.send_message(itip_cancellation % (
-                uid,
-                resource_email
-            ),
-            resource_email)
+    def send_itip_cancel(self, attendee_email, uid, summary="test", sequence=1):
+        self.send_message(itip_cancellation % {
+                'uid': uid,
+                'mailto': attendee_email,
+                'summary': summary,
+                'sequence': sequence,
+            },
+            attendee_email,
+            method='CANCEL')
 
         return uid
 
@@ -446,4 +449,20 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         attendee = event.get_attendee(self.jane['mail'])
         self.assertIsInstance(attendee, pykolab.xml.Attendee)
         self.assertEqual(attendee.get_participant_status(), kolabformat.PartAccepted)
+
+    def test_005_invitation_cancel(self):
+        uid = self.send_itip_invitation(self.jane['mail'], summary="cancelled")
+
+        response = self.check_message_received('"cancelled" has been ACCEPTED', self.jane['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+        self.send_itip_cancel(self.jane['mail'], uid, summary="cancelled")
+
+        time.sleep(10)
+        event = self.check_user_calendar_event(self.jane['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_summary(), "cancelled")
+        self.assertEqual(event.get_status(), 'CANCELLED')
+        self.assertTrue(event.get_transparency())
+
         
