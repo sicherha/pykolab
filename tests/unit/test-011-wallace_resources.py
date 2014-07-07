@@ -302,29 +302,29 @@ class TestWallaceResources(unittest.TestCase):
         return None
 
     def test_001_itip_events_from_message(self):
-        itips1 = module_resources.itip_events_from_message(message_from_string(itip_multipart))
+        itips1 = pykolab.itip.events_from_message(message_from_string(itip_multipart))
         self.assertEqual(len(itips1), 1, "Multipart iTip message with text/calendar")
         self.assertEqual(itips1[0]['method'], "REQUEST", "iTip request method property")
 
-        itips2 = module_resources.itip_events_from_message(message_from_string(itip_non_multipart))
+        itips2 = pykolab.itip.events_from_message(message_from_string(itip_non_multipart))
         self.assertEqual(len(itips2), 1, "Detect non-multipart iTip messages")
 
-        itips3 = module_resources.itip_events_from_message(message_from_string(itip_application_ics))
+        itips3 = pykolab.itip.events_from_message(message_from_string(itip_application_ics))
         self.assertEqual(len(itips3), 1, "Multipart iTip message with application/ics attachment")
 
-        itips4 = module_resources.itip_events_from_message(message_from_string(itip_google_multipart))
+        itips4 = pykolab.itip.events_from_message(message_from_string(itip_google_multipart))
         self.assertEqual(len(itips4), 1, "Multipart iTip message from Google")
 
-        itips5 = module_resources.itip_events_from_message(message_from_string(itip_empty))
+        itips5 = pykolab.itip.events_from_message(message_from_string(itip_empty))
         self.assertEqual(len(itips5), 0, "Simple plain text message")
 
         # invalid itip blocks
-        self.assertRaises(Exception, module_resources.itip_events_from_message, message_from_string(itip_multipart.replace("BEGIN:VEVENT", "")))
+        self.assertRaises(Exception, pykolab.itip.events_from_message, message_from_string(itip_multipart.replace("BEGIN:VEVENT", "")))
 
-        itips6 = module_resources.itip_events_from_message(message_from_string(itip_multipart.replace("DTSTART;", "X-DTSTART;")))
+        itips6 = pykolab.itip.events_from_message(message_from_string(itip_multipart.replace("DTSTART;", "X-DTSTART;")))
         self.assertEqual(len(itips6), 0, "Event with not DTSTART")
 
-        itips7 = module_resources.itip_events_from_message(message_from_string(itip_non_multipart.replace("METHOD:REQUEST", "METHOD:PUBLISH").replace("method=REQUEST", "method=PUBLISH")))
+        itips7 = pykolab.itip.events_from_message(message_from_string(itip_non_multipart.replace("METHOD:REQUEST", "METHOD:PUBLISH").replace("method=REQUEST", "method=PUBLISH")))
         self.assertEqual(len(itips7), 0, "Invalid METHOD")
 
 
@@ -337,7 +337,7 @@ class TestWallaceResources(unittest.TestCase):
 
     def test_003_resource_records_from_itip_events(self):
         message = message_from_string(itip_multipart)
-        itips = module_resources.itip_events_from_message(message)
+        itips = pykolab.itip.events_from_message(message)
 
         res = module_resources.resource_records_from_itip_events(itips)
         self.assertEqual(len(res), 2, "Return all attendee resources");
@@ -365,7 +365,7 @@ class TestWallaceResources(unittest.TestCase):
 
 
     def test_005_send_response_accept(self):
-        itip_event = module_resources.itip_events_from_message(message_from_string(itip_non_multipart))
+        itip_event = pykolab.itip.events_from_message(message_from_string(itip_non_multipart))
         module_resources.send_response("resource-collection-car@example.org", itip_event)
 
         self.assertEqual(len(self.smtplog), 1);
@@ -384,7 +384,7 @@ class TestWallaceResources(unittest.TestCase):
 
     def test_006_send_response_delegate(self):
         # delegate resource-collection-car@example.org => resource-car-audi-a4@example.org
-        itip_event = module_resources.itip_events_from_message(message_from_string(itip_non_multipart))[0]
+        itip_event = pykolab.itip.events_from_message(message_from_string(itip_non_multipart))[0]
         itip_event['xml'].delegate('resource-collection-car@example.org', 'resource-car-audi-a4@example.org')
         itip_event['xml'].set_attendee_participant_status(itip_event['xml'].get_attendee('resource-car-audi-a4@example.org'), "ACCEPTED")
 
