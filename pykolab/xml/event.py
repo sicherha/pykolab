@@ -6,6 +6,7 @@ import kolabformat
 import pytz
 import time
 import uuid
+import base64
 
 import pykolab
 from pykolab import constants
@@ -13,6 +14,7 @@ from pykolab import utils
 from pykolab.xml import utils as xmlutils
 from pykolab.translate import _
 
+from os import path
 from attendee import Attendee
 from contact_reference import ContactReference
 
@@ -23,6 +25,21 @@ def event_from_ical(string):
 
 def event_from_string(string):
     return Event(from_string=string)
+
+def event_from_message(message):
+    event = None
+    if message.is_multipart():
+        for part in message.walk():
+            if part.get_content_type() == "application/calendar+xml":
+                payload = part.get_payload(decode=True)
+                event = event_from_string(payload)
+
+            # append attachment parts to Event object
+            elif event and part.has_key('Content-ID'):
+                event._attachment_parts.append(part)
+
+    return event
+
 
 class Event(object):
     status_map = {
@@ -40,6 +57,7 @@ class Event(object):
     def __init__(self, from_ical="", from_string=""):
         self._attendees = []
         self._categories = []
+        self._attachment_parts = []
 
         if from_ical == "":
             if from_string == "":
@@ -751,14 +769,49 @@ class Event(object):
 
         msg["Subject"] = self.get_uid()
 
-        part.set_payload(str(self))
+        # extract attachment data into separate MIME parts
+        vattach = self.event.attachments()
+        i = 0
+        for attach in vattach:
+            if attach.uri():
+                continue
 
-        # TODO: extract attachment data to separate MIME parts
+            mimetype = attach.mimetype()
+            (primary, seconday) = mimetype.split('/')
+            name = attach.label()
+            if not name:
+                name = 'unknown.x'
+
+            (basename, suffix) = path.splitext(name)
+            t = datetime.datetime.now()
+            cid = "%s.%s.%s%s" % (basename, time.mktime(t.timetuple()), t.microsecond + len(self._attachment_parts), suffix)
+
+            p = MIMEBase(primary, seconday)
+            p.add_header('Content-Disposition', 'attachment', filename=name)
+            p.add_header('Content-Transfer-Encoding', 'base64')
+            p.add_header('Content-ID', '<' + cid + '>')
+            p.set_payload(base64.b64encode(attach.data()))
+
+            self._attachment_parts.append(p)
+
+            # modify attachment object
+            attach.setData('', mimetype)
+            attach.setUri('cid:' + cid, mimetype)
+            vattach[i] = attach
+            i += 1
+
+        self.event.setAttachments(vattach)
+
+        part.set_payload(str(self))
 
         part.add_header('Content-Disposition', 'attachment; filename="kolab.xml"')
         part.replace_header('Content-Transfer-Encoding', '8bit')
 
         msg.attach(part)
+
+        # append attachment parts
+        for p in self._attachment_parts:
+            msg.attach(p)
 
         return msg
 

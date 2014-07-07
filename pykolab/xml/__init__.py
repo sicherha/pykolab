@@ -9,6 +9,7 @@ from event import EventIntegrityError
 from event import InvalidEventDateError
 from event import event_from_ical
 from event import event_from_string
+from event import event_from_message
 
 from utils import to_dt
 
