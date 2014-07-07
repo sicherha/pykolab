@@ -150,7 +150,6 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.john = {
             'displayname': 'John Doe',
             'mail': 'john.doe@example.org',
-            'sender': 'John Doe <john.doe@example.org>',
             'dn': 'uid=doe,ou=People,dc=example,dc=org',
             'preferredlanguage': 'en_US',
             'mailbox': 'user/john.doe@example.org',
@@ -161,7 +160,6 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.jane = {
             'displayname': 'Jane Manager',
             'mail': 'jane.manager@example.org',
-            'sender': 'Jane Manager <jane.manager@example.org>',
             'dn': 'uid=manager,ou=People,dc=example,dc=org',
             'preferredlanguage': 'en_US',
             'mailbox': 'user/jane.manager@example.org',
@@ -172,7 +170,6 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.jack = {
             'displayname': 'Jack Tentative',
             'mail': 'jack.tentative@example.org',
-            'sender': 'Jack Tentative <jack.tentative@example.org>',
             'dn': 'uid=tentative,ou=People,dc=example,dc=org',
             'preferredlanguage': 'en_US',
             'mailbox': 'user/jack.tentative@example.org',
@@ -486,7 +483,32 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
 
     def test_005_invite_rescheduling_reject(self):
-        pass
+        self.purge_mailbox(self.john['mailbox'])
+        self.purge_mailbox(self.jack['kolabtargetfolder'])
+
+        start = datetime.datetime(2014,8,9, 17,0,0, tzinfo=pytz.timezone("Europe/Berlin"))
+        uid = self.send_itip_invitation(self.jack['mail'], start)
+
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':_('TENTATIVE') }, self.jack['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+        # send update with new but conflicting date and incremented sequence
+        self.create_calendar_event(datetime.datetime(2014,8,10, 10,30,0, tzinfo=pytz.timezone("Europe/Berlin")), user=self.jack)
+        new_start = datetime.datetime(2014,8,10, 9,30,0, tzinfo=pytz.timezone("Europe/Berlin"))
+        self.send_itip_update(self.jack['mail'], uid, new_start, summary="test (updated)", sequence=1)
+
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':_('DECLINED') }, self.jack['mail'])
+        self.assertEqual(response, None)
+
+        # verify re-scheduled copy in jack's calendar with NEEDS-ACTION
+        event = self.check_user_calendar_event(self.jack['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_start(), new_start)
+        self.assertEqual(event.get_sequence(), 1)
+
+        attendee = event.get_attendee(self.jack['mail'])
+        self.assertTrue(attendee.get_rsvp())
+        self.assertEqual(attendee.get_participant_status(), kolabformat.PartNeedsAction)
 
 
     def test_006_invitation_reply(self):
@@ -563,3 +585,4 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         notification_text = str(notification.get_payload());
         self.assertIn(self.jack['mail'], notification_text)
         self.assertNotIn(_("PENDING"), notification_text)
+

@@ -283,10 +283,11 @@ def execute(*args, **kw):
     if done == MESSAGE_PROCESSED:
         log.debug(_("iTip message %r consumed by the invitationpolicy module") % (message.get('Message-ID')), level=5)
         os.unlink(filepath)
-        filepath = None
+        cleanup()
+        return None
 
-    cleanup()
-    return filepath
+    # accept message into the destination inbox
+    accept(filepath)
 
 
 def process_itip_request(itip_event, policy, recipient_email, sender_email, receiving_user):
@@ -357,7 +358,8 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
                 subject=_('"%(summary)s" has been %(status)s'))
 
         elif policy & ACT_SAVE_TO_CALENDAR:
-            # copy the invitation into the user's calendar with unchanged PARTSTAT
+            # copy the invitation into the user's calendar with PARTSTAT=NEEDS-ACTION
+            itip_event['xml'].set_attendee_participant_status(receiving_attendee, 'NEEDS-ACTION')
             save_event = True
 
         else:
@@ -801,7 +803,11 @@ def send_reply_notification(event, receiving_user):
     if conf.debuglevel > 8:
         smtp.set_debuglevel(True)
 
-    smtp.sendmail(orgemail, receiving_user['mail'], msg.as_string())
+    try:
+        smtp.sendmail(orgemail, receiving_user['mail'], msg.as_string())
+    except Exception, e:
+        log.error(_("SMTP sendmail error: %r") % (e))
+
     smtp.quit()
 
 

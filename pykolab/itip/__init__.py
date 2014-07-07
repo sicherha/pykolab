@@ -197,12 +197,8 @@ def send_reply(from_address, itip_events, response_text, subject=None):
     """
 
     import smtplib
-    smtp = smtplib.SMTP("localhost", 10027)
 
     conf = pykolab.getConf()
-
-    if conf.debuglevel > 8:
-        smtp.set_debuglevel(True)
 
     if isinstance(itip_events, dict):
         itip_events = [ itip_events ]
@@ -217,12 +213,25 @@ def send_reply(from_address, itip_events, response_text, subject=None):
         if subject is not None:
             subject = subject % { 'summary':event_summary, 'status':_(participant_status), 'name':attendee.get_name() }
 
-        message = itip_event['xml'].to_message_itip(from_address,
-            method="REPLY",
-            participant_status=participant_status,
-            message_text=message_text,
-            subject=subject
-        )
-        smtp.sendmail(message['From'], message['To'], message.as_string())
+        try:
+            message = itip_event['xml'].to_message_itip(from_address,
+                method="REPLY",
+                participant_status=participant_status,
+                message_text=message_text,
+                subject=subject
+            )
+        except Exception, e:
+            log.error(_("Failed to compose iTip reply message: %r") % (e))
+            return
+
+        smtp = smtplib.SMTP("localhost", 10027)
+
+        if conf.debuglevel > 8:
+            smtp.set_debuglevel(True)
+
+        try:
+            smtp.sendmail(message['From'], message['To'], message.as_string())
+        except Exception, e:
+            log.error(_("SMTP sendmail error: %r") % (e))
 
     smtp.quit()
