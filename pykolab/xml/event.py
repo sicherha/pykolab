@@ -31,6 +31,12 @@ class Event(object):
             "CANCELLED": kolabformat.StatusCancelled,
         }
 
+    classification_map = {
+            "PUBLIC": kolabformat.ClassPublic,
+            "PRIVATE": kolabformat.ClassPrivate,
+            "CONFIDENTIAL": kolabformat.ClassConfidential,
+        }
+
     def __init__(self, from_ical="", from_string=""):
         self._attendees = []
         self._categories = []
@@ -56,7 +62,7 @@ class Event(object):
         self.event.setAttendees(self._attendees)
 
     def add_category(self, category):
-        self._categories.append(category)
+        self._categories.append(str(category))
         self.event.setCategories(self._categories)
 
     def add_exception_date(self, _datetime):
@@ -166,11 +172,17 @@ class Event(object):
         self.event.setAttendees(self._attendees)
 
     def from_ical(self, ical):
-        self.event = kolabformat.Event()
         if hasattr(icalendar.Event, 'from_ical'):
             ical_event = icalendar.Event.from_ical(ical)
         elif hasattr(icalendar.Event, 'from_string'):
             ical_event = icalendar.Event.from_string(ical)
+
+        # use the libkolab calendaring bindings to load the full iCal data
+        if ical_event.has_key('RRULE') or ical_event.has_key('ATTACH') \
+             or [part for part in ical_event.walk() if part.name == 'VALARM']:
+            self._xml_from_ical(ical)
+        else:
+            self.event = kolabformat.Event()
 
         # TODO: Clause the timestamps for zulu suffix causing datetime.datetime
         # to fail substitution.
@@ -188,13 +200,10 @@ class Event(object):
             if ical_event.has_key(attr):
                 self.set_from_ical(attr.lower(), ical_event[attr])
 
-        # HACK: use calendaring::EventCal::fromICal() to parse RRULEs
-        if ical_event.has_key('RRULE'):
-            from kolab.calendaring import EventCal
-            event_xml = EventCal()
-            event_xml.fromICal("BEGIN:VCALENDAR\nVERSION:2.0\n" + ical + "\nEND:VCALENDAR")
-            self.event.setRecurrenceRule(event_xml.recurrenceRule())
-            self.event.setExceptionDates(event_xml.exceptionDates())
+    def _xml_from_ical(self, ical):
+        from kolab.calendaring import EventCal
+        self.event = EventCal()
+        self.event.fromICal("BEGIN:VCALENDAR\nVERSION:2.0\n" + ical + "\nEND:VCALENDAR")
 
     def get_attendee_participant_status(self, attendee):
         return attendee.get_participant_status()
@@ -234,10 +243,10 @@ class Event(object):
         return self._attendees
 
     def get_categories(self):
-        return self.event.categories()
+        return [str(c) for c in self.event.categories()]
 
     def get_classification(self):
-        return self.classification()
+        return self.event.classification()
 
     def get_created(self):
         try:
@@ -272,6 +281,12 @@ class Event(object):
 
     def get_exception_dates(self):
         return map(lambda _: xmlutils.from_cdatetime(_, True), self.event.exceptionDates())
+
+    def get_attachments(self):
+        return self.event.attachments()
+
+    def get_alarms(self):
+        return self.event.alarms()
 
     def get_ical_attendee(self):
         # TODO: Formatting, aye? See also the example snippet:
@@ -393,6 +408,9 @@ class Event(object):
     def get_ical_sequence(self):
         return str(self.event.sequence()) if self.event.sequence() else None
 
+    def get_location(self):
+        return self.event.location()
+
     def get_lastmodified(self):
         try:
             _datetime = self.event.lastModified()
@@ -433,6 +451,9 @@ class Event(object):
     def get_sequence(self):
         return self.event.sequence()
 
+    def get_url(self):
+        return self.event.url()
+
     def get_transparency(self):
         return self.event.transparency()
 
@@ -449,8 +470,21 @@ class Event(object):
         attendee.set_participant_status(status)
         self.event.setAttendees(self._attendees)
 
+    def set_status(self, status):
+        if status in self.status_map.keys():
+            self.event.setStatus(self.status_map[status])
+        elif status in self.status_map.values():
+            self.event.setStatus(status)
+        else:
+            raise ValueError, _("Invalid status %r") % (status)
+
     def set_classification(self, classification):
-        self.event.setClassification(classification)
+        if classification in self.classification_map.keys():
+            self.event.setClassification(self.classification_map[classification])
+        elif classification in self.classification_map.values():
+            self.event.setClassification(status)
+        else:
+            raise ValueError, _("Invalid classification %r") % (classification)
 
     def set_created(self, _datetime=None):
         if _datetime == None:
@@ -459,7 +493,7 @@ class Event(object):
         self.event.setCreated(xmlutils.to_cdatetime(_datetime, False))
 
     def set_description(self, description):
-        self.event.setDescription(description)
+        self.event.setDescription(str(description))
 
     def set_dtstamp(self, _datetime):
         self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False))
@@ -486,26 +520,27 @@ class Event(object):
             self.add_exception_date(_datetime)
 
     def set_from_ical(self, attr, value):
+        ical_setter = 'set_ical_' + attr
+        default_setter = 'set_' + attr
+
         if attr == "dtend":
             self.set_ical_dtend(value.dt)
         elif attr == "dtstart":
             self.set_ical_dtstart(value.dt)
-        elif attr == "duration":
-            self.set_ical_duration(value)
-        elif attr == "status":
-            self.set_ical_status(value)
-        elif attr == "summary":
-            self.set_ical_summary(value)
-        elif attr == "priority":
-            self.set_ical_priority(value)
-        elif attr == "sequence":
-            self.set_ical_sequence(value)
-        elif attr == "attendee":
-            self.set_ical_attendee(value)
-        elif attr == "organizer":
-            self.set_ical_organizer(value)
-        elif attr == "uid":
-            self.set_ical_uid(value)
+        elif attr == "dtstamp":
+            self.set_ical_dtstamp(value.dt)
+        elif attr == "created":
+            self.set_created(value.dt)
+        elif attr == "lastmodified":
+            self.set_lastmodified(value.dt)
+        elif attr == "categories":
+            self.add_category(value)
+        elif attr == "class":
+            self.set_classification(value)
+        elif hasattr(self, ical_setter):
+            getattr(self, ical_setter)(value)
+        elif hasattr(self, default_setter):
+            getattr(self, default_setter)(value)
 
     def set_ical_attendee(self, _attendee):
         if isinstance(_attendee, basestring):
@@ -556,6 +591,9 @@ class Event(object):
     def set_ical_dtstart(self, dtstart):
         self.set_start(dtstart)
 
+    def set_ical_lastmodified(self, lastmod):
+        self.set_lastmodified(lastmod)
+
     def set_ical_duration(self, value):
         if value.dt:
             duration = kolabformat.Duration(value.dt.days, 0, 0, value.dt.seconds, False)
@@ -582,14 +620,6 @@ class Event(object):
     def set_ical_sequence(self, sequence):
         self.set_sequence(sequence)
 
-    def set_ical_status(self, status):
-        if status in self.status_map.keys():
-            self.event.setStatus(self.status_map[status])
-        elif status in self.status_map.values():
-            self.event.setStatus(status)
-        else:
-            raise ValueError, _("Invalid status %r") % (status)
-
     def set_ical_summary(self, summary):
         self.set_summary(str(summary))
 
@@ -614,7 +644,7 @@ class Event(object):
         self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False))
 
     def set_location(self, location):
-        self.event.setLocation(location)
+        self.event.setLocation(str(location))
 
     def set_organizer(self, email, name=None):
         contactreference = ContactReference(email)
@@ -628,6 +658,9 @@ class Event(object):
 
     def set_sequence(self, sequence):
         self.event.setSequence(int(sequence))
+
+    def set_url(self, url):
+        self.event.setUrl(str(url))
 
     def set_recurrence(self, recurrence):
         self.event.setRecurrenceRule(recurrence)
@@ -719,6 +752,8 @@ class Event(object):
         msg["Subject"] = self.get_uid()
 
         part.set_payload(str(self))
+
+        # TODO: extract attachment data to separate MIME parts
 
         part.add_header('Content-Disposition', 'attachment; filename="kolab.xml"')
         part.replace_header('Content-Transfer-Encoding', '8bit')

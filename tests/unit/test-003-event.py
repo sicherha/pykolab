@@ -118,25 +118,70 @@ class TestEventXML(unittest.TestCase):
     def test_018_load_from_ical(self):
         ical_str = """BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Apple Inc.//Mac OS X 10.9.2//EN
+PRODID:-//Roundcube//Roundcube libcalendaring 1.1-git//Sabre//Sabre VObject
+  2.1.3//EN
 CALSCALE:GREGORIAN
+METHOD:REQUEST
 BEGIN:VEVENT
+UID:7a35527d-f783-4b58-b404-b1389bd2fc57
+DTSTAMP;VALUE=DATE-TIME:20140407T122311Z
+CREATED;VALUE=DATE-TIME:20140407T122245Z
+LAST-MODIFIED;VALUE=DATE-TIME:20140407T122311Z
 DTSTART;TZID=Europe/Zurich;VALUE=DATE-TIME:20140523T110000
 DURATION:PT1H30M0S
 RRULE:FREQ=WEEKLY;INTERVAL=1;COUNT=10
 EXDATE;TZID=Europe/Zurich;VALUE=DATE-TIME:20140530T110000
 EXDATE;TZID=Europe/Zurich;VALUE=DATE-TIME:20140620T110000
-UID:7a35527d-f783-4b58-b404-b1389bd2fc57
-ATTENDEE;CN="Doe, Jane";CUTYPE=INDIVIDUAL;PARTSTAT=ACCEPTED
- ;ROLE=REQ-PARTICIPANT;RSVP=FALSE:MAILTO:jane@doe.org
-ATTENDEE;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION
- ;ROLE=OPT-PARTICIPANT;RSVP=FALSE:MAILTO:max@imum.com
+SUMMARY:Summary
+LOCATION:Location
+DESCRIPTION:Description\\n2 lines
+CATEGORIES:Personal
+TRANSP:OPAQUE
+PRIORITY:2
 SEQUENCE:2
+CLASS:PUBLIC
+ATTENDEE;CN="Manager, Jane";PARTSTAT=NEEDS-ACTION;ROLE=REQ-PARTICIPANT;CUTYP
+ E=INDIVIDUAL;RSVP=TRUE:mailto:jane.manager@example.org
+ATTENDEE;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION;ROLE=OPT-PARTICIPANT;RSVP=FA
+ LSE:MAILTO:max@imum.com
+ORGANIZER;CN=Doe\, John:mailto:john.doe@example.org
+URL:http://somelink.com/foo
+ATTACH;VALUE=BINARY;ENCODING=BASE64;FMTTYPE=image/png;X-LABEL=silhouette.pn
+ g:iVBORw0KGgoAAAANSUhEUgAAAC4AAAAuCAIAAADY27xgAAAAGXRFWHRTb2Z0d2FyZQBBZG9i
+ ZSBJbWFnZVJlYWR5ccllPAAAAsRJREFUeNrsmeluKjEMhTswrAWB4P3fECGx79CjsTDmOKRkpF
+ xxpfoHSmchX7ybFrfb7eszpPH1MfKH8ofyH6KUtd/c7/en0wmfWBdF0Wq1Op1Ou91uNGoer6iX
+ V1ar1Xa7xUJeB4qsr9frdyVlWWZH2VZyPp+xPXHIAoK70+m02+1m9JXj8bhcLi+Xi3J4xUCazS
+ bUltdtd7ud7ldUIhC3u+iTwF0sFhlR4Kds4LtRZK1w4te5UM6V6JaqhqC3CQ28OAsKggJfbZ3U
+ eozCqZ4koHIZCGmD9ivuos9YONFirmxrI0UNZG1kbZeUXdJQNJNa91RlqMn0ekYUMZDup6dXVV
+ m+1OSZhqLx6bVCELJGSsyFQtFrF15JGYMZgoxubWGDSDVhvTipDKWhoBOIpFobxtlbJ0Gh0/tg
+ lgXal4woUHi/36fQoBQncDAlupa8DeVwOPRe4lUyGAwQ+dl7W+xBXkJBhEUqR32UoJfYIKrR4d
+ ZBgcdIRqfEqn+mekl9FNRbSTA249la3ev1/kXHD47ZbEYR5L9kMplkd9vNZqMFyIYxxfN8Pk8q
+ QGlagT5QDtfrNYUMlWW9LiGNPPSmC/+OgpK2r4RO6dOatZd+4gAAemdIi6Fg9EKLD4vASWkzv3
+ ew06NSCiA40CumAIoaIrhrcAwjF7aDo58gUchgNV+0n1BAcDgcoAZrXV9mI4qkhtK6FJFhi9Fo
+ ZKPsgQI1ACJieH/Kd570t+xFoIzHYzl5Q40CFGrSqGuks3qmYIKJfIl0nPKLxAMFw7Dv1+2QYf
+ vFSOBQubbOFDSc7ZcfWvHv6DzhOzT6IeOVPuz8Roex0f6EgsE/2IL4qdg7hIXz7/pBie7q1uWr
+ tp66xrif0l1KwUE4P7Y9Gci/ZgtNRFX+Rw06Q2RigsjuDc3urwKHxuNITaaxyD9mT2WvSDAXn/
+ Pvhh8BBgBjyfPSGbSYcwAAAABJRU5ErkJggg==
+ATTACH;VALUE=BINARY;ENCODING=BASE64;FMTTYPE=text/plain;X-LABEL=text.txt:VGh
+ pcyBpcyBhIHRleHQgZmlsZQo=
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-PT30M
+END:VALARM
 END:VEVENT
 END:VCALENDAR
 """
         ical = icalendar.Calendar.from_ical(ical_str)
         event = event_from_ical(ical.walk('VEVENT')[0].to_ical())
+
+        self.assertEqual(event.get_location(), "Location")
+        self.assertEqual(str(event.get_lastmodified()), "2014-04-07 12:23:11")
+        self.assertEqual(event.get_description(), "Description\n2 lines")
+        self.assertEqual(event.get_url(), "http://somelink.com/foo")
+        self.assertEqual(event.get_transparency(), False)
+        self.assertEqual(event.get_categories(), ["Personal"])
+        self.assertEqual(event.get_priority(), '2')
+        self.assertEqual(event.get_classification(), kolabformat.ClassPublic)
         self.assertEqual(event.get_attendee_by_email("max@imum.com").get_cutype(), kolabformat.CutypeResource)
         self.assertEqual(event.get_sequence(), 2)
         self.assertTrue(event.is_recurring())
@@ -145,6 +190,8 @@ END:VCALENDAR
         self.assertEqual(str(event.get_end()), "2014-05-23 12:30:00+01:00")
         self.assertEqual(len(event.get_exception_dates()), 2)
         self.assertIsInstance(event.get_exception_dates()[0], datetime.datetime)
+        self.assertEqual(len(event.get_alarms()), 1)
+        self.assertEqual(len(event.get_attachments()), 2)
 
     def test_019_as_string_itip(self):
         self.event.set_summary("test")
