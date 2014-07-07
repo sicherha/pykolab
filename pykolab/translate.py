@@ -28,6 +28,8 @@ import os
 N_ = lambda x: x
 _ = lambda x: gettext.ldgettext(domain, x)
 
+#gettext.bindtextdomain(domain, '/usr/local/share/locale')
+
 def getDefaultLangs():
     languages = []
     for envar in ('LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG'):
@@ -45,3 +47,17 @@ def getDefaultLangs():
             if nelang not in nelangs:
                 nelangs.append(nelang)
     return nelangs
+
+def setUserLanguage(lang):
+    langs = []
+    for l in gettext._expand_lang(lang):
+        if l not in langs:
+            langs.append(l)
+
+    try:
+        translation = gettext.translation(domain, languages=langs)
+        translation.install()
+    except:
+        return False
+
+    return True

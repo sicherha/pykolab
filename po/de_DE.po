@@ -686,7 +686,7 @@ msgstr ""
 #: ../pykolab/cli/cmd_set_mailbox_acl.py:54
 #: ../pykolab/cli/cmd_set_mailbox_metadata.py:65
 msgid "Folder name"
-msgstr ""
+msgstr "Ordnername"
 
 #: ../pykolab/cli/cmd_delete_mailbox_acl.py:60
 #: ../pykolab/cli/cmd_list_mailbox_acls.py:54
