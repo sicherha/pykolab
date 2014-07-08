@@ -419,7 +419,7 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
 
             log.debug(_("Auto-updating event %r on iTip REPLY") % (existing.uid), level=8)
             try:
-                existing.set_attendee_participant_status(sender_email, sender_attendee.get_participant_status(), False)
+                existing.set_attendee_participant_status(sender_email, sender_attendee.get_participant_status(), rsvp=False)
             except Exception, e:
                 log.error("Could not find corresponding attende in organizer's event: %r" % (e))
 

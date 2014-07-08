@@ -126,29 +126,31 @@ class Event(object):
 
         # NOTE: Make sure to list(set()) or duplicates may arise
         for attr in list(set(event.singletons)):
-            if hasattr(self, 'get_ical_%s' % (attr.lower())):
-                exec("retval = self.get_ical_%s()" % (attr.lower()))
+            ical_getter = 'get_ical_%s' % (attr.lower())
+            default_getter = 'get_%s' % (attr.lower())
+            retval = None
+            if hasattr(self, ical_getter):
+                retval = getattr(self, ical_getter)()
                 if not retval == None and not retval == "":
                     event.add(attr.lower(), retval)
-
-            elif hasattr(self, 'get_%s' % (attr.lower())):
-                exec("retval = self.get_%s()" % (attr.lower()))
+            elif hasattr(self, default_getter):
+                retval = getattr(self, default_getter)()
                 if not retval == None and not retval == "":
                     event.add(attr.lower(), retval, encode=0)
 
         # NOTE: Make sure to list(set()) or duplicates may arise
         for attr in list(set(event.multiple)):
-            if hasattr(self, 'get_ical_%s' % (attr.lower())):
-                exec("retval = self.get_ical_%s()" % (attr.lower()))
-                if isinstance(retval, list) and not len(retval) == 0:
-                    for _retval in retval:
-                        event.add(attr.lower(), _retval, encode=0)
+            ical_getter = 'get_ical_%s' % (attr.lower())
+            default_getter = 'get_%s' % (attr.lower())
+            retval = None
+            if hasattr(self, ical_getter):
+                retval = getattr(self, ical_getter)()
+            elif hasattr(self, default_getter):
+                retval = getattr(self, default_getter)()
 
-            elif hasattr(self, 'get_%s' % (attr.lower())):
-                exec("retval = self.get_%s()" % (attr.lower()))
-                if isinstance(retval, list) and not len(retval) == 0:
-                    for _retval in retval:
-                        event.add(attr.lower(), _retval, encode=0)
+            if isinstance(retval, list) and not len(retval) == 0:
+                for _retval in retval:
+                    event.add(attr.lower(), _retval, encode=0)
 
         cal.add_component(event)
 
@@ -491,7 +493,7 @@ class Event(object):
     def get_transparency(self):
         return self.event.transparency()
 
-    def set_attendee_participant_status(self, attendee, status):
+    def set_attendee_participant_status(self, attendee, status, rsvp=None):
         """
             Set the participant status of an attendee to status.
 
@@ -500,8 +502,11 @@ class Event(object):
             attendees for this event.
         """
         attendee = self.get_attendee(attendee)
-
         attendee.set_participant_status(status)
+
+        if rsvp is not None:
+            attendee.set_rsvp(rsvp)
+
         self.event.setAttendees(self._attendees)
 
     def set_status(self, status):
