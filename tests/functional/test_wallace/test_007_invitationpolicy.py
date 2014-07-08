@@ -177,6 +177,11 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             'kolabinvitationpolicy': ['ACT_TENTATIVE_IF_NO_CONFLICT','ACT_SAVE_TO_CALENDAR','ACT_UPDATE']
         }
 
+        self.external = {
+            'displayname': 'Bob External',
+            'mail': 'bob.external@gmail.com'
+        }
+
         from tests.functional.user_add import user_add
         user_add("John", "Doe", kolabinvitationpolicy=self.john['kolabinvitationpolicy'], preferredlanguage=self.john['preferredlanguage'])
         user_add("Jane", "Manager", kolabinvitationpolicy=self.jane['kolabinvitationpolicy'], preferredlanguage=self.jane['preferredlanguage'])
@@ -239,7 +244,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         return uid
 
-    def send_itip_reply(self, uid, attendee_email, mailto, start=None, template=None, summary="test", sequence=1, partstat='ACCEPTED'):
+    def send_itip_reply(self, uid, attendee_email, mailto, start=None, template=None, summary="test", sequence=0, partstat='ACCEPTED'):
         if start is None:
             start = datetime.datetime.now()
 
@@ -586,3 +591,59 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertIn(self.jack['mail'], notification_text)
         self.assertNotIn(_("PENDING"), notification_text)
 
+
+    def test_009_outdated_reply(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        start = datetime.datetime(2014,9,2, 11,0,0, tzinfo=pytz.timezone("Europe/Berlin"))
+        uid = self.create_calendar_event(start, user=self.john, sequence=2)
+
+        # send a reply from jane to john
+        self.send_itip_reply(uid, self.jane['mail'], self.john['mail'], start=start, sequence=1)
+
+        # verify jane's attendee status was not updated
+        time.sleep(10)
+        event = self.check_user_calendar_event(self.john['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_sequence(), 2)
+        self.assertEqual(event.get_attendee(self.jane['mail']).get_participant_status(), kolabformat.PartNeedsAction)
+
+
+    def test_010_partstat_update_propagation(self):
+        # ATTENTION: this test requires wallace.invitationpolicy_autoupdate_other_attendees_on_reply to be enabled in config
+
+        start = datetime.datetime(2014,8,21, 13,0,0, tzinfo=pytz.timezone("Europe/Berlin"))
+        uid = self.create_calendar_event(start, user=self.john, attendees=[self.jane, self.jack, self.external])
+
+        event = self.check_user_calendar_event(self.john['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+
+        # send invitations to jack and jane
+        event_itip = event.as_string_itip()
+        self.send_itip_invitation(self.jane['mail'], start, template=event_itip)
+        self.send_itip_invitation(self.jack['mail'], start, template=event_itip)
+
+        # send replies from jack and jane
+        # FIXME: replies should not be necessary if auto-replies get through wallace as well
+        self.send_itip_reply(uid, self.jane['mail'], self.john['mail'], start=start, partstat='ACCEPTED')
+        time.sleep(10)  # FIXME: implement locking in wallace
+        self.send_itip_reply(uid, self.jack['mail'], self.john['mail'], start=start, partstat='TENTATIVE')
+
+        # wait for replies to be processed and propagated
+        time.sleep(10)
+        event = self.check_user_calendar_event(self.john['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+
+        # check updated event in organizer's calendar
+        self.assertEqual(event.get_attendee(self.jane['mail']).get_participant_status(), kolabformat.PartAccepted)
+        self.assertEqual(event.get_attendee(self.jack['mail']).get_participant_status(), kolabformat.PartTentative)
+
+        # check updated partstats in jane's calendar
+        janes = self.check_user_calendar_event(self.jane['kolabtargetfolder'], uid)
+        self.assertEqual(janes.get_attendee(self.jane['mail']).get_participant_status(), kolabformat.PartAccepted)
+        self.assertEqual(janes.get_attendee(self.jack['mail']).get_participant_status(), kolabformat.PartTentative)
+
+        # check updated partstats in jack's calendar
+        jacks = self.check_user_calendar_event(self.jack['kolabtargetfolder'], uid)
+        self.assertEqual(jacks.get_attendee(self.jane['mail']).get_participant_status(), kolabformat.PartAccepted)
+        self.assertEqual(jacks.get_attendee(self.jack['mail']).get_participant_status(), kolabformat.PartTentative)

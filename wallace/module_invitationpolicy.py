@@ -316,7 +316,7 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
     condition_fulfilled = True
 
     # find existing event in user's calendar
-    existing = find_existing_event(itip_event, receiving_user)
+    existing = find_existing_event(itip_event['uid'], receiving_user)
 
     # compare sequence number to determine a (re-)scheduling request
     if existing is not None:
@@ -406,14 +406,20 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
             return MESSAGE_FORWARD
 
         # find existing event in user's calendar
-        existing = find_existing_event(itip_event, receiving_user)
+        # TODO: set/check lock to avoid concurrent wallace processes trying to update the same event simultaneously
+        existing = find_existing_event(itip_event['uid'], receiving_user)
 
         if existing:
-            log.debug(_("Auto-updating event %r on iTip REPLY") % (existing.uid), level=8)
+            # compare sequence number to avoid outdated replies?
+            if not itip_event['sequence'] == existing.get_sequence():
+                log.info(_("The iTip reply sequence (%r) doesn't match the referred event version (%r). Forwarding to Inbox.") % (
+                    itip_event['sequence'], existing.get_sequence()
+                ))
+                return MESSAGE_FORWARD
 
-            # TODO: compare sequence number to avoid outdated replies?
+            log.debug(_("Auto-updating event %r on iTip REPLY") % (existing.uid), level=8)
             try:
-                existing.set_attendee_participant_status(sender_email, sender_attendee.get_participant_status())
+                existing.set_attendee_participant_status(sender_email, sender_attendee.get_participant_status(), False)
             except Exception, e:
                 log.error("Could not find corresponding attende in organizer's event: %r" % (e))
 
@@ -425,7 +431,10 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
                 if policy & COND_NOTIFY:
                     send_reply_notification(existing, receiving_user)
 
-                # TODO: update all other attendee's copies if conf.get('wallace','invitationpolicy_autoupdate_other_attendees_on_reply'):
+                # update all other attendee's copies
+                if conf.get('wallace','invitationpolicy_autoupdate_other_attendees_on_reply'):
+                    propagate_changes_to_attendees_calendars(existing)
+
                 return MESSAGE_PROCESSED
 
         else:
@@ -448,7 +457,7 @@ def process_itip_cancel(itip_event, policy, recipient_email, sender_email, recei
     # auto-update the local copy with STATUS=CANCELLED
     if policy & ACT_UPDATE:
         # find existing event in user's calendar
-        existing = find_existing_event(itip_event, receiving_user)
+        existing = find_existing_event(itip_event['uid'], receiving_user)
 
         if existing:
             existing.set_status('CANCELLED')
@@ -606,7 +615,7 @@ def list_user_calendars(user_rec):
     return calendars
 
 
-def find_existing_event(itip_event, user_rec):
+def find_existing_event(uid, user_rec):
     """
         Search user's calendar folders for the given event (by UID)
     """
@@ -614,10 +623,10 @@ def find_existing_event(itip_event, user_rec):
 
     event = None
     for folder in list_user_calendars(user_rec):
-        log.debug(_("Searching folder %r for event %r") % (folder, itip_event['uid']), level=8)
+        log.debug(_("Searching folder %r for event %r") % (folder, uid), level=8)
         imap.imap.m.select(imap.folder_utf7(folder))
 
-        typ, data = imap.imap.m.search(None, '(UNDELETED HEADER SUBJECT "%s")' % (itip_event['uid']))
+        typ, data = imap.imap.m.search(None, '(UNDELETED HEADER SUBJECT "%s")' % (uid))
         for num in reversed(data[0].split()):
             typ, data = imap.imap.m.fetch(num, '(RFC822)')
 
@@ -628,7 +637,7 @@ def find_existing_event(itip_event, user_rec):
                 log.error(_("Failed to parse event from message %s/%s: %r") % (folder, num, e))
                 continue
 
-            if event and event.uid == itip_event['uid']:
+            if event and event.uid == uid:
                 return event
 
     return event
@@ -660,7 +669,6 @@ def check_availability(itip_event, receiving_user):
 
             try:
                 event = event_from_message(message_from_string(data[0][1]))
-                setattr(event, '_imap_folder', folder)
             except Exception, e:
                 log.error(_("Failed to parse event from message %s/%s: %r") % (folder, num, e))
                 continue
@@ -809,6 +817,29 @@ def send_reply_notification(event, receiving_user):
         log.error(_("SMTP sendmail error: %r") % (e))
 
     smtp.quit()
+
+
+def propagate_changes_to_attendees_calendars(event):
+    """
+        Find and update copies of this event in all attendee's calendars
+    """
+    for attendee in event.get_attendees():
+        attendee_user_dn = user_dn_from_email_address(attendee.get_email())
+        if attendee_user_dn is not None:
+            log.debug(_("Update attendee copy of %r") % (attendee_user_dn), level=9)
+
+            attendee_user = auth.get_entry_attributes(None, attendee_user_dn, ['*'])
+            attendee_event = find_existing_event(event.uid, attendee_user)  # does IMAP authenticate
+            if attendee_event:
+                attendee_event.event.setAttendees(event.get_attendees())
+                success = update_event(attendee_event, attendee_user)
+                log.debug(_("Updated %s's copy of %r: %r") % (attendee_user['mail'], event.uid, success), level=8)
+
+            else:
+                log.debug(_("Attendee %s's copy of %r not found") % (attendee_user['mail'], event.uid), level=8)
+
+        else:
+            log.debug(_("Attendee %r not found in LDAP") % (attendee.get_email()), level=8)
 
 
 def invitation_response_text():
