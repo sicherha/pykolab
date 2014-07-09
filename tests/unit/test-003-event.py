@@ -1,3 +1,4 @@
+import re
 import datetime
 import pytz
 import sys
@@ -217,6 +218,25 @@ METHOD:REQUEST
         self.assertEqual(parts[2]['Content-ID'], None)
         self.assertEqual(parts[3]['Content-ID'].strip('<>'), attachments[0].uri()[4:])
         self.assertEqual(parts[4]['Content-ID'].strip('<>'), attachments[1].uri()[4:])
+
+    def test_018_ical_allday_events(self):
+        ical = """BEGIN:VEVENT
+UID:ffffffff-f783-4b58-b404-b1389bd2ffff
+DTSTAMP;VALUE=DATE-TIME:20140407T122311Z
+CREATED;VALUE=DATE-TIME:20140407T122245Z
+DTSTART;VALUE=DATE:20140823
+DTEND;VALUE=DATE:20140824
+SUMMARY:All day
+DESCRIPTION:One single day
+TRANSP:OPAQUE
+CLASS:PUBLIC
+END:VEVENT
+"""
+        event = event_from_ical(ical)
+        self.assertEqual(str(event.get_start()), "2014-08-23")
+        self.assertEqual(str(event.get_end()), "2014-08-23")
+        self.assertEqual(str(event.get_ical_dtend()), "2014-08-24")
+        self.assertTrue(re.match('.*<dtend>\s*<date>2014-08-23</date>', str(event), re.DOTALL))
 
     def test_019_as_string_itip(self):
         self.event.set_summary("test")

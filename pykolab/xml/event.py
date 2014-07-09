@@ -419,7 +419,11 @@ class Event(object):
         return self.get_created()
 
     def get_ical_dtend(self):
-        return self.get_end()
+        dtend = self.get_end()
+        # shift end by one day on all-day events
+        if not hasattr(dtend, 'hour'):
+            dtend = dtend + datetime.timedelta(days=1)
+        return dtend
 
     def get_ical_dtstamp(self):
         try:
@@ -632,6 +636,9 @@ class Event(object):
                 att = self.add_attendee(address, name=name, rsvp=rsvp, role=role, participant_status=partstat, cutype=cutype, params=params)
 
     def set_ical_dtend(self, dtend):
+        # shift end by one day on all-day events
+        if not hasattr(dtend, 'hour'):
+            dtend = dtend - datetime.timedelta(days=1)
         self.set_end(dtend)
 
     def set_ical_dtstamp(self, dtstamp):
