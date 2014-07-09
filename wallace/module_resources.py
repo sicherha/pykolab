@@ -46,6 +46,18 @@ from pykolab.itip import events_from_message
 from pykolab.itip import check_event_conflict
 from pykolab.translate import _
 
+# define some contstants used in the code below
+COND_NOTIFY = 256
+ACT_MANUAL  = 1
+ACT_ACCEPT  = 2
+ACT_ACCEPT_AND_NOTIFY = ACT_ACCEPT + COND_NOTIFY
+
+policy_name_map = {
+    'ACT_MANUAL':            ACT_MANUAL,
+    'ACT_ACCEPT':            ACT_ACCEPT,
+    'ACT_ACCEPT_AND_NOTIFY': ACT_ACCEPT_AND_NOTIFY
+}
+
 log = pykolab.getLogger('pykolab.wallace')
 conf = pykolab.getConf()
 
@@ -513,7 +525,11 @@ def accept_reservation_request(itip_event, resource, delegator=None):
         level=8
     )
 
-    send_response(delegator['mail'] if delegator else resource['mail'], itip_event, get_resource_owner(resource))
+    owner = get_resource_owner(resource)
+    send_response(delegator['mail'] if delegator else resource['mail'], itip_event, owner)
+
+    if owner:
+        send_owner_notification(resource, owner, itip_event, saved)
 
 
 def decline_reservation_request(itip_event, resource):
@@ -527,7 +543,11 @@ def decline_reservation_request(itip_event, resource):
         "DECLINED"
     )
 
+    owner = get_resource_owner(resource)
     send_response(resource['mail'], itip_event, get_resource_owner(resource))
+
+    if owner:
+        send_owner_notification(resource, owner, itip_event, True)
 
 
 def save_resource_event(itip_event, resource):
@@ -749,27 +769,41 @@ def get_resource_records(resource_dns):
         #   If it is not, ...
         resource_attrs = auth.get_entry_attributes(None, resource_dn, ['*'])
         resource_attrs['dn'] = resource_dn
+        parse_kolabinvitationpolicy(resource_attrs)
+
         if not 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
             if resource_attrs.has_key('uniquemember'):
                 resources[resource_dn] = resource_attrs
                 for uniquemember in resource_attrs['uniquemember']:
-                    resource_attrs = auth.get_entry_attributes(
+                    member_attrs = auth.get_entry_attributes(
                             None,
                             uniquemember,
                             ['*']
                         )
 
-                    if 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
-                        resource_attrs['dn'] = uniquemember
-                        resources[uniquemember] = resource_attrs
+                    if 'kolabsharedfolder' in [x.lower() for x in member_attrs['objectclass']]:
+                        member_attrs['dn'] = uniquemember
+                        parse_kolabinvitationpolicy(member_attrs, resource_attrs)
+
+                        resources[uniquemember] = member_attrs
                         resources[uniquemember]['memberof'] = resource_dn
-                        if not resource_attrs.has_key('owner') and resources[resource_dn].has_key('owner'):
+                        if not member_attrs.has_key('owner') and resources[resource_dn].has_key('owner'):
                             resources[uniquemember]['owner'] = resources[resource_dn]['owner']
                         resource_dns.append(uniquemember)
         else:
             resources[resource_dn] = resource_attrs
 
     return resources
+
+
+def parse_kolabinvitationpolicy(attrs, parent=None):
+    if attrs.has_key('kolabinvitationpolicy'):
+        if not isinstance(attrs['kolabinvitationpolicy'], list):
+            attrs['kolabinvitationpolicy'] = [attrs['kolabinvitationpolicy']]
+        attrs['kolabinvitationpolicy'] = [policy_name_map[p] for p in attrs['kolabinvitationpolicy'] if policy_name_map.has_key(p)]
+
+    elif isinstance(parent, dict) and parent.has_key('kolabinvitationpolicy'):
+        attrs['kolabinvitationpolicy'] = parent['kolabinvitationpolicy']
 
 
 def get_resource_collection(email_address):
@@ -878,3 +912,79 @@ def reservation_response_text(status, owner):
         """) % (owner['cn'], owner['mail'], owner['telephoneNumber'] if owner.has_key('telephoneNumber') else '')
     
     return message_text
+
+
+def send_owner_notification(resource, owner, itip_event, success=True):
+    """
+        Send a reservation notification to the resource owner
+    """
+    import smtplib
+    from pykolab import utils
+    from email.MIMEText import MIMEText
+    from email.Utils import formatdate
+
+    notify = False
+    status = itip_event['xml'].get_attendee_by_email(resource['mail']).get_participant_status(True)
+
+    if resource.has_key('kolabinvitationpolicy'):
+        for policy in resource['kolabinvitationpolicy']:
+            # TODO: distingish ACCEPTED / DECLINED status notifications?
+            if policy & COND_NOTIFY and owner['mail']:
+                notify = True
+                break
+
+    if notify or not success:
+        log.debug(
+            _("Sending booking notification for event %r to %r from %r") % (
+                itip_event['uid'], owner['mail'], resource['cn']
+            ),
+            level=8
+        )
+
+        message_text = owner_notification_text(resource, owner, itip_event['xml'], success)
+
+        msg = MIMEText(utils.stripped_message(message_text))
+
+        msg['To'] = owner['mail']
+        msg['From'] = resource['mail']
+        msg['Date'] = formatdate(localtime=True)
+        msg['Subject'] = _('Booking for %s has been %s') % (resource['cn'], _(status) if success else _('failed'))
+
+        smtp = smtplib.SMTP("localhost", 10027)
+
+        if conf.debuglevel > 8:
+            smtp.set_debuglevel(True)
+
+        try:
+            smtp.sendmail(resource['mail'], owner['mail'], msg.as_string())
+        except Exception, e:
+            log.error(_("SMTP sendmail error: %r") % (e))
+
+        smtp.quit()
+
+def owner_notification_text(resource, owner, event, success):
+    organizer = event.get_organizer()
+    status = event.get_attendee_by_email(resource['mail']).get_participant_status(True)
+
+    if success:
+        message_text = _("""
+            The resource booking for %(resource)s by %(orgname)s <%(orgemail)s> has been %(status)s for %(date)s.
+
+            *** This is an automated message, sent to you as the resource owner. ***
+        """)
+    else:
+        message_text = _("""
+            A reservation request for %(resource)s could not be processed automatically.
+            Please contact %(orgname)s <%(orgemail)s> who requested this resource for %(date)s. Subject: %(summary)s.
+
+            *** This is an automated message, sent to you as the resource owner. ***
+        """)
+
+    return message_text % {
+        'resource': resource['cn'],
+        'summary': event.get_summary(),
+        'date': event.get_date_text(),
+        'status': _(status),
+        'orgname': organizer.name(),
+        'orgemail': organizer.email()
+    }

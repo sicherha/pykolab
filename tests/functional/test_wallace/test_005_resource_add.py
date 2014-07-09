@@ -29,8 +29,8 @@ class TestResourceAdd(unittest.TestCase):
         funcs.purge_resources()
         self.audi = funcs.resource_add("car", "Audi A4")
         self.passat = funcs.resource_add("car", "VW Passat")
-        self.boxter = funcs.resource_add("car", "Porsche Boxter S")
-        self.cars = funcs.resource_add("collection", "Company Cars", [ self.audi['dn'], self.passat['dn'], self.boxter['dn'] ])
+        self.boxter = funcs.resource_add("car", "Porsche Boxter S", kolabinvitationpolicy='ACT_ACCEPT_AND_NOTIFY')
+        self.cars = funcs.resource_add("collection", "Company Cars", [ self.audi['dn'], self.passat['dn'], self.boxter['dn'] ], kolabinvitationpolicy='ACT_ACCEPT')
 
         from tests.functional.synchronize import synchronize_once
         synchronize_once()
@@ -56,3 +56,16 @@ class TestResourceAdd(unittest.TestCase):
         attrs = auth.get_entry_attributes(None, self.cars['dn'], ['*'])
         self.assertIn('groupofuniquenames', attrs['objectclass'])
         self.assertEqual(len(attrs['uniquemember']), 3)
+        self.assertEqual(attrs['kolabinvitationpolicy'], 'ACT_ACCEPT')
+
+    def test_003_get_resource_records(self):
+        resource_dns = module_resources.resource_record_from_email_address(self.cars['mail'])
+        self.assertEqual(resource_dns[0], self.cars['dn'])
+
+        resources = module_resources.get_resource_records(resource_dns)
+        self.assertEqual(len(resources), 4)
+
+        # check for (inherited) kolabinvitationpolicy values (bitmasks)
+        self.assertEqual(resources[self.cars['dn']]['kolabinvitationpolicy'], [module_resources.ACT_ACCEPT])
+        self.assertEqual(resources[self.audi['dn']]['kolabinvitationpolicy'], [module_resources.ACT_ACCEPT])
+        self.assertEqual(resources[self.boxter['dn']]['kolabinvitationpolicy'], [module_resources.ACT_ACCEPT_AND_NOTIFY])

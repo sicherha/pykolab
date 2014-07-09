@@ -214,9 +214,9 @@ class TestResourceInvitation(unittest.TestCase):
         self.boxter = funcs.resource_add("car", "Porsche Boxter S")
         self.cars = funcs.resource_add("collection", "Company Cars", [ self.audi['dn'], self.passat['dn'], self.boxter['dn'] ])
 
-        self.room1 = funcs.resource_add("confroom", "Room 101", owner=self.jane['dn'])
+        self.room1 = funcs.resource_add("confroom", "Room 101", owner=self.jane['dn'], kolabinvitationpolicy='ACT_ACCEPT_AND_NOTIFY')
         self.room2 = funcs.resource_add("confroom", "Conference Room B-222")
-        self.rooms = funcs.resource_add("collection", "Rooms", [ self.room1['dn'], self.room2['dn'] ], self.jane['dn'])
+        self.rooms = funcs.resource_add("collection", "Rooms", [ self.room1['dn'], self.room2['dn'] ], self.jane['dn'], kolabinvitationpolicy='ACT_ACCEPT_AND_NOTIFY')
 
         time.sleep(1)
         from tests.functional.synchronize import synchronize_once
@@ -353,12 +353,10 @@ class TestResourceInvitation(unittest.TestCase):
 
     def find_resource_by_email(self, email):
         resource = None
-        if (email.find(self.audi['mail']) >= 0):
-            resource = self.audi
-        if (email.find(self.passat['mail']) >= 0):
-            resource = self.passat
-        if (email.find(self.boxter['mail']) >= 0):
-            resource = self.boxter
+        for r in [self.audi, self.passat, self.boxter, self.room1, self.room2]:
+            if (email.find(r['mail']) >= 0):
+                resource = r
+                break
         return resource
 
 
@@ -593,20 +591,29 @@ class TestResourceInvitation(unittest.TestCase):
         self.assertIn(self.jane['displayname'], respose_text)
 
 
-    def TODO_test_012_owner_notification(self):
+    def test_012_owner_notification(self):
         self.purge_mailbox(self.john['mailbox'])
         self.purge_mailbox(self.jane['mailbox'])
 
-        self.send_itip_invitation(self.room1['mail'], datetime.datetime(2014,5,4, 13,0,0))
+        self.send_itip_invitation(self.room1['mail'], datetime.datetime(2014,8,4, 13,0,0))
 
         # check notification message sent to resource owner (jane)
-        notify = self.check_message_received("Reservation Request for test was ACCEPTED", self.room1['mail'], self.jane['mailbox'])
+        notify = self.check_message_received("Booking for %s has been ACCEPTED" % (self.room1['cn']), self.room1['mail'], self.jane['mailbox'])
         self.assertIsInstance(notify, email.message.Message)
-        self.assertEqual(notify['From'], self.room1['mail'])
-        self.assertEqual(notify['Cc'], self.jane['mail'])
+
+        notification_text = str(notify.get_payload())
+        self.assertIn(self.john['mail'], notification_text)
+        self.assertIn("ACCEPTED", notification_text)
+
+        self.purge_mailbox(self.john['mailbox'])
 
         # check notification sent to collection owner (jane)
-        self.send_itip_invitation(self.rooms['mail'], datetime.datetime(2014,5,4, 12,30,0))
+        self.send_itip_invitation(self.rooms['mail'], datetime.datetime(2014,8,4, 12,30,0))
 
-        notify = self.check_message_received("Reservation Request for test was ACCEPTED", self.room2['mail'], self.jane['mailbox'])
+        # one of the collection members accepted the reservation
+        accepted = self.check_message_received("Reservation Request for test was ACCEPTED")
+        delegatee = self.find_resource_by_email(accepted['from'])
+
+        notify = self.check_message_received("Booking for %s has been ACCEPTED" % (delegatee['cn']), delegatee['mail'], self.jane['mailbox'])
         self.assertIsInstance(notify, email.message.Message)
+        self.assertIn(self.john['mail'], notification_text)

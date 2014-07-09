@@ -299,6 +299,16 @@ class Event(object):
                 dt = self.get_start() + duration
         return dt
 
+    def get_date_text(self, date_format='%Y-%m-%d', time_format='%H:%M %Z'):
+        start = self.get_start()
+        end = self.get_end()
+        if start.date() == end.date():
+            end_format = time_format
+        else:
+            end_format = date_format + " " + time_format
+
+        return "%s - %s" % (start.strftime(date_format + " " + time_format), end.strftime(end_format))
+
     def get_exception_dates(self):
         return map(lambda _: xmlutils.from_cdatetime(_, True), self.event.exceptionDates())
 

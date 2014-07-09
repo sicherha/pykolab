@@ -4,7 +4,7 @@ from pykolab import wap_client
 
 conf = pykolab.getConf()
 
-def resource_add(type, cn, members=None, owner=None):
+def resource_add(type, cn, members=None, owner=None, **kw):
     if type == None or type == '':
         raise Exception
 
@@ -17,6 +17,8 @@ def resource_add(type, cn, members=None, owner=None):
         'uniquemember': members,
         'owner': owner
     }
+
+    resource_details.update(kw)
 
     result = wap_client.authenticate(conf.get('ldap', 'bind_dn'), conf.get('ldap', 'bind_pw'), conf.get('kolab', 'primary_domain'))
 
