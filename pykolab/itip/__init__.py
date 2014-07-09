@@ -224,7 +224,7 @@ def send_reply(from_address, itip_events, response_text, subject=None):
             log.error(_("Failed to compose iTip reply message: %r") % (e))
             return
 
-        smtp = smtplib.SMTP("localhost", 10027)
+        smtp = smtplib.SMTP("localhost", 10026)  # replies go through wallace again
 
         if conf.debuglevel > 8:
             smtp.set_debuglevel(True)

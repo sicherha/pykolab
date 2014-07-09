@@ -623,13 +623,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.send_itip_invitation(self.jane['mail'], start, template=event_itip)
         self.send_itip_invitation(self.jack['mail'], start, template=event_itip)
 
-        # send replies from jack and jane
-        # FIXME: replies should not be necessary if auto-replies get through wallace as well
-        self.send_itip_reply(uid, self.jane['mail'], self.john['mail'], start=start, partstat='ACCEPTED')
-        time.sleep(10)  # FIXME: implement locking in wallace
-        self.send_itip_reply(uid, self.jack['mail'], self.john['mail'], start=start, partstat='TENTATIVE')
-
-        # wait for replies to be processed and propagated
+        # wait for replies from jack and jane to be processed and propagated
         time.sleep(10)
         event = self.check_user_calendar_event(self.john['kolabtargetfolder'], uid)
         self.assertIsInstance(event, pykolab.xml.Event)

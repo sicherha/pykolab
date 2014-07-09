@@ -1,6 +1,7 @@
+import os
 import pykolab
 import logging
-import datetime
+import time
 
 from icalendar import Calendar
 from email import message
@@ -72,11 +73,10 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
     def setUp(self):
         # monkey-patch the pykolab.auth module to check API calls
         # without actually connecting to LDAP
-        #self.patch(pykolab.auth.Auth, "connect", self._mock_nop)
-        #self.patch(pykolab.auth.Auth, "disconnect", self._mock_nop)
-        #self.patch(pykolab.auth.Auth, "find_user_dn", self._mock_find_user_dn)
-        #self.patch(pykolab.auth.Auth, "get_entry_attributes", self._mock_get_entry_attributes)
-        #self.patch(pykolab.auth.Auth, "search_entry_by_attribute", self._mock_search_entry_by_attribute)
+        self.patch(pykolab.auth.Auth, "connect", self._mock_nop)
+        self.patch(pykolab.auth.Auth, "disconnect", self._mock_nop)
+        self.patch(pykolab.auth.Auth, "find_user_dn", self._mock_find_user_dn)
+        self.patch(pykolab.auth.Auth, "get_entry_attributes", self._mock_get_entry_attributes)
 
         # intercept calls to smtplib.SMTP.sendmail()
         import smtplib
@@ -127,3 +127,19 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         user = { 'kolabinvitationpolicy': ['ACT_ACCEPT:example.org', 'ACT_MANUAL:others'] }
         self.assertEqual(MIP.get_matching_invitation_policies(user, 'somedomain.net'), [MIP.ACT_MANUAL])
+
+    def test_004_write_locks(self):
+        user = { 'cn': 'John Doe', 'mail': "doe@example.org" }
+
+        lock_key = MIP.get_lock_key(user, '1234567890-abcdef')
+        lock_file = os.path.join(MIP.mybasepath, 'locks', lock_key + '.lock')
+        MIP.set_write_lock(lock_key)
+
+        time.sleep(1)
+        self.assertTrue(os.path.isfile(lock_file))
+        self.assertFalse(MIP.set_write_lock(lock_key, False))
+
+        MIP.remove_write_lock(lock_key)
+        self.assertFalse(os.path.isfile(lock_file))
+
+        
