@@ -302,10 +302,19 @@ class Event(object):
     def get_date_text(self, date_format='%Y-%m-%d', time_format='%H:%M %Z'):
         start = self.get_start()
         end = self.get_end()
-        if start.date() == end.date():
+        all_day = not hasattr(start, 'date')
+        start_date = start.date() if not all_day else start
+        end_date = end.date() if not all_day else end
+
+        if start_date == end_date:
             end_format = time_format
         else:
             end_format = date_format + " " + time_format
+
+        if all_day:
+            time_format = ''
+            if start_date == end_date:
+                return start.strftime(date_format)
 
         return "%s - %s" % (start.strftime(date_format + " " + time_format), end.strftime(end_format))
 
