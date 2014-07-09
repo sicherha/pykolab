@@ -526,7 +526,9 @@ def accept_reservation_request(itip_event, resource, delegator=None):
     )
 
     owner = get_resource_owner(resource)
-    send_response(delegator['mail'] if delegator else resource['mail'], itip_event, owner)
+
+    if saved:
+        send_response(delegator['mail'] if delegator else resource['mail'], itip_event, owner)
 
     if owner:
         send_owner_notification(resource, owner, itip_event, saved)
