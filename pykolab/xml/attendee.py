@@ -1,27 +1,28 @@
 import kolabformat
 
 from pykolab.translate import _
+from pykolab.translate import N_
 
 from contact_reference import ContactReference
 
 participant_status_labels = {
-        "NEEDS-ACTION": _("Needs Action"),
-        "ACCEPTED": _("Accepted"),
-        "DECLINED": _("Declined"),
-        "TENTATIVE": _("Tentatively Accepted"),
-        "DELEGATED": _("Delegated"),
-        "COMPLETED": _("Completed"),
-        "IN-PROCESS": _("In Process"),
+        "NEEDS-ACTION": N_("Needs Action"),
+        "ACCEPTED": N_("Accepted"),
+        "DECLINED": N_("Declined"),
+        "TENTATIVE": N_("Tentatively Accepted"),
+        "DELEGATED": N_("Delegated"),
+        "COMPLETED": N_("Completed"),
+        "IN-PROCESS": N_("In Process"),
         # support integer values, too
-        kolabformat.PartNeedsAction: _("Needs Action"),
-        kolabformat.PartAccepted: _("Accepted"),
-        kolabformat.PartDeclined: _("Declined"),
-        kolabformat.PartTentative: _("Tentatively Accepted"),
-        kolabformat.PartDelegated: _("Delegated"),
+        kolabformat.PartNeedsAction: N_("Needs Action"),
+        kolabformat.PartAccepted: N_("Accepted"),
+        kolabformat.PartDeclined: N_("Declined"),
+        kolabformat.PartTentative: N_("Tentatively Accepted"),
+        kolabformat.PartDelegated: N_("Delegated"),
     }
 
 def participant_status_label(status):
-    return participant_status_labels[status] if participant_status_labels.has_key(status) else status
+    return _(participant_status_labels[status]) if participant_status_labels.has_key(status) else status
 
 
 class Attendee(kolabformat.Attendee):
