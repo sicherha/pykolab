@@ -322,6 +322,35 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         return event.get_uid()
 
+    def update_calendar_event(self, uid, start=None, summary=None, sequence=0, user=None):
+        if user is None:
+            user = self.john
+
+        event = self.check_user_calendar_event(user['kolabtargetfolder'], uid)
+        if event:
+            if start is not None:
+                event.set_start(start)
+            if summary is not None:
+                event.set_summary(summary)
+            if sequence is not None:
+                event.set_sequence(sequence)
+
+            imap = IMAP()
+            imap.connect()
+
+            mailbox = imap.folder_quote(user['kolabtargetfolder'])
+            imap.set_acl(mailbox, "cyrus-admin", "lrswipkxtecda")
+            imap.imap.m.select(mailbox)
+
+            return imap.imap.m.append(
+                mailbox,
+                None,
+                None,
+                event.to_message().as_string()
+            )
+
+        return False
+
     def check_message_received(self, subject, from_addr=None, mailbox=None):
         if mailbox is None:
             mailbox = self.john['mailbox']
@@ -641,3 +670,26 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         jacks = self.check_user_calendar_event(self.jack['kolabtargetfolder'], uid)
         self.assertEqual(jacks.get_attendee(self.jane['mail']).get_participant_status(), kolabformat.PartAccepted)
         self.assertEqual(jacks.get_attendee(self.jack['mail']).get_participant_status(), kolabformat.PartTentative)
+
+        # PART 2: create conflicting event in jack's calendar
+        new_start = datetime.datetime(2014,8,21, 6,0,0, tzinfo=pytz.timezone("Europe/Berlin"))
+        self.create_calendar_event(new_start, user=self.jack, attendees=[], summary="blocker")
+
+        # re-schedule initial event to new date
+        self.update_calendar_event(uid, start=new_start, sequence=1, user=self.john)
+        self.send_itip_update(self.jane['mail'], uid, new_start, summary="test (updated)", sequence=1)
+        self.send_itip_update(self.jack['mail'], uid, new_start, summary="test (updated)", sequence=1)
+
+        # wait for replies to be processed and propagated
+        time.sleep(10)
+        event = self.check_user_calendar_event(self.john['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+
+        # check updated event in organizer's calendar (jack didn't reply yet)
+        self.assertEqual(event.get_attendee(self.jane['mail']).get_participant_status(), kolabformat.PartAccepted)
+        self.assertEqual(event.get_attendee(self.jack['mail']).get_participant_status(), kolabformat.PartTentative)
+
+        # check partstats in jack's calendar: jack's status should remain needs-action
+        jacks = self.check_user_calendar_event(self.jack['kolabtargetfolder'], uid)
+        self.assertEqual(jacks.get_attendee(self.jane['mail']).get_participant_status(), kolabformat.PartAccepted)
+        self.assertEqual(jacks.get_attendee(self.jack['mail']).get_participant_status(), kolabformat.PartNeedsAction)

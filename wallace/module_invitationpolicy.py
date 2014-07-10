@@ -23,7 +23,7 @@ import tempfile
 import time
 from urlparse import urlparse
 import urllib
-import md5
+import hashlib
 
 from email import message_from_string
 from email.parser import Parser
@@ -235,7 +235,7 @@ def execute(*args, **kw):
         return filepath
 
     # we're looking at the first itip event object
-    itip_event = itip_events[0];
+    itip_event = itip_events[0]
 
     # for replies, the organizer is the recipient
     if itip_event['method'] == 'REPLY':
@@ -327,6 +327,7 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
     save_event = not nonpart or not partstat == kolabformat.PartNeedsAction
     rsvp = receiving_attendee.get_rsvp()
     scheduling_required = rsvp or partstat == kolabformat.PartNeedsAction
+    respond_with = receiving_attendee.get_participant_status(True)
     condition_fulfilled = True
 
     # find existing event in user's calendar
@@ -335,7 +336,7 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
     # compare sequence number to determine a (re-)scheduling request
     if existing is not None:
         log.debug(_("Existing event: %r") % (existing), level=9)
-        scheduling_required = itip_event['sequence'] > 0 and itip_event['sequence'] >= existing.get_sequence()
+        scheduling_required = itip_event['sequence'] > 0 and itip_event['sequence'] > existing.get_sequence()
         save_event = True
 
     # if scheduling: check availability
@@ -347,8 +348,6 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
 
         log.debug(_("Precondition for event %r fulfilled: %r") % (itip_event['uid'], condition_fulfilled), level=5)
 
-    # if RSVP, send an iTip REPLY
-    if rsvp or scheduling_required:
         respond_with = None
         if policy & ACT_ACCEPT and condition_fulfilled:
             respond_with = 'TENTATIVE' if policy & COND_TENTATIVE else 'ACCEPTED'
@@ -361,12 +360,14 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
             # TODO: delegate (but to whom?)
             return None
 
+    # if RSVP, send an iTip REPLY
+    if rsvp or scheduling_required:
+        # set attendee's CN from LDAP record if yet missing
+        if not receiving_attendee.get_name() and receiving_user.has_key('cn'):
+            receiving_attendee.set_name(receiving_user['cn'])
+
         # send iTip reply
         if respond_with is not None:
-            # set attendee's CN from LDAP record if yet missing
-            if not receiving_attendee.get_name() and receiving_user.has_key('cn'):
-                receiving_attendee.set_name(receiving_user['cn'])
-
             receiving_attendee.set_participant_status(respond_with)
             send_reply(recipient_email, itip_event, invitation_response_text(),
                 subject=_('"%(summary)s" has been %(status)s'))
@@ -515,8 +516,6 @@ def user_dn_from_email_address(email_address):
         log.debug(_("User DN: %r") % (user_dn), level=8)
     else:
         log.debug(_("No user record(s) found for %r") % (email_address), level=9)
-
-    auth.disconnect()
 
     return user_dn
 
@@ -766,7 +765,7 @@ def remove_write_lock(key, update=True):
 
 
 def get_lock_key(user, uid):
-    return md5.new("%s/%s" % (user['mail'], uid)).hexdigest()
+    return hashlib.md5("%s/%s" % (user['mail'], uid)).hexdigest()
 
 
 def update_event(event, user_rec):
@@ -909,13 +908,26 @@ def propagate_changes_to_attendees_calendars(event):
     """
     for attendee in event.get_attendees():
         attendee_user_dn = user_dn_from_email_address(attendee.get_email())
-        if attendee_user_dn is not None:
-            log.debug(_("Update attendee copy of %r") % (attendee_user_dn), level=9)
-
+        if attendee_user_dn:
             attendee_user = auth.get_entry_attributes(None, attendee_user_dn, ['*'])
             attendee_event = find_existing_event(event.uid, attendee_user, True)  # does IMAP authenticate
             if attendee_event:
-                attendee_event.event.setAttendees(event.get_attendees())
+                try:
+                    attendee_entry = attendee_event.get_attendee_by_email(attendee_user['mail'])
+                except:
+                    attendee_entry = None
+
+                # copy all attendees from master event (covers additions and removals)
+                new_attendees = kolabformat.vectorattendee();
+                for a in event.get_attendees():
+                    # keep my own entry intact
+                    if attendee_entry is not None and attendee_entry.get_email() == a.get_email():
+                        new_attendees.append(attendee_entry)
+                    else:
+                        new_attendees.append(a)
+
+                attendee_event.event.setAttendees(new_attendees)
+
                 success = update_event(attendee_event, attendee_user)
                 log.debug(_("Updated %s's copy of %r: %r") % (attendee_user['mail'], event.uid, success), level=8)
 
