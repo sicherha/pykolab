@@ -41,6 +41,7 @@ from pykolab.conf import Conf
 from pykolab.imap import IMAP
 from pykolab.xml import to_dt
 from pykolab.xml import event_from_message
+from pykolab.xml import participant_status_label
 from pykolab.itip import events_from_message
 from pykolab.itip import check_event_conflict
 from pykolab.itip import send_reply
@@ -500,12 +501,17 @@ def user_dn_from_email_address(email_address):
         auth = Auth()
         auth.connect()
 
+    # return cached value
+    if user_dn_from_email_address.cache.has_key(email_address):
+        return user_dn_from_email_address.cache[email_address]
+
     local_domains = auth.list_domains()
 
     if not local_domains == None:
         local_domains = list(set(local_domains.keys()))
 
     if not email_address.split('@')[1] in local_domains:
+        user_dn_from_email_address.cache[email_address] = None
         return None
 
     log.debug(_("Checking if email address %r belongs to a local user") % (email_address), level=8)
@@ -517,7 +523,12 @@ def user_dn_from_email_address(email_address):
     else:
         log.debug(_("No user record(s) found for %r") % (email_address), level=9)
 
+    # remember this lookup
+    user_dn_from_email_address.cache[email_address] = user_dn
+
     return user_dn
+
+user_dn_from_email_address.cache = {}
 
 
 def get_matching_invitation_policies(receiving_user, sender_domain):
@@ -843,6 +854,8 @@ def send_reply_notification(event, receiving_user):
     """
         Send a (consolidated) notification about the current participant status to organizer
     """
+    global auth
+
     import smtplib
     from email.MIMEText import MIMEText
     from email.Utils import formatdate
@@ -851,6 +864,13 @@ def send_reply_notification(event, receiving_user):
         event.uid, receiving_user['mail']
     ), level=8)
 
+    organizer = event.get_organizer()
+    orgemail = organizer.email()
+    orgname = organizer.name()
+    sender_domain = orgemail.split('@')[-1]
+
+    auto_replies_expected = 0
+    auto_replies_received = 0
     partstats = { 'ACCEPTED':[], 'TENTATIVE':[], 'DECLINED':[], 'DELEGATED':[], 'PENDING':[] }
     for attendee in event.get_attendees():
         parstat = attendee.get_participant_status(True)
@@ -859,13 +879,34 @@ def send_reply_notification(event, receiving_user):
         else:
             partstats['PENDING'].append(attendee.get_displayname())
 
-    # TODO: for every attendee, look-up its kolabinvitationpolicy and skip notification
-    # until we got replies from all automatically responding attendees
+        # look-up kolabinvitationpolicy for this attendee
+        if attendee.get_cutype() == kolabformat.CutypeResource:
+            resource_dns = auth.find_resource(attendee.get_email())
+            if isinstance(resource_dns, list):
+                attendee_dn = resource_dns[0] if len(resource_dns) > 0 else None
+            else:
+                attendee_dn = resource_dns
+        else:
+            attendee_dn = user_dn_from_email_address(attendee.get_email())
+
+        if attendee_dn:
+            attendee_rec = auth.get_entry_attributes(None, attendee_dn, ['kolabinvitationpolicy'])
+            if is_auto_reply(attendee_rec, sender_domain):
+                auto_replies_expected += 1
+                if not parstat == 'NEEDS-ACTION':
+                    auto_replies_received += 1
+
+    # skip notification until we got replies from all automatically responding attendees
+    if auto_replies_received < auto_replies_expected:
+        log.debug(_("Waiting for more automated replies (got %d of %d); skipping notification") % (
+            auto_replies_received, auto_replies_expected
+        ), level=8)
+        return
 
     roundup = ''
     for status,attendees in partstats.iteritems():
         if len(attendees) > 0:
-            roundup += "\n" + _(status) + ":\n" + "\n".join(attendees) + "\n"
+            roundup += "\n" + participant_status_label(status) + ":\n" + "\n".join(attendees) + "\n"
 
     message_text = """
         The event '%(summary)s' at %(start)s has been updated in your calendar.
@@ -882,11 +923,6 @@ def send_reply_notification(event, receiving_user):
     msg['To'] = receiving_user['mail']
     msg['Date'] = formatdate(localtime=True)
     msg['Subject'] = _('"%s" has been updated') % (event.get_summary())
-
-    organizer = event.get_organizer()
-    orgemail = organizer.email()
-    orgname = organizer.name()
-
     msg['From'] = '"%s" <%s>' % (orgname, orgemail) if orgname else orgemail
 
     smtp = smtplib.SMTP("localhost", 10027)
@@ -900,6 +936,36 @@ def send_reply_notification(event, receiving_user):
         log.error(_("SMTP sendmail error: %r") % (e))
 
     smtp.quit()
+
+
+def is_auto_reply(user, sender_domain):
+    accept_available = False
+    accept_conflicts = False
+    for policy in get_matching_invitation_policies(user, sender_domain):
+        if policy & (ACT_ACCEPT | ACT_REJECT | ACT_DELEGATE):
+            if check_policy_condition(policy, True):
+                accept_available = True
+            if check_policy_condition(policy, False):
+                accept_conflicts = True
+
+        # we have both cases covered by a policy
+        if accept_available and accept_conflicts:
+            return True
+
+        # manual action reached
+        if policy & (ACT_MANUAL | ACT_SAVE_TO_CALENDAR):
+            return False
+
+    return False
+
+
+def check_policy_condition(policy, available):
+    condition_fulfilled = True
+    if policy & (COND_IF_AVAILABLE | COND_IF_CONFLICT):
+        condition_fulfilled = available
+    if policy & COND_IF_CONFLICT:
+        condition_fulfilled = not condition_fulfilled
+    return condition_fulfilled
 
 
 def propagate_changes_to_attendees_calendars(event):

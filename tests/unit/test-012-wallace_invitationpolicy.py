@@ -142,4 +142,20 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         MIP.remove_write_lock(lock_key)
         self.assertFalse(os.path.isfile(lock_file))
 
+    def test_005_is_auto_reply(self):
+        all_manual  = [ 'ACT_MANUAL' ]
+        accept_none = [ 'ACT_REJECT' ]
+        accept_all  = [ 'ACT_ACCEPT', 'ACT_UPDATE' ]
+        accept_cond = [ 'ACT_ACCEPT_IF_NO_CONFLICT', 'ACT_REJECT_IF_CONFLICT' ]
+        accept_some = [ 'ACT_ACCEPT_IF_NO_CONFLICT', 'ACT_SAVE_TO_CALENDAR:example.org', 'ACT_REJECT_IF_CONFLICT' ]
+        accept_avail = [ 'ACT_ACCEPT_IF_NO_CONFLICT', 'ACT_REJECT_IF_CONFLICT:example.org' ]
+
+        self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':all_manual },   'domain.org'))
+        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_none },  'domain.org'))
+        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_all },   'domain.com'))
+        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_cond },  'domain.com'))
+        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_some },  'domain.com'))
+        self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_some },  'example.org'))
+        self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_avail }, 'domain.com'))
+        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_avail }, 'example.org'))
         
