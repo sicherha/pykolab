@@ -1,5 +1,6 @@
 from attendee import Attendee
 from attendee import InvalidAttendeeParticipantStatusError
+from attendee import participant_status_label
 
 from contact import Contact
 from contact_reference import ContactReference

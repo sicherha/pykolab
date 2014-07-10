@@ -4,6 +4,26 @@ from pykolab.translate import _
 
 from contact_reference import ContactReference
 
+participant_status_labels = {
+        "NEEDS-ACTION": _("Needs Action"),
+        "ACCEPTED": _("Accepted"),
+        "DECLINED": _("Declined"),
+        "TENTATIVE": _("Tentatively Accepted"),
+        "DELEGATED": _("Delegated"),
+        "COMPLETED": _("Completed"),
+        "IN-PROCESS": _("In Process"),
+        # support integer values, too
+        kolabformat.PartNeedsAction: _("Needs Action"),
+        kolabformat.PartAccepted: _("Accepted"),
+        kolabformat.PartDeclined: _("Declined"),
+        kolabformat.PartTentative: _("Tentatively Accepted"),
+        kolabformat.PartDelegated: _("Delegated"),
+    }
+
+def participant_status_label(status):
+    return participant_status_labels[status] if participant_status_labels.has_key(status) else status
+
+
 class Attendee(kolabformat.Attendee):
     cutype_map = {
             "INDIVIDUAL": kolabformat.CutypeIndividual,

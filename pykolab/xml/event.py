@@ -12,6 +12,7 @@ import pykolab
 from pykolab import constants
 from pykolab import utils
 from pykolab.xml import utils as xmlutils
+from pykolab.xml import participant_status_label
 from pykolab.translate import _
 
 from os import path
@@ -928,7 +929,7 @@ class Event(object):
         msg['Date'] = formatdate(localtime=True)
 
         if subject is None:
-            subject = _("Invitation for %s was %s") % (self.get_summary(), _(participant_status))
+            subject = _("Invitation for %s was %s") % (self.get_summary(), participant_status_label(participant_status))
 
         msg["Subject"] = subject
 

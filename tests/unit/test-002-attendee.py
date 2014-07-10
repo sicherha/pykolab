@@ -1,7 +1,9 @@
 import datetime
 import unittest
+import kolabformat
 
 from pykolab.xml import Attendee
+from pykolab.xml import participant_status_label
 
 class TestEventXML(unittest.TestCase):
     attendee = Attendee("jane@doe.org")
@@ -100,6 +102,11 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual([k for k,v in self.attendee.cutype_map.iteritems() if v == 1][0], "GROUP")
         self.assertEqual([k for k,v in self.attendee.cutype_map.iteritems() if v == 2][0], "INDIVIDUAL")
         self.assertEqual([k for k,v in self.attendee.cutype_map.iteritems() if v == 3][0], "RESOURCE")
+
+    def test_018_partstat_label(self):
+        self.assertEqual(participant_status_label('NEEDS-ACTION'), "Needs Action")
+        self.assertEqual(participant_status_label(kolabformat.PartTentative), "Tentatively Accepted")
+        self.assertEqual(participant_status_label('UNKNOWN'), "UNKNOWN")
 
 if __name__ == '__main__':
     unittest.main()
