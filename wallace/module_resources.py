@@ -42,6 +42,7 @@ from pykolab.conf import Conf
 from pykolab.imap import IMAP
 from pykolab.xml import to_dt
 from pykolab.xml import event_from_message
+from pykolab.xml import participant_status_label
 from pykolab.itip import events_from_message
 from pykolab.itip import check_event_conflict
 from pykolab.translate import _
@@ -905,7 +906,7 @@ def reservation_response_text(status, owner):
         *** This is an automated response, please do not reply! ***
         
         We hereby inform you that your reservation was %s.
-    """) % (_(status))
+    """) % (participant_status_label(status))
 
     if owner:
         message_text += _("""
@@ -950,7 +951,7 @@ def send_owner_notification(resource, owner, itip_event, success=True):
         msg['To'] = owner['mail']
         msg['From'] = resource['mail']
         msg['Date'] = formatdate(localtime=True)
-        msg['Subject'] = _('Booking for %s has been %s') % (resource['cn'], _(status) if success else _('failed'))
+        msg['Subject'] = _('Booking for %s has been %s') % (resource['cn'], participant_status_label(status) if success else _('failed'))
 
         smtp = smtplib.SMTP("localhost", 10027)
 
@@ -986,7 +987,7 @@ def owner_notification_text(resource, owner, event, success):
         'resource': resource['cn'],
         'summary': event.get_summary(),
         'date': event.get_date_text(),
-        'status': _(status),
+        'status': participant_status_label(status),
         'orgname': organizer.name(),
         'orgemail': organizer.email()
     }
