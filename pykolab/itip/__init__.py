@@ -3,6 +3,7 @@ import pykolab
 
 from pykolab.xml import to_dt
 from pykolab.xml import event_from_ical
+from pykolab.xml import participant_status_label
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.wallace')
@@ -144,7 +145,7 @@ def check_event_conflict(kolab_event, itip_event):
         return conflict
 
     _es = to_dt(kolab_event.get_start())
-    _ee = to_dt(kolab_event.get_end())
+    _ee = to_dt(kolab_event.get_ical_dtend())  # use iCal style end date: next day for all-day events
 
     # naive loops to check for collisions in (recurring) events
     # TODO: compare recurrence rules directly (e.g. matching time slot or weekday or monthday)
@@ -208,10 +209,10 @@ def send_reply(from_address, itip_events, response_text, subject=None):
         participant_status = itip_event['xml'].get_ical_attendee_participant_status(attendee)
 
         event_summary = itip_event['xml'].get_summary()
-        message_text = response_text % { 'summary':event_summary, 'status':_(participant_status), 'name':attendee.get_name() }
+        message_text = response_text % { 'summary':event_summary, 'status':participant_status_label(participant_status), 'name':attendee.get_name() }
 
         if subject is not None:
-            subject = subject % { 'summary':event_summary, 'status':_(participant_status), 'name':attendee.get_name() }
+            subject = subject % { 'summary':event_summary, 'status':participant_status_label(participant_status), 'name':attendee.get_name() }
 
         try:
             message = itip_event['xml'].to_message_itip(from_address,

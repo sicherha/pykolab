@@ -357,6 +357,12 @@ class TestITip(unittest.TestCase):
         event.set_uid(itip_event['uid'])
         self.assertFalse(itip.check_event_conflict(event, itip_event), "No conflict for same UID")
 
+        allday = Event()
+        allday.set_start(datetime.date(2012,7,13))
+        allday.set_end(datetime.date(2012,7,13))
+
+        self.assertTrue(itip.check_event_conflict(allday, itip_event), "Conflicting allday event")
+
         event2 = Event()
         event2.set_start(datetime.datetime(2012,7,13, 10,0,0, tzinfo=pytz.timezone("US/Central")))
         event2.set_end(datetime.datetime(2012,7,13, 11,0,0, tzinfo=pytz.timezone("US/Central")))
