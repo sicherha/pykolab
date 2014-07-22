@@ -100,6 +100,9 @@ def cleanup():
 def execute(*args, **kw):
     global auth, imap
 
+    # (re)set language to default
+    pykolab.translate.setUserLanguage(conf.get('kolab','default_locale'))
+
     if not os.path.isdir(mybasepath):
         os.makedirs(mybasepath)
 
@@ -875,6 +878,8 @@ def send_response(from_address, itip_events, owner=None):
         attendee = itip_event['xml'].get_attendee_by_email(from_address)
         participant_status = itip_event['xml'].get_ical_attendee_participant_status(attendee)
 
+        # TODO: look-up event organizer in LDAP and change localization to its preferredlanguage
+
         message_text = reservation_response_text(participant_status, owner)
         subject_template = _("Reservation Request for %(summary)s was %(status)s")
 
@@ -943,6 +948,10 @@ def send_owner_notification(resource, owner, itip_event, success=True):
             ),
             level=8
         )
+
+        # change gettext language to the preferredlanguage setting of the resource owner
+        if owner.has_key('preferredlanguage'):
+            pykolab.translate.setUserLanguage(owner['preferredlanguage'])
 
         message_text = owner_notification_text(resource, owner, itip_event['xml'], success)
 

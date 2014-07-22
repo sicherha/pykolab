@@ -178,14 +178,14 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             'kolabinvitationpolicy': ['ACT_TENTATIVE_IF_NO_CONFLICT','ACT_SAVE_TO_CALENDAR','ACT_UPDATE']
         }
 
-        self.bob = {
-            'displayname': 'Bob Auto',
-            'mail': 'bob.auto@example.org',
-            'dn': 'uid=auto,ou=People,dc=example,dc=org',
-            'preferredlanguage': 'en_US',
-            'mailbox': 'user/bob.auto@example.org',
-            'kolabtargetfolder': 'user/bob.auto/Calendar@example.org',
-            'kolabinvitationpolicy': ['ACT_ACCEPT','ACT_UPDATE']
+        self.mark = {
+            'displayname': 'Mark German',
+            'mail': 'mark.german@example.org',
+            'dn': 'uid=german,ou=People,dc=example,dc=org',
+            'preferredlanguage': 'de_DE',
+            'mailbox': 'user/mark.german@example.org',
+            'kolabtargetfolder': 'user/mark.german/Calendar@example.org',
+            'kolabinvitationpolicy': ['ACT_ACCEPT','ACT_UPDATE_AND_NOTIFY']
         }
 
         self.external = {
@@ -197,7 +197,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         user_add("John", "Doe", kolabinvitationpolicy=self.john['kolabinvitationpolicy'], preferredlanguage=self.john['preferredlanguage'])
         user_add("Jane", "Manager", kolabinvitationpolicy=self.jane['kolabinvitationpolicy'], preferredlanguage=self.jane['preferredlanguage'])
         user_add("Jack", "Tentative", kolabinvitationpolicy=self.jack['kolabinvitationpolicy'], preferredlanguage=self.jack['preferredlanguage'])
-        user_add("Bob", "Auto", kolabinvitationpolicy=self.bob['kolabinvitationpolicy'], preferredlanguage=self.bob['preferredlanguage'])
+        user_add("Mark", "German", kolabinvitationpolicy=self.mark['kolabinvitationpolicy'], preferredlanguage=self.mark['preferredlanguage'])
 
         time.sleep(1)
         from tests.functional.synchronize import synchronize_once
@@ -606,18 +606,18 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.purge_mailbox(self.john['mailbox'])
 
         start = datetime.datetime(2014,8,12, 16,0,0, tzinfo=pytz.timezone("Europe/Berlin"))
-        uid = self.create_calendar_event(start, user=self.john, attendees=[self.jane, self.bob, self.jack])
+        uid = self.create_calendar_event(start, user=self.john, attendees=[self.jane, self.mark, self.jack])
 
         # send a reply from jane to john
         self.send_itip_reply(uid, self.jane['mail'], self.john['mail'], start=start)
 
         # check for notification message
-        # this notification should be suppressed until bob has replied, too
+        # this notification should be suppressed until mark has replied, too
         notification = self.check_message_received(_('"%s" has been updated') % ('test'), self.john['mail'])
         self.assertEqual(notification, None)
 
-        # send a reply from bob to john
-        self.send_itip_reply(uid, self.bob['mail'], self.john['mail'], start=start, partstat='ACCEPTED')
+        # send a reply from mark to john
+        self.send_itip_reply(uid, self.mark['mail'], self.john['mail'], start=start, partstat='ACCEPTED')
 
         notification = self.check_message_received(_('"%s" has been updated') % ('test'), self.john['mail'])
         self.assertIsInstance(notification, email.message.Message)
@@ -628,7 +628,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         self.purge_mailbox(self.john['mailbox'])
 
-        # send a reply from bob to john
+        # send a reply from mark to john
         self.send_itip_reply(uid, self.jack['mail'], self.john['mail'], start=start, partstat='ACCEPTED')
 
         # this triggers an additional notification
@@ -637,6 +637,28 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         notification_text = str(notification.get_payload());
         self.assertNotIn(_("PENDING"), notification_text)
+
+
+    def test_008_notify_translated(self):
+        self.purge_mailbox(self.mark['mailbox'])
+
+        start = datetime.datetime(2014,8,12, 16,0,0, tzinfo=pytz.timezone("Europe/Berlin"))
+        uid = self.create_calendar_event(start, user=self.mark, attendees=[self.jane])
+
+        # send a reply from jane to mark
+        self.send_itip_reply(uid, self.jane['mail'], self.mark['mail'], start=start)
+
+        # change translations to de_DE
+        pykolab.translate.setUserLanguage(self.mark['preferredlanguage'])
+        notification = self.check_message_received(_('"%s" has been updated') % ('test'), self.mark['mail'], self.mark['mailbox'])
+        self.assertIsInstance(notification, email.message.Message)
+
+        notification_text = str(notification.get_payload());
+        self.assertIn(self.jane['mail'], notification_text)
+        self.assertIn(participant_status_label("ACCEPTED")+":", notification_text)
+
+        # reset localization
+        pykolab.translate.setUserLanguage(conf.get('kolab','default_locale'))
 
 
     def test_009_outdated_reply(self):
@@ -711,3 +733,5 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         jacks = self.check_user_calendar_event(self.jack['kolabtargetfolder'], uid)
         self.assertEqual(jacks.get_attendee(self.jane['mail']).get_participant_status(), kolabformat.PartAccepted)
         self.assertEqual(jacks.get_attendee(self.jack['mail']).get_participant_status(), kolabformat.PartNeedsAction)
+
+

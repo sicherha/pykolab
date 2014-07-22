@@ -144,6 +144,9 @@ def cleanup():
 def execute(*args, **kw):
     global auth, imap
 
+    # (re)set language to default
+    pykolab.translate.setUserLanguage(conf.get('kolab','default_locale'))
+
     if not os.path.isdir(mybasepath):
         os.makedirs(mybasepath)
 

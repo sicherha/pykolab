@@ -22,7 +22,7 @@ participant_status_labels = {
     }
 
 def participant_status_label(status):
-    return _(participant_status_labels[status]) if participant_status_labels.has_key(status) else status
+    return _(participant_status_labels[status]) if participant_status_labels.has_key(status) else _(status)
 
 
 class Attendee(kolabformat.Attendee):
