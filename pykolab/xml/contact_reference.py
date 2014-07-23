@@ -11,9 +11,18 @@ import kolabformat
 """
 
 class ContactReference(kolabformat.ContactReference):
+    properties_map = {
+        'email': 'email',
+        'name':  'name',
+        'type':  'type',
+        'uid':   'uid',
+    }
+
     def __init__(self, email=None):
         if email == None:
             kolabformat.ContactReference.__init__(self)
+        elif isinstance(email, kolabformat.ContactReference):
+            kolabformat.ContactReference.__init__(self, email.email(), email.name(), email.uid())
         else:
             kolabformat.ContactReference.__init__(self, email)
 
@@ -31,3 +40,15 @@ class ContactReference(kolabformat.ContactReference):
 
     def set_name(self, name):
         self.setName(name)
+
+    def to_dict(self):
+        data = dict()
+
+        for p, getter in self.properties_map.iteritems():
+            val = None
+            if hasattr(self, getter):
+                val = getattr(self, getter)()
+            if val is not None:
+                data[p] = val
+
+        return data

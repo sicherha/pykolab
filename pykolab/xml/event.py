@@ -18,6 +18,7 @@ from pykolab.translate import _
 from os import path
 from attendee import Attendee
 from contact_reference import ContactReference
+from recurrence_rule import RecurrenceRule
 
 log = pykolab.getLogger('pykolab.xml_event')
 
@@ -54,6 +55,37 @@ class Event(object):
             "PRIVATE": kolabformat.ClassPrivate,
             "CONFIDENTIAL": kolabformat.ClassConfidential,
         }
+
+    properties_map = {
+        # property: getter
+        "uid": "get_uid",
+        "created": "get_created",
+        "lastmodified-date": "get_lastmodified",
+        "sequence": "sequence",
+        "classification": "get_classification",
+        "categories": "categories",
+        "start": "get_start",
+        "end": "get_end",
+        "duration": "get_duration",
+        "transparency": "transparency",
+        "rrule": "recurrenceRule",
+        "rdate": "recurrenceDates",
+        "exdate": "exceptionDates",
+        "recurrence-id": "recurrenceID",
+        "summary": "summary",
+        "description": "description",
+        "priority": "priority",
+        "status": "get_status",
+        "location": "location",
+        "organizer": "organizer",
+        "attendee": "get_attendees",
+        "attach": "attachments",
+        "url": "url",
+        "alarm": "alarms",
+        "x-custom": "customProperties",
+        # TODO: add to_dict() support for these
+        # "exception": "exceptions",
+    }
 
     def __init__(self, from_ical="", from_string=""):
         self._attendees = []
@@ -271,7 +303,7 @@ class Event(object):
 
     def get_created(self):
         try:
-            return xmlutils.from_cdatetime(self.event.created(), False)
+            return xmlutils.from_cdatetime(self.event.created(), True)
         except ValueError:
             return datetime.datetime.now()
 
@@ -479,7 +511,7 @@ class Event(object):
         except:
             self.__str__()
 
-        return xmlutils.from_cdatetime(self.event.lastModified(), False)
+        return xmlutils.from_cdatetime(self.event.lastModified(), True)
 
     def get_organizer(self):
         organizer = self.event.organizer()
@@ -779,6 +811,42 @@ class Event(object):
             return event_xml
         else:
             raise EventIntegrityError, kolabformat.errorMessage()
+
+    def to_dict(self):
+        data = dict()
+
+        for p, getter in self.properties_map.iteritems():
+            val = None
+            if hasattr(self, getter):
+                val = getattr(self, getter)()
+            elif hasattr(self.event, getter):
+                val = getattr(self.event, getter)()
+
+            if isinstance(val, kolabformat.cDateTime):
+                val = xmlutils.from_cdatetime(val, True)
+            elif isinstance(val, kolabformat.vectordatetime):
+                val = [xmlutils.from_cdatetime(x, True) for x in val]
+            elif isinstance(val, kolabformat.vectors):
+                val = [str(x) for x in val]
+            elif isinstance(val, kolabformat.vectorcs):
+                for x in val:
+                    data[x.identifier] = x.value
+                val = None
+            elif isinstance(val, kolabformat.ContactReference):
+                val = ContactReference(val).to_dict()
+            elif isinstance(val, kolabformat.RecurrenceRule):
+                val = RecurrenceRule(val).to_dict()
+            elif isinstance(val, kolabformat.vectorattachment):
+                val = [dict(fmttype=x.mimetype(), label=x.label(), uri=x.uri()) for x in val]
+            elif isinstance(val, kolabformat.vectoralarm):
+                val = [dict(type=x.type()) for x in val]
+            elif isinstance(val, list):
+                val = [x.to_dict() for x in val if hasattr(x, 'to_dict')]
+
+            if val is not None:
+                data[p] = val
+
+        return data
 
     def to_message(self):
         from email.MIMEMultipart import MIMEMultipart

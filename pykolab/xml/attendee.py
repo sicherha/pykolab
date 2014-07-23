@@ -56,6 +56,13 @@ class Attendee(kolabformat.Attendee):
             "FALSE": False,
         }
 
+    properties_map = {
+            'role': 'get_role',
+            'rsvp':  'rsvp',
+            'partstat':  'get_participant_status',
+            'cutype':   'get_cutype',
+        }
+
     def __init__(
             self,
             email,
@@ -96,6 +103,12 @@ class Attendee(kolabformat.Attendee):
 
         if not participant_status == None:
             self.set_participant_status(participant_status)
+
+    def copy_from(self, obj):
+        if isinstance(obj, kolabformat.Attendee):
+            kolabformat.Attendee.__init__(self, obj)
+            self.contactreference = ContactReference(obj.contact())
+            self.email = self.contactreference.get_email()
 
     def delegate_from(self, delegators):
         crefs = []
@@ -138,8 +151,11 @@ class Attendee(kolabformat.Attendee):
 
         self.setDelegatedTo(list(set(crefs)))
 
-    def get_cutype(self):
-        return self.cutype()
+    def get_cutype(self, translated=False):
+        cutype = self.cutype()
+        if translated:
+            return self._translate_value(cutype, self.cutype_map)
+        return cutype
 
     def get_delegated_from(self):
         return self.delegatedFrom()
@@ -161,15 +177,21 @@ class Attendee(kolabformat.Attendee):
     def get_participant_status(self, translated=False):
         partstat = self.partStat()
         if translated:
-            partstat_name_map = dict([(v, k) for (k, v) in self.participant_status_map.iteritems()])
-            return partstat_name_map[partstat] if partstat_name_map.has_key(partstat) else 'UNKNOWN'
+            return self._translate_value(partstat, self.participant_status_map)
         return partstat
 
-    def get_role(self):
-        return self.role()
+    def get_role(self, translated=False):
+        role = self.role()
+        if translated:
+            return self._translate_value(role, self.role_map)
+        return role
 
     def get_rsvp(self):
         return self.rsvp()
+
+    def _translate_value(self, val, map):
+        name_map = dict([(v, k) for (k, v) in map.iteritems()])
+        return name_map[val] if name_map.has_key(val) else 'UNKNOWN'
 
     def set_cutype(self, cutype):
         if cutype in self.cutype_map.keys():
@@ -201,6 +223,22 @@ class Attendee(kolabformat.Attendee):
 
     def set_rsvp(self, rsvp):
         self.setRSVP(rsvp)
+
+    def to_dict(self):
+        data = self.contactreference.to_dict()
+        data.pop('type', None)
+
+        for p, getter in self.properties_map.iteritems():
+            val = None
+            args = {}
+            if hasattr(self, getter):
+                if getter.startswith('get_'):
+                    args = dict(translated=True)
+                val = getattr(self, getter)(**args)
+            if val is not None:
+                data[p] = val
+
+        return data
 
     def __str__(self):
         return self.email

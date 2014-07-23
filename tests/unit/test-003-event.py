@@ -65,6 +65,136 @@ END:VALARM
 END:VEVENT
 """
 
+xml_event = """
+<icalendar xmlns="urn:ietf:params:xml:ns:icalendar-2.0">
+  <vcalendar>
+    <properties>
+      <prodid>
+        <text>Libkolabxml-1.1</text>
+      </prodid>
+      <version>
+        <text>2.0</text>
+      </version>
+      <x-kolab-version>
+        <text>3.1.0</text>
+      </x-kolab-version>
+    </properties>
+    <components>
+      <vevent>
+        <properties>
+          <uid>
+            <text>75c740bb-b3c6-442c-8021-ecbaeb0a025e</text>
+          </uid>
+          <created>
+            <date-time>2014-07-07T01:28:23Z</date-time>
+          </created>
+          <dtstamp>
+            <date-time>2014-07-07T01:28:23Z</date-time>
+          </dtstamp>
+          <sequence>
+            <integer>1</integer>
+          </sequence>
+          <class>
+            <text>PUBLIC</text>
+          </class>
+          <dtstart>
+            <parameters>
+              <tzid>
+                <text>/kolab.org/Europe/London</text>
+              </tzid>
+            </parameters>
+            <date-time>2014-08-13T10:00:00</date-time>
+          </dtstart>
+          <dtend>
+            <parameters>
+              <tzid><text>/kolab.org/Europe/London</text></tzid>
+            </parameters>
+            <date-time>2014-08-13T14:00:00</date-time>
+          </dtend>
+          <rrule>
+            <recur>
+              <freq>DAILY</freq>
+              <until>
+                <date>2014-07-25</date>
+              </until>
+            </recur>
+          </rrule>
+          <exdate>
+            <parameters>
+              <tzid>
+                <text>/kolab.org/Europe/Berlin</text>
+              </tzid>
+            </parameters>
+            <date>2014-07-19</date>
+            <date>2014-07-26</date>
+            <date>2014-07-12</date>
+            <date>2014-07-13</date>
+            <date>2014-07-20</date>
+            <date>2014-07-27</date>
+            <date>2014-07-05</date>
+            <date>2014-07-06</date>
+          </exdate>
+          <summary>
+            <text>test</text>
+          </summary>
+          <description>
+            <text>test</text>
+          </description>
+          <priority>
+            <integer>5</integer>
+          </priority>
+          <status>
+            <text>CANCELLED</text>
+          </status>
+          <location>
+            <text>Room 101</text>
+          </location>
+          <organizer>
+            <parameters>
+              <cn><text>Doe, John</text></cn>
+            </parameters>
+            <cal-address>mailto:%3Cjohn%40example.org%3E</cal-address>
+          </organizer>
+          <attendee>
+            <parameters>
+              <partstat><text>ACCEPTED</text></partstat>
+              <role><text>REQ-PARTICIPANT</text></role>
+              <rsvp><boolean>true</boolean></rsvp>
+            </parameters>
+            <cal-address>mailto:%3Cjane%40example.org%3E</cal-address>
+          </attendee>
+          <attendee>
+            <parameters>
+              <partstat><text>TENTATIVE</text></partstat>
+              <role><text>OPT-PARTICIPANT</text></role>
+            </parameters>
+            <cal-address>mailto:%3Csomebody%40else.com%3E</cal-address>
+          </attendee>
+          <attach>
+            <parameters>
+              <fmttype>
+                <text>text/html</text>
+              </fmttype>
+              <x-label>
+                <text>noname.1395223627.5555</text>
+              </x-label>
+            </parameters>
+            <uri>cid:noname.1395223627.5555</uri>
+          </attach>
+          <x-custom>
+            <identifier>X-MOZ-RECEIVED-DTSTAMP</identifier>
+            <value>20140224T155612Z</value>
+          </x-custom>
+          <x-custom>
+            <identifier>X-GWSHOW-AS</identifier>
+            <value>BUSY</value>
+          </x-custom>
+        </properties>
+      </vevent>
+    </components>
+  </vcalendar>
+</icalendar>
+"""
 
 class TestEventXML(unittest.TestCase):
     event = Event()
@@ -181,7 +311,7 @@ METHOD:REQUEST
         event = event_from_ical(ical.walk('VEVENT')[0].to_ical())
 
         self.assertEqual(event.get_location(), "Location")
-        self.assertEqual(str(event.get_lastmodified()), "2014-04-07 12:23:11")
+        self.assertEqual(str(event.get_lastmodified()), "2014-04-07 12:23:11+00:00")
         self.assertEqual(event.get_description(), "Description\n2 lines")
         self.assertEqual(event.get_url(), "http://somelink.com/foo")
         self.assertEqual(event.get_transparency(), False)
@@ -310,83 +440,7 @@ END:VEVENT
         self.assertEqual(self.event.get_last_occurrence(), None)
 
     def test_022_load_from_xml(self):
-        xml = """
-<icalendar xmlns="urn:ietf:params:xml:ns:icalendar-2.0">
-  <vcalendar>
-    <properties>
-      <prodid>
-        <text>Libkolabxml-1.1</text>
-      </prodid>
-      <version>
-        <text>2.0</text>
-      </version>
-      <x-kolab-version>
-        <text>3.1.0</text>
-      </x-kolab-version>
-    </properties>
-    <components>
-      <vevent>
-        <properties>
-          <uid>
-            <text>75c740bb-b3c6-442c-8021-ecbaeb0a025e</text>
-          </uid>
-          <created>
-            <date-time>2014-07-07T01:28:23Z</date-time>
-          </created>
-          <dtstamp>
-            <date-time>2014-07-07T01:28:23Z</date-time>
-          </dtstamp>
-          <sequence>
-            <integer>1</integer>
-          </sequence>
-          <class>
-            <text>PUBLIC</text>
-          </class>
-          <dtstart>
-            <parameters>
-              <tzid>
-                <text>/kolab.org/Europe/London</text>
-              </tzid>
-            </parameters>
-            <date-time>2014-08-13T10:00:00</date-time>
-          </dtstart>
-          <dtend>
-            <parameters>
-              <tzid><text>/kolab.org/Europe/London</text></tzid>
-            </parameters>
-            <date-time>2014-08-13T14:00:00</date-time>
-          </dtend>
-          <summary>
-            <text>test</text>
-          </summary>
-          <organizer>
-            <parameters>
-              <cn><text>Doe, John</text></cn>
-            </parameters>
-            <cal-address>mailto:%3Cjohn%40example.org%3E</cal-address>
-          </organizer>
-          <attendee>
-            <parameters>
-              <partstat><text>ACCEPTED</text></partstat>
-              <role><text>REQ-PARTICIPANT</text></role>
-              <rsvp><boolean>true</boolean></rsvp>
-            </parameters>
-            <cal-address>mailto:%3Cjane%40example.org%3E</cal-address>
-          </attendee>
-          <attendee>
-            <parameters>
-              <partstat><text>TENTATIVE</text></partstat>
-              <role><text>OPT-PARTICIPANT</text></role>
-            </parameters>
-            <cal-address>mailto:%3Csomebody%40else.com%3E</cal-address>
-          </attendee>
-        </properties>
-      </vevent>
-    </components>
-  </vcalendar>
-</icalendar>
-"""
-        event = event_from_string(xml)
+        event = event_from_string(xml_event)
         self.assertEqual(event.uid, '75c740bb-b3c6-442c-8021-ecbaeb0a025e')
         self.assertEqual(event.get_attendee_by_email("jane@example.org").get_participant_status(), kolabformat.PartAccepted)
         self.assertEqual(event.get_sequence(), 1)
@@ -431,6 +485,40 @@ END:VEVENT
 """
         event = event_from_ical(vevent)
         self.assertRaises(EventIntegrityError, event.to_message)
+
+    def test_025_to_dict(self):
+        data = event_from_string(xml_event).to_dict()
+
+        self.assertIsInstance(data, dict)
+        self.assertIsInstance(data['start'], datetime.datetime)
+        self.assertIsInstance(data['end'], datetime.datetime)
+        self.assertIsInstance(data['created'], datetime.datetime)
+        self.assertIsInstance(data['lastmodified-date'], datetime.datetime)
+        self.assertEqual(data['uid'], '75c740bb-b3c6-442c-8021-ecbaeb0a025e')
+        self.assertEqual(data['summary'], 'test')
+        self.assertEqual(data['location'], 'Room 101')
+        self.assertEqual(data['description'], 'test')
+        self.assertEqual(data['priority'], 5)
+        self.assertEqual(data['status'], 'CANCELLED')
+        self.assertEqual(data['sequence'], 1)
+        self.assertEqual(data['transparency'], False)
+        self.assertEqual(data['X-GWSHOW-AS'], 'BUSY')
+
+        self.assertIsInstance(data['organizer'], dict)
+        self.assertEqual(data['organizer']['email'], 'john@example.org')
+
+        self.assertEqual(len(data['attendee']), 2)
+        self.assertIsInstance(data['attendee'][0], dict)
+
+        self.assertEqual(len(data['attach']), 1)
+        self.assertIsInstance(data['attach'][0], dict)
+        self.assertEqual(data['attach'][0]['fmttype'], 'text/html')
+
+        self.assertIsInstance(data['rrule'], dict)
+        self.assertEqual(data['rrule']['frequency'], 'DAILY')
+        self.assertEqual(data['rrule']['interval'], 1)
+        self.assertEqual(data['rrule']['wkst'], 'MO')
+        self.assertIsInstance(data['rrule']['until'], datetime.date)
 
 
 if __name__ == '__main__':

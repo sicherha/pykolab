@@ -108,5 +108,25 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(participant_status_label(kolabformat.PartTentative), "Tentatively Accepted")
         self.assertEqual(participant_status_label('UNKNOWN'), "UNKNOWN")
 
+    def test_020_to_dict(self):
+        name = "Doe, Jane"
+        role = 'OPT-PARTICIPANT'
+        cutype = 'RESOURCE'
+        partstat = 'ACCEPTED'
+        self.attendee.set_name(name)
+        self.attendee.set_rsvp(True)
+        self.attendee.set_role(role)
+        self.attendee.set_cutype(cutype)
+        self.attendee.set_participant_status(partstat)
+
+        data = self.attendee.to_dict()
+        self.assertIsInstance(data, dict)
+        self.assertEqual(data['role'], role)
+        self.assertEqual(data['cutype'], cutype)
+        self.assertEqual(data['partstat'], partstat)
+        self.assertEqual(data['name'], name)
+        self.assertEqual(data['email'], 'jane@doe.org')
+        self.assertTrue(data['rsvp'])
+
 if __name__ == '__main__':
     unittest.main()

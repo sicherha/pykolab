@@ -4,6 +4,7 @@ from attendee import participant_status_label
 
 from contact import Contact
 from contact_reference import ContactReference
+from recurrence_rule import RecurrenceRule
 
 from event import Event
 from event import EventIntegrityError
@@ -19,6 +20,7 @@ __all__ = [
         "Contact",
         "ContactReference",
         "Event",
+        "RecurrenceRule",
         "event_from_ical",
         "event_from_string",
         "to_dt",

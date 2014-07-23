@@ -144,6 +144,8 @@ def check_event_conflict(kolab_event, itip_event):
     if kolab_event.uid == itip_event['uid']:
         return conflict
 
+    # TODO: don't consider conflict if event has TRANSP:TRANSPARENT
+
     _es = to_dt(kolab_event.get_start())
     _ee = to_dt(kolab_event.get_ical_dtend())  # use iCal style end date: next day for all-day events
 
