@@ -1,7 +1,9 @@
 import datetime
 import unittest
+import kolabformat
 
 from pykolab.xml import Attendee
+from pykolab.xml import participant_status_label
 
 class TestEventXML(unittest.TestCase):
     attendee = Attendee("jane@doe.org")
@@ -100,6 +102,31 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual([k for k,v in self.attendee.cutype_map.iteritems() if v == 1][0], "GROUP")
         self.assertEqual([k for k,v in self.attendee.cutype_map.iteritems() if v == 2][0], "INDIVIDUAL")
         self.assertEqual([k for k,v in self.attendee.cutype_map.iteritems() if v == 3][0], "RESOURCE")
+
+    def test_018_partstat_label(self):
+        self.assertEqual(participant_status_label('NEEDS-ACTION'), "Needs Action")
+        self.assertEqual(participant_status_label(kolabformat.PartTentative), "Tentatively Accepted")
+        self.assertEqual(participant_status_label('UNKNOWN'), "UNKNOWN")
+
+    def test_020_to_dict(self):
+        name = "Doe, Jane"
+        role = 'OPT-PARTICIPANT'
+        cutype = 'RESOURCE'
+        partstat = 'ACCEPTED'
+        self.attendee.set_name(name)
+        self.attendee.set_rsvp(True)
+        self.attendee.set_role(role)
+        self.attendee.set_cutype(cutype)
+        self.attendee.set_participant_status(partstat)
+
+        data = self.attendee.to_dict()
+        self.assertIsInstance(data, dict)
+        self.assertEqual(data['role'], role)
+        self.assertEqual(data['cutype'], cutype)
+        self.assertEqual(data['partstat'], partstat)
+        self.assertEqual(data['name'], name)
+        self.assertEqual(data['email'], 'jane@doe.org')
+        self.assertTrue(data['rsvp'])
 
 if __name__ == '__main__':
     unittest.main()

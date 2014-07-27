@@ -40,10 +40,24 @@ import kolabformat
 from pykolab.auth import Auth
 from pykolab.conf import Conf
 from pykolab.imap import IMAP
-from pykolab.xml import event_from_ical
-from pykolab.xml import event_from_string
 from pykolab.xml import to_dt
+from pykolab.xml import event_from_message
+from pykolab.xml import participant_status_label
+from pykolab.itip import events_from_message
+from pykolab.itip import check_event_conflict
 from pykolab.translate import _
+
+# define some contstants used in the code below
+COND_NOTIFY = 256
+ACT_MANUAL  = 1
+ACT_ACCEPT  = 2
+ACT_ACCEPT_AND_NOTIFY = ACT_ACCEPT + COND_NOTIFY
+
+policy_name_map = {
+    'ACT_MANUAL':            ACT_MANUAL,
+    'ACT_ACCEPT':            ACT_ACCEPT,
+    'ACT_ACCEPT_AND_NOTIFY': ACT_ACCEPT_AND_NOTIFY
+}
 
 log = pykolab.getLogger('pykolab.wallace')
 conf = pykolab.getConf()
@@ -85,6 +99,9 @@ def cleanup():
 
 def execute(*args, **kw):
     global auth, imap
+
+    # (re)set language to default
+    pykolab.translate.setUserLanguage(conf.get('kolab','default_locale'))
 
     if not os.path.isdir(mybasepath):
         os.makedirs(mybasepath)
@@ -150,7 +167,7 @@ def execute(*args, **kw):
     # An iTip message may contain multiple events. Later on, test if the message
     # is an iTip message by checking the length of this list.
     try:
-        itip_events = itip_events_from_message(message)
+        itip_events = events_from_message(message, ['REQUEST', 'CANCEL'])
     except Exception, e:
         log.error(_("Failed to parse iTip events from message: %r" % (e)))
         itip_events = []
@@ -466,75 +483,31 @@ def read_resource_calendar(resource_rec, itip_events):
 
         event_message = message_from_string(data[0][1])
 
-        if event_message.is_multipart():
-            for part in event_message.walk():
-                if part.get_content_type() == "application/calendar+xml":
-                    payload = part.get_payload(decode=True)
-                    event = pykolab.xml.event_from_string(payload)
+        try:
+            event = event_from_message(message_from_string(data[0][1]))
+        except Exception, e:
+            log.error(_("Failed to parse event from message %s/%s: %r") % (mailbox, num, e))
+            continue
 
-                    for itip in itip_events:
-                        _es = to_dt(event.get_start())
-                        _ee = to_dt(event.get_end())
+        if event:
+            for itip in itip_events:
+                conflict = check_event_conflict(event, itip)
 
-                        conflict = False
+                if event.get_uid() == itip['uid']:
+                    resource_rec['existing_events'].append(itip['uid'])
 
-                        # naive loops to check for collisions in (recurring) events
-                        # TODO: compare recurrence rules directly (e.g. matching time slot or weekday or monthday)
-                        while not conflict and _es is not None:
-                            _is = to_dt(itip['start'])
-                            _ie = to_dt(itip['end'])
+                if conflict:
+                    log.info(
+                        _("Event %r conflicts with event %r") % (
+                            itip['xml'].get_uid(),
+                            event.get_uid()
+                        )
+                    )
 
-                            while not conflict and _is is not None:
-                                log.debug("* Comparing event dates at %s/%s with %s/%s" % (_es, _ee, _is, _ie), level=9)
-                                conflict = check_date_conflict(_es, _ee, _is, _ie)
-                                _is = to_dt(itip['xml'].get_next_occurence(_is)) if event.is_recurring() else None
-                                _ie = to_dt(itip['xml'].get_occurence_end_date(_is))
-
-                            _es = to_dt(event.get_next_occurence(_es)) if event.is_recurring() else None
-                            _ee = to_dt(event.get_occurence_end_date(_es))
-
-                        if event.get_uid() == itip['uid']:
-                            resource_rec['existing_events'].append(itip['uid'])
-
-                            # don't register conflict for updates
-                            if itip['sequence'] > 0 and itip['sequence'] >= event.get_sequence():
-                                conflict = False
-
-                        if conflict:
-                            log.info(
-                                _("Event %r conflicts with event %r") % (
-                                    itip['xml'].get_uid(),
-                                    event.get_uid()
-                                )
-                            )
-
-                            resource_rec['conflicting_events'].append(event.get_uid())
-                            resource_rec['conflict'] = True
+                    resource_rec['conflicting_events'].append(event.get_uid())
+                    resource_rec['conflict'] = True
 
     return num_messages
-
-def check_date_conflict(_es, _ee, _is, _ie):
-    conflict = False
-
-    # TODO: add margin for all-day dates (+13h; -12h)
-
-    if _es < _is:
-        if _es <= _ie:
-            if _ee <= _is:
-                conflict = False
-            else:
-                conflict = True
-        else:
-            conflict = True
-    elif _es == _is:
-        conflict = True
-    else: # _es > _is
-        if _es <= _ie:
-            conflict = True
-        else:
-            conflict = False
-    
-    return conflict
 
 
 def accept_reservation_request(itip_event, resource, delegator=None):
@@ -556,7 +529,13 @@ def accept_reservation_request(itip_event, resource, delegator=None):
         level=8
     )
 
-    send_response(delegator['mail'] if delegator else resource['mail'], itip_event, get_resource_owner(resource))
+    owner = get_resource_owner(resource)
+
+    if saved:
+        send_response(delegator['mail'] if delegator else resource['mail'], itip_event, owner)
+
+    if owner:
+        send_owner_notification(resource, owner, itip_event, saved)
 
 
 def decline_reservation_request(itip_event, resource):
@@ -570,7 +549,11 @@ def decline_reservation_request(itip_event, resource):
         "DECLINED"
     )
 
+    owner = get_resource_owner(resource)
     send_response(resource['mail'], itip_event, get_resource_owner(resource))
+
+    if owner:
+        send_owner_notification(resource, owner, itip_event, True)
 
 
 def save_resource_event(itip_event, resource):
@@ -616,118 +599,6 @@ def delete_resource_event(uid, resource):
 
     imap.imap.m.expunge()
 
-
-def itip_events_from_message(message):
-    """
-        Obtain the iTip payload from email.message <message>
-    """
-    # Placeholder for any itip_events found in the message.
-    itip_events = []
-    seen_uids = []
-
-    # iTip methods we are actually interested in. Other methods will be ignored.
-    itip_methods = [ "REQUEST", "CANCEL" ]
-
-    # Are all iTip messages multipart? No! RFC 6047, section 2.4 states "A
-    # MIME body part containing content information that conforms to this
-    # document MUST have (...)" but does not state whether an iTip message must
-    # therefore also be multipart.
-
-    # Check each part
-    for part in message.walk():
-
-        # The iTip part MUST be Content-Type: text/calendar (RFC 6047, section 2.4)
-        # But in real word, other mime-types are used as well
-        if part.get_content_type() in [ "text/calendar", "text/x-vcalendar", "application/ics" ]:
-            if not str(part.get_param('method')).upper() in itip_methods:
-                log.error(_("Method %r not really interesting for us.") % (part.get_param('method')))
-                continue
-
-            # Get the itip_payload
-            itip_payload = part.get_payload(decode=True)
-
-            log.debug(_("Raw iTip payload: %s") % (itip_payload), level=9)
-
-            # Python iCalendar prior to 3.0 uses "from_string".
-            if hasattr(icalendar.Calendar, 'from_ical'):
-                cal = icalendar.Calendar.from_ical(itip_payload)
-            elif hasattr(icalendar.Calendar, 'from_string'):
-                cal = icalendar.Calendar.from_string(itip_payload)
-
-            # If we can't read it, we're out
-            else:
-                log.error(_("Could not read iTip from message."))
-                return []
-
-            for c in cal.walk():
-                if c.name == "VEVENT":
-                    itip = {}
-
-                    if c['uid'] in seen_uids:
-                        log.debug(_("Duplicate iTip event: %s") % (c['uid']), level=9)
-                        continue
-
-                    # From the event, take the following properties:
-                    #
-                    # - method
-                    # - uid
-                    # - sequence
-                    # - start
-                    # - end (if any)
-                    # - duration (if any)
-                    # - organizer
-                    # - attendees (if any)
-                    # - resources (if any)
-                    #
-
-                    itip['uid'] = str(c['uid'])
-                    itip['method'] = str(cal['method']).upper()
-                    itip['sequence'] = int(c['sequence']) if c.has_key('sequence') else 0
-
-                    if c.has_key('dtstart'):
-                        itip['start'] = c['dtstart'].dt
-                    else:
-                        log.error(_("iTip event without a start"))
-                        continue
-
-                    if c.has_key('dtend'):
-                        itip['end'] = c['dtend'].dt
-
-                    if c.has_key('duration'):
-                        itip['duration'] = c['duration'].dt
-                        itip['end'] = itip['start'] + c['duration'].dt
-
-                    itip['organizer'] = c['organizer']
-
-                    itip['attendees'] = c['attendee']
-
-                    if c.has_key('resources'):
-                        itip['resources'] = c['resources']
-
-                    itip['raw'] = itip_payload
-
-                    try:
-                        itip['xml'] = event_from_ical(c.to_ical())
-                    except Exception, e:
-                        log.error("event_from_ical() exception: %r" % (e))
-                        continue
-
-                    itip_events.append(itip)
-
-                    seen_uids.append(c['uid'])
-
-                # end if c.name == "VEVENT"
-
-            # end for c in cal.walk()
-
-        # end if part.get_content_type() == "text/calendar"
-
-    # end for part in message.walk()
-
-    if not len(itip_events) and not message.is_multipart():
-        log.debug(_("Message is not an iTip message (non-multipart message)"), level=5)
-
-    return itip_events
 
 def reject(filepath):
     new_filepath = os.path.join(
@@ -904,27 +775,41 @@ def get_resource_records(resource_dns):
         #   If it is not, ...
         resource_attrs = auth.get_entry_attributes(None, resource_dn, ['*'])
         resource_attrs['dn'] = resource_dn
+        parse_kolabinvitationpolicy(resource_attrs)
+
         if not 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
             if resource_attrs.has_key('uniquemember'):
                 resources[resource_dn] = resource_attrs
                 for uniquemember in resource_attrs['uniquemember']:
-                    resource_attrs = auth.get_entry_attributes(
+                    member_attrs = auth.get_entry_attributes(
                             None,
                             uniquemember,
                             ['*']
                         )
 
-                    if 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
-                        resource_attrs['dn'] = uniquemember
-                        resources[uniquemember] = resource_attrs
+                    if 'kolabsharedfolder' in [x.lower() for x in member_attrs['objectclass']]:
+                        member_attrs['dn'] = uniquemember
+                        parse_kolabinvitationpolicy(member_attrs, resource_attrs)
+
+                        resources[uniquemember] = member_attrs
                         resources[uniquemember]['memberof'] = resource_dn
-                        if not resource_attrs.has_key('owner') and resources[resource_dn].has_key('owner'):
+                        if not member_attrs.has_key('owner') and resources[resource_dn].has_key('owner'):
                             resources[uniquemember]['owner'] = resources[resource_dn]['owner']
                         resource_dns.append(uniquemember)
         else:
             resources[resource_dn] = resource_attrs
 
     return resources
+
+
+def parse_kolabinvitationpolicy(attrs, parent=None):
+    if attrs.has_key('kolabinvitationpolicy'):
+        if not isinstance(attrs['kolabinvitationpolicy'], list):
+            attrs['kolabinvitationpolicy'] = [attrs['kolabinvitationpolicy']]
+        attrs['kolabinvitationpolicy'] = [policy_name_map[p] for p in attrs['kolabinvitationpolicy'] if policy_name_map.has_key(p)]
+
+    elif isinstance(parent, dict) and parent.has_key('kolabinvitationpolicy'):
+        attrs['kolabinvitationpolicy'] = parent['kolabinvitationpolicy']
 
 
 def get_resource_collection(email_address):
@@ -986,12 +871,6 @@ def send_response(from_address, itip_events, owner=None):
         resource, this will send an additional DELEGATED response message.
     """
 
-    import smtplib
-    smtp = smtplib.SMTP("localhost", 10027)
-
-    if conf.debuglevel > 8:
-        smtp.set_debuglevel(True)
-
     if isinstance(itip_events, dict):
         itip_events = [ itip_events ]
 
@@ -999,7 +878,10 @@ def send_response(from_address, itip_events, owner=None):
         attendee = itip_event['xml'].get_attendee_by_email(from_address)
         participant_status = itip_event['xml'].get_ical_attendee_participant_status(attendee)
 
+        # TODO: look-up event organizer in LDAP and change localization to its preferredlanguage
+
         message_text = reservation_response_text(participant_status, owner)
+        subject_template = _("Reservation Request for %(summary)s was %(status)s")
 
         if participant_status == "DELEGATED":
             # Extra actions to take
@@ -1007,32 +889,21 @@ def send_response(from_address, itip_events, owner=None):
             delegatee = [a for a in itip_event['xml'].get_attendees() if from_address in [b.email() for b in a.get_delegated_from()]][0]
             delegatee_status = itip_event['xml'].get_ical_attendee_participant_status(delegatee)
 
-            message = itip_event['xml'].to_message_itip(delegatee.get_email(),
-                method="REPLY",
-                participant_status=delegatee_status,
-                message_text=reservation_response_text(delegatee_status, owner)
-            )
-            smtp.sendmail(message['From'], message['To'], message.as_string())
+            pykolab.itip.send_reply(delegatee.get_email(), itip_event, reservation_response_text(delegatee_status, owner),
+                subject=subject_template)
 
             # restore list of attendees after to_message_itip()
             itip_event['xml']._attendees = [ delegator, delegatee ]
             itip_event['xml'].event.setAttendees(itip_event['xml']._attendees)
 
-            participant_status = "DELEGATED"
             message_text = _("""
                 *** This is an automated response, please do not reply! ***
 
                 Your reservation was delegated to "%s" which is available for the requested time.
             """) % (delegatee.get_name())
 
-        message = itip_event['xml'].to_message_itip(from_address,
-            method="REPLY",
-            participant_status=participant_status,
-            message_text=message_text
-        )
-        smtp.sendmail(message['From'], message['To'], message.as_string())
-
-    smtp.quit()
+        pykolab.itip.send_reply(from_address, itip_event, message_text,
+            subject=subject_template)
 
 
 def reservation_response_text(status, owner):
@@ -1040,7 +911,7 @@ def reservation_response_text(status, owner):
         *** This is an automated response, please do not reply! ***
         
         We hereby inform you that your reservation was %s.
-    """) % (_(status))
+    """) % (participant_status_label(status))
 
     if owner:
         message_text += _("""
@@ -1049,3 +920,83 @@ def reservation_response_text(status, owner):
         """) % (owner['cn'], owner['mail'], owner['telephoneNumber'] if owner.has_key('telephoneNumber') else '')
     
     return message_text
+
+
+def send_owner_notification(resource, owner, itip_event, success=True):
+    """
+        Send a reservation notification to the resource owner
+    """
+    import smtplib
+    from pykolab import utils
+    from email.MIMEText import MIMEText
+    from email.Utils import formatdate
+
+    notify = False
+    status = itip_event['xml'].get_attendee_by_email(resource['mail']).get_participant_status(True)
+
+    if resource.has_key('kolabinvitationpolicy'):
+        for policy in resource['kolabinvitationpolicy']:
+            # TODO: distingish ACCEPTED / DECLINED status notifications?
+            if policy & COND_NOTIFY and owner['mail']:
+                notify = True
+                break
+
+    if notify or not success:
+        log.debug(
+            _("Sending booking notification for event %r to %r from %r") % (
+                itip_event['uid'], owner['mail'], resource['cn']
+            ),
+            level=8
+        )
+
+        # change gettext language to the preferredlanguage setting of the resource owner
+        if owner.has_key('preferredlanguage'):
+            pykolab.translate.setUserLanguage(owner['preferredlanguage'])
+
+        message_text = owner_notification_text(resource, owner, itip_event['xml'], success)
+
+        msg = MIMEText(utils.stripped_message(message_text))
+
+        msg['To'] = owner['mail']
+        msg['From'] = resource['mail']
+        msg['Date'] = formatdate(localtime=True)
+        msg['Subject'] = _('Booking for %s has been %s') % (resource['cn'], participant_status_label(status) if success else _('failed'))
+
+        smtp = smtplib.SMTP("localhost", 10027)
+
+        if conf.debuglevel > 8:
+            smtp.set_debuglevel(True)
+
+        try:
+            smtp.sendmail(resource['mail'], owner['mail'], msg.as_string())
+        except Exception, e:
+            log.error(_("SMTP sendmail error: %r") % (e))
+
+        smtp.quit()
+
+def owner_notification_text(resource, owner, event, success):
+    organizer = event.get_organizer()
+    status = event.get_attendee_by_email(resource['mail']).get_participant_status(True)
+
+    if success:
+        message_text = _("""
+            The resource booking for %(resource)s by %(orgname)s <%(orgemail)s> has been %(status)s for %(date)s.
+
+            *** This is an automated message, sent to you as the resource owner. ***
+        """)
+    else:
+        message_text = _("""
+            A reservation request for %(resource)s could not be processed automatically.
+            Please contact %(orgname)s <%(orgemail)s> who requested this resource for %(date)s. Subject: %(summary)s.
+
+            *** This is an automated message, sent to you as the resource owner. ***
+        """)
+
+    return message_text % {
+        'resource': resource['cn'],
+        'summary': event.get_summary(),
+        'date': event.get_date_text(),
+        'status': participant_status_label(status),
+        'orgname': organizer.name(),
+        'orgemail': organizer.email()
+    }

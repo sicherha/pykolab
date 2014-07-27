@@ -39,5 +39,9 @@ class Contact(kolabformat.Contact):
     def set_name(self, name):
         self.setName(name)
 
+    def to_ditc(self):
+        # TODO: implement this
+        return dict(name=self.name())
+
     def __str__(self):
         return kolabformat.writeContact(self)

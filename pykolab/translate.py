@@ -26,7 +26,10 @@ import gettext
 import os
 
 N_ = lambda x: x
-_ = lambda x: gettext.ldgettext(domain, x)
+_ = lambda x: current.lgettext(x)
+
+localedir = '/usr/local/share/locale'
+current = gettext.translation(domain, localedir, fallback=True)
 
 def getDefaultLangs():
     languages = []
@@ -45,3 +48,16 @@ def getDefaultLangs():
             if nelang not in nelangs:
                 nelangs.append(nelang)
     return nelangs
+
+def setUserLanguage(lang):
+    global current
+
+    langs = []
+    for l in gettext._expand_lang(lang):
+        if l not in langs:
+            langs.append(l)
+
+    try:
+        current = gettext.translation(domain, localedir, languages=langs, fallback=True)
+    except:
+        pass
