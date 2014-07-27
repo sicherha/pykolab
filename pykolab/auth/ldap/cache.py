@@ -63,7 +63,7 @@ class Entry(object):
         self.uniqueid = uniqueid
         self.result_attribute = result_attr
 
-        modifytimestamp_format = conf.get('ldap', 'modifytimestamp_format')
+        modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format')
         if modifytimestamp_format == None:
             modifytimestamp_format = "%Y%m%d%H%M%SZ"
 
@@ -95,7 +95,7 @@ mapper(Entry, entry_table)
 ##
 
 def delete_entry(domain, entry):
-    result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+    result_attribute = conf.get_raw('cyrus-sasl', 'result_attribute')
 
     db = init_db(domain)
     _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
@@ -105,7 +105,7 @@ def delete_entry(domain, entry):
         db.commit()
 
 def get_entry(domain, entry, update=True):
-    result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+    result_attribute = conf.get_raw('cyrus-sasl', 'result_attribute')
 
     _entry = None
 
@@ -139,7 +139,7 @@ def get_entry(domain, entry, update=True):
         db.commit()
         _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
     else:
-        modifytimestamp_format = conf.get('ldap', 'modifytimestamp_format')
+        modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format')
         if modifytimestamp_format == None:
             modifytimestamp_format = "%Y%m%d%H%M%SZ"
 
@@ -188,7 +188,7 @@ def last_modify_timestamp(domain):
     db = init_db(domain)
     last_change = db.query(Entry).order_by(desc(Entry.last_change)).first()
 
-    modifytimestamp_format = conf.get('ldap', 'modifytimestamp_format')
+    modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format')
     if modifytimestamp_format == None:
         modifytimestamp_format = "%Y%m%d%H%M%SZ"
 
