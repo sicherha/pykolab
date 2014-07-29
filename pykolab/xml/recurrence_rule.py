@@ -60,6 +60,7 @@ class RecurrenceRule(kolabformat.RecurrenceRule):
         'until':     'end',
         'bymonth':   'bymonth',
         'byday':     'byday',
+        'bymonthday':'bymonthday',
         'byyearday': 'byyearday',
         'byweekno':  'byweekno',
         'byhour':    'byhour',
@@ -106,9 +107,9 @@ class RecurrenceRule(kolabformat.RecurrenceRule):
             if isinstance(val, kolabformat.cDateTime):
                 val = xmlutils.from_cdatetime(val, True)
             elif isinstance(val, kolabformat.vectori):
-                val = [int(v) for x in val]
+                val = ",".join([int(v) for x in val])
             elif isinstance(val, kolabformat.vectordaypos):
-                val = ["%d%s" % (x.occurence, self._translate_value(x.weekday)) for x in val]
+                val = ",".join(["%s%s" % (str(x.occurence()) if x.occurence() != 0 else '', self._translate_value(x.weekday(), self.weekday_map)) for x in val])
             if val is not None:
                 data[p] = val
 
