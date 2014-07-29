@@ -211,8 +211,7 @@ class IMAP(object):
         folder_path = self.folder_utf7(folder_path)
 
         if not server == None:
-            if not self._imap.has_key(server):
-                self.connect(server=server)
+            self.connect(server=server)
 
             try:
                 self._imap[server].cm(folder_path, partition=partition)
