@@ -322,6 +322,12 @@ class Event(object):
     def get_description(self):
         return self.event.description()
 
+    def get_comment(self):
+        if hasattr(self.event, 'comment'):
+            return self.event.comment()
+        else:
+            return None
+
     def get_duration(self):
         duration = self.event.duration()
         if duration and duration.isValid():
@@ -600,6 +606,10 @@ class Event(object):
 
     def set_description(self, description):
         self.event.setDescription(str(description))
+
+    def set_comment(self, comment):
+        if hasattr(self.event, 'setComment'):
+            self.event.setComment(str(comment))
 
     def set_dtstamp(self, _datetime):
         self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False))
