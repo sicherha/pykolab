@@ -69,6 +69,7 @@ def authenticate(username=None, password=None, domain=None):
 
     if response.has_key('session_token'):
         session_id = response['session_token']
+        return True
 
 def connect():
     global conn
@@ -288,8 +289,17 @@ def group_members_list(group=None):
 def group_types_list():
     return request('GET', 'group_types.list')
 
-def groups_list():
-    return request('GET', 'groups.list')
+def groups_list(params={}):
+    return request('POST', 'groups.list', post=json.dumps(params))
+
+def ou_add(params={}):
+    return request('POST', 'ou.add', post=json.dumps(params))
+
+def ou_delete(params={}):
+    return request('POST', 'ou.delete', post=json.dumps(params))
+
+def ous_list(params={}):
+    return request('POST', 'ous.list', post=json.dumps(params))
 
 def request(method, api_uri, get=None, post=None, headers={}):
     response_data = request_raw(method, api_uri, get, post, headers)
@@ -525,8 +535,8 @@ def user_info(user=None):
 def user_types_list():
     return request('GET', 'user_types.list')
 
-def users_list():
-    return request('GET', 'users.list')
+def users_list(params={}):
+    return request('POST', 'users.list', post=json.dumps(params))
 
 def resource_types_list():
     return request('GET', 'resource_types.list')
