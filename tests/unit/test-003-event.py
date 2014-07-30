@@ -190,6 +190,50 @@ xml_event = """
             <value>BUSY</value>
           </x-custom>
         </properties>
+        <components>
+          <valarm>
+            <properties>
+              <action>
+                <text>DISPLAY</text>
+              </action>
+              <description>
+                <text>alarm 1</text>
+              </description>
+              <trigger>
+                <parameters>
+                  <related>
+                    <text>START</text>
+                  </related>
+                </parameters>
+                <duration>-PT2H</duration>
+              </trigger>
+            </properties>
+          </valarm>
+          <valarm>
+            <properties>
+              <action>
+                <text>EMAIL</text>
+              </action>
+              <summary>
+                <text>test</text>
+              </summary>
+              <description>
+                <text>alarm 2</text>
+              </description>
+              <attendee>
+                  <cal-address>mailto:%3Cjohn.die%40example.org%3E</cal-address>
+              </attendee>
+              <trigger>
+                <parameters>
+                  <related>
+                    <text>START</text>
+                  </related>
+                </parameters>
+                <duration>-P1D</duration>
+              </trigger>
+            </properties>
+          </valarm>
+        </components>
       </vevent>
     </components>
   </vcalendar>
@@ -519,6 +563,13 @@ END:VEVENT
         self.assertEqual(data['rrule']['interval'], 1)
         self.assertEqual(data['rrule']['wkst'], 'MO')
         self.assertIsInstance(data['rrule']['until'], datetime.date)
+
+        self.assertIsInstance(data['alarm'], list)
+        self.assertEqual(len(data['alarm']), 2)
+        self.assertEqual(data['alarm'][0]['action'], 'DISPLAY')
+        self.assertEqual(data['alarm'][1]['action'], 'EMAIL')
+        self.assertEqual(data['alarm'][1]['trigger']['value'], '-P1D')
+        self.assertEqual(len(data['alarm'][1]['attendee']), 1)
 
 
 if __name__ == '__main__':

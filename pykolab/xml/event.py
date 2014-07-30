@@ -7,6 +7,7 @@ import pytz
 import time
 import uuid
 import base64
+import re
 
 import pykolab
 from pykolab import constants
@@ -54,6 +55,17 @@ class Event(object):
             "PUBLIC": kolabformat.ClassPublic,
             "PRIVATE": kolabformat.ClassPrivate,
             "CONFIDENTIAL": kolabformat.ClassConfidential,
+        }
+
+    alarm_type_map = {
+            'EMAIL': kolabformat.Alarm.EMailAlarm,
+            'DISPLAY': kolabformat.Alarm.DisplayAlarm,
+            'AUDIO': kolabformat.Alarm.AudioAlarm
+        }
+
+    related_map = {
+            'START': kolabformat.Start,
+            'END': kolabformat.End
         }
 
     properties_map = {
@@ -494,8 +506,7 @@ class Event(object):
         if status in self.status_map.keys():
             return status
 
-        if status in self.status_map.values():
-            return [k for k, v in self.status_map.iteritems() if v == status][0]
+        return self._translate_value(status, self.status_map)
 
     def get_ical_sequence(self):
         return str(self.event.sequence()) if self.event.sequence() else None
@@ -839,7 +850,7 @@ class Event(object):
             elif isinstance(val, kolabformat.vectorattachment):
                 val = [dict(fmttype=x.mimetype(), label=x.label(), uri=x.uri()) for x in val]
             elif isinstance(val, kolabformat.vectoralarm):
-                val = [dict(type=x.type()) for x in val]
+                val = [self._alarm_to_dict(x) for x in val]
             elif isinstance(val, list):
                 val = [x.to_dict() for x in val if hasattr(x, 'to_dict')]
 
@@ -847,6 +858,36 @@ class Event(object):
                 data[p] = val
 
         return data
+
+    def _alarm_to_dict(self, alarm):
+        ret = dict(
+            action=self._translate_value(alarm.type(), self.alarm_type_map),
+            summary=alarm.summary(),
+            description=alarm.description(),
+            trigger=None
+        )
+
+        start = alarm.start()
+        if start and start.isValid():
+            ret['trigger'] = xmlutils.from_cdatetime(start, True)
+        else:
+            ret['trigger'] = dict(related=self._translate_value(alarm.relativeTo(), self.related_map))
+            duration = alarm.relativeStart()
+            if duration and duration.isValid():
+                prefix = '-' if duration.isNegative() else '+'
+                value = prefix + "P%dW%dDT%dH%dM%dS" % (
+                    duration.weeks(), duration.days(), duration.hours(), duration.minutes(), duration.seconds()
+                )
+                ret['trigger']['value'] = re.sub(r"T$", '', re.sub(r"0[WDHMS]", '', value))
+
+        if alarm.type() == kolabformat.Alarm.EMailAlarm:
+            ret['attendee'] = [ContactReference(a).to_dict() for a in alarm.attendees()]
+
+        return ret
+
+    def _translate_value(self, val, map):
+        name_map = dict([(v, k) for (k, v) in map.iteritems()])
+        return name_map[val] if name_map.has_key(val) else 'UNKNOWN'
 
     def to_message(self):
         from email.MIMEMultipart import MIMEMultipart
