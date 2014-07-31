@@ -175,9 +175,13 @@ def init_db(domain,reinit=False):
 
     db_uri = 'sqlite:///%s/%s.db' % (KOLAB_LIB_PATH, domain)
     echo = conf.debuglevel > 8
-    engine = create_engine(db_uri, echo=echo)
 
-    metadata.create_all(engine)
+    try:
+        engine = create_engine(db_uri, echo=echo)
+        metadata.create_all(engine)
+    except:
+        engine = create_engine('sqlite://')
+        metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)
     db = Session()
@@ -185,14 +189,17 @@ def init_db(domain,reinit=False):
     return db
 
 def last_modify_timestamp(domain):
-    db = init_db(domain)
-    last_change = db.query(Entry).order_by(desc(Entry.last_change)).first()
-
     modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format')
     if modifytimestamp_format == None:
         modifytimestamp_format = "%Y%m%d%H%M%SZ"
 
-    if not last_change == None:
-        return last_change.last_change.strftime(modifytimestamp_format)
+    try:
+        db = init_db(domain)
+        last_change = db.query(Entry).order_by(desc(Entry.last_change)).first()
 
-    return datetime.datetime(1900, 01, 01, 00, 00, 00).strftime(modifytimestamp_format)
+        if not last_change == None:
+            return last_change.last_change.strftime(modifytimestamp_format)
+        else:
+            return datetime.datetime(1900, 01, 01, 00, 00, 00).strftime(modifytimestamp_format)
+    except:
+        return datetime.datetime(1900, 01, 01, 00, 00, 00).strftime(modifytimestamp_format)

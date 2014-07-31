@@ -1414,7 +1414,7 @@ class LDAP(pykolab.base.Base):
         success = True
         for _type in ['user','group','role','sharedfolder']:
             try:
-                eval("self._change_delete_%s(entry, change)" % (_type))
+                eval("success = self._change_delete_%s(entry, change)" % (_type))
             except:
                 success = False
 
@@ -2243,7 +2243,7 @@ class LDAP(pykolab.base.Base):
             try:
                 entry['type'] = self._entry_type(entry)
             except:
-                entry['type'] = "unknown"
+                entry['type'] = None
 
             log.debug(_("Entry type: %s") % (entry['type']), level=8)
 
@@ -2316,14 +2316,6 @@ class LDAP(pykolab.base.Base):
 #                        )
 #
 #                    server = self.imap.user_mailbox_server(folder)
-
-        log.debug(
-                _("Done with _synchronize_callback() for entry %r") % (
-                        entry['id']
-                    ),
-                level=9
-            )
-
 
     def _unbind(self):
         """
