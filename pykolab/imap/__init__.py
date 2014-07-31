@@ -652,7 +652,7 @@ class IMAP(object):
             if additional_folders[additional_folder].has_key("partition"):
                 partition = additional_folders[additional_folder]["partition"]
                 try:
-                    self.imap.rename(folder_name, folder_name, partition)
+                    self.imap._rename(folder_name, folder_name, partition)
                 except:
                     log.error(_("Could not rename %s to reside on partition %s") % (folder_name, partition))
 
