@@ -384,9 +384,9 @@ class Cyrus(cyruslib.CYRUS):
                 verify_folder_search = "%s@%s" % (verify_folder_search, mbox['domain'])
 
             if ' ' in verify_folder_search:
-                folders = self.lm('"%s"' % verify_folder_search)
+                folders = self.lm('"%s"' % self.folder_utf7(verify_folder_search))
             else:
-                folders = self.lm(verify_folder_search)
+                folders = self.lm(self.folder_utf7(verify_folder_search))
 
             # NOTE: Case also covered is valid hexadecimal folders; won't be the
             # actual check as intended, but doesn't give you anyone else's data
