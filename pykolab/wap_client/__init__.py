@@ -67,6 +67,9 @@ def authenticate(username=None, password=None, domain=None):
 
     response = request('POST', "system.authenticate", post=post)
 
+    if not response:
+        return False
+
     if response.has_key('session_token'):
         session_id = response['session_token']
         return True
@@ -125,6 +128,31 @@ def form_value_generate(params):
     post = json.dumps(params)
 
     return request('POST', 'form_value.generate', post=post)
+
+def form_value_generate_password(*args, **kw):
+    return request('GET', 'form_value.generate_password')
+
+def form_value_list_options(object_type, object_type_id, attribute):
+    post = json.dumps(
+            {
+                    'object_type': object_type,
+                    'type_id': object_type_id,
+                    'attribute': attribute
+                }
+        )
+
+    return request('POST', 'form_value.list_options', post=post)
+
+def form_value_select_options(object_type, object_type_id, attribute):
+    post = json.dumps(
+            {
+                    'object_type': object_type,
+                    'type_id': object_type_id,
+                    'attributes': [ attribute ]
+                }
+        )
+
+    return request('POST', 'form_value.select_options', post=post)
 
 def get_group_input():
     group_types = group_types_list()
@@ -298,6 +326,21 @@ def ou_add(params={}):
 def ou_delete(params={}):
     return request('POST', 'ou.delete', post=json.dumps(params))
 
+def ou_find(params=None):
+    post = { 'search': { 'params': {} } }
+
+    for (k,v) in params.iteritems():
+        post['search']['params'][k] = { 'value': v, 'type': 'exact' }
+
+    return request('POST', 'ou.find', post=json.dumps(post))
+
+def ou_info(ou):
+    _params = { 'id': ou }
+
+    ou = request('GET', 'ou.info', get=_params)
+
+    return ou
+
 def ous_list(params={}):
     return request('POST', 'ous.list', post=json.dumps(params))
 
@@ -308,7 +351,6 @@ def request(method, api_uri, get=None, post=None, headers={}):
         del response_data['status']
         return response_data['result']
     else:
-        print "ERROR: %r" % (response_data['reason'])
         return False
 
 def request_raw(method, api_uri, get=None, post=None, headers={}):
@@ -345,8 +387,110 @@ def request_raw(method, api_uri, get=None, post=None, headers={}):
 
     return response_data
 
+def resource_add(params=None):
+    if params == None:
+        params = get_user_input()
+
+    return request('POST', 'resource.add', post=json.dumps(params))
+
+def resource_delete(params=None):
+    if params == None:
+        params = {
+            'id': utils.ask_question("Resource DN to delete", "resource")
+        }
+
+    return request('POST', 'resource.delete', post=json.dumps(params))
+
+def resource_find(params=None):
+    post = { 'search': { 'params': {} } }
+
+    for (k,v) in params.iteritems():
+        post['search']['params'][k] = { 'value': v, 'type': 'exact' }
+
+    return request('POST', 'resource.find', post=json.dumps(post))
+
+def resource_info(resource=None):
+    if resource == None:
+        resource = utils.ask_question("Resource DN")
+    return request('GET', 'resource.info', get={ 'id': resource })
+
+def resource_types_list():
+    return request('GET', 'resource_types.list')
+
+def resources_list(params={}):
+    return request('POST', 'resources.list', post=json.dumps(params))
+
+def role_add(params=None):
+    if params == None:
+        role_name = utils.ask_question("Role name")
+        params = {
+                'cn': role_name
+            }
+
+    params = json.dumps(params)
+
+    return request('POST', 'role.add', params)
+
 def role_capabilities():
     return request('GET', 'role.capabilities')
+
+def role_delete(params=None):
+    if params == None:
+        role_name = utils.ask_question("Role name")
+        role = role_find_by_attribute({'cn': role_name})
+        params = {
+                'role': role.keys()[0]
+            }
+
+    if not params.has_key('role'):
+        role = role_find_by_attribute(params)
+        params = {
+                'role': role.keys()[0]
+            }
+
+    post = json.dumps(params)
+
+    return request('POST', 'role.delete', post=post)
+
+def role_find_by_attribute(params=None):
+    if params == None:
+        role_name = utils.ask_question("Role name")
+    else:
+        role_name = params['cn']
+
+    get = { 'cn': role_name }
+    role = request('GET', 'role.find_by_attribute', get=get)
+
+    return role
+
+def role_info(role_name):
+    role = role_find_by_attribute({'cn': role_name})
+
+    get = { 'role': role['id'] }
+
+    role = request('GET', 'role.info', get=get)
+
+    return role
+
+def roles_list():
+    return request('GET', 'roles.list')
+
+def sharedfolder_add(params=None):
+    if params == None:
+        params = get_user_input()
+
+    return request('POST', 'sharedfolder.add', post=json.dumps(params))
+
+def sharedfolder_delete(params=None):
+    if params == None:
+        params = {
+            'id': utils.ask_question("Shared Folder DN to delete", "sharedfolder")
+        }
+
+    return request('POST', 'sharedfolder.delete', post=json.dumps(params))
+
+def sharedfolders_list(params={}):
+    return request('POST', 'sharedfolders.list', post=json.dumps(params))
 
 def system_capabilities():
     return request('GET', 'system.capabilities')
@@ -433,83 +577,6 @@ def user_form_value_generate(params=None):
 
     return request('POST', 'form_value.generate', post=post)
 
-def form_value_generate_password(*args, **kw):
-    return request('GET', 'form_value.generate_password')
-
-def form_value_list_options(object_type, object_type_id, attribute):
-    post = json.dumps(
-            {
-                    'object_type': object_type,
-                    'type_id': object_type_id,
-                    'attribute': attribute
-                }
-        )
-
-    return request('POST', 'form_value.list_options', post=post)
-
-def form_value_select_options(object_type, object_type_id, attribute):
-    post = json.dumps(
-            {
-                    'object_type': object_type,
-                    'type_id': object_type_id,
-                    'attributes': [ attribute ]
-                }
-        )
-
-    return request('POST', 'form_value.select_options', post=post)
-
-def role_find_by_attribute(params=None):
-    if params == None:
-        role_name = utils.ask_question("Role name")
-    else:
-        role_name = params['cn']
-
-    get = { 'cn': role_name }
-    role = request('GET', 'role.find_by_attribute', get=get)
-
-    return role
-
-def role_add(params=None):
-    if params == None:
-        role_name = utils.ask_question("Role name")
-        params = {
-                'cn': role_name
-            }
-
-    params = json.dumps(params)
-
-    return request('POST', 'role.add', params)
-
-def role_delete(params=None):
-    if params == None:
-        role_name = utils.ask_question("Role name")
-        role = role_find_by_attribute({'cn': role_name})
-        params = {
-                'role': role.keys()[0]
-            }
-
-    if not params.has_key('role'):
-        role = role_find_by_attribute(params)
-        params = {
-                'role': role.keys()[0]
-            }
-
-    post = json.dumps(params)
-
-    return request('POST', 'role.delete', post=post)
-
-def role_info(role_name):
-    role = role_find_by_attribute({'cn': role_name})
-
-    get = { 'role': role['id'] }
-
-    role = request('GET', 'role.info', get=get)
-
-    return role
-
-def roles_list():
-    return request('GET', 'roles.list')
-
 def user_form_value_generate_uid(params=None):
     if params == None:
         params = get_user_input()
@@ -532,34 +599,8 @@ def user_info(user=None):
 
     return user
 
-def user_types_list():
-    return request('GET', 'user_types.list')
-
 def users_list(params={}):
     return request('POST', 'users.list', post=json.dumps(params))
 
-def resource_types_list():
-    return request('GET', 'resource_types.list')
-
-def resources_list():
-    return request('GET', 'resources.list')
-
-def resource_info(resource=None):
-    if resource == None:
-        resource = utils.ask_question("Resource DN")
-    return request('GET', 'resource.info', get={ 'id': resource })
-
-def resource_add(params=None):
-    if params == None:
-        params = get_user_input()
-
-    return request('POST', 'resource.add', post=json.dumps(params))
-
-def resource_delete(params=None):
-    if params == None:
-        params = {
-            'id': utils.ask_question("Resource DN to delete", "resource")
-        }
-
-    return request('POST', 'resource.delete', post=json.dumps(params))
-
+def user_types_list():
+    return request('GET', 'user_types.list')
