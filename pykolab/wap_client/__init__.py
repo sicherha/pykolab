@@ -303,10 +303,18 @@ def group_form_value_generate_mail(params=None):
 
     return request('POST', 'group_form_value.generate_mail', params)
 
-def group_info():
-    group = utils.ask_question("Group email address")
-    group = request('GET', 'group.info?group=%s' % (group))
-    return group
+def group_find(params=None):
+    post = { 'search': { 'params': {} } }
+
+    for (k,v) in params.iteritems():
+        post['search']['params'][k] = { 'value': v, 'type': 'exact' }
+
+    return request('POST', 'group.find', post=json.dumps(post))
+
+def group_info(group=None):
+    if group == None:
+        group = utils.ask_question("group DN")
+    return request('GET', 'group.info', get={ 'id': group })
 
 def group_members_list(group=None):
     if group == None:
