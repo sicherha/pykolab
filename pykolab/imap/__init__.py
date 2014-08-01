@@ -320,11 +320,15 @@ class IMAP(object):
             Set an ACL entry on a folder.
         """
         short_rights = {
-                'all': 'lrswipkxtecda',
+                'all': 'lrsedntxakcpiw',
+                'append': 'wip',
+                'full': 'lrswipkxtecdn',
+                'read': 'lrs',
                 'read-only': 'lrs',
-                'read-write': 'lrswited',
+                'read-write': 'lrswitedn',
+                'post': 'p',
                 'semi-full': 'lrswit',
-                'full': 'lrswipkxtecd'
+                'write': 'lrswite',
             }
 
         if short_rights.has_key(acl):
