@@ -42,6 +42,10 @@ pykolab_imap_PYTHON = \
 	imap/__init__.py \
 	imap/cyrus.py
 
+pykolab_itipdir = $(pythondir)/$(PACKAGE)/itip
+pykolab_itip_PYTHON = \
+	itip/__init__.py
+
 pykolab_pluginsdir = $(pythondir)/$(PACKAGE)/plugins
 pykolab_plugins_PYTHON = \
 	plugins/__init__.py
