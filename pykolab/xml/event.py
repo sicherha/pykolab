@@ -644,7 +644,7 @@ class Event(object):
             raise ValueError, _("Invalid custom property name %r") % (name)
 
         props = self.event.customProperties()
-        props.append(kolabformat.CustomProperty(name, value))
+        props.append(kolabformat.CustomProperty(name.upper(), value))
         self.event.setCustomProperties(props)
 
     def set_from_ical(self, attr, value):

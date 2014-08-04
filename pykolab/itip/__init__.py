@@ -241,7 +241,7 @@ def send_reply(from_address, itip_events, response_text, subject=None):
         smtp.quit()
 
 
-def send_request(to_address, itip_events, request_text, subject=None):
+def send_request(to_address, itip_events, request_text, subject=None, direct=False):
     """
         Send an iTip REQUEST message from the given iCal events
     """
@@ -270,7 +270,8 @@ def send_request(to_address, itip_events, request_text, subject=None):
             log.error(_("Failed to compose iTip request message: %r") % (e))
             return
 
-        smtp = smtplib.SMTP("localhost", 10026)  # requests go through wallace
+        port = 10027 if direct else 10026
+        smtp = smtplib.SMTP("localhost", port)
 
         if conf.debuglevel > 8:
             smtp.set_debuglevel(True)

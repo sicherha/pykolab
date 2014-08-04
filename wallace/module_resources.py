@@ -26,6 +26,8 @@ import tempfile
 import time
 from urlparse import urlparse
 import urllib
+import uuid
+import re
 
 from email import message_from_string
 from email.parser import Parser
@@ -159,15 +161,17 @@ def execute(*args, **kw):
     message = Parser().parse(open(filepath, 'r'))
 
     recipients = [address for displayname,address in getaddresses(message.get_all('X-Kolab-To'))]
+    sender_email = [address for displayname,address in getaddresses(message.get_all('X-Kolab-From'))][0]
 
     any_itips = False
     any_resources = False
     possibly_any_resources = True
+    reference_uid = None
 
     # An iTip message may contain multiple events. Later on, test if the message
     # is an iTip message by checking the length of this list.
     try:
-        itip_events = events_from_message(message, ['REQUEST', 'CANCEL'])
+        itip_events = events_from_message(message, ['REQUEST', 'REPLY', 'CANCEL'])
     except Exception, e:
         log.error(_("Failed to parse iTip events from message: %r" % (e)))
         itip_events = []
@@ -199,6 +203,12 @@ def execute(*args, **kw):
         auth.connect()
 
         for recipient in recipients:
+            # extract reference UID from recipients like resource+UID@domain.org
+            if re.match('.+\+[A-Za-z0-9%/_-]+@', recipient):
+                (prefix, host) = recipient.split('@')
+                (local, reference_uid) = prefix.split('+')
+                recipient = local + '@' + host
+
             if not len(resource_record_from_email_address(recipient)) == 0:
                 resource_recipient = recipient
                 any_resources = True
@@ -226,6 +236,7 @@ def execute(*args, **kw):
     # check if resource attendees match the envelope recipient
     if len(resource_dns) == 0:
         log.info(_("No resource attendees matching envelope recipient %s, Reject message") % (resource_recipient))
+        log.debug("%r" % (itip_events), level=8)
         reject(filepath)
         return False
 
@@ -242,6 +253,41 @@ def execute(*args, **kw):
     receiving_resource = resources[resource_dns[0]]
 
     for itip_event in itip_events:
+        if itip_event['method'] == 'REPLY':
+            done = True
+
+            # find initial reservation referenced by the reply
+            if reference_uid:
+                event = find_existing_event(reference_uid, receiving_resource)
+                if event:
+                    try:
+                        sender_attendee = itip_event['xml'].get_attendee_by_email(sender_email)
+                        owner_reply = sender_attendee.get_participant_status()
+                        log.debug(_("Sender Attendee: %r => %r") % (sender_attendee, owner_reply), level=9)
+                    except Exception, e:
+                        log.error("Could not find envelope sender attendee: %r" % (e))
+                        continue
+
+                    itip_event_ = dict(xml=event, uid=event.get_uid())
+
+                    if owner_reply == kolabformat.PartAccepted:
+                        accept_reservation_request(itip_event_, receiving_resource, confirmed=True)
+                    elif owner_reply == kolabformat.PartDeclined:
+                        decline_reservation_request(itip_event_, receiving_resource)
+                        # TODO: set partstat=DECLINED and status=CANCELLED instead of deleting?
+                        delete_resource_event(reference_uid, receiving_resource)
+                    else:
+                        log.info("Invalid response (%r) recieved from resource owner for event %r" % (
+                            sender_attendee.get_participant_status(True), reference_uid
+                        ))
+                else:
+                    log.info(_("Event referenced by this REPLY (%r) not found in resource calendar") % (reference_uid))
+
+            # exit for-loop
+            break
+
+        # else:
+
         try:
             receiving_attendee = itip_event['xml'].get_attendee_by_email(receiving_resource['mail'])
             log.debug(_("Receiving Resource: %r; %r") % (receiving_resource, receiving_attendee), level=9)
@@ -510,17 +556,64 @@ def read_resource_calendar(resource_rec, itip_events):
     return num_messages
 
 
-def accept_reservation_request(itip_event, resource, delegator=None):
+def find_existing_event(uid, resource_rec):
+    """
+        Search the resources's calendar folder for the given event (by UID)
+    """
+    global imap
+
+    event = None
+    mailbox = resource_rec['kolabtargetfolder']
+
+    log.debug(_("Searching %r for event %r") % (mailbox, uid), level=9)
+
+    try:
+        imap.imap.m.select(imap.folder_quote(mailbox))
+        typ, data = imap.imap.m.search(None, '(UNDELETED HEADER SUBJECT "%s")' % (uid))
+    except Exception, e:
+        log.error(_("Failed to access resource calendar:: %r") % (e))
+        return event
+
+    for num in reversed(data[0].split()):
+        typ, data = imap.imap.m.fetch(num, '(RFC822)')
+
+        try:
+            event = event_from_message(message_from_string(data[0][1]))
+        except Exception, e:
+            log.error(_("Failed to parse event from message %s/%s: %r") % (mailbox, num, e))
+            continue
+
+        if event and event.uid == uid:
+            return event
+
+    return event
+
+
+def accept_reservation_request(itip_event, resource, delegator=None, confirmed=False):
     """
         Accepts the given iTip event by booking it into the resource's
         calendar. Then set the attendee status of the given resource to
         ACCEPTED and sends an iTip reply message to the organizer.
     """
+    owner = get_resource_owner(resource)
+    confirmation_required = False
+
+    if not confirmed and resource.has_key('kolabinvitationpolicy'):
+        for policy in resource['kolabinvitationpolicy']:
+            if policy & ACT_MANUAL and owner['mail']:
+                confirmation_required = True
+                break
+
+    partstat = 'TENTATIVE' if confirmation_required else 'ACCEPTED'
 
     itip_event['xml'].set_attendee_participant_status(
         itip_event['xml'].get_attendee_by_email(resource['mail']),
-        "ACCEPTED"
+        partstat
     )
+
+    # remove old copy of the reservation
+    if confirmed:
+        delete_resource_event(itip_event['uid'], resource)
 
     saved = save_resource_event(itip_event, resource)
 
@@ -529,12 +622,12 @@ def accept_reservation_request(itip_event, resource, delegator=None):
         level=8
     )
 
-    owner = get_resource_owner(resource)
-
     if saved:
         send_response(delegator['mail'] if delegator else resource['mail'], itip_event, owner)
 
-    if owner:
+    if owner and confirmation_required:
+        send_owner_confirmation(resource, owner, itip_event)
+    elif owner:
         send_owner_notification(resource, owner, itip_event, saved)
 
 
@@ -685,6 +778,12 @@ def resource_records_from_itip_events(itip_events, recipient_email=None):
 
     log.debug(_("Raw set of resources: %r") % (resources_raw), level=9)
 
+    # consider organizer (in REPLY messages), too
+    organizers_raw = [re.sub('\+[A-Za-z0-9%/_-]+@', '@', str(y['organizer'])) for y in itip_events if y.has_key('organizer')]
+
+    log.debug(_("Raw set of organizers: %r") % (organizers_raw), level=8)
+
+
     # TODO: We expect the format of an attendee line to literally be:
     #
     #   ATTENDEE:RSVP=TRUE;ROLE=REQ-PARTICIPANT;MAILTO:lydia.bossers@kolabsys.com
@@ -693,7 +792,7 @@ def resource_records_from_itip_events(itip_events, recipient_email=None):
     #
     #   RSVP=TRUE;ROLE=REQ-PARTICIPANT;MAILTO:lydia.bossers@kolabsys.com
     #
-    attendees = [x.split(':')[-1] for x in attendees_raw]
+    attendees = [x.split(':')[-1] for x in attendees_raw + organizers_raw]
 
     # Limit the attendee resources to the one that is actually invited
     # with the current message. Considering all invited resources would result in
@@ -1000,3 +1099,59 @@ def owner_notification_text(resource, owner, event, success):
         'orgname': organizer.name(),
         'orgemail': organizer.email()
     }
+
+
+def send_owner_confirmation(resource, owner, itip_event):
+    """
+        Send a reservation request to the resource owner for manual confirmation (ACCEPT or DECLINE)
+
+        This clones the given invtation with a new UID and setting the resource as organizer in order to
+        receive the reply from the owner.
+    """
+
+    event = itip_event['xml']
+    uid = itip_event['uid']
+    organizer = event.get_organizer()
+
+    # generate new UID and set the resource as organizer
+    (mail, domain) = resource['mail'].split('@')
+    event.set_uid(str(uuid.uuid4()))
+    event.set_organizer(mail + '+' + urllib.quote(uid) + '@' + domain, resource['cn'])
+    itip_event['uid'] = event.get_uid()
+
+    # add resource owner as attendee
+    event.add_attendee(owner['mail'], owner['cn'], rsvp=True, role=kolabformat.Required, participant_status=kolabformat.PartNeedsAction)
+
+    # flag this iTip message as confirmation type
+    event.add_custom_property('X-Wallace-MessageType', 'CONFIRMATION')
+
+    log.debug(
+        _("Clone invitation for owner confirmation: %r from %r") % (
+            itip_event['uid'], event.get_organizer().email()
+        ),
+        level=8
+    )
+
+    message_text = _("""
+        A reservation request for %(resource)s requires your approval!
+        Please either accept or decline this inivitation without saving it to your calendar.
+
+        The reservation request was sent from %(orgname)s <%(orgemail)s>.
+
+        Subject: %(summary)s.
+        Date: %(date)s
+
+        *** This is an automated message, please don't reply by email. ***
+    """)% {
+        'resource': resource['cn'],
+        'orgname': organizer.name(),
+        'orgemail': organizer.email(),
+        'summary': event.get_summary(),
+        'date': event.get_date_text()
+    }
+
+    pykolab.itip.send_request(owner['mail'], itip_event, message_text,
+        subject=_('Booking request for %s requires confirmation') % (resource['cn']),
+        direct=True)
+
+

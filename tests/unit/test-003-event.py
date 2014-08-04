@@ -417,7 +417,7 @@ END:VEVENT
         self.event.set_start(datetime.datetime(2014, 05, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
         self.event.set_end(datetime.datetime(2014, 05, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
         self.event.set_sequence(3)
-        self.event.add_custom_property('X-CUSTOM', 'check')
+        self.event.add_custom_property('X-Custom', 'check')
 
         ical = icalendar.Calendar.from_ical(self.event.as_string_itip())
         event = ical.walk('VEVENT')[0]
