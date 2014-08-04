@@ -512,7 +512,7 @@ class Event(object):
         if status in self.status_map.keys():
             return status
 
-        return self._translate_value(status, self.status_map)
+        return self._translate_value(status, self.status_map) if status else None
 
     def get_ical_sequence(self):
         return str(self.event.sequence()) if self.event.sequence() else None
