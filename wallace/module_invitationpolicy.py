@@ -227,7 +227,7 @@ def execute(*args, **kw):
 
         for recipient in recipients:
             recipient_user_dn = user_dn_from_email_address(recipient)
-            if recipient_user_dn is not None:
+            if recipient_user_dn:
                 recipient_email = recipient
                 break
 
