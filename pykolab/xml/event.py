@@ -197,6 +197,10 @@ class Event(object):
                 for _retval in retval:
                     event.add(attr.lower(), _retval, encode=0)
 
+        # copy custom properties to iCal
+        for cs in self.event.customProperties():
+            event.add(cs.identifier, cs.value)
+
         cal.add_component(event)
 
         if hasattr(cal, 'to_ical'):
@@ -634,6 +638,14 @@ class Event(object):
     def set_exception_dates(self, _datetimes):
         for _datetime in _datetimes:
             self.add_exception_date(_datetime)
+
+    def add_custom_property(self, name, value):
+        if not name.upper().startswith('X-'):
+            raise ValueError, _("Invalid custom property name %r") % (name)
+
+        props = self.event.customProperties()
+        props.append(kolabformat.CustomProperty(name, value))
+        self.event.setCustomProperties(props)
 
     def set_from_ical(self, attr, value):
         ical_setter = 'set_ical_' + attr
