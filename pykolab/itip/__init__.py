@@ -113,7 +113,7 @@ def objects_from_message(message, objname, methods=None):
                         # TODO: distinguish event and todo here
                         itip['xml'] = event_from_ical(c.to_ical())
                     except Exception, e:
-                        log.error("event_from_ical() exception: %r" % (e))
+                        log.error("event_from_ical() exception: %r; iCal: %s" % (e, itip_payload))
                         continue
 
                     itip_objects.append(itip)
@@ -198,10 +198,10 @@ def send_reply(from_address, itip_events, response_text, subject=None):
     """
         Send the given iCal events as a valid iTip REPLY to the organizer.
     """
-
     import smtplib
 
     conf = pykolab.getConf()
+    smtp = None
 
     if isinstance(itip_events, dict):
         itip_events = [ itip_events ]
@@ -237,4 +237,48 @@ def send_reply(from_address, itip_events, response_text, subject=None):
         except Exception, e:
             log.error(_("SMTP sendmail error: %r") % (e))
 
-    smtp.quit()
+    if smtp:
+        smtp.quit()
+
+
+def send_request(to_address, itip_events, request_text, subject=None):
+    """
+        Send an iTip REQUEST message from the given iCal events
+    """
+    import smtplib
+
+    conf = pykolab.getConf()
+    smtp = None
+
+    if isinstance(itip_events, dict):
+        itip_events = [ itip_events ]
+
+    for itip_event in itip_events:
+        event_summary = itip_event['xml'].get_summary()
+        message_text = request_text % { 'summary':event_summary }
+
+        if subject is not None:
+            subject = subject % { 'summary':event_summary }
+
+        try:
+            message = itip_event['xml'].to_message_itip(None,
+                method="REQUEST",
+                message_text=message_text,
+                subject=subject
+            )
+        except Exception, e:
+            log.error(_("Failed to compose iTip request message: %r") % (e))
+            return
+
+        smtp = smtplib.SMTP("localhost", 10026)  # requests go through wallace
+
+        if conf.debuglevel > 8:
+            smtp.set_debuglevel(True)
+
+        try:
+            smtp.sendmail(message['From'], to_address, message.as_string())
+        except Exception, e:
+            log.error(_("SMTP sendmail error: %r") % (e))
+
+    if smtp:
+        smtp.quit()
