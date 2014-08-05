@@ -121,12 +121,12 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             'ACT_REJECT:gmail.com',
             'ACT_MANUAL:*'
         ] }
-        self.assertEqual(MIP.get_matching_invitation_policies(user, 'fastmail.net'), [MIP.ACT_MANUAL])
-        self.assertEqual(MIP.get_matching_invitation_policies(user, 'example.org'),  [MIP.ACT_ACCEPT,MIP.ACT_MANUAL])
-        self.assertEqual(MIP.get_matching_invitation_policies(user, 'gmail.com'),    [MIP.ACT_REJECT,MIP.ACT_MANUAL])
+        self.assertEqual(MIP.get_matching_invitation_policies(user, 'a@fastmail.net'), [MIP.ACT_MANUAL])
+        self.assertEqual(MIP.get_matching_invitation_policies(user, 'b@example.org'),  [MIP.ACT_ACCEPT,MIP.ACT_MANUAL])
+        self.assertEqual(MIP.get_matching_invitation_policies(user, 'c@gmail.com'),    [MIP.ACT_REJECT,MIP.ACT_MANUAL])
 
         user = { 'kolabinvitationpolicy': ['ACT_ACCEPT:example.org', 'ACT_MANUAL:others'] }
-        self.assertEqual(MIP.get_matching_invitation_policies(user, 'somedomain.net'), [MIP.ACT_MANUAL])
+        self.assertEqual(MIP.get_matching_invitation_policies(user, 'd@somedomain.net'), [MIP.ACT_MANUAL])
 
     def test_004_write_locks(self):
         user = { 'cn': 'John Doe', 'mail': "doe@example.org" }
@@ -150,12 +150,12 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         accept_some = [ 'ACT_ACCEPT_IF_NO_CONFLICT', 'ACT_SAVE_TO_CALENDAR:example.org', 'ACT_REJECT_IF_CONFLICT' ]
         accept_avail = [ 'ACT_ACCEPT_IF_NO_CONFLICT', 'ACT_REJECT_IF_CONFLICT:example.org' ]
 
-        self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':all_manual },   'domain.org'))
-        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_none },  'domain.org'))
-        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_all },   'domain.com'))
-        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_cond },  'domain.com'))
-        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_some },  'domain.com'))
-        self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_some },  'example.org'))
-        self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_avail }, 'domain.com'))
-        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_avail }, 'example.org'))
+        self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':all_manual },   'user@domain.org'))
+        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_none },  'user@domain.org'))
+        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_all },   'user@domain.com'))
+        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_cond },  'user@domain.com'))
+        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_some },  'user@domain.com'))
+        self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_some },  'sam@example.org'))
+        self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_avail }, 'user@domain.com'))
+        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_avail }, 'john@example.org'))
         

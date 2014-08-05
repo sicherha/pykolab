@@ -266,8 +266,7 @@ def execute(*args, **kw):
         pykolab.translate.setUserLanguage(receiving_user['preferredlanguage'])
 
     # find user's kolabInvitationPolicy settings and the matching policy values
-    sender_domain = str(sender_email).split('@')[-1]
-    policies = get_matching_invitation_policies(receiving_user, sender_domain)
+    policies = get_matching_invitation_policies(receiving_user, sender_email)
 
     # select a processing function according to the iTip request method
     method_processing_map = {
@@ -284,7 +283,7 @@ def execute(*args, **kw):
         imap.connect()
 
         for policy in policies:
-            log.debug(_("Apply invitation policy %r for domain %r") % (policy_value_map[policy], sender_domain), level=8)
+            log.debug(_("Apply invitation policy %r for sender %r") % (policy_value_map[policy], sender_email), level=8)
             done = processor_func(itip_event, policy, recipient_email, sender_email, receiving_user)
 
             # matching policy found
@@ -534,7 +533,7 @@ def user_dn_from_email_address(email_address):
 user_dn_from_email_address.cache = {}
 
 
-def get_matching_invitation_policies(receiving_user, sender_domain):
+def get_matching_invitation_policies(receiving_user, sender_email):
     # get user's kolabInvitationPolicy settings
     policies = receiving_user['kolabinvitationpolicy'] if receiving_user.has_key('kolabinvitationpolicy') else []
     if policies and not isinstance(policies, list):
@@ -543,7 +542,7 @@ def get_matching_invitation_policies(receiving_user, sender_domain):
     if len(policies) == 0:
         policies = conf.get_list('wallace', 'kolab_invitation_policy')
 
-    # match policies agains the given sender_domain
+    # match policies agains the given sender_email
     matches = []
     for p in policies:
         if ':' in p:
@@ -552,7 +551,7 @@ def get_matching_invitation_policies(receiving_user, sender_domain):
             value = p
             domain = ''
 
-        if domain == '' or domain == '*' or sender_domain.endswith(domain):
+        if domain == '' or domain == '*' or str(sender_email).endswith(domain):
             value = value.upper()
             if policy_name_map.has_key(value):
                 matches.append(policy_name_map[value])
@@ -870,7 +869,6 @@ def send_reply_notification(event, receiving_user):
     organizer = event.get_organizer()
     orgemail = organizer.email()
     orgname = organizer.name()
-    sender_domain = orgemail.split('@')[-1]
 
     auto_replies_expected = 0
     auto_replies_received = 0
@@ -894,7 +892,7 @@ def send_reply_notification(event, receiving_user):
 
         if attendee_dn:
             attendee_rec = auth.get_entry_attributes(None, attendee_dn, ['kolabinvitationpolicy'])
-            if is_auto_reply(attendee_rec, sender_domain):
+            if is_auto_reply(attendee_rec, orgemail):
                 auto_replies_expected += 1
                 if not parstat == 'NEEDS-ACTION':
                     auto_replies_received += 1
@@ -941,10 +939,10 @@ def send_reply_notification(event, receiving_user):
     smtp.quit()
 
 
-def is_auto_reply(user, sender_domain):
+def is_auto_reply(user, sender_email):
     accept_available = False
     accept_conflicts = False
-    for policy in get_matching_invitation_policies(user, sender_domain):
+    for policy in get_matching_invitation_policies(user, sender_email):
         if policy & (ACT_ACCEPT | ACT_REJECT | ACT_DELEGATE):
             if check_policy_condition(policy, True):
                 accept_available = True
