@@ -25,7 +25,7 @@ import random
 import tempfile
 import time
 from urlparse import urlparse
-import urllib
+import base64
 import uuid
 import re
 
@@ -204,9 +204,10 @@ def execute(*args, **kw):
 
         for recipient in recipients:
             # extract reference UID from recipients like resource+UID@domain.org
-            if re.match('.+\+[A-Za-z0-9%/_-]+@', recipient):
+            if re.match('.+\+[A-Za-z0-9=/-]+@', recipient):
                 (prefix, host) = recipient.split('@')
-                (local, reference_uid) = prefix.split('+')
+                (local, uid) = prefix.split('+')
+                reference_uid = base64.b64decode(uid, '-/')
                 recipient = local + '@' + host
 
             if not len(resource_record_from_email_address(recipient)) == 0:
@@ -268,6 +269,13 @@ def execute(*args, **kw):
                         log.error("Could not find envelope sender attendee: %r" % (e))
                         continue
 
+                    # compare sequence number to avoid outdated replies
+                    if not itip_event['sequence'] == event.get_sequence():
+                        log.info(_("The iTip reply sequence (%r) doesn't match the referred event version (%r). Ignoring.") % (
+                            itip_event['sequence'], event.get_sequence()
+                        ))
+                        continue
+
                     # forward owner response comment
                     comment = itip_event['xml'].get_comment()
                     if comment:
@@ -276,10 +284,12 @@ def execute(*args, **kw):
                     itip_event_ = dict(xml=event, uid=event.get_uid())
 
                     if owner_reply == kolabformat.PartAccepted:
+                        event.set_status(kolabformat.StatusConfirmed)
                         accept_reservation_request(itip_event_, receiving_resource, confirmed=True)
                     elif owner_reply == kolabformat.PartDeclined:
                         decline_reservation_request(itip_event_, receiving_resource)
-                        # TODO: set partstat=DECLINED and status=CANCELLED instead of deleting?
+                        # TODO: set status=CANCELLED instead of deleting?
+                        # event.set_status(kolabformat.StatusCancelled)
                         delete_resource_event(reference_uid, receiving_resource)
                     else:
                         log.info("Invalid response (%r) recieved from resource owner for event %r" % (
@@ -287,6 +297,9 @@ def execute(*args, **kw):
                         ))
                 else:
                     log.info(_("Event referenced by this REPLY (%r) not found in resource calendar") % (reference_uid))
+
+            else:
+                log.info(_("No event reference found in this REPLY. Ignoring."))
 
             # exit for-loop
             break
@@ -615,16 +628,13 @@ def accept_reservation_request(itip_event, resource, delegator=None, confirmed=F
 
     partstat = 'TENTATIVE' if confirmation_required else 'ACCEPTED'
 
+    itip_event['xml'].set_transparency(False);
     itip_event['xml'].set_attendee_participant_status(
         itip_event['xml'].get_attendee_by_email(resource['mail']),
         partstat
     )
 
-    # remove old copy of the reservation
-    if confirmed:
-        delete_resource_event(itip_event['uid'], resource)
-
-    saved = save_resource_event(itip_event, resource)
+    saved = save_resource_event(itip_event, resource, replace=confirmed)
 
     log.debug(
         _("Adding event to %r: %r") % (resource['kolabtargetfolder'], saved),
@@ -658,14 +668,20 @@ def decline_reservation_request(itip_event, resource):
         send_owner_notification(resource, owner, itip_event, True)
 
 
-def save_resource_event(itip_event, resource):
+def save_resource_event(itip_event, resource, replace=False):
     """
         Append the given event object to the resource's calendar
     """
     try:
         # Administrator login name comes from configuration.
         targetfolder = imap.folder_quote(resource['kolabtargetfolder'])
-        imap.imap.m.setacl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
+
+        # remove old copy of the reservation (also sets ACLs)
+        if replace:
+            delete_resource_event(itip_event['uid'], resource)
+        else:
+            imap.imap.m.setacl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
+
         result = imap.imap.m.append(
             targetfolder,
             None,
@@ -788,7 +804,7 @@ def resource_records_from_itip_events(itip_events, recipient_email=None):
     log.debug(_("Raw set of resources: %r") % (resources_raw), level=9)
 
     # consider organizer (in REPLY messages), too
-    organizers_raw = [re.sub('\+[A-Za-z0-9%/_-]+@', '@', str(y['organizer'])) for y in itip_events if y.has_key('organizer')]
+    organizers_raw = [re.sub('\+[A-Za-z0-9=/-]+@', '@', str(y['organizer'])) for y in itip_events if y.has_key('organizer')]
 
     log.debug(_("Raw set of organizers: %r") % (organizers_raw), level=8)
 
@@ -1159,7 +1175,7 @@ def send_owner_confirmation(resource, owner, itip_event):
     # generate new UID and set the resource as organizer
     (mail, domain) = resource['mail'].split('@')
     event.set_uid(str(uuid.uuid4()))
-    event.set_organizer(mail + '+' + urllib.quote(uid) + '@' + domain, resource['cn'])
+    event.set_organizer(mail + '+' + base64.b64encode(uid, '-/') + '@' + domain, resource['cn'])
     itip_event['uid'] = event.get_uid()
 
     # add resource owner as (the sole) attendee

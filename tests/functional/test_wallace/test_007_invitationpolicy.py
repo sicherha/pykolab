@@ -598,7 +598,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         event = self.check_user_calendar_event(self.jane['kolabtargetfolder'], uid)
         self.assertIsInstance(event, pykolab.xml.Event)
         self.assertEqual(event.get_summary(), "cancelled")
-        self.assertEqual(event.get_status(), 'CANCELLED')
+        self.assertEqual(event.get_status(True), 'CANCELLED')
         self.assertTrue(event.get_transparency())
 
 

@@ -239,11 +239,12 @@ class TestResourceInvitation(unittest.TestCase):
         smtp.sendmail(from_addr, to_addr, mime_message % (to_addr, itip_payload))
         smtp.quit()
 
-    def send_itip_invitation(self, resource_email, start=None, allday=False, template=None):
+    def send_itip_invitation(self, resource_email, start=None, allday=False, template=None, uid=None):
         if start is None:
             start = datetime.datetime.now()
 
-        uid = str(uuid.uuid4())
+        if uid is None:
+            uid = str(uuid.uuid4())
 
         if allday:
             default_template = itip_allday
@@ -393,6 +394,7 @@ class TestResourceInvitation(unittest.TestCase):
         self.assertEqual(event.get_summary(), "test")
 
 
+    # @depends test_002_invite_resource
     def test_003_invite_resource_conflict(self):
         uid = self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,7,13, 12,0,0))
 
@@ -670,6 +672,7 @@ class TestResourceInvitation(unittest.TestCase):
 
         event = self.check_resource_calendar_event(self.room3['kolabtargetfolder'], uid)
         self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_status(True), 'CONFIRMED')
         self.assertEqual(event.get_attendee_by_email(self.room3['mail']).get_participant_status(True), 'ACCEPTED')
 
 
@@ -705,6 +708,74 @@ class TestResourceInvitation(unittest.TestCase):
         response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':participant_status_label('DECLINED') }, self.room3['mail'])
         self.assertIsInstance(response, email.message.Message)
 
-        # tentative reservation was removed from resource calendar
+        # tentative reservation was set to cancelled
         event = self.check_resource_calendar_event(self.room3['kolabtargetfolder'], uid)
         self.assertEqual(event, None)
+        #self.assertEqual(event.get_status(True), 'CANCELLED')
+        #self.assertEqual(event.get_attendee_by_email(self.room3['mail']).get_participant_status(True), 'DECLINED')
+
+
+    def test_015_owner_confirmation_update(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        uid = self.send_itip_invitation(self.room3['mail'], datetime.datetime(2014,8,19, 9,0,0), uid="http://a-totally.stupid/?uid")
+
+        # requester (john) gets a TENTATIVE confirmation
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':participant_status_label('TENTATIVE') }, self.room3['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+        # check first confirmation message sent to resource owner (jane)
+        notify1 = self.check_message_received(_('Booking request for %s requires confirmation') % (self.room3['cn']), mailbox=self.jane['mailbox'])
+        self.assertIsInstance(notify1, email.message.Message)
+
+        itip_event1 = events_from_message(notify1)[0]
+        self.assertEqual(itip_event1['start'].hour, 9)
+
+        self.purge_mailbox(self.jane['mailbox'])
+        self.purge_mailbox(self.john['mailbox'])
+
+        # send update with new date (and sequence)
+        self.send_itip_update(self.room3['mail'], uid, datetime.datetime(2014,8,19, 16,0,0))
+
+        event = self.check_resource_calendar_event(self.room3['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_attendee_by_email(self.room3['mail']).get_participant_status(True), 'TENTATIVE')
+
+        # check second confirmation message sent to resource owner (jane)
+        notify2 = self.check_message_received(_('Booking request for %s requires confirmation') % (self.room3['cn']), mailbox=self.jane['mailbox'])
+        self.assertIsInstance(notify2, email.message.Message)
+
+        itip_event2 = events_from_message(notify2)[0]
+        self.assertEqual(itip_event2['start'].hour, 16)
+
+        # resource owner declines the first reservation request
+        itip_reply = itip_event1['xml'].to_message_itip(self.jane['mail'],
+            method="REPLY",
+            participant_status='DECLINED',
+            message_text="Request declined",
+            subject=_('Booking for %s has been %s') % (self.room3['cn'], participant_status_label('DECLINED'))
+        )
+        smtp = smtplib.SMTP('localhost', 10026)
+        smtp.sendmail(self.jane['mail'], str(itip_event1['organizer']), str(itip_reply))
+        smtp.quit()
+
+        time.sleep(5)
+
+        # resource owner accpets the second reservation request
+        itip_reply = itip_event2['xml'].to_message_itip(self.jane['mail'],
+            method="REPLY",
+            participant_status='ACCEPTED',
+            message_text="Request accepred",
+            subject=_('Booking for %s has been %s') % (self.room3['cn'], participant_status_label('ACCEPTED'))
+        )
+        smtp = smtplib.SMTP('localhost', 10026)
+        smtp.sendmail(self.jane['mail'], str(itip_event2['organizer']), str(itip_reply))
+        smtp.quit()
+
+        # requester (john) now gets the ACCEPTED response
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':participant_status_label('ACCEPTED') }, self.room3['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+        event = self.check_resource_calendar_event(self.room3['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_attendee_by_email(self.room3['mail']).get_participant_status(True), 'ACCEPTED')
