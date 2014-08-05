@@ -521,6 +521,12 @@ class Event(object):
     def get_ical_sequence(self):
         return str(self.event.sequence()) if self.event.sequence() else None
 
+    def get_ical_comment(self):
+        comment = self.get_comment()
+        if comment is not None:
+            return [ comment ]
+        return None
+
     def get_location(self):
         return self.event.location()
 
