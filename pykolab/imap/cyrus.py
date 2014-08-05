@@ -123,6 +123,7 @@ class Cyrus(cyruslib.CYRUS):
 
         imap = IMAP()
         imap.connect(uri=uri)
+
         if not self.SEP == self.separator:
             self.separator = self.SEP
 
@@ -236,8 +237,12 @@ class Cyrus(cyruslib.CYRUS):
         server = self.find_mailfolder_server(from_mailfolder)
         self.connect(self.uri.replace(self.server,server))
 
-        log.debug(_("Moving INBOX folder %s to %s") % (from_mailfolder,to_mailfolder), level=8)
-        self.m.rename(from_mailfolder, to_mailfolder, partition)
+        if not partition == None:
+            log.debug(_("Moving INBOX folder %s to %s on partition %s") % (from_mailfolder,to_mailfolder, partition), level=8)
+        else:
+            log.debug(_("Moving INBOX folder %s to %s") % (from_mailfolder,to_mailfolder), level=8)
+
+        self.m.rename(self.folder_utf7(from_mailfolder), self.folder_utf7(to_mailfolder), '"%s"' % (partition))
 
     def _getannotation(self, *args, **kw):
         return self.getannotation(*args, **kw)

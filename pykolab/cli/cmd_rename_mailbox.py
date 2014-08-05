@@ -66,7 +66,7 @@ def execute(*args, **kw):
         print >> sys.stderr, _("Source folder %r does not exist") % (source_folder)
         sys.exit(1)
 
-    if imap.has_folder(target_folder):
+    if imap.has_folder(target_folder) and partition == None:
         print >> sys.stderr, _("Target folder %r already exists") % (target_folder)
         sys.exit(1)
 

@@ -1816,9 +1816,26 @@ class LDAP(pykolab.base.Base):
         if entry.has_key('kolabfolderaclentry') and \
                 not entry['kolabfolderaclentry'] == None:
 
+            if isinstance(entry['kolabfolderaclentry'], basestring):
+                entry['kolabfolderaclentry'] = [ entry['kolabfolderaclentry'] ]
+
+            import copy
+            _acls = copy.deepcopy(entry['kolabfolderaclentry'])
+            entry['kolabfolderaclentry'] = []
+
+            for _entry in _acls:
+                if _entry[0] == "(":
+                    entry['kolabfolderaclentry'].append(_entry)
+                    continue
+
+                s,r = [x.strip() for x in _entry.split(',')]
+
+                entry['kolabfolderaclentry'].append("('%s', '%s', '%s')" % (folder_path, s, r))
+
             self.imap._set_kolab_mailfolder_acls(
                     entry['kolabfolderaclentry']
                 )
+
         elif entry['kolabfolderaclentry'] in [None,[]]:
             for ace in self.imap.list_acls(folder_path):
                 aci_subject = ace.split()[0]
