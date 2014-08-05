@@ -268,6 +268,11 @@ def execute(*args, **kw):
                         log.error("Could not find envelope sender attendee: %r" % (e))
                         continue
 
+                    # forward owner response comment
+                    comment = itip_event['xml'].get_comment()
+                    if comment:
+                        event.set_comment(str(comment))
+
                     itip_event_ = dict(xml=event, uid=event.get_uid())
 
                     if owner_reply == kolabformat.PartAccepted:
@@ -598,11 +603,15 @@ def accept_reservation_request(itip_event, resource, delegator=None, confirmed=F
     owner = get_resource_owner(resource)
     confirmation_required = False
 
-    if not confirmed and resource.has_key('kolabinvitationpolicy'):
-        for policy in resource['kolabinvitationpolicy']:
-            if policy & ACT_MANUAL and owner['mail']:
-                confirmation_required = True
-                break
+    if not confirmed:
+        invitationpolicy = get_resource_invitationpolicy(resource)
+        log.debug(_("Apply invitation policies %r") % (invitationpolicy), level=9)
+
+        if invitationpolicy is not None:
+            for policy in invitationpolicy:
+                if policy & ACT_MANUAL and owner['mail']:
+                    confirmation_required = True
+                    break
 
     partstat = 'TENTATIVE' if confirmation_required else 'ACCEPTED'
 
@@ -963,6 +972,37 @@ def get_resource_owner(resource):
     return None
 
 
+def get_resource_invitationpolicy(resource):
+    """
+        Get this resource's kolabinvitationpolicy configuration
+    """
+    global auth
+
+    if not resource.has_key('kolabinvitationpolicy') or resource['kolabinvitationpolicy'] is None:
+        if not auth:
+            auth = Auth()
+            auth.connect()
+
+        # get kolabinvitationpolicy attribute from collection
+        collections = auth.search_entry_by_attribute('uniquemember', resource['dn'])
+        if not isinstance(collections, list):
+            collections = [ (collections['dn'],collections) ]
+
+        log.debug("Check collections %r for kolabinvitationpolicy attributes" % (collections), level=9)
+
+        for dn,collection in collections:
+            # ldap.search_entry_by_attribute() doesn't return the attributes lower-cased
+            if collection.has_key('kolabInvitationPolicy'):
+                collection['kolabinvitationpolicy'] = collection['kolabInvitationPolicy']
+
+            if collection.has_key('kolabinvitationpolicy'):
+                parse_kolabinvitationpolicy(collection)
+                resource['kolabinvitationpolicy'] = collection['kolabinvitationpolicy']
+                break
+
+    return resource['kolabinvitationpolicy'] if resource.has_key('kolabinvitationpolicy') else None
+
+
 def send_response(from_address, itip_events, owner=None):
     """
         Send the given iCal events as a valid iTip response to the organizer.
@@ -1033,8 +1073,10 @@ def send_owner_notification(resource, owner, itip_event, success=True):
     notify = False
     status = itip_event['xml'].get_attendee_by_email(resource['mail']).get_participant_status(True)
 
-    if resource.has_key('kolabinvitationpolicy'):
-        for policy in resource['kolabinvitationpolicy']:
+    invitationpolicy = get_resource_invitationpolicy(resource)
+
+    if invitationpolicy is not None:
+        for policy in invitationpolicy:
             # TODO: distingish ACCEPTED / DECLINED status notifications?
             if policy & COND_NOTIFY and owner['mail']:
                 notify = True
@@ -1109,9 +1151,10 @@ def send_owner_confirmation(resource, owner, itip_event):
         receive the reply from the owner.
     """
 
-    event = itip_event['xml']
     uid = itip_event['uid']
+    event = itip_event['xml']
     organizer = event.get_organizer()
+    event_attendees = [a.get_displayname() for a in event.get_attendees() if not a.get_cutype() == kolabformat.CutypeResource]
 
     # generate new UID and set the resource as organizer
     (mail, domain) = resource['mail'].split('@')
@@ -1119,11 +1162,12 @@ def send_owner_confirmation(resource, owner, itip_event):
     event.set_organizer(mail + '+' + urllib.quote(uid) + '@' + domain, resource['cn'])
     itip_event['uid'] = event.get_uid()
 
-    # add resource owner as attendee
+    # add resource owner as (the sole) attendee
+    event._attendees = []
     event.add_attendee(owner['mail'], owner['cn'], rsvp=True, role=kolabformat.Required, participant_status=kolabformat.PartNeedsAction)
 
     # flag this iTip message as confirmation type
-    event.add_custom_property('X-Wallace-MessageType', 'CONFIRMATION')
+    event.add_custom_property('X-Kolab-InvitationType', 'CONFIRMATION')
 
     log.debug(
         _("Clone invitation for owner confirmation: %r from %r") % (
@@ -1140,6 +1184,7 @@ def send_owner_confirmation(resource, owner, itip_event):
 
         Subject: %(summary)s.
         Date: %(date)s
+        Participants: %(attendees)s
 
         *** This is an automated message, please don't reply by email. ***
     """)% {
@@ -1147,7 +1192,8 @@ def send_owner_confirmation(resource, owner, itip_event):
         'orgname': organizer.name(),
         'orgemail': organizer.email(),
         'summary': event.get_summary(),
-        'date': event.get_date_text()
+        'date': event.get_date_text(),
+        'attendees': ",\n+ ".join(event_attendees)
     }
 
     pykolab.itip.send_request(owner['mail'], itip_event, message_text,

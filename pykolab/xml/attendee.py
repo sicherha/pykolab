@@ -172,7 +172,7 @@ class Attendee(kolabformat.Attendee):
     def get_displayname(self):
         name = self.contactreference.get_name()
         email = self.contactreference.get_email()
-        return "%s <%s>" % (name, email) if name is not None else email
+        return "%s <%s>" % (name, email) if not name == "" else email
 
     def get_participant_status(self, translated=False):
         partstat = self.partStat()

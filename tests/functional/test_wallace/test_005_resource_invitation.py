@@ -34,6 +34,7 @@ SUMMARY:test
 DESCRIPTION:test
 ORGANIZER;CN="Doe, John":mailto:john.doe@example.org
 ATTENDEE;ROLE=REQ-PARTICIPANT;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:%s
+ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=TENTATIVE;CN=Somebody Else:mailto:somebody@else.com
 TRANSP:OPAQUE
 END:VEVENT
 END:VCALENDAR
@@ -221,8 +222,10 @@ class TestResourceInvitation(unittest.TestCase):
 
         self.room1 = funcs.resource_add("confroom", "Room 101", owner=self.jane['dn'], kolabinvitationpolicy='ACT_ACCEPT_AND_NOTIFY')
         self.room2 = funcs.resource_add("confroom", "Conference Room B-222")
-        self.room3 = funcs.resource_add("confroom", "CEOs Office 303", owner=self.jane['dn'], kolabinvitationpolicy='ACT_MANUAL')
         self.rooms = funcs.resource_add("collection", "Rooms", [ self.room1['dn'], self.room2['dn'] ], self.jane['dn'], kolabinvitationpolicy='ACT_ACCEPT_AND_NOTIFY')
+
+        self.room3 = funcs.resource_add("confroom", "CEOs Office 303")
+        self.viprooms = funcs.resource_add("collection", "VIP Rooms", [ self.room3['dn'] ], self.jane['dn'], kolabinvitationpolicy='ACT_MANUAL')
 
         time.sleep(1)
         from tests.functional.synchronize import synchronize_once
