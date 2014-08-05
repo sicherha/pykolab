@@ -5,6 +5,8 @@ import kolabformat
 
 from pykolab import itip
 from pykolab.xml import Event
+from pykolab.xml import participant_status_label
+from pykolab.translate import _
 
 from icalendar import Calendar
 from email import message
@@ -363,6 +365,9 @@ class TestITip(unittest.TestCase):
 
         self.assertTrue(itip.check_event_conflict(allday, itip_event), "Conflicting allday event")
 
+        allday.set_transparency(True)
+        self.assertFalse(itip.check_event_conflict(allday, itip_event), "No conflict if event is set to transparent")
+
         event2 = Event()
         event2.set_start(datetime.datetime(2012,7,13, 10,0,0, tzinfo=pytz.timezone("US/Central")))
         event2.set_end(datetime.datetime(2012,7,13, 11,0,0, tzinfo=pytz.timezone("US/Central")))
@@ -398,9 +403,10 @@ class TestITip(unittest.TestCase):
         self.assertEqual(self.smtplog[0][0], 'resource-collection-car@example.org', "From attendee")
         self.assertEqual(self.smtplog[0][1], 'john.doe@example.org', "To organizer")
 
+        _accepted = participant_status_label('ACCEPTED')
         message = message_from_string(self.smtplog[0][2])
-        self.assertEqual(message.get('Subject'), 'Invitation for test was ACCEPTED')
+        self.assertEqual(message.get('Subject'), _("Invitation for %(summary)s was %(status)s") % { 'summary':'test', 'status':_accepted })
 
         text = str(message.get_payload(0));
         self.assertIn('SUMMARY=test', text)
-        self.assertIn('STATUS=ACCEPTED', text)
+        self.assertIn('STATUS=' + _accepted, text)
