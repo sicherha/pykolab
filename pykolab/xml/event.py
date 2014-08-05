@@ -550,11 +550,12 @@ class Event(object):
     def get_start(self):
         return xmlutils.from_cdatetime(self.event.start(), True)
 
-    def get_status(self):
+    def get_status(self, translated=False):
         status = self.event.status()
-        for key in self.status_map.keys():
-            if self.status_map[key] == status:
-                return key
+        if translated:
+            return self._translate_value(status, self.status_map) if status else None
+
+        return status
 
     def get_summary(self):
         return self.event.summary()
@@ -591,14 +592,6 @@ class Event(object):
             attendee.set_rsvp(rsvp)
 
         self.event.setAttendees(self._attendees)
-
-    def set_status(self, status):
-        if status in self.status_map.keys():
-            self.event.setStatus(self.status_map[status])
-        elif status in self.status_map.values():
-            self.event.setStatus(status)
-        else:
-            raise ValueError, _("Invalid status %r") % (status)
 
     def set_classification(self, classification):
         if classification in self.classification_map.keys():
