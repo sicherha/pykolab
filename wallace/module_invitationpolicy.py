@@ -424,7 +424,7 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
             return MESSAGE_FORWARD
 
         # find existing event in user's calendar
-        # TODO: set/check lock to avoid concurrent wallace processes trying to update the same event simultaneously
+        # sets/checks lock to avoid concurrent wallace processes trying to update the same event simultaneously
         existing = find_existing_event(itip_event['uid'], receiving_user, True)
 
         if existing:
@@ -438,13 +438,41 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
 
             log.debug(_("Auto-updating event %r on iTip REPLY") % (existing.uid), level=8)
             try:
+                existing_attendee = existing.get_attendee(sender_email)
                 existing.set_attendee_participant_status(sender_email, sender_attendee.get_participant_status(), rsvp=False)
             except Exception, e:
                 log.error("Could not find corresponding attende in organizer's event: %r" % (e))
 
-                # TODO: accept new participant if ACT_ACCEPT ?
-                remove_write_lock(existing._lock_key)
-                return MESSAGE_FORWARD
+                # append delegated-from attendee ?
+                if len(sender_attendee.get_delegated_from()) > 0:
+                    existing._attendees.append(sender_attendee)
+                    existing.event.setAttendees(existing._attendees)
+                else:
+                    # TODO: accept new participant if ACT_ACCEPT ?
+                    remove_write_lock(existing._lock_key)
+                    return MESSAGE_FORWARD
+
+            # append delegated-to attendee
+            if len(sender_attendee.get_delegated_to()) > 0:
+                try:
+                    delegatee_email = sender_attendee.get_delegated_to(True)[0]
+                    sender_delegatee = itip_event['xml'].get_attendee_by_email(delegatee_email)
+                    existing_delegatee = existing.find_attendee(delegatee_email)
+
+                    if not existing_delegatee:
+                        existing._attendees.append(sender_delegatee)
+                        log.debug(_("Add delegatee: %r") % (sender_delegatee.to_dict()), level=9)
+                    else:
+                        existing_delegatee.copy_from(sender_delegatee)
+                        log.debug(_("Update existing delegatee: %r") % (existing_delegatee.to_dict()), level=9)
+
+                    # copy all parameters from replying attendee (e.g. delegated-to, role, etc.)
+                    existing_attendee.copy_from(sender_attendee)
+                    existing.event.setAttendees(existing._attendees)
+                    log.debug(_("Update delegator: %r") % (existing_attendee.to_dict()), level=9)
+
+                except Exception, e:
+                    log.error("Could not find delegated-to attendee: %r" % (e))
 
             # update the organizer's copy of the event
             if update_event(existing, receiving_user):

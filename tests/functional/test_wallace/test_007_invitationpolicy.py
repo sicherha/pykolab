@@ -105,6 +105,27 @@ END:VEVENT
 END:VCALENDAR
 """
 
+itip_delegated = """
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//pykolab-0.6.9-1//kolab.org//
+CALSCALE:GREGORIAN
+METHOD:REPLY
+BEGIN:VEVENT
+SUMMARY:%(summary)s
+UID:%(uid)s
+DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:%(start)s
+DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:%(end)s
+DTSTAMP;VALUE=DATE-TIME:20140706T171038Z
+ORGANIZER;CN="Doe, John":MAILTO:%(organizer)s
+ATTENDEE;PARTSTAT=DELEGATED;DELEGATED-TO=jack@ripper.com;ROLE=NON-PARTICIPANT:mailto:%(mailto)s
+ATTENDEE;PARTSTAT=%(partstat)s;DELEGATED-FROM=%(mailto)s;ROLE=REQ-PARTICIPANT:mailto:jack@ripper.com
+PRIORITY:0
+SEQUENCE:%(sequence)d
+END:VEVENT
+END:VCALENDAR
+"""
+
 mime_message = """MIME-Version: 1.0
 Content-Type: multipart/mixed;
  boundary="=_c8894dbdb8baeedacae836230e3436fd"
@@ -582,6 +603,36 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         attachments = event.get_attachments()
         self.assertEqual(len(attachments), 1)
         self.assertEqual(event.get_attachment_data(0), 'This is a text attachment')
+
+
+    def test_006_invitation_reply_delegated(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        start = datetime.datetime(2014,8,28, 14,30,0, tzinfo=pytz.timezone("Europe/Berlin"))
+        uid = self.create_calendar_event(start, user=self.john)
+
+        event = self.check_user_calendar_event(self.john['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+
+        # send a reply from jane to john
+        self.send_itip_reply(uid, self.jane['mail'], self.john['mail'], start=start, template=itip_delegated, partstat='NEEDS-ACTION')
+
+        # check for the updated event in john's calendar
+        time.sleep(10)
+        event = self.check_user_calendar_event(self.john['kolabtargetfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+
+        attendee = event.get_attendee(self.jane['mail'])
+        self.assertIsInstance(attendee, pykolab.xml.Attendee)
+        self.assertEqual(attendee.get_participant_status(), kolabformat.PartDelegated)
+        # FIXME: self.assertEqual(len(attendee.get_delegated_to()), 1)
+        # FIXME: self.assertEqual(attendee.get_delegated_to(True)[0], 'jack@ripper.com')
+
+        delegatee = event.get_attendee('jack@ripper.com')
+        self.assertIsInstance(delegatee, pykolab.xml.Attendee)
+        self.assertEqual(delegatee.get_participant_status(), kolabformat.PartNeedsAction)
+        # FIXME: self.assertEqual(len(delegatee.get_delegated_from()), 1)
+        # FIXME: self.assertEqual(delegatee.get_delegated_from(True)[0], self.jane['mail'])
 
 
     def test_007_invitation_cancel(self):
