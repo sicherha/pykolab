@@ -903,6 +903,8 @@ def get_resource_records(resource_dns):
 
         if not 'kolabsharedfolder' in [x.lower() for x in resource_attrs['objectclass']]:
             if resource_attrs.has_key('uniquemember'):
+                if not isinstance(resource_attrs['uniquemember'], list):
+                    resource_attrs['uniquemember'] = [ resource_attrs['uniquemember'] ]
                 resources[resource_dn] = resource_attrs
                 for uniquemember in resource_attrs['uniquemember']:
                     member_attrs = auth.get_entry_attributes(
