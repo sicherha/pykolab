@@ -821,7 +821,7 @@ def store_event(event, user_rec, targetfolder=None):
             imap.folder_utf7(targetfolder),
             None,
             None,
-            event.to_message().as_string()
+            event.to_message(creator="Kolab Server <wallace@localhost>").as_string()
         )
         return result
 

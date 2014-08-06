@@ -686,7 +686,7 @@ def save_resource_event(itip_event, resource, replace=False):
             targetfolder,
             None,
             None,
-            itip_event['xml'].to_message().as_string()
+            itip_event['xml'].to_message(creator="Kolab Server <wallace@localhost>").as_string()
         )
         return result
 

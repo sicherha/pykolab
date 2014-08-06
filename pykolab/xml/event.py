@@ -910,7 +910,7 @@ class Event(object):
         name_map = dict([(v, k) for (k, v) in map.iteritems()])
         return name_map[val] if name_map.has_key(val) else 'UNKNOWN'
 
-    def to_message(self):
+    def to_message(self, creator=None):
         from email.MIMEMultipart import MIMEMultipart
         from email.MIMEBase import MIMEBase
         from email.MIMEText import MIMEText
@@ -922,7 +922,9 @@ class Event(object):
         email = organizer.email()
         name = organizer.name()
 
-        if not name:
+        if creator:
+            msg['From'] = creator
+        elif not name:
             msg['From'] = email
         else:
             msg['From'] = '"%s" <%s>' % (name, email)
