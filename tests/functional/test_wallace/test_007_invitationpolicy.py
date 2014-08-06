@@ -625,14 +625,14 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         attendee = event.get_attendee(self.jane['mail'])
         self.assertIsInstance(attendee, pykolab.xml.Attendee)
         self.assertEqual(attendee.get_participant_status(), kolabformat.PartDelegated)
-        # FIXME: self.assertEqual(len(attendee.get_delegated_to()), 1)
-        # FIXME: self.assertEqual(attendee.get_delegated_to(True)[0], 'jack@ripper.com')
+        self.assertEqual(len(attendee.get_delegated_to()), 1)
+        self.assertEqual(attendee.get_delegated_to(True)[0], 'jack@ripper.com')
 
         delegatee = event.get_attendee('jack@ripper.com')
         self.assertIsInstance(delegatee, pykolab.xml.Attendee)
         self.assertEqual(delegatee.get_participant_status(), kolabformat.PartNeedsAction)
-        # FIXME: self.assertEqual(len(delegatee.get_delegated_from()), 1)
-        # FIXME: self.assertEqual(delegatee.get_delegated_from(True)[0], self.jane['mail'])
+        self.assertEqual(len(delegatee.get_delegated_from()), 1)
+        self.assertEqual(delegatee.get_delegated_from(True)[0], self.jane['mail'])
 
 
     def test_007_invitation_cancel(self):
