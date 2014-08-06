@@ -1040,24 +1040,23 @@ def send_response(from_address, itip_events, owner=None):
         message_text = reservation_response_text(participant_status, owner)
         subject_template = _("Reservation Request for %(summary)s was %(status)s")
 
+        # Extra actions to take: send delegated reply
         if participant_status == "DELEGATED":
-            # Extra actions to take
-            delegator = itip_event['xml'].get_attendee_by_email(from_address)
-            delegatee = [a for a in itip_event['xml'].get_attendees() if from_address in [b.email() for b in a.get_delegated_from()]][0]
-            delegatee_status = itip_event['xml'].get_ical_attendee_participant_status(delegatee)
+            delegatee = [a for a in itip_event['xml'].get_attendees() if from_address in a.get_delegated_from(True)][0]
 
-            pykolab.itip.send_reply(delegatee.get_email(), itip_event, reservation_response_text(delegatee_status, owner),
-                subject=subject_template)
-
-            # restore list of attendees after to_message_itip()
-            itip_event['xml']._attendees = [ delegator, delegatee ]
-            itip_event['xml'].event.setAttendees(itip_event['xml']._attendees)
-
-            message_text = _("""
+            delegated_message_text = _("""
                 *** This is an automated response, please do not reply! ***
 
                 Your reservation was delegated to "%s" which is available for the requested time.
             """) % (delegatee.get_name())
+
+            pykolab.itip.send_reply(from_address, itip_event, delegated_message_text,
+                subject=subject_template)
+
+            # adjust some vars for the regular reply from the delegatee
+            message_text = reservation_response_text(delegatee.get_participant_status(True), owner)
+            from_address = delegatee.get_email()
+            time.sleep(2)
 
         pykolab.itip.send_reply(from_address, itip_event, message_text,
             subject=subject_template)
@@ -1196,7 +1195,7 @@ def send_owner_confirmation(resource, owner, itip_event):
 
     message_text = _("""
         A reservation request for %(resource)s requires your approval!
-        Please either accept or decline this inivitation without saving it to your calendar.
+        Please either accept or decline this invitation without saving it to your calendar.
 
         The reservation request was sent from %(orgname)s <%(orgemail)s>.
 

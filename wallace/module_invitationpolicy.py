@@ -24,6 +24,7 @@ import time
 from urlparse import urlparse
 import urllib
 import hashlib
+import traceback
 
 from email import message_from_string
 from email.parser import Parser
@@ -697,7 +698,7 @@ def find_existing_event(uid, user_rec, lock=False):
                 setattr(event, '_imap_folder', folder)
                 setattr(event, '_lock_key', lock_key)
             except Exception, e:
-                log.error(_("Failed to parse event from message %s/%s: %r") % (folder, num, e))
+                log.error(_("Failed to parse event from message %s/%s: %s") % (folder, num, traceback.format_exc()))
                 continue
 
             if event and event.uid == uid:
