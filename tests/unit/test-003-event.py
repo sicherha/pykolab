@@ -460,8 +460,10 @@ END:VEVENT
                 break
 
         self.assertEqual(len(itip_event['attendee']), 2)
-        self.assertEqual(itip_event['attendee'][0].lower(), 'mailto:jane@doe.org')
-        self.assertEqual(itip_event['attendee'][1].lower(), 'mailto:jack@ripper.com')
+        self.assertEqual(str(itip_event['attendee'][0]).lower(), 'mailto:jane@doe.org')
+        self.assertEqual(str(itip_event['attendee'][1]).lower(), 'mailto:jack@ripper.com')
+        self.assertEqual(itip_event['attendee'][0].params['delegated-to'], 'jack@ripper.com')
+        self.assertEqual(itip_event['attendee'][1].params['delegated-from'], 'jane@doe.org')
 
 
     def test_020_calendaring_recurrence(self):
