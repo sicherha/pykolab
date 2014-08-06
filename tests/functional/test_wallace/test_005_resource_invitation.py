@@ -779,3 +779,22 @@ class TestResourceInvitation(unittest.TestCase):
         event = self.check_resource_calendar_event(self.room3['kolabtargetfolder'], uid)
         self.assertIsInstance(event, pykolab.xml.Event)
         self.assertEqual(event.get_attendee_by_email(self.room3['mail']).get_participant_status(True), 'ACCEPTED')
+
+
+    def test_016_collection_owner_confirmation(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        uid = self.send_itip_invitation(self.viprooms['mail'], datetime.datetime(2014,8,15, 17,0,0))
+
+        # resource collection responds with a DELEGATED message
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':participant_status_label('DELEGATED') }, self.viprooms['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+        # the collection member tentatively accepted the reservation
+        accept = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':participant_status_label('TENTATIVE') })
+        self.assertIsInstance(accept, email.message.Message)
+        self.assertIn(self.room3['mail'], accept['from'])
+
+        # check confirmation message sent to resource owner (jane)
+        notify = self.check_message_received(_('Booking request for %s requires confirmation') % (self.room3['cn']), mailbox=self.jane['mailbox'])
+        self.assertIsInstance(notify, email.message.Message)

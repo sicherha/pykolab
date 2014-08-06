@@ -314,7 +314,7 @@ def execute(*args, **kw):
             continue
 
         # ignore updates and cancellations to resource collections who already delegated the event
-        if receiving_attendee.get_delegated_to().size() > 0 or receiving_attendee.get_role() == kolabformat.NonParticipant:
+        if len(receiving_attendee.get_delegated_to()) > 0 or receiving_attendee.get_role() == kolabformat.NonParticipant:
             done = True
             log.debug(_("Recipient %r is non-participant, ignoring message") % (receiving_resource['mail']), level=8)
 
