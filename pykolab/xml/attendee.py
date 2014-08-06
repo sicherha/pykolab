@@ -110,7 +110,7 @@ class Attendee(kolabformat.Attendee):
         if isinstance(obj, kolabformat.Attendee):
             self.contactreference = ContactReference(obj.contact())
             self.email = self.contactreference.get_email()
-            kolabformat.Attendee.__init__(self, self.contactreference)
+            self.setContact(self.contactreference)
 
             # manually copy all properities, copy constructor doesn't work :-(
             self.setRSVP(obj.rsvp())

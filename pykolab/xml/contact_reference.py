@@ -18,13 +18,13 @@ class ContactReference(kolabformat.ContactReference):
         'uid':   'uid',
     }
 
-    def __init__(self, email=None):
+    def __init__(self, email=None, name=""):
         if email == None:
             kolabformat.ContactReference.__init__(self)
         elif isinstance(email, kolabformat.ContactReference):
             kolabformat.ContactReference.__init__(self, email.email(), email.name(), email.uid())
         else:
-            kolabformat.ContactReference.__init__(self, email)
+            kolabformat.ContactReference.__init__(self, email, name)
 
     def get_email(self):
         return self.email()
@@ -36,7 +36,7 @@ class ContactReference(kolabformat.ContactReference):
         self.setName(value)
 
     def set_email(self, email):
-        kolabformat.ContactReference.__init__(self, email)
+        kolabformat.ContactReference.__init__(self, email, self.name(), self.uid())
 
     def set_name(self, name):
         self.setName(name)
