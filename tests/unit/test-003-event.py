@@ -428,6 +428,42 @@ END:VEVENT
         self.assertEqual(event['X-CUSTOM'], "check")
         self.assertIsInstance(event['dtstamp'].dt, datetime.datetime)
 
+    def test_019_to_message_itip(self):
+        self.event = Event()
+        self.event.set_summary("test")
+        self.event.set_start(datetime.datetime(2014, 05, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
+        self.event.set_end(datetime.datetime(2014, 05, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
+        self.event.set_organizer("me@kolab.org")
+        self.event.add_attendee("john@doe.org")
+        self.event.add_attendee("jane@doe.org")
+
+        message = self.event.to_message_itip("john@doe.org", method="REPLY", participant_status="ACCEPTED")
+        itip_event = None
+        for part in message.walk():
+            if part.get_content_type() == "text/calendar":
+                ical = icalendar.Calendar.from_ical(part.get_payload(decode=True))
+                itip_event = ical.walk('VEVENT')[0]
+                break
+
+        self.assertEqual(itip_event['uid'], self.event.get_uid())
+        self.assertEqual(itip_event['attendee'].lower(), 'mailto:john@doe.org')
+
+        # delegate jane => jack
+        self.event.delegate("jane@doe.org", "jack@ripper.com", "Jack")
+
+        message = self.event.to_message_itip("jane@doe.org", method="REPLY", participant_status="DELEGATED")
+        itip_event = None
+        for part in message.walk():
+            if part.get_content_type() == "text/calendar":
+                ical = icalendar.Calendar.from_ical(part.get_payload(decode=True))
+                itip_event = ical.walk('VEVENT')[0]
+                break
+
+        self.assertEqual(len(itip_event['attendee']), 2)
+        self.assertEqual(itip_event['attendee'][0].lower(), 'mailto:jane@doe.org')
+        self.assertEqual(itip_event['attendee'][1].lower(), 'mailto:jack@ripper.com')
+
+
     def test_020_calendaring_recurrence(self):
         rrule = kolabformat.RecurrenceRule()
         rrule.setFrequency(kolabformat.RecurrenceRule.Monthly)

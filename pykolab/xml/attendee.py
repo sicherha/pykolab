@@ -61,6 +61,8 @@ class Attendee(kolabformat.Attendee):
             'rsvp':  'rsvp',
             'partstat':  'get_participant_status',
             'cutype':   'get_cutype',
+            'delegated-to': 'get_delegated_to',
+            'delegated-from': 'get_delegated_from',
         }
 
     def __init__(
@@ -157,11 +159,17 @@ class Attendee(kolabformat.Attendee):
             return self._translate_value(cutype, self.cutype_map)
         return cutype
 
-    def get_delegated_from(self):
-        return self.delegatedFrom()
+    def get_delegated_from(self, translated=False):
+        delegators = []
+        for cr in self.delegatedFrom():
+            delegators.append(cr.email() if translated else ContactReference(cr))
+        return delegators
 
-    def get_delegated_to(self):
-        return self.delegatedTo()
+    def get_delegated_to(self, translated=False):
+        delegatees = []
+        for cr in self.delegatedTo():
+            delegatees.append(cr.email() if translated else ContactReference(cr))
+        return delegatees
 
     def get_email(self):
         return self.contactreference.get_email()

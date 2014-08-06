@@ -87,7 +87,7 @@ class Event(object):
         "summary": "summary",
         "description": "description",
         "priority": "priority",
-        "status": "get_status",
+        "status": "get_ical_status",
         "location": "location",
         "organizer": "organizer",
         "attendee": "get_attendees",
@@ -1012,16 +1012,16 @@ class Event(object):
             msg['To'] = self.get_organizer().email()
 
             attendees = self.get_attendees()
+            reply_attendees = []
 
-            # TODO: There's an exception here for delegation (partstat DELEGATED)
+            # There's an exception here for delegation (partstat DELEGATED)
             for attendee in attendees:
                 if attendee.get_email() == from_address:
                     # Only the attendee is supposed to be listed in a reply
                     attendee.set_participant_status(participant_status)
                     attendee.set_rsvp(False)
 
-                    self._attendees = [attendee]
-                    self.event.setAttendees(self._attendees)
+                    reply_attendees.append(attendee)
 
                     name = attendee.get_name()
                     email = attendee.get_email()
@@ -1030,6 +1030,13 @@ class Event(object):
                         msg_from = email
                     else:
                         msg_from = '"%s" <%s>' % (name, email)
+
+                elif from_address in attendee.get_delegated_from(True):
+                    reply_attendees.append(attendee)
+
+            # keep only replying (and delegated) attendee(s)
+            self._attendees = reply_attendees
+            self.event.setAttendees(self._attendees)
 
             if msg_from == None:
                 organizer = self.get_organizer()
