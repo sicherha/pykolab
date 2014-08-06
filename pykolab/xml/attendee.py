@@ -108,9 +108,17 @@ class Attendee(kolabformat.Attendee):
 
     def copy_from(self, obj):
         if isinstance(obj, kolabformat.Attendee):
-            kolabformat.Attendee.__init__(self, obj)
             self.contactreference = ContactReference(obj.contact())
             self.email = self.contactreference.get_email()
+            kolabformat.Attendee.__init__(self, self.contactreference)
+
+            # manually copy all properities, copy constructor doesn't work :-(
+            self.setRSVP(obj.rsvp())
+            self.setRole(obj.role())
+            self.setCutype(obj.cutype())
+            self.setPartStat(obj.partStat())
+            self.setDelegatedTo(obj.delegatedTo())
+            self.setDelegatedFrom(obj.delegatedFrom())
 
     def delegate_from(self, delegators):
         crefs = []

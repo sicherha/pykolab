@@ -296,6 +296,12 @@ class Event(object):
         else:
             raise ValueError, _("Invalid argument value attendee %r, must be basestring or Attendee") % (attendee)
 
+    def find_attendee(self, attendee):
+        try:
+            return self.get_attendee(attendee)
+        except:
+            return None
+
     def get_attendee_by_email(self, email):
         if email in [x.get_email() for x in self.get_attendees()]:
             return [x for x in self.get_attendees() if x.get_email() == email][0]
