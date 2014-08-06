@@ -160,13 +160,15 @@ xml_event = """
               <partstat><text>ACCEPTED</text></partstat>
               <role><text>REQ-PARTICIPANT</text></role>
               <rsvp><boolean>true</boolean></rsvp>
+              <delegated-from><cal-address>mailto:%3Csomebody%40else.com%3E</cal-address></delegated-from>
             </parameters>
             <cal-address>mailto:%3Cjane%40example.org%3E</cal-address>
           </attendee>
           <attendee>
             <parameters>
-              <partstat><text>TENTATIVE</text></partstat>
-              <role><text>OPT-PARTICIPANT</text></role>
+              <partstat><text>DELEGATED</text></partstat>
+              <role><text>NON-PARTICIPANT</text></role>
+              <delegated-to><cal-address>mailto:%3Cjane%40example.org%3E</cal-address></delegated-to>
             </parameters>
             <cal-address>mailto:%3Csomebody%40else.com%3E</cal-address>
           </attendee>
@@ -527,6 +529,8 @@ END:VEVENT
         event = event_from_string(xml_event)
         self.assertEqual(event.uid, '75c740bb-b3c6-442c-8021-ecbaeb0a025e')
         self.assertEqual(event.get_attendee_by_email("jane@example.org").get_participant_status(), kolabformat.PartAccepted)
+        self.assertEqual(len(event.get_attendee_by_email("jane@example.org").get_delegated_from()), 1)
+        self.assertEqual(len(event.get_attendee_by_email("somebody@else.com").get_delegated_to()), 1)
         self.assertEqual(event.get_sequence(), 1)
         self.assertIsInstance(event.get_start(), datetime.datetime)
         self.assertEqual(str(event.get_start()), "2014-08-13 10:00:00+00:00")

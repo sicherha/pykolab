@@ -117,7 +117,9 @@ class Event(object):
 
     def _load_attendees(self):
         for a in self.event.attendees():
-            self._attendees.append(Attendee(a.contact().email(), a.contact().name(), a.rsvp(), a.role(), a.partStat(), a.cutype()))
+            att = Attendee(a.contact().email())
+            att.copy_from(a)
+            self._attendees.append(att)
 
     def add_attendee(self, email, name=None, rsvp=False, role=None, participant_status=None, cutype="INDIVIDUAL", params=None):
         attendee = Attendee(email, name, rsvp, role, participant_status, cutype, params)
