@@ -616,7 +616,7 @@ def accept_reservation_request(itip_event, resource, delegator=None, confirmed=F
     owner = get_resource_owner(resource)
     confirmation_required = False
 
-    if not confirmed:
+    if not confirmed and owner:
         invitationpolicy = get_resource_invitationpolicy(resource)
         log.debug(_("Apply invitation policies %r") % (invitationpolicy), level=9)
 
