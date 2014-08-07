@@ -42,7 +42,9 @@ pykolab/cli/cmd_list_mailbox_acls.py
 pykolab/cli/cmd_list_mailboxes.py
 pykolab/cli/cmd_list_mailbox_metadata.py
 pykolab/cli/cmd_list_messages.py
+pykolab/cli/cmd_list_ous.py
 pykolab/cli/cmd_list_quota.py
+pykolab/cli/cmd_list_users.py
 pykolab/cli/cmd_list_user_subscriptions.py
 pykolab/cli/cmd_mailbox_cleanup.py
 pykolab/cli/cmd_remove_mailaddress.py
@@ -112,6 +114,7 @@ pykolab/xml/contact.py
 pykolab/xml/contact_reference.py
 pykolab/xml/event.py
 pykolab/xml/__init__.py
+pykolab/xml/recurrence_rule.py
 pykolab/xml/utils.py
 saslauthd/__init__.py
 saslauthd.py

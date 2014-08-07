@@ -1,10 +1,13 @@
+bin/._kolab_smtp_access_policy.py
 kolabd/.___init__.py
 pykolab/auth/.___init__.py
 pykolab/auth/ldap/._cache.py
 pykolab/auth/ldap/.___init__.py
 pykolab/._base.py
 pykolab/cli/._cmd_create_mailbox.py
+pykolab/cli/._cmd_delete_message.py
 pykolab/cli/._cmd_list_mailbox_metadata.py
+pykolab/cli/._cmd_list_messages.py
 pykolab/cli/._cmd_list_quota.py
 pykolab/cli/._cmd_set_language.py
 pykolab/cli/._cmd_set_mailbox_acl.py
@@ -32,8 +35,11 @@ pykolab/._translit.py
 pykolab/._utils.py
 pykolab/wap_client/.___init__.py
 pykolab/xml/._attendee.py
+pykolab/xml/._contact.py
+pykolab/xml/._contact_reference.py
 pykolab/xml/._event.py
 pykolab/xml/.___init__.py
+pykolab/xml/._recurrence_rule.py
 pykolab/xml/._utils.py
 tests/functional/._purge_users.py
 tests/functional/._resource_func.py
