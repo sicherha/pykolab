@@ -364,7 +364,16 @@ class IMAP(object):
             _acl = [x for x in _acl.split() if x not in acl_map['subtract'].split()]
             acl = ''.join(list(set(_acl)))
 
-        self.imap.sam(self.folder_utf7(folder), identifier, acl)
+        try:
+            self.imap.sam(self.folder_utf7(folder), identifier, acl)
+        except Exception, errmsg:
+            log.error(
+                    _("Could not set ACL for %s on folder %s: %r") % (
+                            identifier,
+                            folder,
+                            errmsg
+                        )
+                )
 
     def set_metadata(self, folder, metadata_path, metadata_value, shared=True):
         """
