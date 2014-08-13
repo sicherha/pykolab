@@ -1773,7 +1773,7 @@ class LDAP(pykolab.base.Base):
                     'kolabfoldertype'
                 )
 
-        folderacl_entry_attribute = conf.get('ldap', 'folderacl_entry_attribute')
+        folderacl_entry_attribute = conf.get('ldap', 'sharedfolder_acl_entry_attribute')
         if folderacl_entry_attribute == None:
             folderacl_entry_attribute = 'acl'
 
