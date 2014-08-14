@@ -9,6 +9,10 @@
     \$config['calendar_event_coloring'] = 0;
     \$config['calendar_caldav_url'] = 'http://' . \$_SERVER['HTTP_HOST'] . '/iRony/calendars/%u/%i';
 
+    \$config['calendar_itip_smtp_server'] = '';
+    \$config['calendar_itip_smtp_user'] = '';
+    \$config['calendar_itip_smtp_pass'] = '';
+
     \$config['calendar_contact_birthdays'] = true;
 
     \$config['calendar_resources_driver'] = 'ldap';
