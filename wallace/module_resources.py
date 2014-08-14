@@ -321,7 +321,8 @@ def execute(*args, **kw):
         # process CANCEL messages
         if not done and itip_event['method'] == "CANCEL":
             for resource in resource_dns:
-                if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
+                if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()] \
+                    and resources[resource].has_key('kolabtargetfolder'):
                     delete_resource_event(itip_event['uid'], resources[resource])
 
             done = True
@@ -445,6 +446,8 @@ def check_availability(itip_events, resource_dns, resources, receiving_attendee=
 
         if len(resources[resource]['conflicting_events']) > 0:
             log.debug(_("Conflicting events: %r for resource %r") % (resources[resource]['conflicting_events'], resource), level=9)
+
+            done = False
 
             # This is the event being conflicted with!
             for itip_event in itip_events:
