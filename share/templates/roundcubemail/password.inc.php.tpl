@@ -4,7 +4,7 @@
     // -----------------------
     // A driver to use for password change. Default: "sql".
     // See README file for list of supported driver names.
-    \$config['password_driver'] = 'ldap';
+    \$config['password_driver'] = 'ldap_simple';
 
     // Determine whether current password is required to change password.
     // Default: false.
