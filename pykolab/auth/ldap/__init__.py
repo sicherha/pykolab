@@ -1214,6 +1214,9 @@ class LDAP(pykolab.base.Base):
             else:
                 folder_path = entry['cn']
 
+        if not folder_path.startswith('shared/'):
+            folder_path = "shared/%s" % folder_path
+
         folderacl_entry_attribute = self.config_get('sharedfolder_acl_entry_attribute')
         if folderacl_entry_attribute == None:
             folderacl_entry_attribute = 'acl'
@@ -1593,6 +1596,9 @@ class LDAP(pykolab.base.Base):
             else:
                 folder_path = entry['cn']
 
+        if not folder_path.startswith('shared/'):
+            folder_path = "shared/%s" % folder_path
+
         folderacl_entry_attribute = self.config_get('sharedfolder_acl_entry_attribute')
         if folderacl_entry_attribute == None:
             folderacl_entry_attribute = 'acl'
@@ -1801,6 +1807,9 @@ class LDAP(pykolab.base.Base):
                 folder_path = "%s@%s" % (entry['cn'], self.domain)
             else:
                 folder_path = entry['cn']
+
+        if not folder_path.startswith('shared/'):
+            folder_path = "shared/%s" % folder_path
 
         if not self.imap.shared_folder_exists(folder_path):
             self.imap.shared_folder_create(folder_path, server)
