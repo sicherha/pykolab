@@ -91,7 +91,7 @@ def execute(*args, **kw):
                     'fbsource': 'file:/var/cache/kolab-freebusy/%s.ifb',
                     'expires': '15m'
                 },
-            'directory "kolab-users"': {
+            'directory "kolab-people"': {
                     'type': 'ldap',
                     'host': conf.get('ldap', 'ldap_uri'),
                     'base_dn': conf.get('ldap', 'base_dn'),
