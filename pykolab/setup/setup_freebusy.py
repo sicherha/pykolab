@@ -79,16 +79,25 @@ def execute(*args, **kw):
         scheme = 'imaps'
 
     resources_imap_uri = '%s://%s:%s@%s:%s/%%kolabtargetfolder?acl=lrs' % (scheme, admin_login, admin_password, hostname, port)
-    users_imap_uri = '%s://%%mail:%s@%s:%s/?proxy_auth=%s' % (scheme, admin_password, hostname, port, admin_login)
+    users_imap_uri = '%s://%%s:%s@%s:%s/?proxy_auth=%s' % (scheme, admin_password, hostname, port, admin_login)
 
     freebusy_settings = {
+            'directory "local"': {
+                    'type': 'static',
+                    'fbsource': 'file:/var/lib/kolab-freebusy/%s.ifb',
+                },
+            'directory "local-cache"': {
+                    'type': 'static',
+                    'fbsource': 'file:/var/cache/kolab-freebusy/%s.ifb',
+                    'expires': '15m'
+                },
             'directory "kolab-users"': {
                     'type': 'ldap',
                     'host': conf.get('ldap', 'ldap_uri'),
                     'base_dn': conf.get('ldap', 'base_dn'),
                     'bind_dn': conf.get('ldap', 'service_bind_dn'),
                     'bind_pw': conf.get('ldap', 'service_bind_pw'),
-                    'filter': '(&(objectClass=kolabInetOrgPerson)(|(uid=%s)(mail=%s)(alias=%s)))',
+                    'filter': '(&(objectClass=kolabInetOrgPerson)(|(mail=%s)(alias=%s)))',
                     'attributes': 'mail',
                     'lc_attributes': 'mail',
                     'fbsource': users_imap_uri,
@@ -103,11 +112,11 @@ def execute(*args, **kw):
                     'bind_dn': conf.get('ldap', 'service_bind_dn'),
                     'bind_pw': conf.get('ldap', 'service_bind_pw'),
                     'attributes': 'mail, kolabtargetfolder',
-                    'filter': '(&(objectClass=kolabsharedfolder)(mail=%s))',
+                    'filter': '(&(objectClass=kolabsharedfolder)(kolabfoldertype=event)(mail=%s))',
                     'fbsource': resources_imap_uri,
                     'cacheto': '/var/cache/kolab-freebusy/%mail.ifb',
                     'expires': '15m',
-                    'loglevel': 300
+                    'loglevel': 300,
                 },
         }
 
