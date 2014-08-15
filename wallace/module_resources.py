@@ -205,10 +205,13 @@ def execute(*args, **kw):
         for recipient in recipients:
             # extract reference UID from recipients like resource+UID@domain.org
             if re.match('.+\+[A-Za-z0-9=/-]+@', recipient):
-                (prefix, host) = recipient.split('@')
-                (local, uid) = prefix.split('+')
-                reference_uid = base64.b64decode(uid, '-/')
-                recipient = local + '@' + host
+                try:
+                    (prefix, host) = recipient.split('@')
+                    (local, uid) = prefix.split('+')
+                    reference_uid = base64.b64decode(uid, '-/')
+                    recipient = local + '@' + host
+                except:
+                    continue
 
             if not len(resource_record_from_email_address(recipient)) == 0:
                 resource_recipient = recipient
