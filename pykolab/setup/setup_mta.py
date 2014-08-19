@@ -260,7 +260,7 @@ result_format = shared+%%s
             "smtpd_tls_security_level": "may",
             "smtp_tls_security_level": "may",
             "smtpd_sasl_auth_enable": "yes",
-            "smtpd_sender_login_maps": "$relay_recipient_maps",
+            "smtpd_sender_login_maps": "$local_recipient_maps",
             "smtpd_sender_restrictions": "permit_mynetworks, reject_sender_login_mismatch",
             "smtpd_recipient_restrictions": "permit_mynetworks, reject_unauth_pipelining, reject_rbl_client zen.spamhaus.org, reject_non_fqdn_recipient, reject_invalid_helo_hostname, reject_unknown_recipient_domain, reject_unauth_destination, check_policy_service unix:private/recipient_policy_incoming, permit",
             "smtpd_sender_restrictions": "permit_mynetworks, check_policy_service unix:private/sender_policy_incoming",
