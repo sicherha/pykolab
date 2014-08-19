@@ -421,7 +421,7 @@ result_format = shared+%%s
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'postfix.service'])
         subprocess.call(['systemctl', 'restart', 'amavisd.service'])
-        subprocess.call(['systemctl', 'restart', 'clamd.amavisd.service'])
+        subprocess.call(['systemctl', 'restart', 'clamd@amavisd.service'])
         subprocess.call(['systemctl', 'restart', 'wallace.service'])
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['service', 'postfix', 'restart'])
@@ -439,7 +439,7 @@ result_format = shared+%%s
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'enable', 'postfix.service'])
         subprocess.call(['systemctl', 'enable', 'amavisd.service'])
-        subprocess.call(['systemctl', 'enable', 'clamd.amavisd.service'])
+        subprocess.call(['systemctl', 'enable', 'clamd@amavisd.service'])
         subprocess.call(['systemctl', 'enable', 'wallace.service'])
     elif os.path.isfile('/sbin/chkconfig'):
         subprocess.call(['chkconfig', 'postfix', 'on'])
