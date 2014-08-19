@@ -323,7 +323,8 @@ class TestResourceInvitation(unittest.TestCase):
         imap = IMAP()
         imap.connect()
 
-        imap.imap.m.select(u'"'+mailbox+'"')
+        imap.set_acl(mailbox, "cyrus-admin", "lrs")
+        imap.imap.m.select(imap.folder_quote(mailbox))
 
         found = None
         retries = 10

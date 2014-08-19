@@ -533,6 +533,9 @@ def read_resource_calendar(resource_rec, itip_events):
         level=9
     )
 
+    # set read ACLs for admin user
+    imap.set_acl(mailbox, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrs")
+
     # might raise an exception, let that bubble
     imap.imap.m.select(imap.folder_quote(mailbox))
     typ, data = imap.imap.m.search(None, 'ALL')
@@ -686,7 +689,7 @@ def save_resource_event(itip_event, resource, replace=False):
         if replace:
             delete_resource_event(itip_event['uid'], resource)
         else:
-            imap.imap.m.setacl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
+            imap.set_acl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
 
         result = imap.imap.m.append(
             targetfolder,
@@ -709,7 +712,7 @@ def delete_resource_event(uid, resource):
         Removes the IMAP object with the given UID from a resource's calendar folder
     """
     targetfolder = imap.folder_quote(resource['kolabtargetfolder'])
-    imap.imap.m.setacl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
+    imap.set_acl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
     imap.imap.m.select(targetfolder)
 
     typ, data = imap.imap.m.search(None, '(HEADER SUBJECT "%s")' % uid)
