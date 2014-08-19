@@ -269,7 +269,11 @@ class KolabDaemon(object):
                     added_domains.append(domain)
 
             if len(removed_domains) == 0 and len(added_domains) == 0:
-                time.sleep(600)
+                try:
+                    sleep_between_domain_operations_in_seconds = (float)(conf.get('kolab', 'domain_sync_interval'))
+                    time.sleep(sleep_between_domain_operations_in_seconds)
+                except ValueError:
+                    time.sleep(600)
 
             log.debug(
                     _("added domains: %r, removed domains: %r") % (
