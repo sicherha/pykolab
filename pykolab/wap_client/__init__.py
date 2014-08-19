@@ -74,8 +74,24 @@ def authenticate(username=None, password=None, domain=None):
         session_id = response['session_token']
         return True
 
-def connect():
-    global conn
+def connect(uri=None):
+    global conn, API_SSL, API_PORT, API_HOSTNAME, API_BASE
+
+    if not uri == None:
+        result = urlparse(uri)
+
+        if hasattr(result, 'scheme') and result.scheme == 'https':
+            API_SSL = True
+            API_PORT = 443
+
+        if hasattr(result, 'hostname'):
+            API_HOSTNAME = result.hostname
+
+        if hasattr(result, 'port'):
+            API_PORT = result.port
+
+        if hasattr(result, 'path'):
+            API_BASE = result.path
 
     if conn == None:
         if API_SSL:
