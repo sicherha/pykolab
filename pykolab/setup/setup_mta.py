@@ -224,7 +224,7 @@ domain = ldap:/etc/postfix/ldap/mydestination.cf
 bind_dn = %(service_bind_dn)s
 bind_pw = %(service_bind_pw)s
 
-query_filter = (&(|(mail=%%s)(alias=%%s))(objectclass=kolabsharedfolder))
+query_filter = (&(|(mail=%%s)(alias=%%s))(objectclass=kolabsharedfolder)(kolabFolderType=mail))
 result_attribute = kolabtargetfolder
 result_format = shared+%%s
 """ % {
