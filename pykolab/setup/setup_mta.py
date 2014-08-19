@@ -388,6 +388,8 @@ result_format = shared+%%s
             fp = open('/etc/amavisd/amavisd.conf', 'w')
         elif os.path.isdir('/etc/amavis'):
             fp = open('/etc/amavis/amavisd.conf', 'w')
+        elif os.path.isfile('/etc/amavisd.conf'):
+            fp = open('/etc/amavisd.conf', 'w')
 
         if not fp == None:
             fp.write(t.__str__())
