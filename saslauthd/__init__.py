@@ -68,6 +68,15 @@ class SASLAuthDaemon(object):
             )
 
         daemon_group.add_option(
+                "-s",
+                "--socket",
+                dest    = "socketfile",
+                action  = "store",
+                default = "/var/run/saslauthd/mux",
+                help    = _("Socket file to bind to.")
+            )
+
+        daemon_group.add_option(
                 "-u",
                 "--user",
                 dest    = "process_username",
