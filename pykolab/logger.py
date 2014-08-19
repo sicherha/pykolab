@@ -162,24 +162,26 @@ class Logger(logging.Logger):
 
                         sys.exit(1)
 
-                try:
-                    os.chown(
-                            self.logfile,
-                            user_uid,
-                            group_gid
-                        )
-                    os.chmod(self.logfile, 0660)
-                except Exception, errmsg:
-                    self.error(_("Could not change permissions on %s: %r") % (self.logfile, errmsg))
-                    if self.debuglevel > 8:
-                        import traceback
-                        traceback.print_exc()
+                if os.path.isfile(self.logfile):
+                    try:
+                        os.chown(
+                                self.logfile,
+                                user_uid,
+                                group_gid
+                            )
+                        os.chmod(self.logfile, 0660)
+                    except Exception, errmsg:
+                        self.error(_("Could not change permissions on %s: %r") % (self.logfile, errmsg))
+                        if self.debuglevel > 8:
+                            import traceback
+                            traceback.print_exc()
 
         except Exception, errmsg:
-            self.error(_("Could not change permissions on %s: %r") % (self.logfile, errmsg))
-            if self.debuglevel > 8:
-                import traceback
-                traceback.print_exc()
+            if os.path.isfile(self.logfile):
+                self.error(_("Could not change permissions on %s: %r") % (self.logfile, errmsg))
+                if self.debuglevel > 8:
+                    import traceback
+                    traceback.print_exc()
 
         # Make sure the log file exists
         try:
