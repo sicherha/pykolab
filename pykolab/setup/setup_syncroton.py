@@ -52,9 +52,9 @@ def execute(*args, **kw):
                                 schema_files.append(schema_filepath)
                                 break
 
-                if len(schema_files) > 0
+                if len(schema_files) > 0:
                     break
-        if len(schema_files) > 0
+        if len(schema_files) > 0:
             break
 
     if not os.path.isfile('/tmp/kolab-setup-my.cnf'):
