@@ -420,6 +420,14 @@ result_format = shared+%%s
             myaugeas.save()
         myaugeas.close()
 
+    if os.path.isfile('/etc/default/wallace'):
+        myaugeas = Augeas()
+        setting = os.path.join('/files/etc/default/wallace','START')
+        if not myaugeas.get(setting) == 'yes':
+            myaugeas.set(setting,'yes')
+            myaugeas.save()
+        myaugeas.close()
+
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'postfix.service'])
         subprocess.call(['systemctl', 'restart', 'amavisd.service'])
