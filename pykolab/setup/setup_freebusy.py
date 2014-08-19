@@ -78,6 +78,10 @@ def execute(*args, **kw):
     if scheme == None or scheme == "":
         scheme = 'imaps'
 
+    if scheme == "imaps" and port == 993:
+        scheme = "imap"
+        port = 143
+
     resources_imap_uri = '%s://%s:%s@%s:%s/%%kolabtargetfolder?acl=lrs' % (scheme, admin_login, admin_password, hostname, port)
     users_imap_uri = '%s://%%s:%s@%s:%s/?proxy_auth=%s' % (scheme, admin_password, hostname, port, admin_login)
 
