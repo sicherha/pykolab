@@ -92,6 +92,9 @@ def to_cdatetime(_datetime, with_timezone=True):
         _cdatetime = kolabformat.cDateTime(year, month, day)
 
     if with_timezone and hasattr(_datetime, "tzinfo"):
-        _cdatetime.setTimezone(_datetime.tzinfo.__str__())
+        if _datetime.tzinfo.__str__() in ['UTC','GMT']:
+            _cdatetime.setUTC(True)
+        else:
+            _cdatetime.setTimezone(_datetime.tzinfo.__str__())
 
     return _cdatetime
