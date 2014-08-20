@@ -1,7 +1,5 @@
 import datetime
 import icalendar
-from icalendar import vDatetime
-from icalendar import vText
 import kolabformat
 import pytz
 import time
@@ -49,6 +47,9 @@ class Event(object):
             "TENTATIVE": kolabformat.StatusTentative,
             "CONFIRMED": kolabformat.StatusConfirmed,
             "CANCELLED": kolabformat.StatusCancelled,
+            "COMPLETD":  kolabformat.StatusCompleted,
+            "IN-PROCESS": kolabformat.StatusInProcess,
+            "NEEDS-ACTION": kolabformat.StatusNeedsAction,
         }
 
     classification_map = {
@@ -655,20 +656,14 @@ class Event(object):
         self.event.setCustomProperties(props)
 
     def set_from_ical(self, attr, value):
+        attr = attr.replace('-', '')
         ical_setter = 'set_ical_' + attr
         default_setter = 'set_' + attr
 
-        if attr == "dtend":
-            self.set_ical_dtend(value.dt)
-        elif attr == "dtstart":
-            self.set_ical_dtstart(value.dt)
-        elif attr == "dtstamp":
-            self.set_ical_dtstamp(value.dt)
-        elif attr == "created":
-            self.set_created(value.dt)
-        elif attr == "lastmodified":
-            self.set_lastmodified(value.dt)
-        elif attr == "categories":
+        if isinstance(value, icalendar.vDDDTypes) and hasattr(value, 'dt'):
+            value = value.dt
+
+        if attr == "categories":
             self.add_category(value)
         elif attr == "class":
             self.set_classification(value)
@@ -733,9 +728,11 @@ class Event(object):
         self.set_lastmodified(lastmod)
 
     def set_ical_duration(self, value):
-        if value.dt:
-            duration = kolabformat.Duration(value.dt.days, 0, 0, value.dt.seconds, False)
-            self.event.setDuration(duration)
+        if hasattr(value, 'dt'):
+            value = value.dt
+
+        duration = kolabformat.Duration(value.days, 0, 0, value.seconds, False)
+        self.event.setDuration(duration)
 
     def set_ical_organizer(self, organizer):
         address = str(organizer).split(':')[-1]
