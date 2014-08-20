@@ -1,7 +1,7 @@
 <?php
 
 // URL of kolab-chwala installation
-\$config['kolab_files_url'] = 'http://' . \$_SERVER['HTTP_HOST'] . '/chwala/';
+\$config['kolab_files_url'] = '/chwala/';
 
 // List of files list columns. Available are: name, size, mtime, type
 \$config['kolab_files_list_cols'] = array('name', 'mtime', 'size');
