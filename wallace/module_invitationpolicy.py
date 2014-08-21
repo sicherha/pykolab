@@ -403,6 +403,26 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
             # TODO: delegate (but to whom?)
             return None
 
+    # auto-update changes if enabled for this user
+    elif policy & ACT_UPDATE and existing:
+        # compare sequence number to avoid outdated updates
+        if not itip_event['sequence'] == existing.get_sequence():
+            log.info(_("The iTip request sequence (%r) doesn't match the referred object version (%r). Ignoring.") % (
+                itip_event['sequence'], existing.get_sequence()
+            ))
+            return None
+
+        log.debug(_("Auto-updating %s %r on iTip REQUEST (no re-scheduling)") % (existing.type, existing.uid), level=8)
+        save_object = True
+
+        # retain task status and percent-complete properties from my old copy
+        if is_task:
+            itip_event['xml'].set_status(existing.get_status())
+            itip_event['xml'].set_percentcomplete(existing.get_percentcomplete())
+
+        if policy & COND_NOTIFY:
+            send_update_notification(itip_event['xml'], receiving_user, False)
+
     # if RSVP, send an iTip REPLY
     if rsvp or scheduling_required:
         # set attendee's CN from LDAP record if yet missing
@@ -423,10 +443,6 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
         else:
             # policy doesn't match, pass on to next one
             return None
-
-    else:
-        log.debug(_("No RSVP for recipient %r requested") % (receiving_user['mail']), level=8)
-        # TODO: only update if policy & ACT_UPDATE ?
 
     if save_object:
         targetfolder = None
@@ -517,7 +533,7 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
             # update the organizer's copy of the object
             if update_object(existing, receiving_user):
                 if policy & COND_NOTIFY:
-                    send_reply_notification(existing, receiving_user)
+                    send_update_notification(existing, receiving_user, True)
 
                 # update all other attendee's copies
                 if conf.get('wallace','invitationpolicy_autoupdate_other_attendees_on_reply'):
@@ -931,7 +947,7 @@ def delete_object(existing):
     imap.imap.m.expunge()
 
 
-def send_reply_notification(object, receiving_user):
+def send_update_notification(object, receiving_user, reply=True):
     """
         Send a (consolidated) notification about the current participant status to organizer
     """
@@ -941,52 +957,56 @@ def send_reply_notification(object, receiving_user):
     from email.MIMEText import MIMEText
     from email.Utils import formatdate
 
-    log.debug(_("Compose participation status summary for %s %r to user %r") % (
-        object.type, object.uid, receiving_user['mail']
-    ), level=8)
-
     organizer = object.get_organizer()
     orgemail = organizer.email()
     orgname = organizer.name()
 
-    auto_replies_expected = 0
-    auto_replies_received = 0
-    partstats = { 'ACCEPTED':[], 'TENTATIVE':[], 'DECLINED':[], 'DELEGATED':[], 'IN-PROCESS':[], 'COMPLETED':[], 'PENDING':[] }
-    for attendee in object.get_attendees():
-        parstat = attendee.get_participant_status(True)
-        if partstats.has_key(parstat):
-            partstats[parstat].append(attendee.get_displayname())
-        else:
-            partstats['PENDING'].append(attendee.get_displayname())
-
-        # look-up kolabinvitationpolicy for this attendee
-        if attendee.get_cutype() == kolabformat.CutypeResource:
-            resource_dns = auth.find_resource(attendee.get_email())
-            if isinstance(resource_dns, list):
-                attendee_dn = resource_dns[0] if len(resource_dns) > 0 else None
-            else:
-                attendee_dn = resource_dns
-        else:
-            attendee_dn = user_dn_from_email_address(attendee.get_email())
-
-        if attendee_dn:
-            attendee_rec = auth.get_entry_attributes(None, attendee_dn, ['kolabinvitationpolicy'])
-            if is_auto_reply(attendee_rec, orgemail, object.type):
-                auto_replies_expected += 1
-                if not parstat == 'NEEDS-ACTION':
-                    auto_replies_received += 1
-
-    # skip notification until we got replies from all automatically responding attendees
-    if auto_replies_received < auto_replies_expected:
-        log.debug(_("Waiting for more automated replies (got %d of %d); skipping notification") % (
-            auto_replies_received, auto_replies_expected
+    if reply:
+        log.debug(_("Compose participation status summary for %s %r to user %r") % (
+            object.type, object.uid, receiving_user['mail']
         ), level=8)
-        return
 
-    roundup = ''
-    for status,attendees in partstats.iteritems():
-        if len(attendees) > 0:
-            roundup += "\n" + participant_status_label(status) + ":\n" + "\n".join(attendees) + "\n"
+        auto_replies_expected = 0
+        auto_replies_received = 0
+        partstats = { 'ACCEPTED':[], 'TENTATIVE':[], 'DECLINED':[], 'DELEGATED':[], 'IN-PROCESS':[], 'COMPLETED':[], 'PENDING':[] }
+        for attendee in object.get_attendees():
+            parstat = attendee.get_participant_status(True)
+            if partstats.has_key(parstat):
+                partstats[parstat].append(attendee.get_displayname())
+            else:
+                partstats['PENDING'].append(attendee.get_displayname())
+
+            # look-up kolabinvitationpolicy for this attendee
+            if attendee.get_cutype() == kolabformat.CutypeResource:
+                resource_dns = auth.find_resource(attendee.get_email())
+                if isinstance(resource_dns, list):
+                    attendee_dn = resource_dns[0] if len(resource_dns) > 0 else None
+                else:
+                    attendee_dn = resource_dns
+            else:
+                attendee_dn = user_dn_from_email_address(attendee.get_email())
+
+            if attendee_dn:
+                attendee_rec = auth.get_entry_attributes(None, attendee_dn, ['kolabinvitationpolicy'])
+                if is_auto_reply(attendee_rec, orgemail, object.type):
+                    auto_replies_expected += 1
+                    if not parstat == 'NEEDS-ACTION':
+                        auto_replies_received += 1
+
+        # skip notification until we got replies from all automatically responding attendees
+        if auto_replies_received < auto_replies_expected:
+            log.debug(_("Waiting for more automated replies (got %d of %d); skipping notification") % (
+                auto_replies_received, auto_replies_expected
+            ), level=8)
+            return
+
+        roundup = ''
+        for status,attendees in partstats.iteritems():
+            if len(attendees) > 0:
+                roundup += "\n" + participant_status_label(status) + ":\n" + "\n".join(attendees) + "\n"
+    else:
+        # TODO: compose a diff of changes to previous version
+        roundup = "\n" + _("Minor changes submitted by %s have been automatically applied.") % (orgname if orgname else orgemail)
 
     # compose different notification texts for events/tasks
     if object.type == 'task':

@@ -387,13 +387,15 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         return uid
 
-    def create_calendar_event(self, start=None, summary="test", sequence=0, user=None, attendees=None):
+    def create_calendar_event(self, start=None, summary="test", sequence=0, user=None, attendees=None, folder=None):
         if start is None:
             start = datetime.datetime.now(pytz.timezone("Europe/Berlin"))
         if user is None:
             user = self.john
         if attendees is None:
             attendees = [self.jane]
+        if folder is None:
+            folder = user['kolabcalendarfolder']
 
         end = start + datetime.timedelta(hours=4)
 
@@ -419,7 +421,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         imap = IMAP()
         imap.connect()
 
-        mailbox = imap.folder_quote(user['kolabcalendarfolder'])
+        mailbox = imap.folder_quote(folder)
         imap.set_acl(mailbox, "cyrus-admin", "lrswipkxtecda")
         imap.imap.m.select(mailbox)
 
@@ -904,7 +906,34 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertEqual(jacks.get_attendee(self.jack['mail']).get_participant_status(), kolabformat.PartNeedsAction)
 
 
-    def test_011_task_assignment_accept(self):
+    def test_011_manual_schedule_auto_update(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        # create an event in john's calendar as it was manually accepted
+        start = datetime.datetime(2014,9,2, 11,0,0, tzinfo=pytz.timezone("Europe/Berlin"))
+        uid = self.create_calendar_event(start, user=self.jane, sequence=1, folder=self.john['kolabcalendarfolder'])
+
+        # send update with the same sequence: no re-scheduling
+        templ = itip_invitation.replace("RSVP=TRUE", "RSVP=FALSE").replace("Doe, John", self.jane['displayname']).replace("john.doe@example.org", self.jane['mail'])
+        self.send_itip_update(self.john['mail'], uid, start, summary="test updated", sequence=1, partstat='ACCEPTED', template=templ)
+
+        time.sleep(10)
+        event = self.check_user_calendar_event(self.john['kolabcalendarfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_summary(), "test updated")
+        self.assertEqual(event.get_attendee(self.john['mail']).get_participant_status(), kolabformat.PartAccepted)
+
+        # this should also trigger an update notification
+        notification = self.check_message_received(_('"%s" has been updated') % ('test updated'), self.jane['mail'], mailbox=self.john['mailbox'])
+        self.assertIsInstance(notification, email.message.Message)
+
+        # send outdated update: should not be saved
+        self.send_itip_update(self.john['mail'], uid, start, summary="old test", sequence=0, partstat='NEEDS-ACTION', template=templ)
+        notification = self.check_message_received(_('"%s" has been updated') % ('old test'), self.jane['mail'], mailbox=self.john['mailbox'])
+        self.assertEqual(notification, None)
+
+
+    def test_020_task_assignment_accept(self):
         start = datetime.datetime(2014,9,10, 19,0,0)
         uid = self.send_itip_invitation(self.jane['mail'], start, summary='work', template=itip_todo)
 
@@ -928,7 +957,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertEqual(todo.get_attendee(self.jane['mail']).get_participant_status(), kolabformat.PartAccepted)
 
 
-    def test_012_task_assignment_reply(self):
+    def test_021_task_assignment_reply(self):
         self.purge_mailbox(self.john['mailbox'])
 
         due = datetime.datetime(2014,9,12, 14,0,0, tzinfo=pytz.timezone("Europe/Berlin"))
@@ -958,7 +987,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertIn(participant_status_label(partstat), notification_text)
 
 
-    def test_013_task_cancellation(self):
+    def test_022_task_cancellation(self):
         uid = self.send_itip_invitation(self.jane['mail'], summary='more work', template=itip_todo)
 
         time.sleep(10)
