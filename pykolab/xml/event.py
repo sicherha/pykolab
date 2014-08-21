@@ -43,6 +43,8 @@ def event_from_message(message):
 
 
 class Event(object):
+    type = 'event'
+
     status_map = {
             "TENTATIVE": kolabformat.StatusTentative,
             "CONFIRMED": kolabformat.StatusConfirmed,
@@ -612,9 +614,9 @@ class Event(object):
 
     def set_created(self, _datetime=None):
         if _datetime == None:
-            _datetime = datetime.datetime.now()
+            _datetime = datetime.datetime.utcnow()
 
-        self.event.setCreated(xmlutils.to_cdatetime(_datetime, False))
+        self.event.setCreated(xmlutils.to_cdatetime(_datetime, False, True))
 
     def set_description(self, description):
         self.event.setDescription(str(description))
@@ -624,7 +626,7 @@ class Event(object):
             self.event.setComment(str(comment))
 
     def set_dtstamp(self, _datetime):
-        self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False))
+        self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False, True))
 
     def set_end(self, _datetime):
         valid_datetime = False
@@ -771,12 +773,12 @@ class Event(object):
 
         if _datetime == None:
             valid_datetime = True
-            _datetime = datetime.datetime.now()
+            _datetime = datetime.datetime.utcnow()
 
         if not valid_datetime:
             raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance")
 
-        self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False))
+        self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False, True))
 
     def set_location(self, location):
         self.event.setLocation(str(location))
@@ -938,7 +940,7 @@ class Event(object):
         msg['Date'] = formatdate(localtime=True)
 
         msg.add_header('X-Kolab-MIME-Version', '3.0')
-        msg.add_header('X-Kolab-Type', 'application/x-vnd.kolab.event')
+        msg.add_header('X-Kolab-Type', 'application/x-vnd.kolab.' + self.type)
 
         text = utils.multiline_message("""
                     This is a Kolab Groupware object. To view this object you

@@ -62,10 +62,18 @@ def from_cdatetime(_cdatetime, with_timezone=True):
         return datetime.datetime(year, month, day, hour, minute, second)
 
 
-def to_cdatetime(_datetime, with_timezone=True):
+def to_cdatetime(_datetime, with_timezone=True, as_utc=False):
     """
         Convert a datetime.dateime object into a kolabformat.cDateTime instance
     """
+    # convert date into UTC timezone
+    if as_utc and hasattr(_datetime, "tzinfo"):
+        if _datetime.tzinfo is not None:
+            _datetime = _datetime.astimezone(pytz.utc)
+        else:
+            datetime = _datetime.replace(tzinfo=pytz.utc)
+        with_timezone = False
+
     (
         year,
         month,
@@ -96,5 +104,8 @@ def to_cdatetime(_datetime, with_timezone=True):
             _cdatetime.setUTC(True)
         else:
             _cdatetime.setTimezone(_datetime.tzinfo.__str__())
+
+    if as_utc:
+        _cdatetime.setUTC(True)
 
     return _cdatetime

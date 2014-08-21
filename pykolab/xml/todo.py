@@ -34,6 +34,7 @@ def todo_from_message(message):
 
 # FIXME: extend a generic pykolab.xml.Xcal class instead of Event
 class Todo(Event):
+    type = 'task'
 
     def __init__(self, from_ical="", from_string=""):
         self._attendees = []
