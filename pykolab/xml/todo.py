@@ -117,6 +117,10 @@ class Todo(Event):
     def set_percentcomplete(self, percent):
         self.event.setPercentComplete(int(percent))
 
+    def set_transparency(self, transp):
+        # empty stub
+        pass
+
     def get_due(self):
         return xmlutils.from_cdatetime(self.event.due(), True)
 

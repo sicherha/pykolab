@@ -41,30 +41,32 @@ from pykolab.auth import Auth
 from pykolab.conf import Conf
 from pykolab.imap import IMAP
 from pykolab.xml import to_dt
+from pykolab.xml import todo_from_message
 from pykolab.xml import event_from_message
 from pykolab.xml import participant_status_label
-from pykolab.itip import events_from_message
+from pykolab.itip import objects_from_message
 from pykolab.itip import check_event_conflict
 from pykolab.itip import send_reply
 from pykolab.translate import _
 
 # define some contstants used in the code below
-COND_IF_AVAILABLE  = 32
-COND_IF_CONFLICT   = 64
-COND_TENTATIVE     = 128
-COND_NOTIFY        = 256
 ACT_MANUAL         = 1
 ACT_ACCEPT         = 2
 ACT_DELEGATE       = 4
 ACT_REJECT         = 8
 ACT_UPDATE         = 16
-ACT_TENTATIVE                = ACT_ACCEPT + COND_TENTATIVE
-ACT_ACCEPT_IF_NO_CONFLICT    = ACT_ACCEPT + COND_IF_AVAILABLE
-ACT_TENTATIVE_IF_NO_CONFLICT = ACT_ACCEPT + COND_TENTATIVE + COND_IF_AVAILABLE
-ACT_DELEGATE_IF_CONFLICT     = ACT_DELEGATE + COND_IF_CONFLICT
-ACT_REJECT_IF_CONFLICT       = ACT_REJECT + COND_IF_CONFLICT
-ACT_UPDATE_AND_NOTIFY        = ACT_UPDATE + COND_NOTIFY
-ACT_SAVE_TO_CALENDAR         = 512
+ACT_SAVE_TO_FOLDER = 32
+
+COND_IF_AVAILABLE  = 64
+COND_IF_CONFLICT   = 128
+COND_TENTATIVE     = 256
+COND_NOTIFY        = 512
+COND_TYPE_EVENT    = 1024
+COND_TYPE_TASK     = 2048
+COND_TYPE_ALL      = COND_TYPE_EVENT + COND_TYPE_TASK
+
+ACT_TENTATIVE         = ACT_ACCEPT + COND_TENTATIVE
+ACT_UPDATE_AND_NOTIFY = ACT_UPDATE + COND_NOTIFY
 
 FOLDER_TYPE_ANNOTATION = '/vendor/kolab/folder-type'
 
@@ -72,21 +74,56 @@ MESSAGE_PROCESSED = 1
 MESSAGE_FORWARD   = 2
 
 policy_name_map = {
-    'ACT_MANUAL':                   ACT_MANUAL,
-    'ACT_ACCEPT':                   ACT_ACCEPT,
-    'ACT_ACCEPT_IF_NO_CONFLICT':    ACT_ACCEPT_IF_NO_CONFLICT,
-    'ACT_TENTATIVE':                ACT_TENTATIVE,
-    'ACT_TENTATIVE_IF_NO_CONFLICT': ACT_TENTATIVE_IF_NO_CONFLICT,
-    'ACT_DELEGATE':                 ACT_DELEGATE,
-    'ACT_DELEGATE_IF_CONFLICT':     ACT_DELEGATE_IF_CONFLICT,
-    'ACT_REJECT':                   ACT_REJECT,
-    'ACT_REJECT_IF_CONFLICT':       ACT_REJECT_IF_CONFLICT,
-    'ACT_UPDATE':                   ACT_UPDATE,
-    'ACT_UPDATE_AND_NOTIFY':        ACT_UPDATE_AND_NOTIFY,
-    'ACT_SAVE_TO_CALENDAR':         ACT_SAVE_TO_CALENDAR
+    # policy values applying to all object types
+    'ALL_MANUAL':                     ACT_MANUAL + COND_TYPE_ALL,
+    'ALL_ACCEPT':                     ACT_ACCEPT + COND_TYPE_ALL,
+    'ALL_REJECT':                     ACT_REJECT + COND_TYPE_ALL,
+    'ALL_DELEGATE':                   ACT_DELEGATE + COND_TYPE_ALL,  # not implemented
+    'ALL_UPDATE':                     ACT_UPDATE + COND_TYPE_ALL,
+    'ALL_UPDATE_AND_NOTIFY':          ACT_UPDATE_AND_NOTIFY + COND_TYPE_ALL,
+    'ALL_SAVE_TO_FOLDER':             ACT_SAVE_TO_FOLDER + COND_TYPE_ALL,
+    # event related policy values
+    'EVENT_MANUAL':                   ACT_MANUAL + COND_TYPE_EVENT,
+    'EVENT_ACCEPT':                   ACT_ACCEPT + COND_TYPE_EVENT,
+    'EVENT_TENTATIVE':                ACT_TENTATIVE + COND_TYPE_EVENT,
+    'EVENT_REJECT':                   ACT_REJECT + COND_TYPE_EVENT,
+    'EVENT_DELEGATE':                 ACT_DELEGATE + COND_TYPE_EVENT,  # not implemented
+    'EVENT_UPDATE':                   ACT_UPDATE + COND_TYPE_EVENT,
+    'EVENT_UPDATE_AND_NOTIFY':        ACT_UPDATE_AND_NOTIFY + COND_TYPE_EVENT,
+    'EVENT_ACCEPT_IF_NO_CONFLICT':    ACT_ACCEPT + COND_IF_AVAILABLE + COND_TYPE_EVENT,
+    'EVENT_TENTATIVE_IF_NO_CONFLICT': ACT_ACCEPT + COND_TENTATIVE + COND_IF_AVAILABLE + COND_TYPE_EVENT,
+    'EVENT_DELEGATE_IF_CONFLICT':     ACT_DELEGATE + COND_IF_CONFLICT + COND_TYPE_EVENT,
+    'EVENT_REJECT_IF_CONFLICT':       ACT_REJECT + COND_IF_CONFLICT + COND_TYPE_EVENT,
+    'EVENT_SAVE_TO_FOLDER':           ACT_SAVE_TO_FOLDER + COND_TYPE_EVENT,
+    # task related policy values
+    'TASK_MANUAL':                    ACT_MANUAL + COND_TYPE_TASK,
+    'TASK_ACCEPT':                    ACT_ACCEPT + COND_TYPE_TASK,
+    'TASK_REJECT':                    ACT_REJECT + COND_TYPE_TASK,
+    'TASK_DELEGATE':                  ACT_DELEGATE + COND_TYPE_TASK,  # not implemented
+    'TASK_UPDATE':                    ACT_UPDATE + COND_TYPE_TASK,
+    'TASK_UPDATE_AND_NOTIFY':         ACT_UPDATE_AND_NOTIFY + COND_TYPE_TASK,
+    'TASK_SAVE_TO_FOLDER':            ACT_SAVE_TO_FOLDER + COND_TYPE_TASK,
+    # legacy values
+    'ACT_MANUAL':                     ACT_MANUAL + COND_TYPE_ALL,
+    'ACT_ACCEPT':                     ACT_ACCEPT + COND_TYPE_ALL,
+    'ACT_ACCEPT_IF_NO_CONFLICT':      ACT_ACCEPT + COND_IF_AVAILABLE + COND_TYPE_EVENT,
+    'ACT_TENTATIVE':                  ACT_TENTATIVE + COND_TYPE_EVENT,
+    'ACT_TENTATIVE_IF_NO_CONFLICT':   ACT_ACCEPT + COND_TENTATIVE + COND_IF_AVAILABLE + COND_TYPE_EVENT,
+    'ACT_DELEGATE':                   ACT_DELEGATE + COND_TYPE_ALL,
+    'ACT_DELEGATE_IF_CONFLICT':       ACT_DELEGATE + COND_IF_CONFLICT + COND_TYPE_EVENT,
+    'ACT_REJECT':                     ACT_REJECT + COND_TYPE_ALL,
+    'ACT_REJECT_IF_CONFLICT':         ACT_REJECT + COND_IF_CONFLICT + COND_TYPE_EVENT,
+    'ACT_UPDATE':                     ACT_UPDATE + COND_TYPE_ALL,
+    'ACT_UPDATE_AND_NOTIFY':          ACT_UPDATE_AND_NOTIFY + COND_TYPE_ALL,
+    'ACT_SAVE_TO_CALENDAR':           ACT_SAVE_TO_FOLDER + COND_TYPE_EVENT,
 }
 
-policy_value_map = dict([(v, k) for (k, v) in policy_name_map.iteritems()])
+policy_value_map = dict([(v &~ COND_TYPE_ALL, k) for (k, v) in policy_name_map.iteritems()])
+
+object_type_conditons = {
+    'event': COND_TYPE_EVENT,
+    'task':  COND_TYPE_TASK
+}
 
 log = pykolab.getLogger('pykolab.wallace')
 conf = pykolab.getConf()
@@ -210,17 +247,17 @@ def execute(*args, **kw):
     # An iTip message may contain multiple events. Later on, test if the message
     # is an iTip message by checking the length of this list.
     try:
-        itip_events = events_from_message(message, ['REQUEST', 'REPLY', 'CANCEL'])
+        itip_events = objects_from_message(message, ['VEVENT','VTODO'], ['REQUEST', 'REPLY', 'CANCEL'])
     except Exception, e:
-        log.error(_("Failed to parse iTip events from message: %r" % (e)))
+        log.error(_("Failed to parse iTip objects from message: %r" % (e)))
         itip_events = []
 
     if not len(itip_events) > 0:
-        log.info(_("Message is not an iTip message or does not contain any (valid) iTip events."))
+        log.info(_("Message is not an iTip message or does not contain any (valid) iTip objects."))
 
     else:
         any_itips = True
-        log.debug(_("iTip events attached to this message contain the following information: %r") % (itip_events), level=9)
+        log.debug(_("iTip objects attached to this message contain the following information: %r") % (itip_events), level=9)
 
     # See if any iTip actually allocates a user.
     if any_itips and len([x['uid'] for x in itip_events if x.has_key('attendees') or x.has_key('organizer')]) > 0:
@@ -239,7 +276,7 @@ def execute(*args, **kw):
         log.debug(_("iTips, but no users, pass along %r") % (filepath), level=5)
         return filepath
 
-    # we're looking at the first itip event object
+    # we're looking at the first itip object
     itip_event = itip_events[0]
 
     # for replies, the organizer is the recipient
@@ -267,7 +304,8 @@ def execute(*args, **kw):
         pykolab.translate.setUserLanguage(receiving_user['preferredlanguage'])
 
     # find user's kolabInvitationPolicy settings and the matching policy values
-    policies = get_matching_invitation_policies(receiving_user, sender_email)
+    type_condition = object_type_conditons.get(itip_event['type'], COND_TYPE_ALL)
+    policies = get_matching_invitation_policies(receiving_user, sender_email, type_condition)
 
     # select a processing function according to the iTip request method
     method_processing_map = {
@@ -326,31 +364,32 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
         return MESSAGE_FORWARD
 
     # process request to participating attendees with RSVP=TRUE or PARTSTAT=NEEDS-ACTION
+    is_task = itip_event['type'] == 'task'
     nonpart = receiving_attendee.get_role() == kolabformat.NonParticipant
     partstat = receiving_attendee.get_participant_status()
-    save_event = not nonpart or not partstat == kolabformat.PartNeedsAction
+    save_object = not nonpart or not partstat == kolabformat.PartNeedsAction
     rsvp = receiving_attendee.get_rsvp()
     scheduling_required = rsvp or partstat == kolabformat.PartNeedsAction
     respond_with = receiving_attendee.get_participant_status(True)
     condition_fulfilled = True
 
     # find existing event in user's calendar
-    existing = find_existing_event(itip_event['uid'], receiving_user, True)
+    existing = find_existing_object(itip_event['uid'], itip_event['type'], receiving_user, True)
 
     # compare sequence number to determine a (re-)scheduling request
     if existing is not None:
-        log.debug(_("Existing event: %r") % (existing), level=9)
+        log.debug(_("Existing %s: %r") % (existing.type, existing), level=9)
         scheduling_required = itip_event['sequence'] > 0 and itip_event['sequence'] > existing.get_sequence()
-        save_event = True
+        save_object = True
 
-    # if scheduling: check availability
+    # if scheduling: check availability (skip that for tasks)
     if scheduling_required:
-        if policy & (COND_IF_AVAILABLE | COND_IF_CONFLICT):
+        if not is_task and policy & (COND_IF_AVAILABLE | COND_IF_CONFLICT):
             condition_fulfilled = check_availability(itip_event, receiving_user)
-        if policy & COND_IF_CONFLICT:
+        if not is_task and policy & COND_IF_CONFLICT:
             condition_fulfilled = not condition_fulfilled
 
-        log.debug(_("Precondition for event %r fulfilled: %r") % (itip_event['uid'], condition_fulfilled), level=5)
+        log.debug(_("Precondition for object %r fulfilled: %r") % (itip_event['uid'], condition_fulfilled), level=5)
 
         respond_with = None
         if policy & ACT_ACCEPT and condition_fulfilled:
@@ -373,13 +412,13 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
         # send iTip reply
         if respond_with is not None:
             receiving_attendee.set_participant_status(respond_with)
-            send_reply(recipient_email, itip_event, invitation_response_text(),
+            send_reply(recipient_email, itip_event, invitation_response_text(itip_event['type']),
                 subject=_('"%(summary)s" has been %(status)s'))
 
-        elif policy & ACT_SAVE_TO_CALENDAR:
-            # copy the invitation into the user's calendar with PARTSTAT=NEEDS-ACTION
+        elif policy & ACT_SAVE_TO_FOLDER:
+            # copy the invitation into the user's default folder with PARTSTAT=NEEDS-ACTION
             itip_event['xml'].set_attendee_participant_status(receiving_attendee, 'NEEDS-ACTION')
-            save_event = True
+            save_object = True
 
         else:
             # policy doesn't match, pass on to next one
@@ -389,17 +428,17 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
         log.debug(_("No RSVP for recipient %r requested") % (receiving_user['mail']), level=8)
         # TODO: only update if policy & ACT_UPDATE ?
 
-    if save_event:
+    if save_object:
         targetfolder = None
 
         if existing:
             # delete old version from IMAP
             targetfolder = existing._imap_folder
-            delete_event(existing)
+            delete_object(existing)
 
         if not nonpart or existing:
             # save new copy from iTip
-            if store_event(itip_event['xml'], receiving_user, targetfolder):
+            if store_object(itip_event['xml'], receiving_user, targetfolder):
                 return MESSAGE_PROCESSED
 
     return None
@@ -426,23 +465,23 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
 
         # find existing event in user's calendar
         # sets/checks lock to avoid concurrent wallace processes trying to update the same event simultaneously
-        existing = find_existing_event(itip_event['uid'], receiving_user, True)
+        existing = find_existing_object(itip_event['uid'], itip_event['type'], receiving_user, True)
 
         if existing:
             # compare sequence number to avoid outdated replies?
             if not itip_event['sequence'] == existing.get_sequence():
-                log.info(_("The iTip reply sequence (%r) doesn't match the referred event version (%r). Forwarding to Inbox.") % (
+                log.info(_("The iTip reply sequence (%r) doesn't match the referred object version (%r). Forwarding to Inbox.") % (
                     itip_event['sequence'], existing.get_sequence()
                 ))
                 remove_write_lock(existing._lock_key)
                 return MESSAGE_FORWARD
 
-            log.debug(_("Auto-updating event %r on iTip REPLY") % (existing.uid), level=8)
+            log.debug(_("Auto-updating %s %r on iTip REPLY") % (existing.type, existing.uid), level=8)
             try:
                 existing_attendee = existing.get_attendee(sender_email)
                 existing.set_attendee_participant_status(sender_email, sender_attendee.get_participant_status(), rsvp=False)
             except Exception, e:
-                log.error("Could not find corresponding attende in organizer's event: %r" % (e))
+                log.error("Could not find corresponding attende in organizer's copy: %r" % (e))
 
                 # append delegated-from attendee ?
                 if len(sender_attendee.get_delegated_from()) > 0:
@@ -475,19 +514,19 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
                 except Exception, e:
                     log.error("Could not find delegated-to attendee: %r" % (e))
 
-            # update the organizer's copy of the event
-            if update_event(existing, receiving_user):
+            # update the organizer's copy of the object
+            if update_object(existing, receiving_user):
                 if policy & COND_NOTIFY:
                     send_reply_notification(existing, receiving_user)
 
                 # update all other attendee's copies
                 if conf.get('wallace','invitationpolicy_autoupdate_other_attendees_on_reply'):
-                    propagate_changes_to_attendees_calendars(existing)
+                    propagate_changes_to_attendees_accounts(existing)
 
                 return MESSAGE_PROCESSED
 
         else:
-            log.error(_("The event referred by this reply was not found in the user's calendars. Forwarding to Inbox."))
+            log.error(_("The object referred by this reply was not found in the user's folders. Forwarding to Inbox."))
             return MESSAGE_FORWARD
 
     return None
@@ -505,18 +544,21 @@ def process_itip_cancel(itip_event, policy, recipient_email, sender_email, recei
 
     # auto-update the local copy with STATUS=CANCELLED
     if policy & ACT_UPDATE:
-        # find existing event in user's calendar
-        existing = find_existing_event(itip_event['uid'], receiving_user, True)
+        # find existing object in user's folders
+        existing = find_existing_object(itip_event['uid'], itip_event['type'], receiving_user, True)
 
         if existing:
             existing.set_status('CANCELLED')
             existing.set_transparency(True)
-            if update_event(existing, receiving_user):
-                # TODO: send cancellation notification if policy & ACT_UPDATE_AND_NOTIFY: ?
+            if update_object(existing, receiving_user):
+                # send cancellation notification
+                if policy & ACT_UPDATE_AND_NOTIFY:
+                    send_cancel_notification(existing, receiving_user)
+
                 return MESSAGE_PROCESSED
 
         else:
-            log.error(_("The event referred by this reply was not found in the user's calendars. Forwarding to Inbox."))
+            log.error(_("The object referred by this reply was not found in the user's folders. Forwarding to Inbox."))
             return MESSAGE_FORWARD
 
     return None
@@ -562,7 +604,7 @@ def user_dn_from_email_address(email_address):
 user_dn_from_email_address.cache = {}
 
 
-def get_matching_invitation_policies(receiving_user, sender_email):
+def get_matching_invitation_policies(receiving_user, sender_email, type_condition=COND_TYPE_ALL):
     # get user's kolabInvitationPolicy settings
     policies = receiving_user['kolabinvitationpolicy'] if receiving_user.has_key('kolabinvitationpolicy') else []
     if policies and not isinstance(policies, list):
@@ -583,7 +625,10 @@ def get_matching_invitation_policies(receiving_user, sender_email):
         if domain == '' or domain == '*' or str(sender_email).endswith(domain):
             value = value.upper()
             if policy_name_map.has_key(value):
-                matches.append(policy_name_map[value])
+                val = policy_name_map[value]
+                # append if type condition matches
+                if val & type_condition:
+                    matches.append(val &~ COND_TYPE_ALL)
 
     # add manual as default action
     if len(matches) == 0:
@@ -594,7 +639,7 @@ def get_matching_invitation_policies(receiving_user, sender_email):
 
 def imap_proxy_auth(user_rec):
     """
-        
+        Perform IMAP login using proxy authentication with admin credentials
     """
     global imap
 
@@ -624,23 +669,23 @@ def imap_proxy_auth(user_rec):
     return True
 
 
-def list_user_calendars(user_rec):
+def list_user_folders(user_rec, type):
     """
-        Get a list of the given user's private calendar folders
+        Get a list of the given user's private calendar/tasks folders
     """
     global imap
 
     # return cached list
-    if user_rec.has_key('_calendar_folders'):
-        return user_rec['_calendar_folders'];
+    if user_rec.has_key('_imap_folders'):
+        return user_rec['_imap_folders'];
 
-    calendars = []
+    result = []
 
     if not imap_proxy_auth(user_rec):
-        return calendars
+        return result
 
     folders = imap.list_folders('*')
-    log.debug(_("List calendar folders for user %r: %r") % (user_rec['mail'], folders), level=8)
+    log.debug(_("List %r folders for user %r: %r") % (type, user_rec['mail'], folders), level=8)
 
     (ns_personal, ns_other, ns_shared) = imap.namespaces()
 
@@ -658,23 +703,23 @@ def list_user_calendars(user_rec):
         metadata = imap.get_metadata(folder)
         log.debug(_("IMAP metadata for %r: %r") % (folder, metadata), level=9)
         if metadata.has_key(folder) and ( \
-            metadata[folder].has_key('/shared' + FOLDER_TYPE_ANNOTATION) and metadata[folder]['/shared' + FOLDER_TYPE_ANNOTATION].startswith('event') \
-            or metadata[folder].has_key('/private' + FOLDER_TYPE_ANNOTATION) and metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].startswith('event')):
-            calendars.append(folder)
+            metadata[folder].has_key('/shared' + FOLDER_TYPE_ANNOTATION) and metadata[folder]['/shared' + FOLDER_TYPE_ANNOTATION].startswith(type) \
+            or metadata[folder].has_key('/private' + FOLDER_TYPE_ANNOTATION) and metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].startswith(type)):
+            result.append(folder)
 
-            # store default calendar folder in user record
+            # store default folder folder in user record
             if metadata[folder].has_key('/private' + FOLDER_TYPE_ANNOTATION) and metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].endswith('.default'):
-                user_rec['_default_calendar'] = folder
+                user_rec['_default_folder'] = folder
 
     # cache with user record
-    user_rec['_calendar_folders'] = calendars
+    user_rec['_imap_folders'] = result
 
-    return calendars
+    return result
 
 
-def find_existing_event(uid, user_rec, lock=False):
+def find_existing_object(uid, type, user_rec, lock=False):
     """
-        Search user's calendar folders for the given event (by UID)
+        Search user's private folders for the given object (by UID+type)
     """
     global imap
 
@@ -685,8 +730,8 @@ def find_existing_event(uid, user_rec, lock=False):
         set_write_lock(lock_key)
 
     event = None
-    for folder in list_user_calendars(user_rec):
-        log.debug(_("Searching folder %r for event %r") % (folder, uid), level=8)
+    for folder in list_user_folders(user_rec, type):
+        log.debug(_("Searching folder %r for %s %r") % (folder, type, uid), level=8)
         imap.imap.m.select(imap.folder_utf7(folder))
 
         typ, data = imap.imap.m.search(None, '(UNDELETED HEADER SUBJECT "%s")' % (uid))
@@ -694,11 +739,15 @@ def find_existing_event(uid, user_rec, lock=False):
             typ, data = imap.imap.m.fetch(num, '(RFC822)')
 
             try:
-                event = event_from_message(message_from_string(data[0][1]))
+                if type == 'task':
+                    event = todo_from_message(message_from_string(data[0][1]))
+                else:
+                    event = event_from_message(message_from_string(data[0][1]))
+
                 setattr(event, '_imap_folder', folder)
                 setattr(event, '_lock_key', lock_key)
             except Exception, e:
-                log.error(_("Failed to parse event from message %s/%s: %s") % (folder, num, traceback.format_exc()))
+                log.error(_("Failed to parse %s from message %s/%s: %s") % (type, folder, num, traceback.format_exc()))
                 continue
 
             if event and event.uid == uid:
@@ -723,7 +772,7 @@ def check_availability(itip_event, receiving_user):
     if itip_event.has_key('_conflicts'):
         return not itip_event['_conflicts']
 
-    for folder in list_user_calendars(receiving_user):
+    for folder in list_user_folders(receiving_user, 'event'):
         log.debug(_("Listing events from folder %r") % (folder), level=8)
         imap.imap.m.select(imap.folder_utf7(folder))
 
@@ -810,39 +859,40 @@ def get_lock_key(user, uid):
     return hashlib.md5("%s/%s" % (user['mail'], uid)).hexdigest()
 
 
-def update_event(event, user_rec):
+def update_object(object, user_rec):
     """
-        Update the given event in IMAP (i.e. delete + append)
+        Update the given object in IMAP (i.e. delete + append)
     """
     success = False
 
-    if hasattr(event, '_imap_folder'):
-        delete_event(event)
-        success = store_event(event, user_rec, event._imap_folder)
+    if hasattr(object, '_imap_folder'):
+        delete_object(object)
+        object.set_lastmodified()  # update last-modified timestamp
+        success = store_object(object, user_rec, object._imap_folder)
 
         # remove write lock for this event
-        if hasattr(event, '_lock_key') and event._lock_key is not None:
-            remove_write_lock(event._lock_key)
+        if hasattr(object, '_lock_key') and object._lock_key is not None:
+            remove_write_lock(object._lock_key)
 
     return success
 
 
-def store_event(event, user_rec, targetfolder=None):
+def store_object(object, user_rec, targetfolder=None):
     """
-        Append the given event object to the user's default calendar
+        Append the given object to the user's default calendar/tasklist
     """
-
-    # find default calendar folder to save event to
+    
+    # find default calendar folder to save object to
     if targetfolder is None:
-        targetfolder = list_user_calendars(user_rec)[0]
-        if user_rec.has_key('_default_calendar'):
-            targetfolder = user_rec['_default_calendar']
+        targetfolder = list_user_folders(user_rec, object.type)[0]
+        if user_rec.has_key('_default_folder'):
+            targetfolder = user_rec['_default_folder']
 
     if not targetfolder:
-        log.error(_("Failed to save event: no calendar folder found for user %r") % (user_rec['mail']))
+        log.error(_("Failed to save %s: no target folder found for user %r") % (object.type, user_rec['mail']))
         return Fasle
 
-    log.debug(_("Save event %r to user calendar %r") % (event.uid, targetfolder), level=8)
+    log.debug(_("Save %s %r to user folder %r") % (object.type, object.uid, targetfolder), level=8)
 
     try:
         imap.imap.m.select(imap.folder_utf7(targetfolder))
@@ -850,29 +900,29 @@ def store_event(event, user_rec, targetfolder=None):
             imap.folder_utf7(targetfolder),
             None,
             None,
-            event.to_message(creator="Kolab Server <wallace@localhost>").as_string()
+            object.to_message(creator="Kolab Server <wallace@localhost>").as_string()
         )
         return result
 
     except Exception, e:
-        log.error(_("Failed to save event to user calendar at %r: %r") % (
-            targetfolder, e
+        log.error(_("Failed to save %s to user folder at %r: %r") % (
+            object.type, targetfolder, e
         ))
 
     return False
 
 
-def delete_event(existing):
+def delete_object(existing):
     """
-        Removes the IMAP object with the given UID from a user's calendar folder
+        Removes the IMAP object with the given UID from a user's folder
     """
     targetfolder = existing._imap_folder
     imap.imap.m.select(imap.folder_utf7(targetfolder))
 
     typ, data = imap.imap.m.search(None, '(HEADER SUBJECT "%s")' % existing.uid)
 
-    log.debug(_("Delete event %r in %r: %r") % (
-        existing.uid, targetfolder, data
+    log.debug(_("Delete %s %r in %r: %r") % (
+        existing.type, existing.uid, targetfolder, data
     ), level=8)
 
     for num in data[0].split():
@@ -881,7 +931,7 @@ def delete_event(existing):
     imap.imap.m.expunge()
 
 
-def send_reply_notification(event, receiving_user):
+def send_reply_notification(object, receiving_user):
     """
         Send a (consolidated) notification about the current participant status to organizer
     """
@@ -891,18 +941,18 @@ def send_reply_notification(event, receiving_user):
     from email.MIMEText import MIMEText
     from email.Utils import formatdate
 
-    log.debug(_("Compose participation status summary for event %r to user %r") % (
-        event.uid, receiving_user['mail']
+    log.debug(_("Compose participation status summary for %s %r to user %r") % (
+        object.type, object.uid, receiving_user['mail']
     ), level=8)
 
-    organizer = event.get_organizer()
+    organizer = object.get_organizer()
     orgemail = organizer.email()
     orgname = organizer.name()
 
     auto_replies_expected = 0
     auto_replies_received = 0
-    partstats = { 'ACCEPTED':[], 'TENTATIVE':[], 'DECLINED':[], 'DELEGATED':[], 'PENDING':[] }
-    for attendee in event.get_attendees():
+    partstats = { 'ACCEPTED':[], 'TENTATIVE':[], 'DECLINED':[], 'DELEGATED':[], 'IN-PROCESS':[], 'COMPLETED':[], 'PENDING':[] }
+    for attendee in object.get_attendees():
         parstat = attendee.get_participant_status(True)
         if partstats.has_key(parstat):
             partstats[parstat].append(attendee.get_displayname())
@@ -921,7 +971,7 @@ def send_reply_notification(event, receiving_user):
 
         if attendee_dn:
             attendee_rec = auth.get_entry_attributes(None, attendee_dn, ['kolabinvitationpolicy'])
-            if is_auto_reply(attendee_rec, orgemail):
+            if is_auto_reply(attendee_rec, orgemail, object.type):
                 auto_replies_expected += 1
                 if not parstat == 'NEEDS-ACTION':
                     auto_replies_received += 1
@@ -938,21 +988,33 @@ def send_reply_notification(event, receiving_user):
         if len(attendees) > 0:
             roundup += "\n" + participant_status_label(status) + ":\n" + "\n".join(attendees) + "\n"
 
-    message_text = """
-        The event '%(summary)s' at %(start)s has been updated in your calendar.
-        %(roundup)s
-    """ % {
-        'summary': event.get_summary(),
-        'start': event.get_start().strftime('%Y-%m-%d %H:%M %Z'),
-        'roundup': roundup
-    }
+    # compose different notification texts for events/tasks
+    if object.type == 'task':
+        message_text = """
+            The assignment for '%(summary)s' has been updated in your tasklist.
+            %(roundup)s
+        """ % {
+            'summary': object.get_summary(),
+            'roundup': roundup
+        }
+    else:
+        message_text = """
+            The event '%(summary)s' at %(start)s has been updated in your calendar.
+            %(roundup)s
+        """ % {
+            'summary': object.get_summary(),
+            'start': object.get_start().strftime('%Y-%m-%d %H:%M %Z'),
+            'roundup': roundup
+        }
+
+    message_text += "\n" + _("*** This is an automated message. Please do not reply. ***")
 
     # compose mime message
     msg = MIMEText(utils.stripped_message(message_text))
 
     msg['To'] = receiving_user['mail']
     msg['Date'] = formatdate(localtime=True)
-    msg['Subject'] = _('"%s" has been updated') % (event.get_summary())
+    msg['Subject'] = _('"%s" has been updated') % (object.get_summary())
     msg['From'] = '"%s" <%s>' % (orgname, orgemail) if orgname else orgemail
 
     smtp = smtplib.SMTP("localhost", 10027)
@@ -968,10 +1030,68 @@ def send_reply_notification(event, receiving_user):
     smtp.quit()
 
 
-def is_auto_reply(user, sender_email):
+def send_cancel_notification(object, receiving_user):
+    """
+        Send a notification about event/task cancellation
+    """
+    import smtplib
+    from email.MIMEText import MIMEText
+    from email.Utils import formatdate
+
+    log.debug(_("Send cancellation notification for %s %r to user %r") % (
+        object.type, object.uid, receiving_user['mail']
+    ), level=8)
+
+    organizer = object.get_organizer()
+    orgemail = organizer.email()
+    orgname = organizer.name()
+
+    # compose different notification texts for events/tasks
+    if object.type == 'task':
+        message_text = """
+            The assignment for '%(summary)s' has been cancelled by %(organizer)s.
+            The copy in your tasklist as been marked as cancelled accordingly.
+        """ % {
+            'summary': object.get_summary(),
+            'organizer': orgname if orgname else orgemail
+        }
+    else:
+        message_text = """
+            The event '%(summary)s' at %(start)s has been cancelled by %(organizer)s.
+            The copy in your calendar as been marked as cancelled accordingly.
+        """ % {
+            'summary': object.get_summary(),
+            'start': object.get_start().strftime('%Y-%m-%d %H:%M %Z'),
+            'organizer': orgname if orgname else orgemail
+        }
+
+    message_text += "\n" + _("*** This is an automated message. Please do not reply. ***")
+
+    # compose mime message
+    msg = MIMEText(utils.stripped_message(message_text))
+
+    msg['To'] = receiving_user['mail']
+    msg['Date'] = formatdate(localtime=True)
+    msg['Subject'] = _('"%s" has been cancelled') % (object.get_summary())
+    msg['From'] = '"%s" <%s>' % (orgname, orgemail) if orgname else orgemail
+
+    smtp = smtplib.SMTP("localhost", 10027)
+
+    if conf.debuglevel > 8:
+        smtp.set_debuglevel(True)
+
+    try:
+        smtp.sendmail(orgemail, receiving_user['mail'], msg.as_string())
+    except Exception, e:
+        log.error(_("SMTP sendmail error: %r") % (e))
+
+    smtp.quit()
+
+
+def is_auto_reply(user, sender_email, type):
     accept_available = False
     accept_conflicts = False
-    for policy in get_matching_invitation_policies(user, sender_email):
+    for policy in get_matching_invitation_policies(user, sender_email, object_type_conditons.get(type, COND_TYPE_EVENT)):
         if policy & (ACT_ACCEPT | ACT_REJECT | ACT_DELEGATE):
             if check_policy_condition(policy, True):
                 accept_available = True
@@ -983,7 +1103,7 @@ def is_auto_reply(user, sender_email):
             return True
 
         # manual action reached
-        if policy & (ACT_MANUAL | ACT_SAVE_TO_CALENDAR):
+        if policy & (ACT_MANUAL | ACT_SAVE_TO_FOLDER):
             return False
 
     return False
@@ -998,45 +1118,46 @@ def check_policy_condition(policy, available):
     return condition_fulfilled
 
 
-def propagate_changes_to_attendees_calendars(event):
+def propagate_changes_to_attendees_accounts(object):
     """
-        Find and update copies of this event in all attendee's calendars
+        Find and update copies of this object in all attendee's personal folders
     """
-    for attendee in event.get_attendees():
+    for attendee in object.get_attendees():
         attendee_user_dn = user_dn_from_email_address(attendee.get_email())
         if attendee_user_dn:
             attendee_user = auth.get_entry_attributes(None, attendee_user_dn, ['*'])
-            attendee_event = find_existing_event(event.uid, attendee_user, True)  # does IMAP authenticate
-            if attendee_event:
+            attendee_object = find_existing_object(object.uid, object.type, attendee_user, True)  # does IMAP authenticate
+            if attendee_object:
                 try:
-                    attendee_entry = attendee_event.get_attendee_by_email(attendee_user['mail'])
+                    attendee_entry = attendee_object.get_attendee_by_email(attendee_user['mail'])
                 except:
                     attendee_entry = None
 
-                # copy all attendees from master event (covers additions and removals)
+                # copy all attendees from master object (covers additions and removals)
                 new_attendees = kolabformat.vectorattendee();
-                for a in event.get_attendees():
+                for a in object.get_attendees():
                     # keep my own entry intact
                     if attendee_entry is not None and attendee_entry.get_email() == a.get_email():
                         new_attendees.append(attendee_entry)
                     else:
                         new_attendees.append(a)
 
-                attendee_event.event.setAttendees(new_attendees)
+                attendee_object.event.setAttendees(new_attendees)
 
-                success = update_event(attendee_event, attendee_user)
-                log.debug(_("Updated %s's copy of %r: %r") % (attendee_user['mail'], event.uid, success), level=8)
+                success = update_object(attendee_object, attendee_user)
+                log.debug(_("Updated %s's copy of %r: %r") % (attendee_user['mail'], object.uid, success), level=8)
 
             else:
-                log.debug(_("Attendee %s's copy of %r not found") % (attendee_user['mail'], event.uid), level=8)
+                log.debug(_("Attendee %s's copy of %r not found") % (attendee_user['mail'], object.uid), level=8)
 
         else:
             log.debug(_("Attendee %r not found in LDAP") % (attendee.get_email()), level=8)
 
 
-def invitation_response_text():
-    return _("""
-        %(name)s has %(status)s your invitation for %(summary)s.
+def invitation_response_text(type):
+    footer = "\n\n" + _("*** This is an automated message. Please do not reply. ***")
 
-        *** This is an automated response sent by the Kolab Invitation system ***
-    """)
+    if type == 'task':
+        return _("%(name)s has %(status)s your assignment for %(summary)s.") + footer
+    else:
+        return _("%(name)s has %(status)s your invitation for %(summary)s.") + footer
