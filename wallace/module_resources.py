@@ -160,6 +160,10 @@ def execute(*args, **kw):
     # parse full message
     message = Parser().parse(open(filepath, 'r'))
 
+    # invalid message, skip
+    if not message.get('X-Kolab-To'):
+        return filepath
+
     recipients = [address for displayname,address in getaddresses(message.get_all('X-Kolab-To'))]
     sender_email = [address for displayname,address in getaddresses(message.get_all('X-Kolab-From'))][0]
 
