@@ -365,7 +365,12 @@ class Event(object):
                 dt = self.get_start() + duration
         return dt
 
-    def get_date_text(self, date_format='%Y-%m-%d', time_format='%H:%M %Z'):
+    def get_date_text(self, date_format=None, time_format=None):
+        if date_format is None:
+            date_format = _("%Y-%m-%d")
+        if time_format is None:
+            time_format = _("%H:%M (%Z)")
+
         start = self.get_start()
         end = self.get_end()
         all_day = not hasattr(start, 'date')

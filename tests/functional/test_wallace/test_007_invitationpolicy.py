@@ -967,7 +967,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertIsInstance(todo, pykolab.xml.Todo)
 
         # send a reply from jane to john
-        partstat = 'DECLINED'
+        partstat = 'COMPLETED'
         self.send_itip_reply(uid, self.jane['mail'], self.john['mail'], start=due, template=itip_todo_reply, partstat=partstat)
 
         # check for the updated task in john's tasklist

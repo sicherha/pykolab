@@ -5,6 +5,7 @@ import sys
 import unittest
 import kolabformat
 import icalendar
+import pykolab
 
 from pykolab.xml import Attendee
 from pykolab.xml import Event
@@ -15,6 +16,7 @@ from pykolab.xml import event_from_ical
 from pykolab.xml import event_from_string
 from pykolab.xml import event_from_message
 from pykolab.xml import compute_diff
+from pykolab.xml import property_to_string
 from collections import OrderedDict
 
 ical_event = """
@@ -246,6 +248,17 @@ xml_event = """
 
 class TestEventXML(unittest.TestCase):
     event = Event()
+
+    @classmethod
+    def setUp(self):
+        """ Compatibility for twisted.trial.unittest
+        """
+        self.setup_class()
+
+    @classmethod
+    def setup_class(self, *args, **kw):
+        # set language to default
+        pykolab.translate.setUserLanguage('en_US')
 
     def assertIsInstance(self, _value, _type):
         if hasattr(unittest.TestCase, 'assertIsInstance'):
@@ -638,6 +651,18 @@ END:VEVENT
         self.assertIsInstance(pa, OrderedDict)
         self.assertEqual(pa['index'], 0)
         self.assertEqual(pa['new'], dict(partstat='DECLINED'))
+
+
+    def test_026_property_to_string(self):
+        data = event_from_string(xml_event).to_dict()
+        self.assertEqual(property_to_string('sequence', data['sequence']), "1")
+        self.assertEqual(property_to_string('start', data['start']), "2014-08-13 10:00 (GMT)")
+        self.assertEqual(property_to_string('organizer', data['organizer']), "Doe, John")
+        self.assertEqual(property_to_string('attendee', data['attendee'][0]), "jane@example.org, Accepted")
+        self.assertEqual(property_to_string('rrule', data['rrule']), "Every 1 day(s) until 2014-07-25")
+        self.assertEqual(property_to_string('exdate', data['exdate'][0]), "2014-07-19")
+        self.assertEqual(property_to_string('alarm', data['alarm'][0]), "Display message 2 hour(s) before")
+        self.assertEqual(property_to_string('attach', data['attach'][0]), "noname.1395223627.5555")
 
 
     def _find_prop_in_list(self, diff, name):

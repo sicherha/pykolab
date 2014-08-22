@@ -41,6 +41,7 @@ from pykolab.auth import Auth
 from pykolab.conf import Conf
 from pykolab.imap import IMAP
 from pykolab.xml import to_dt
+from pykolab.xml import utils as xmlutils
 from pykolab.xml import todo_from_message
 from pykolab.xml import event_from_message
 from pykolab.xml import participant_status_label
@@ -237,6 +238,10 @@ def execute(*args, **kw):
     # parse full message
     message = Parser().parse(open(filepath, 'r'))
 
+    # invalid message, skip
+    if not message.get('X-Kolab-To'):
+        return filepath
+
     recipients = [address for displayname,address in getaddresses(message.get_all('X-Kolab-To'))]
     sender_email = [address for displayname,address in getaddresses(message.get_all('X-Kolab-From'))][0]
 
@@ -421,7 +426,7 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
             itip_event['xml'].set_percentcomplete(existing.get_percentcomplete())
 
         if policy & COND_NOTIFY:
-            send_update_notification(itip_event['xml'], receiving_user, False)
+            send_update_notification(itip_event['xml'], receiving_user, existing, False)
 
     # if RSVP, send an iTip REPLY
     if rsvp or scheduling_required:
@@ -533,7 +538,7 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
             # update the organizer's copy of the object
             if update_object(existing, receiving_user):
                 if policy & COND_NOTIFY:
-                    send_update_notification(existing, receiving_user, True)
+                    send_update_notification(existing, receiving_user, existing, True)
 
                 # update all other attendee's copies
                 if conf.get('wallace','invitationpolicy_autoupdate_other_attendees_on_reply'):
@@ -947,7 +952,7 @@ def delete_object(existing):
     imap.imap.m.expunge()
 
 
-def send_update_notification(object, receiving_user, reply=True):
+def send_update_notification(object, receiving_user, old=None, reply=True):
     """
         Send a (consolidated) notification about the current participant status to organizer
     """
@@ -1005,8 +1010,18 @@ def send_update_notification(object, receiving_user, reply=True):
             if len(attendees) > 0:
                 roundup += "\n" + participant_status_label(status) + ":\n" + "\n".join(attendees) + "\n"
     else:
-        # TODO: compose a diff of changes to previous version
-        roundup = "\n" + _("Minor changes submitted by %s have been automatically applied.") % (orgname if orgname else orgemail)
+        roundup = "\n" + _("Changes submitted by %s have been automatically applied.") % (orgname if orgname else orgemail)
+
+        # list properties changed from previous version
+        if old:
+            diff = xmlutils.compute_diff(old.to_dict(), object.to_dict())
+            if len(diff) > 1:
+                roundup += "\n"
+                for change in diff:
+                    if not change['property'] in ['created','lastmodified-date','sequence']:
+                        new_value = xmlutils.property_to_string(change['property'], change['new']) if change['new'] else _("(removed)")
+                        if new_value:
+                            roundup += "\n- %s: %s" % (xmlutils.property_label(change['property']), new_value)
 
     # compose different notification texts for events/tasks
     if object.type == 'task':
@@ -1023,7 +1038,7 @@ def send_update_notification(object, receiving_user, reply=True):
             %(roundup)s
         """ % {
             'summary': object.get_summary(),
-            'start': object.get_start().strftime('%Y-%m-%d %H:%M %Z'),
+            'start': xmlutils.property_to_string('start', object.get_start()),
             'roundup': roundup
         }
 
@@ -1081,7 +1096,7 @@ def send_cancel_notification(object, receiving_user):
             The copy in your calendar as been marked as cancelled accordingly.
         """ % {
             'summary': object.get_summary(),
-            'start': object.get_start().strftime('%Y-%m-%d %H:%M %Z'),
+            'start': xmlutils.property_to_string('start', object.get_start()),
             'organizer': orgname if orgname else orgemail
         }
 
