@@ -40,6 +40,7 @@ pykolab/xml/._contact_reference.py
 pykolab/xml/._event.py
 pykolab/xml/.___init__.py
 pykolab/xml/._recurrence_rule.py
+pykolab/xml/._todo.py
 pykolab/xml/._utils.py
 tests/functional/._purge_users.py
 tests/functional/._resource_func.py
@@ -69,6 +70,7 @@ tests/unit/._test-011-wallace_resources.py
 tests/unit/._test-012-wallace_invitationpolicy.py
 tests/unit/._test-014-conf-and-raw.py
 tests/unit/._test-015-translate.py
+tests/unit/._test-016-todo.py
 wallace/.___init__.py
 wallace/._module_gpgencrypt.py
 wallace/._module_invitationpolicy.py

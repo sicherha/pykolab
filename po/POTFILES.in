@@ -115,6 +115,7 @@ pykolab/xml/contact_reference.py
 pykolab/xml/event.py
 pykolab/xml/__init__.py
 pykolab/xml/recurrence_rule.py
+pykolab/xml/todo.py
 pykolab/xml/utils.py
 saslauthd/__init__.py
 saslauthd.py
@@ -171,6 +172,7 @@ tests/unit/test-011-wallace_resources.py
 tests/unit/test-012-wallace_invitationpolicy.py
 tests/unit/test-014-conf-and-raw.py
 tests/unit/test-015-translate.py
+tests/unit/test-016-todo.py
 test-wallace.py
 ucs/kolab_sieve.py
 ucs/listener.py
