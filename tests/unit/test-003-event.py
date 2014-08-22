@@ -14,6 +14,8 @@ from pykolab.xml import InvalidEventDateError
 from pykolab.xml import event_from_ical
 from pykolab.xml import event_from_string
 from pykolab.xml import event_from_message
+from pykolab.xml import compute_diff
+from collections import OrderedDict
 
 ical_event = """
 BEGIN:VEVENT
@@ -223,7 +225,7 @@ xml_event = """
                 <text>alarm 2</text>
               </description>
               <attendee>
-                  <cal-address>mailto:%3Cjohn.die%40example.org%3E</cal-address>
+                  <cal-address>mailto:%3Cjohn.doe%40example.org%3E</cal-address>
               </attendee>
               <trigger>
                 <parameters>
@@ -614,6 +616,35 @@ END:VEVENT
         self.assertEqual(data['alarm'][1]['action'], 'EMAIL')
         self.assertEqual(data['alarm'][1]['trigger']['value'], '-P1D')
         self.assertEqual(len(data['alarm'][1]['attendee']), 1)
+
+    def test_026_compute_diff(self):
+        e1 = event_from_string(xml_event)
+        e2 = event_from_string(xml_event)
+
+        e2.set_summary("test2")
+        e2.set_end(e1.get_end() + datetime.timedelta(hours=2))
+        e2.set_sequence(e1.get_sequence() + 1)
+        e2.set_attendee_participant_status("jane@example.org", "DECLINED")
+        e2.set_lastmodified()
+
+        diff = compute_diff(e1.to_dict(), e2.to_dict(), True)
+        self.assertEqual(len(diff), 5)
+
+        ps = self._find_prop_in_list(diff, 'summary')
+        self.assertIsInstance(ps, OrderedDict)
+        self.assertEqual(ps['new'], "test2")
+
+        pa = self._find_prop_in_list(diff, 'attendee')
+        self.assertIsInstance(pa, OrderedDict)
+        self.assertEqual(pa['index'], 0)
+        self.assertEqual(pa['new'], dict(partstat='DECLINED'))
+
+
+    def _find_prop_in_list(self, diff, name):
+        for prop in diff:
+            if prop['property'] == name:
+                return prop
+        return None
 
 
 if __name__ == '__main__':

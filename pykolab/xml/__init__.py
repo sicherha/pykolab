@@ -19,6 +19,7 @@ from todo import todo_from_ical
 from todo import todo_from_string
 from todo import todo_from_message
 
+from utils import compute_diff
 from utils import to_dt
 
 __all__ = [
@@ -34,6 +35,7 @@ __all__ = [
         "todo_from_ical",
         "todo_from_string",
         "todo_from_message",
+        "compute_diff",
         "to_dt",
     ]
 

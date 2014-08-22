@@ -2,6 +2,8 @@ import datetime
 import pytz
 import kolabformat
 from dateutil.tz import tzlocal
+from collections import OrderedDict
+
 
 def to_dt(dt):
     """
@@ -109,3 +111,68 @@ def to_cdatetime(_datetime, with_timezone=True, as_utc=False):
         _cdatetime.setUTC(True)
 
     return _cdatetime
+
+
+def compute_diff(a, b, reduced=False):
+    """
+        List the differences between two given dicts
+    """
+    diff = []
+
+    properties = a.keys()
+    properties.extend([x for x in b.keys() if x not in properties])
+
+    for prop in properties:
+        aa = a[prop] if a.has_key(prop) else None
+        bb = b[prop] if b.has_key(prop) else None
+
+        # compare two lists
+        if isinstance(aa, list) or isinstance(bb, list):
+            if not isinstance(aa, list):
+                aa = [aa]
+            if not isinstance(bb, list):
+                bb = [bb]
+            index = 0
+            length = max(len(aa), len(bb))
+            while index < length:
+                aai = aa[index] if index < len(aa) else None
+                bbi = bb[index] if index < len(bb) else None
+                if not aai == bbi:
+                    if reduced:
+                        (old, new) = reduce_properties(aai, bbi)
+                    else:
+                        (old, new) = (aai, bbi)
+                    diff.append(OrderedDict([('property', prop), ('index', index), ('old', old), ('new', new)]))
+                index += 1
+
+        # the two properties differ
+        elif not aa.__class__ == bb.__class__ or not aa == bb:
+            if reduced:
+                (old, new) = reduce_properties(aa, bb)
+            else:
+                (old, new) = (aa, bb)
+            diff.append(OrderedDict([('property', prop), ('old', old), ('new', new)]))
+
+    return diff
+
+
+def reduce_properties(aa, bb):
+    """
+        Compares two given structs and removes equal values in bb
+    """
+    if not isinstance(aa, dict) or not isinstance(bb, dict):
+        return (aa, bb)
+
+    properties = aa.keys()
+    properties.extend([x for x in bb.keys() if x not in properties])
+
+    for prop in properties:
+        if not aa.has_key(prop) or not bb.has_key(prop):
+            continue
+        if isinstance(aa[prop], dict) and isinstance(bb[prop], dict):
+            (aa[prop], bb[prop]) = reduce_properties(aa[prop], bb[prop])
+        if aa[prop] == bb[prop]:
+            # del aa[prop]
+            del bb[prop]
+
+    return (aa, bb)
