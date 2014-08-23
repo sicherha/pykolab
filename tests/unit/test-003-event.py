@@ -434,6 +434,7 @@ END:VEVENT
         self.event.set_start(datetime.datetime(2014, 05, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
         self.event.set_end(datetime.datetime(2014, 05, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
         self.event.set_sequence(3)
+        self.event.set_classification('CONFIDENTIAL')
         self.event.add_custom_property('X-Custom', 'check')
 
         ical = icalendar.Calendar.from_ical(self.event.as_string_itip())
@@ -444,6 +445,7 @@ END:VEVENT
         self.assertEqual(event['sequence'], 3)
         self.assertEqual(event['X-CUSTOM'], "check")
         self.assertIsInstance(event['dtstamp'].dt, datetime.datetime)
+        self.assertEqual(event['class'], "CONFIDENTIAL")
 
     def test_019_to_message_itip(self):
         self.event = Event()

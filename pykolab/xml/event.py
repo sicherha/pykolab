@@ -534,6 +534,10 @@ class Event(object):
 
         return self._translate_value(status, self.status_map) if status else None
 
+    def get_ical_class(self):
+        class_ = self.event.classification()
+        return self._translate_value(class_, self.classification_map) if class_ else None
+
     def get_ical_sequence(self):
         return str(self.event.sequence()) if self.event.sequence() else None
 
