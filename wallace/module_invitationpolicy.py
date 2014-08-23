@@ -728,9 +728,14 @@ def list_user_folders(user_rec, type):
             or metadata[folder].has_key('/private' + FOLDER_TYPE_ANNOTATION) and metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].startswith(type)):
             result.append(folder)
 
-            # store default folder folder in user record
-            if metadata[folder].has_key('/private' + FOLDER_TYPE_ANNOTATION) and metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].endswith('.default'):
-                user_rec['_default_folder'] = folder
+            if metadata[folder].has_key('/private' + FOLDER_TYPE_ANNOTATION):
+                # store default folder in user record
+                if metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].endswith('.default'):
+                    user_rec['_default_folder'] = folder
+
+                # store confidential folder in user record
+                if metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].endswith('.confidential') and not user_rec.has_key('_confidential_folder'):
+                    user_rec['_confidential_folder'] = folder
 
     # cache with user record
     user_rec['_imap_folders'] = result
@@ -908,6 +913,9 @@ def store_object(object, user_rec, targetfolder=None):
         targetfolder = list_user_folders(user_rec, object.type)[0]
         if user_rec.has_key('_default_folder'):
             targetfolder = user_rec['_default_folder']
+        # use *.confidential folder for invitations classified as confidential
+        if object.get_classification() == kolabformat.ClassConfidential and user_rec.has_key('_confidential_folder'):
+            targetfolder = user_rec['_confidential_folder']
 
     if not targetfolder:
         log.error(_("Failed to save %s: no target folder found for user %r") % (object.type, user_rec['mail']))

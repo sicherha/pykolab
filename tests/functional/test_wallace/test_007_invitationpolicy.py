@@ -261,6 +261,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             'mailbox': 'user/jane.manager@example.org',
             'kolabcalendarfolder': 'user/jane.manager/Calendar@example.org',
             'kolabtasksfolder': 'user/jane.manager/Tasks@example.org',
+            'kolabconfidentialcalendar': 'user/jane.manager/Calendar/Confidential@example.org',
             'kolabinvitationpolicy': ['ACT_ACCEPT_IF_NO_CONFLICT','ACT_REJECT_IF_CONFLICT','TASK_ACCEPT','ACT_UPDATE']
         }
 
@@ -300,6 +301,20 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         time.sleep(1)
         from tests.functional.synchronize import synchronize_once
         synchronize_once()
+
+        # create confidential calendar folder for jane
+        imap = IMAP()
+        imap.connect(domain='example.org') # sets self.domain
+        imap.user_mailbox_create_additional_folders(self.jane['mail'], {
+            'Calendar/Confidential': {
+                'annotations': {
+                    '/shared/vendor/kolab/folder-type': "event",
+                    '/private/vendor/kolab/folder-type': "event.confidential"
+                }
+            }
+        })
+        imap.disconnect()
+
 
     def send_message(self, itip_payload, to_addr, from_addr=None, method="REQUEST"):
         if from_addr is None:
@@ -931,6 +946,16 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.send_itip_update(self.john['mail'], uid, start, summary="old test", sequence=0, partstat='NEEDS-ACTION', template=templ)
         notification = self.check_message_received(_('"%s" has been updated') % ('old test'), self.jane['mail'], mailbox=self.john['mailbox'])
         self.assertEqual(notification, None)
+
+
+    def test_012_confidential_invitation(self):
+        start = datetime.datetime(2014,9,21, 9,30,0)
+        uid = self.send_itip_invitation(self.jane['mail'], start, summary='confidential', template=itip_invitation.replace("DESCRIPTION:test", "CLASS:CONFIDENTIAL"))
+
+        # check event being stored in the folder annotared with event.confidential
+        event = self.check_user_calendar_event(self.jane['kolabconfidentialcalendar'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_summary(), "confidential")
 
 
     def test_020_task_assignment_accept(self):
