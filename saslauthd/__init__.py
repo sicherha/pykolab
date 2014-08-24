@@ -170,13 +170,13 @@ class SASLAuthDaemon(object):
 
         # TODO: The saslauthd socket path could be a setting.
         try:
-            os.remove('/var/run/saslauthd/mux')
+            os.remove(socketfile)
         except:
             # TODO: Do the "could not remove, could not start" dance
             pass
 
-        s.bind('/var/run/saslauthd/mux')
-        os.chmod('/var/run/saslauthd/mux', 0777)
+        s.bind(socketfile)
+        os.chmod(socketfile, 0777)
 
         s.listen(5)
 
@@ -271,7 +271,7 @@ class SASLAuthDaemon(object):
 
     def _ensure_socket_dir(self):
         utils.ensure_directory(
-                '/var/run/saslauthd/',
+                os.path.dirname(socketfile),
                 conf.process_username,
                 conf.process_groupname
             )
