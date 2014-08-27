@@ -7,7 +7,7 @@
     \$config['des_key'] = "$des_key";
     \$config['username_domain'] = '$primary_domain';
     \$config['use_secure_urls'] = true;
-    \$config['assets_path'] = '/assets/';
+    \$config['assets_path'] = '/roundcubemail/assets/';
 
     \$config['mail_domain'] = '';
 
