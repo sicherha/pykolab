@@ -592,7 +592,14 @@ class LDAP(pykolab.base.Base):
 
         daemon_rcpt_policy = self.config_get('daemon_rcpt_policy')
         if not utils.true_or_false(daemon_rcpt_policy) and not daemon_rcpt_policy == None:
-            log.info(_("Applying recipient policy disabled through configuration"))
+            log.debug(
+                    _(
+                            "Not applying recipient policy for %s " + \
+                            "(disabled through configuration)"
+                        ) % (entry_dn),
+                    level=1
+                )
+
             return entry_modifications
 
         want_attrs = []
