@@ -8,10 +8,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-08-22 16:29-0400\n"
+"POT-Creation-Date: 2014-09-11 18:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -65,8 +66,8 @@ msgstr ""
 #: ../bin/kolab_smtp_access_policy.py:748
 #, python-format
 msgid ""
-"Verifying authenticated sender '%(sender)s' with sasl_username '%"
-"(sasl_username)s' for recipient '%(recipient)s'"
+"Verifying authenticated sender '%(sender)s' with sasl_username "
+"'%(sasl_username)s' for recipient '%(recipient)s'"
 msgstr ""
 
 #: ../bin/kolab_smtp_access_policy.py:751
@@ -320,7 +321,7 @@ msgstr ""
 msgid "Run as group GROUPNAME"
 msgstr ""
 
-#: ../kolabd/__init__.py:122 ../pykolab/logger.py:139 ../pykolab/utils.py:234
+#: ../kolabd/__init__.py:122 ../pykolab/utils.py:234
 #: ../saslauthd/__init__.py:301 ../wallace/__init__.py:329
 #, python-format
 msgid "Group %s does not exist"
@@ -332,7 +333,7 @@ msgstr ""
 msgid "Switching real and effective group id to %d"
 msgstr ""
 
-#: ../kolabd/__init__.py:153 ../pykolab/logger.py:159 ../pykolab/utils.py:258
+#: ../kolabd/__init__.py:153 ../pykolab/utils.py:258
 #: ../saslauthd/__init__.py:332 ../wallace/__init__.py:360
 #, python-format
 msgid "User %s does not exist"
@@ -355,7 +356,9 @@ msgid "Interrupted by user"
 msgstr ""
 
 #: ../kolabd/__init__.py:197 ../kolabd/__init__.py:208
-msgid "Traceback occurred, please report a "
+#: ../saslauthd/__init__.py:146 ../saslauthd/__init__.py:154
+#: ../wallace/__init__.py:403 ../wallace/__init__.py:412
+msgid "Traceback occurred, please report a bug at http://bugzilla.kolabsys.com"
 msgstr ""
 
 #: ../kolabd/__init__.py:203 ../saslauthd/__init__.py:150
@@ -368,7 +371,7 @@ msgstr ""
 msgid "Could not connect to LDAP, is it running?"
 msgstr ""
 
-#: ../kolabd/__init__.py:233 ../pykolab/auth/ldap/__init__.py:2171
+#: ../kolabd/__init__.py:233 ../pykolab/auth/ldap/__init__.py:2178
 #: ../pykolab/cli/cmd_sync.py:36
 msgid "Listing domains..."
 msgstr ""
@@ -525,244 +528,256 @@ msgstr ""
 msgid "Using timestamp %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:595
-msgid "Applying recipient policy disabled through configuration"
+#: ../pykolab/auth/ldap/__init__.py:597
+#, python-format
+msgid "Not applying recipient policy for %s (disabled through configuration)"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:600
+#: ../pykolab/auth/ldap/__init__.py:607
 #, python-format
 msgid "Applying recipient policy to %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:617
+#: ../pykolab/auth/ldap/__init__.py:624
 #, python-format
-msgid "Using mail attributes: %r, with primary %r and "
-msgstr ""
-
-#: ../pykolab/auth/ldap/__init__.py:628
-#, python-format
-msgid "key %r not in entry"
-msgstr ""
-
-#: ../pykolab/auth/ldap/__init__.py:630
-#, python-format
-msgid "key %r is the prim. mail attr."
-msgstr ""
-
-#: ../pykolab/auth/ldap/__init__.py:632
-msgid "prim. mail pol. is not empty"
+msgid "Using mail attributes: %r, with primary %r and secondary %r"
 msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:635
 #, python-format
-msgid "key %r is the sec. mail attr."
+msgid "key %r not in entry"
 msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:637
+#, python-format
+msgid "key %r is the prim. mail attr."
+msgstr ""
+
+#: ../pykolab/auth/ldap/__init__.py:639
+msgid "prim. mail pol. is not empty"
+msgstr ""
+
+#: ../pykolab/auth/ldap/__init__.py:642
+#, python-format
+msgid "key %r is the sec. mail attr."
+msgstr ""
+
+#: ../pykolab/auth/ldap/__init__.py:644
 msgid "sec. mail pol. is not empty"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:641 ../pykolab/auth/ldap/__init__.py:655
+#: ../pykolab/auth/ldap/__init__.py:648 ../pykolab/auth/ldap/__init__.py:662
 #, python-format
 msgid "Attributes %r are not yet available for entry %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:694
+#: ../pykolab/auth/ldap/__init__.py:701
 #, python-format
 msgid "No results for mail address %s found"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:705
+#: ../pykolab/auth/ldap/__init__.py:712
 #, python-format
 msgid "1 result for address %s found, verifying"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:715
+#: ../pykolab/auth/ldap/__init__.py:722
 #, python-format
-msgid "Too bad, primary email address %s "
+msgid "Too bad, primary email address %s already in use for %s (we are %s)"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:726 ../pykolab/auth/ldap/__init__.py:815
+#: ../pykolab/auth/ldap/__init__.py:733 ../pykolab/auth/ldap/__init__.py:822
 msgid "Address assigned to us"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:781
+#: ../pykolab/auth/ldap/__init__.py:788
 #, python-format
 msgid "No results for address %s found"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:792
+#: ../pykolab/auth/ldap/__init__.py:799
 #, python-format
-msgid "1 result for address %s found, "
+msgid "1 result for address %s found, verifying..."
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:803
-msgid "Too bad, secondary email "
+#: ../pykolab/auth/ldap/__init__.py:810
+#, python-format
+msgid "Too bad, secondary email address %s already in use for %s (we are %s)"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:830
-msgid "Recipient policy composed the following set of secondary "
+#: ../pykolab/auth/ldap/__init__.py:837
+#, python-format
+msgid ""
+"Recipient policy composed the following set of secondary email addresses: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:841
+#: ../pykolab/auth/ldap/__init__.py:848
 #, python-format
 msgid "Secondary mail addresses that we want is not None: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:852
-msgid "Avoiding the duplication of the primary mail "
+#: ../pykolab/auth/ldap/__init__.py:859
+#, python-format
+msgid ""
+"Avoiding the duplication of the primary mail address %r in the list of "
+"secondary mail addresses"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:863
+#: ../pykolab/auth/ldap/__init__.py:870
 #, python-format
 msgid "Entry is getting secondary mail addresses: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:871
-msgid "Entry did not have any secondary mail "
+#: ../pykolab/auth/ldap/__init__.py:878
+#, python-format
+msgid "Entry did not have any secondary mail addresses in %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:888 ../pykolab/auth/ldap/__init__.py:894
+#: ../pykolab/auth/ldap/__init__.py:895 ../pykolab/auth/ldap/__init__.py:901
 #, python-format
 msgid "secondary_mail_addresses: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:889 ../pykolab/auth/ldap/__init__.py:895
+#: ../pykolab/auth/ldap/__init__.py:896 ../pykolab/auth/ldap/__init__.py:902
 #, python-format
 msgid "entry[%s]: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:906
+#: ../pykolab/auth/ldap/__init__.py:913
 #, python-format
 msgid "Entry modifications list: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:934
+#: ../pykolab/auth/ldap/__init__.py:941
 #, python-format
 msgid "Setting entry attribute %r to %r for %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:970
+#: ../pykolab/auth/ldap/__init__.py:977
 #, python-format
 msgid ""
 "Could not update dn %r:\n"
 "%r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:983
+#: ../pykolab/auth/ldap/__init__.py:990
 #, python-format
 msgid "Using filter %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:998
+#: ../pykolab/auth/ldap/__init__.py:1005
 #, python-format
 msgid "Synchronization is searching against base DN: %s"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1044
+#: ../pykolab/auth/ldap/__init__.py:1051
 #, python-format
-msgid "About to consider the user quota for %r (used: %r, "
+msgid ""
+"About to consider the user quota for %r (used: %r, imap: %r, ldap: %r, "
+"default: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1115
+#: ../pykolab/auth/ldap/__init__.py:1122
 msgid "Invalid DN, username and/or password."
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1240 ../pykolab/auth/ldap/__init__.py:1257
-#: ../pykolab/auth/ldap/__init__.py:1621 ../pykolab/auth/ldap/__init__.py:1638
+#: ../pykolab/auth/ldap/__init__.py:1247 ../pykolab/auth/ldap/__init__.py:1264
+#: ../pykolab/auth/ldap/__init__.py:1628 ../pykolab/auth/ldap/__init__.py:1645
 #, python-format
 msgid "Found a subject %r with access %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1359
+#: ../pykolab/auth/ldap/__init__.py:1366
 #, python-format
 msgid "Entry %s attribute value: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1367
+#: ../pykolab/auth/ldap/__init__.py:1374
 #, python-format
 msgid "imap.user_mailbox_server(%r) result: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1687 ../pykolab/auth/ldap/__init__.py:1887
+#: ../pykolab/auth/ldap/__init__.py:1694 ../pykolab/auth/ldap/__init__.py:1894
 #, python-format
 msgid "Result from recipient policy: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1942
+#: ../pykolab/auth/ldap/__init__.py:1949
 #, python-format
 msgid "Kolab user %s does not have a result attribute %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2101
+#: ../pykolab/auth/ldap/__init__.py:2108
 #, python-format
 msgid "Finding domain root dn for domain %s"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2198
+#: ../pykolab/auth/ldap/__init__.py:2205
 msgid "Authentication database DOWN"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2282 ../pykolab/auth/ldap/__init__.py:2330
+#: ../pykolab/auth/ldap/__init__.py:2289 ../pykolab/auth/ldap/__init__.py:2337
 #, python-format
 msgid "Entry type: %s"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2419
+#: ../pykolab/auth/ldap/__init__.py:2426
 msgid "LDAP Search Result Data Entry:"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2435
+#: ../pykolab/auth/ldap/__init__.py:2442
 msgid "Entry Change Notification attributes:"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2440
+#: ../pykolab/auth/ldap/__init__.py:2447
 #, python-format
 msgid "Change Type: %r (%r)"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2448
+#: ../pykolab/auth/ldap/__init__.py:2455
 #, python-format
 msgid "Previous DN: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2503
+#: ../pykolab/auth/ldap/__init__.py:2510
 #, python-format
 msgid "Object %s searched no longer exists"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2513
+#: ../pykolab/auth/ldap/__init__.py:2520
 #, python-format
 msgid "%d results..."
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2616
+#: ../pykolab/auth/ldap/__init__.py:2623
 #, python-format
 msgid "Searching with filter %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2668
+#: ../pykolab/auth/ldap/__init__.py:2675
 #, python-format
 msgid "Checking for support for %s on %s"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2687
+#: ../pykolab/auth/ldap/__init__.py:2694
 #, python-format
 msgid "Found support for %s"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2732
+#: ../pykolab/auth/ldap/__init__.py:2739
 #, python-format
 msgid "An error occured using %s: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2738
+#: ../pykolab/auth/ldap/__init__.py:2745
 #, python-format
 msgid "%s"
 msgstr ""
 
 #: ../pykolab/auth/ldap/syncrepl.py:46
-msgid "The name of the persistent, unique attribute "
+msgid ""
+"The name of the persistent, unique attribute is very probably not compatible "
+"with the use of syncrepl."
 msgstr ""
 
 #: ../pykolab/cli/cmd_acl_cleanup.py:34
@@ -802,7 +817,8 @@ msgid "Recipient for alias %r already exists"
 msgstr ""
 
 #: ../pykolab/cli/cmd_add_alias.py:97
-msgid "Environment is not configured for "
+msgid ""
+"Environment is not configured for users to hold secondary mail attributes"
 msgstr ""
 
 #: ../pykolab/cli/cmd_add_alias.py:105
@@ -837,7 +853,9 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_add_domain.py:55 ../pykolab/cli/cmd_delete_domain.py:44
 #: ../pykolab/cli/cmd_find_domain.py:44
-msgid "Could not find credentials with sufficient permissions"
+msgid ""
+"Could not find credentials with sufficient permissionsto add a domain name "
+"space."
 msgstr ""
 
 #: ../pykolab/cli/cmd_add_domain.py:67 ../pykolab/cli/cmd_delete_domain.py:56
@@ -1335,7 +1353,8 @@ msgstr ""
 #: ../pykolab/conf/entitlement.py:98 ../pykolab/conf/entitlement.py:116
 #: ../pykolab/conf/entitlement.py:230 ../pykolab/conf/entitlement.py:246
 #: ../pykolab/conf/entitlement.py:262
-msgid "Invalid entitlement verification "
+#, python-format
+msgid "Invalid entitlement verification certificate at %s"
 msgstr ""
 
 #: ../pykolab/conf/entitlement.py:120 ../pykolab/conf/entitlement.py:123
@@ -1417,11 +1436,13 @@ msgid "Configuration file to use"
 msgstr ""
 
 #: ../pykolab/conf/__init__.py:278
-msgid "Set the debugging "
+msgid ""
+"Set the debugging verbosity. Maximum is 9, tracing protocols like LDAP, SQL "
+"and IMAP."
 msgstr ""
 
 #: ../pykolab/conf/__init__.py:286
-msgid "Set the logging level. "
+msgid "Set the logging level. One of info, warn, error, critical or debug"
 msgstr ""
 
 #: ../pykolab/conf/__init__.py:294
@@ -1563,7 +1584,10 @@ msgid "Checking actual backend server for folder %s through annotations"
 msgstr ""
 
 #: ../pykolab/imap/cyrus.py:173
-msgid "Possibly reproducing the find "
+#, python-format
+msgid ""
+"Possibly reproducing the find mailfolder server answer from previously "
+"detected and stored annotation value: %r"
 msgstr ""
 
 #: ../pykolab/imap/cyrus.py:196
@@ -1809,12 +1833,12 @@ msgstr ""
 
 #: ../pykolab/imap/__init__.py:749
 #, python-format
-msgid "Setting ACL rights %s for subject %s on folder "
+msgid "Setting ACL rights %s for subject %s on folder %s"
 msgstr ""
 
 #: ../pykolab/imap/__init__.py:760
 #, python-format
-msgid "Removing ACL rights %s for subject %s on folder "
+msgid "Removing ACL rights %s for subject %s on folder %s"
 msgstr ""
 
 #: ../pykolab/imap/__init__.py:781
@@ -1931,12 +1955,12 @@ msgstr ""
 msgid "Failed to compose iTip request message: %r"
 msgstr ""
 
-#: ../pykolab/logger.py:174 ../pykolab/logger.py:181
+#: ../pykolab/logger.py:168 ../pykolab/logger.py:175
 #, python-format
 msgid "Could not change permissions on %s: %r"
 msgstr ""
 
-#: ../pykolab/logger.py:198
+#: ../pykolab/logger.py:192
 #, python-format
 msgid "Cannot log to file %s: %s"
 msgstr ""
@@ -2115,11 +2139,10 @@ msgstr ""
 msgid "Could not start the cyrus-imapd and kolab-saslauthd services."
 msgstr ""
 
-#: ../pykolab/setup/setup_imap.py:173 ../pykolab/setup/setup_kolabd.py:90
-#: ../pykolab/setup/setup_ldap.py:426 ../pykolab/setup/setup_mta.py:465
-#: ../pykolab/setup/setup_mysql.py:58 ../pykolab/setup/setup_roundcube.py:238
-#: ../pykolab/setup/setup_syncroton.py:105
-msgid "Could not configure to start on boot, the "
+#: ../pykolab/setup/setup_imap.py:173
+msgid ""
+"Could not configure to start on boot, the cyrus-imapd and kolab-saslauthd "
+"services."
 msgstr ""
 
 #: ../pykolab/setup/setup_kolabd.py:44
@@ -2138,6 +2161,10 @@ msgstr ""
 
 #: ../pykolab/setup/setup_kolabd.py:81
 msgid "Could not start the kolab server service."
+msgstr ""
+
+#: ../pykolab/setup/setup_kolabd.py:90
+msgid "Could not configure to start on boot, the kolab server service."
 msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:45
@@ -2337,6 +2364,10 @@ msgstr ""
 msgid "Could not start the directory server service."
 msgstr ""
 
+#: ../pykolab/setup/setup_ldap.py:426
+msgid "Could not configure to start on boot, the directory server service."
+msgstr ""
+
 #: ../pykolab/setup/setup_ldap.py:431
 msgid ""
 "\n"
@@ -2419,7 +2450,9 @@ msgid "Setting access control to %s"
 msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:679
-msgid "Could not start and configure to start on boot, the "
+msgid ""
+"Could not start and configure to start on boot, the directory server admin "
+"service."
 msgstr ""
 
 #: ../pykolab/setup/setup_mta.py:41
@@ -2447,12 +2480,22 @@ msgstr ""
 msgid "Could not start the postfix, clamav and amavisd services services."
 msgstr ""
 
+#: ../pykolab/setup/setup_mta.py:465
+msgid ""
+"Could not configure to start on boot, the postfix, clamav and amavisd "
+"services."
+msgstr ""
+
 #: ../pykolab/setup/setup_mysql.py:39
 msgid "Setup MySQL."
 msgstr ""
 
 #: ../pykolab/setup/setup_mysql.py:49
 msgid "Could not start the MySQL database service."
+msgstr ""
+
+#: ../pykolab/setup/setup_mysql.py:58
+msgid "Could not configure to start on boot, the MySQL database service."
 msgstr ""
 
 #: ../pykolab/setup/setup_mysql.py:71
@@ -2581,6 +2624,11 @@ msgstr ""
 msgid "Could not start the webserver server service."
 msgstr ""
 
+#: ../pykolab/setup/setup_roundcube.py:238
+#: ../pykolab/setup/setup_syncroton.py:105
+msgid "Could not configure to start on boot, the webserver server service."
+msgstr ""
+
 #: ../pykolab/setup/setup_syncroton.py:40
 msgid "Setup Syncroton."
 msgstr ""
@@ -2616,7 +2664,7 @@ msgid "Confirm %s: "
 msgstr ""
 
 #: ../pykolab/utils.py:67
-msgid "Incorrect confirmation. "
+msgid "Incorrect confirmation. Please try again."
 msgstr ""
 
 #: ../pykolab/utils.py:72 ../pykolab/utils.py:77
@@ -2980,13 +3028,9 @@ msgstr ""
 msgid "Could not create %r: %r"
 msgstr ""
 
-#: ../saslauthd/__init__.py:146 ../saslauthd/__init__.py:154
-#: ../wallace/__init__.py:403 ../wallace/__init__.py:412
-msgid "Traceback occurred, please report a bug at http://bugzilla.kolabsys.com"
-msgstr ""
-
 #: ../saslauthd/__init__.py:194
-msgid "kolab-saslauthd could not accept "
+#, python-format
+msgid "kolab-saslauthd could not accept connections on socket: %r"
 msgstr ""
 
 #: ../saslauthd/__init__.py:199
@@ -3090,7 +3134,7 @@ msgstr ""
 
 #: ../wallace/__init__.py:177
 #, python-format
-msgid "Could not bind to socket on port %d on bind "
+msgid "Could not bind to socket on port %d on bind address %s"
 msgstr ""
 
 #: ../wallace/__init__.py:189
@@ -3265,8 +3309,8 @@ msgstr ""
 #: ../wallace/module_invitationpolicy.py:415
 #, python-format
 msgid ""
-"The iTip request sequence (%r) doesn't match the referred object version (%"
-"r). Ignoring."
+"The iTip request sequence (%r) doesn't match the referred object version "
+"(%r). Ignoring."
 msgstr ""
 
 #: ../wallace/module_invitationpolicy.py:420
@@ -3477,7 +3521,8 @@ msgstr ""
 
 #: ../wallace/module_optout.py:96
 #, python-format
-msgid "Running opt-out consult from envelope sender '%s "
+msgid ""
+"Running opt-out consult from envelope sender '%s <%s>' to recipient %s <%s>"
 msgstr ""
 
 #: ../wallace/module_optout.py:160
@@ -3501,11 +3546,13 @@ msgid "Failed to parse iTip events from message: %r"
 msgstr ""
 
 #: ../wallace/module_resources.py:185
-msgid "Message is not an iTip message or does not contain any "
+msgid "Message is not an iTip message or does not contain any (valid) iTip."
 msgstr ""
 
 #: ../wallace/module_resources.py:193
-msgid "iTip events attached to this message contain the "
+#, python-format
+msgid ""
+"iTip events attached to this message contain the following information: %r"
 msgstr ""
 
 #: ../wallace/module_resources.py:226
@@ -3710,7 +3757,8 @@ msgid "Checking if resource %r is a resource (collection)"
 msgstr ""
 
 #: ../wallace/module_resources.py:895
-msgid "The following resources are being referred to in the "
+#, python-format
+msgid "The following resources are being referred to in the iTip: %r"
 msgstr ""
 
 #: ../wallace/module_resources.py:1060
@@ -3756,8 +3804,8 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"            The resource booking for %(resource)s by %(orgname)s <%(orgemail)"
-"s> has been %(status)s for %(date)s.\n"
+"            The resource booking for %(resource)s by %(orgname)s <"
+"%(orgemail)s> has been %(status)s for %(date)s.\n"
 "\n"
 "            *** This is an automated message, sent to you as the resource "
 "owner. ***\n"
