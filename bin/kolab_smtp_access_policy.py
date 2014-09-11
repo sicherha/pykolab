@@ -1158,6 +1158,7 @@ def cache_cleanup():
         ).filter(
                 PolicyResult.created < ((int)(time.time()) - cache_expire)
             ).delete()
+    session.commit()
 
 def cache_init():
     global cache, cache_expire, session
