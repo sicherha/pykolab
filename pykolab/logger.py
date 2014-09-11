@@ -156,7 +156,7 @@ class Logger(logging.Logger):
 
                 if os.path.isfile(self.logfile):
                     try:
-                        if not user_uid == 0 or group_gid = 0:
+                        if not user_uid == 0 or group_gid == 0:
                             os.chown(
                                     self.logfile,
                                     user_uid,
@@ -214,6 +214,6 @@ class Logger(logging.Logger):
         if level <= self.debuglevel:
             # TODO: Not the way it's supposed to work!
             self.log(logging.DEBUG, '[%d]: %s' % (os.getpid(),msg))
- 
+
 
 logging.setLoggerClass(Logger)
