@@ -146,12 +146,13 @@ def execute(*args, **kw):
 
     schema_files = []
     for root, directories, filenames in os.walk('/usr/share/doc/'):
+        directories.sort()
         for directory in directories:
             if directory.startswith("roundcubemail"):
-                for root, directories, filenames in os.walk(os.path.join(root, directory)):
-                    for filename in filenames:
+                for nested_root, nested_directories, nested_filenames in os.walk(os.path.join(root, directory)):
+                    for filename in nested_filenames:
                         if filename.startswith('mysql.initial') and filename.endswith('.sql'):
-                            schema_filepath = os.path.join(root,filename)
+                            schema_filepath = os.path.join(nested_root,filename)
                             if not schema_filepath in schema_files:
                                 schema_files.append(schema_filepath)
 
