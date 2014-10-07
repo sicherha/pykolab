@@ -160,6 +160,10 @@ def execute(*args, **kw):
     # parse full message
     message = Parser().parse(open(filepath, 'r'))
 
+    # invalid message, skip
+    if not message.get('X-Kolab-To'):
+        return filepath
+
     recipients = [address for displayname,address in getaddresses(message.get_all('X-Kolab-To'))]
     sender_email = [address for displayname,address in getaddresses(message.get_all('X-Kolab-From'))][0]
 
@@ -205,10 +209,13 @@ def execute(*args, **kw):
         for recipient in recipients:
             # extract reference UID from recipients like resource+UID@domain.org
             if re.match('.+\+[A-Za-z0-9=/-]+@', recipient):
-                (prefix, host) = recipient.split('@')
-                (local, uid) = prefix.split('+')
-                reference_uid = base64.b64decode(uid, '-/')
-                recipient = local + '@' + host
+                try:
+                    (prefix, host) = recipient.split('@')
+                    (local, uid) = prefix.split('+')
+                    reference_uid = base64.b64decode(uid, '-/')
+                    recipient = local + '@' + host
+                except:
+                    continue
 
             if not len(resource_record_from_email_address(recipient)) == 0:
                 resource_recipient = recipient
@@ -321,7 +328,8 @@ def execute(*args, **kw):
         # process CANCEL messages
         if not done and itip_event['method'] == "CANCEL":
             for resource in resource_dns:
-                if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
+                if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()] \
+                    and resources[resource].has_key('kolabtargetfolder'):
                     delete_resource_event(itip_event['uid'], resources[resource])
 
             done = True
@@ -446,6 +454,8 @@ def check_availability(itip_events, resource_dns, resources, receiving_attendee=
         if len(resources[resource]['conflicting_events']) > 0:
             log.debug(_("Conflicting events: %r for resource %r") % (resources[resource]['conflicting_events'], resource), level=9)
 
+            done = False
+
             # This is the event being conflicted with!
             for itip_event in itip_events:
                 # Now we have the event that was conflicting
@@ -526,6 +536,9 @@ def read_resource_calendar(resource_rec, itip_events):
         _("Checking events in resource folder %r") % (mailbox),
         level=9
     )
+
+    # set read ACLs for admin user
+    imap.set_acl(mailbox, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrs")
 
     # might raise an exception, let that bubble
     imap.imap.m.select(imap.folder_quote(mailbox))
@@ -680,7 +693,7 @@ def save_resource_event(itip_event, resource, replace=False):
         if replace:
             delete_resource_event(itip_event['uid'], resource)
         else:
-            imap.imap.m.setacl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
+            imap.set_acl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
 
         result = imap.imap.m.append(
             targetfolder,
@@ -703,7 +716,7 @@ def delete_resource_event(uid, resource):
         Removes the IMAP object with the given UID from a resource's calendar folder
     """
     targetfolder = imap.folder_quote(resource['kolabtargetfolder'])
-    imap.imap.m.setacl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
+    imap.set_acl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
     imap.imap.m.select(targetfolder)
 
     typ, data = imap.imap.m.search(None, '(HEADER SUBJECT "%s")' % uid)

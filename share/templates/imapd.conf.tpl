@@ -32,7 +32,7 @@ ldap_time_limit: 10
 unixhierarchysep: 1
 virtdomains: userid
 annotation_definitions: /etc/imapd.annotations.conf
-sieve_extensions: fileinto reject envelope body vacation imapflags notify include regex subaddress relational copy
+sieve_extensions: fileinto reject envelope body vacation imapflags notify include regex subaddress relational copy date index
 allowallsubscribe: 0
 allowusermoves: 1
 altnamespace: 1

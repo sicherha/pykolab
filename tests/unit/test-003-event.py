@@ -5,6 +5,7 @@ import sys
 import unittest
 import kolabformat
 import icalendar
+import pykolab
 
 from pykolab.xml import Attendee
 from pykolab.xml import Event
@@ -14,6 +15,9 @@ from pykolab.xml import InvalidEventDateError
 from pykolab.xml import event_from_ical
 from pykolab.xml import event_from_string
 from pykolab.xml import event_from_message
+from pykolab.xml import compute_diff
+from pykolab.xml import property_to_string
+from collections import OrderedDict
 
 ical_event = """
 BEGIN:VEVENT
@@ -223,7 +227,7 @@ xml_event = """
                 <text>alarm 2</text>
               </description>
               <attendee>
-                  <cal-address>mailto:%3Cjohn.die%40example.org%3E</cal-address>
+                  <cal-address>mailto:%3Cjohn.doe%40example.org%3E</cal-address>
               </attendee>
               <trigger>
                 <parameters>
@@ -244,6 +248,17 @@ xml_event = """
 
 class TestEventXML(unittest.TestCase):
     event = Event()
+
+    @classmethod
+    def setUp(self):
+        """ Compatibility for twisted.trial.unittest
+        """
+        self.setup_class()
+
+    @classmethod
+    def setup_class(self, *args, **kw):
+        # set language to default
+        pykolab.translate.setUserLanguage('en_US')
 
     def assertIsInstance(self, _value, _type):
         if hasattr(unittest.TestCase, 'assertIsInstance'):
@@ -419,6 +434,7 @@ END:VEVENT
         self.event.set_start(datetime.datetime(2014, 05, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
         self.event.set_end(datetime.datetime(2014, 05, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
         self.event.set_sequence(3)
+        self.event.set_classification('CONFIDENTIAL')
         self.event.add_custom_property('X-Custom', 'check')
 
         ical = icalendar.Calendar.from_ical(self.event.as_string_itip())
@@ -429,6 +445,7 @@ END:VEVENT
         self.assertEqual(event['sequence'], 3)
         self.assertEqual(event['X-CUSTOM'], "check")
         self.assertIsInstance(event['dtstamp'].dt, datetime.datetime)
+        self.assertEqual(event['class'], "CONFIDENTIAL")
 
     def test_019_to_message_itip(self):
         self.event = Event()
@@ -614,6 +631,47 @@ END:VEVENT
         self.assertEqual(data['alarm'][1]['action'], 'EMAIL')
         self.assertEqual(data['alarm'][1]['trigger']['value'], '-P1D')
         self.assertEqual(len(data['alarm'][1]['attendee']), 1)
+
+    def test_026_compute_diff(self):
+        e1 = event_from_string(xml_event)
+        e2 = event_from_string(xml_event)
+
+        e2.set_summary("test2")
+        e2.set_end(e1.get_end() + datetime.timedelta(hours=2))
+        e2.set_sequence(e1.get_sequence() + 1)
+        e2.set_attendee_participant_status("jane@example.org", "DECLINED")
+        e2.set_lastmodified()
+
+        diff = compute_diff(e1.to_dict(), e2.to_dict(), True)
+        self.assertEqual(len(diff), 5)
+
+        ps = self._find_prop_in_list(diff, 'summary')
+        self.assertIsInstance(ps, OrderedDict)
+        self.assertEqual(ps['new'], "test2")
+
+        pa = self._find_prop_in_list(diff, 'attendee')
+        self.assertIsInstance(pa, OrderedDict)
+        self.assertEqual(pa['index'], 0)
+        self.assertEqual(pa['new'], dict(partstat='DECLINED'))
+
+
+    def test_026_property_to_string(self):
+        data = event_from_string(xml_event).to_dict()
+        self.assertEqual(property_to_string('sequence', data['sequence']), "1")
+        self.assertEqual(property_to_string('start', data['start']), "2014-08-13 10:00 (GMT)")
+        self.assertEqual(property_to_string('organizer', data['organizer']), "Doe, John")
+        self.assertEqual(property_to_string('attendee', data['attendee'][0]), "jane@example.org, Accepted")
+        self.assertEqual(property_to_string('rrule', data['rrule']), "Every 1 day(s) until 2014-07-25")
+        self.assertEqual(property_to_string('exdate', data['exdate'][0]), "2014-07-19")
+        self.assertEqual(property_to_string('alarm', data['alarm'][0]), "Display message 2 hour(s) before")
+        self.assertEqual(property_to_string('attach', data['attach'][0]), "noname.1395223627.5555")
+
+
+    def _find_prop_in_list(self, diff, name):
+        for prop in diff:
+            if prop['property'] == name:
+                return prop
+        return None
 
 
 if __name__ == '__main__':

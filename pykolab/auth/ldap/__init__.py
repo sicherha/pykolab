@@ -592,7 +592,14 @@ class LDAP(pykolab.base.Base):
 
         daemon_rcpt_policy = self.config_get('daemon_rcpt_policy')
         if not utils.true_or_false(daemon_rcpt_policy) and not daemon_rcpt_policy == None:
-            log.info(_("Applying recipient policy disabled through configuration"))
+            log.debug(
+                    _(
+                            "Not applying recipient policy for %s " + \
+                            "(disabled through configuration)"
+                        ) % (entry_dn),
+                    level=1
+                )
+
             return entry_modifications
 
         want_attrs = []
@@ -1214,6 +1221,9 @@ class LDAP(pykolab.base.Base):
             else:
                 folder_path = entry['cn']
 
+        if not folder_path.startswith('shared/'):
+            folder_path = "shared/%s" % folder_path
+
         folderacl_entry_attribute = self.config_get('sharedfolder_acl_entry_attribute')
         if folderacl_entry_attribute == None:
             folderacl_entry_attribute = 'acl'
@@ -1232,7 +1242,7 @@ class LDAP(pykolab.base.Base):
 
             for acl_entry in entry[folderacl_entry_attribute]:
                 acl_access = acl_entry.split()[-1]
-                aci_subject = ' '.join(acl_entry.split()[:-1])
+                aci_subject = ', '.join(acl_entry.split(', ')[:-1])
 
                 log.debug(_("Found a subject %r with access %r") % (aci_subject, acl_access), level=8)
 
@@ -1257,6 +1267,7 @@ class LDAP(pykolab.base.Base):
 
         if not self.imap.shared_folder_exists(folder_path):
             self.imap.shared_folder_create(folder_path, server)
+            self.imap.set_acl(folder_path, 'anyone', '')
 
         if entry.has_key('kolabfoldertype') and \
                 not entry['kolabfoldertype'] == None:
@@ -1272,8 +1283,6 @@ class LDAP(pykolab.base.Base):
             self.imap._set_kolab_mailfolder_acls(
                     entry['kolabfolderaclentry']
                 )
-        else:
-            self.imap.set_acl(folder_path, 'anyone', '')
 
         if entry.has_key(delivery_address_attribute) and \
                 not entry[delivery_address_attribute] == None:
@@ -1593,6 +1602,9 @@ class LDAP(pykolab.base.Base):
             else:
                 folder_path = entry['cn']
 
+        if not folder_path.startswith('shared/'):
+            folder_path = "shared/%s" % folder_path
+
         folderacl_entry_attribute = self.config_get('sharedfolder_acl_entry_attribute')
         if folderacl_entry_attribute == None:
             folderacl_entry_attribute = 'acl'
@@ -1611,7 +1623,7 @@ class LDAP(pykolab.base.Base):
 
             for acl_entry in entry[folderacl_entry_attribute]:
                 acl_access = acl_entry.split()[-1]
-                aci_subject = ' '.join(acl_entry.split()[:-1])
+                aci_subject = ', '.join(acl_entry.split(', ')[:-1])
 
                 log.debug(_("Found a subject %r with access %r") % (aci_subject, acl_access), level=8)
 
@@ -1636,6 +1648,7 @@ class LDAP(pykolab.base.Base):
 
         if not self.imap.shared_folder_exists(folder_path):
             self.imap.shared_folder_create(folder_path, server)
+            self.imap.set_acl(folder_path, 'anyone', '')
 
         if entry.has_key('kolabfoldertype') and \
                 not entry['kolabfoldertype'] == None:
@@ -1644,8 +1657,6 @@ class LDAP(pykolab.base.Base):
                     folder_path,
                     entry['kolabfoldertype']
                 )
-        else:
-            self.imap.set_acl(folder_path, 'anyone', '')
 
         if entry.has_key('kolabfolderaclentry') and \
                 not entry['kolabfolderaclentry'] == None:
@@ -1653,8 +1664,6 @@ class LDAP(pykolab.base.Base):
             self.imap._set_kolab_mailfolder_acls(
                     entry['kolabfolderaclentry']
                 )
-        else:
-            self.imap.set_acl(folder_path, 'anyone', '')
 
         if entry.has_key(delivery_address_attribute) and \
                 not entry[delivery_address_attribute] == None:
@@ -1773,7 +1782,7 @@ class LDAP(pykolab.base.Base):
                     'kolabfoldertype'
                 )
 
-        folderacl_entry_attribute = conf.get('ldap', 'folderacl_entry_attribute')
+        folderacl_entry_attribute = conf.get('ldap', 'sharedfolder_acl_entry_attribute')
         if folderacl_entry_attribute == None:
             folderacl_entry_attribute = 'acl'
 
@@ -1801,6 +1810,9 @@ class LDAP(pykolab.base.Base):
                 folder_path = "%s@%s" % (entry['cn'], self.domain)
             else:
                 folder_path = entry['cn']
+
+        if not folder_path.startswith('shared/'):
+            folder_path = "shared/%s" % folder_path
 
         if not self.imap.shared_folder_exists(folder_path):
             self.imap.shared_folder_create(folder_path, server)

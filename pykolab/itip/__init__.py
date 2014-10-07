@@ -1,8 +1,10 @@
 import icalendar
 import pykolab
+import traceback
 
 from pykolab.xml import to_dt
 from pykolab.xml import event_from_ical
+from pykolab.xml import todo_from_ical
 from pykolab.xml import participant_status_label
 from pykolab.translate import _
 
@@ -10,13 +12,13 @@ log = pykolab.getLogger('pykolab.wallace')
 
 
 def events_from_message(message, methods=None):
-    return objects_from_message(message, "VEVENT", methods)
+    return objects_from_message(message, ["VEVENT"], methods)
 
 def todos_from_message(message, methods=None):
-    return objects_from_message(message, "VTODO", methods)
+    return objects_from_message(message, ["VTODO"], methods)
 
 
-def objects_from_message(message, objname, methods=None):
+def objects_from_message(message, objnames, methods=None):
     """
         Obtain the iTip payload from email.message <message>
     """
@@ -60,7 +62,7 @@ def objects_from_message(message, objname, methods=None):
                 return []
 
             for c in cal.walk():
-                if c.name == objname:
+                if c.name in objnames:
                     itip = {}
 
                     if c['uid'] in seen_uids:
@@ -80,13 +82,14 @@ def objects_from_message(message, objname, methods=None):
                     # - resources (if any)
                     #
 
+                    itip['type'] = 'task' if c.name == 'VTODO' else 'event'
                     itip['uid'] = str(c['uid'])
                     itip['method'] = str(cal['method']).upper()
                     itip['sequence'] = int(c['sequence']) if c.has_key('sequence') else 0
 
                     if c.has_key('dtstart'):
                         itip['start'] = c['dtstart'].dt
-                    else:
+                    elif itip['type'] == 'VEVENT':
                         log.error(_("iTip event without a start"))
                         continue
 
@@ -110,17 +113,20 @@ def objects_from_message(message, objname, methods=None):
                     itip['raw'] = itip_payload
 
                     try:
-                        # TODO: distinguish event and todo here
-                        itip['xml'] = event_from_ical(c.to_ical())
+                        # distinguish event and todo here
+                        if itip['type'] == 'task':
+                            itip['xml'] = todo_from_ical(c.to_ical())
+                        else:
+                            itip['xml'] = event_from_ical(c.to_ical())
                     except Exception, e:
-                        log.error("event_from_ical() exception: %r; iCal: %s" % (e, itip_payload))
+                        log.error("event|todo_from_ical() exception: %r; iCal: %s" % (e, itip_payload))
                         continue
 
                     itip_objects.append(itip)
 
                     seen_uids.append(c['uid'])
 
-                # end if c.name == "VEVENT"
+                # end if c.name in objnames
 
             # end for c in cal.walk()
 
@@ -212,6 +218,8 @@ def send_reply(from_address, itip_events, response_text, subject=None):
         attendee = itip_event['xml'].get_attendee_by_email(from_address)
         participant_status = itip_event['xml'].get_ical_attendee_participant_status(attendee)
 
+        log.debug(_("Send iTip reply %s for %s %r") % (participant_status, itip_event['xml'].type, itip_event['xml'].uid), level=8)
+
         event_summary = itip_event['xml'].get_summary()
         message_text = response_text % { 'summary':event_summary, 'status':participant_status_label(participant_status), 'name':attendee.get_name() }
 
@@ -226,7 +234,7 @@ def send_reply(from_address, itip_events, response_text, subject=None):
                 subject=subject
             )
         except Exception, e:
-            log.error(_("Failed to compose iTip reply message: %r") % (e))
+            log.error(_("Failed to compose iTip reply message: %r: %s") % (e, traceback.format_exc()))
             return
 
         smtp = smtplib.SMTP("localhost", 10026)  # replies go through wallace again

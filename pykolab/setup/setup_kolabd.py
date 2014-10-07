@@ -27,6 +27,7 @@ import pykolab
 from pykolab import utils
 from pykolab.constants import *
 from pykolab.translate import _
+from augeas import Augeas
 
 log = pykolab.getLogger('pykolab.setup')
 conf = pykolab.getConf()
@@ -61,6 +62,14 @@ def execute(*args, **kw):
             fp = open(conf.cli_keywords.config_file, "w+")
             conf.cfg_parser.write(fp)
             fp.close()
+
+    if os.path.isfile('/etc/default/kolab-server'):
+        myaugeas = Augeas()
+        setting = os.path.join('/files/etc/default/kolab-server','START')
+        if not myaugeas.get(setting) == 'yes':
+            myaugeas.set(setting,'yes')
+            myaugeas.save()
+        myaugeas.close()
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['/bin/systemctl', 'restart', 'kolabd.service'])

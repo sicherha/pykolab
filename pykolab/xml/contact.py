@@ -1,6 +1,8 @@
 import kolabformat
 
 class Contact(kolabformat.Contact):
+    type = 'contact'
+
     def __init__(self, *args, **kw):
         kolabformat.Contact.__init__(self, *args, **kw)
 

@@ -224,7 +224,7 @@ domain = ldap:/etc/postfix/ldap/mydestination.cf
 bind_dn = %(service_bind_dn)s
 bind_pw = %(service_bind_pw)s
 
-query_filter = (&(|(mail=%%s)(alias=%%s))(objectclass=kolabsharedfolder))
+query_filter = (&(|(mail=%%s)(alias=%%s))(objectclass=kolabsharedfolder)(kolabFolderType=mail))
 result_attribute = kolabtargetfolder
 result_format = shared+%%s
 """ % {
@@ -260,7 +260,7 @@ result_format = shared+%%s
             "smtpd_tls_security_level": "may",
             "smtp_tls_security_level": "may",
             "smtpd_sasl_auth_enable": "yes",
-            "smtpd_sender_login_maps": "$relay_recipient_maps",
+            "smtpd_sender_login_maps": "$local_recipient_maps",
             "smtpd_sender_restrictions": "permit_mynetworks, reject_sender_login_mismatch",
             "smtpd_recipient_restrictions": "permit_mynetworks, reject_unauth_pipelining, reject_rbl_client zen.spamhaus.org, reject_non_fqdn_recipient, reject_invalid_helo_hostname, reject_unknown_recipient_domain, reject_unauth_destination, check_policy_service unix:private/recipient_policy_incoming, permit",
             "smtpd_sender_restrictions": "permit_mynetworks, check_policy_service unix:private/sender_policy_incoming",
@@ -388,6 +388,8 @@ result_format = shared+%%s
             fp = open('/etc/amavisd/amavisd.conf', 'w')
         elif os.path.isdir('/etc/amavis'):
             fp = open('/etc/amavis/amavisd.conf', 'w')
+        elif os.path.isfile('/etc/amavisd.conf'):
+            fp = open('/etc/amavisd.conf', 'w')
 
         if not fp == None:
             fp.write(t.__str__())
@@ -418,10 +420,18 @@ result_format = shared+%%s
             myaugeas.save()
         myaugeas.close()
 
+    if os.path.isfile('/etc/default/wallace'):
+        myaugeas = Augeas()
+        setting = os.path.join('/files/etc/default/wallace','START')
+        if not myaugeas.get(setting) == 'yes':
+            myaugeas.set(setting,'yes')
+            myaugeas.save()
+        myaugeas.close()
+
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'postfix.service'])
         subprocess.call(['systemctl', 'restart', 'amavisd.service'])
-        subprocess.call(['systemctl', 'restart', 'clamd.amavisd.service'])
+        subprocess.call(['systemctl', 'restart', 'clamd@amavisd.service'])
         subprocess.call(['systemctl', 'restart', 'wallace.service'])
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['service', 'postfix', 'restart'])
@@ -439,7 +449,7 @@ result_format = shared+%%s
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'enable', 'postfix.service'])
         subprocess.call(['systemctl', 'enable', 'amavisd.service'])
-        subprocess.call(['systemctl', 'enable', 'clamd.amavisd.service'])
+        subprocess.call(['systemctl', 'enable', 'clamd@amavisd.service'])
         subprocess.call(['systemctl', 'enable', 'wallace.service'])
     elif os.path.isfile('/sbin/chkconfig'):
         subprocess.call(['chkconfig', 'postfix', 'on'])

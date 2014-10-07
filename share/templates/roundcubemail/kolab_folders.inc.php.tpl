@@ -2,9 +2,11 @@
     \$config['kolab_folders_configuration_default'] = 'Configuration';
     \$config['kolab_folders_event_default'] = 'Calendar';
     \$config['kolab_folders_contact_default'] = 'Contacts';
-    \$config['kolab_folders_task_default'] = '';
-    \$config['kolab_folders_note_default'] = '';
-    \$config['kolab_folders_journal_default'] = '';
+    \$config['kolab_folders_task_default'] = 'Tasks';
+    \$config['kolab_folders_note_default'] = 'Notes';
+    \$config['kolab_folders_file_default'] = 'Files';
+    \$config['kolab_folders_freebusy_default'] = 'Freebusy';
+    \$config['kolab_folders_journal_default'] = 'Journal';
     \$config['kolab_folders_mail_inbox'] = 'INBOX';
     \$config['kolab_folders_mail_drafts'] = 'Drafts';
     \$config['kolab_folders_mail_sentitems'] = 'Sent';

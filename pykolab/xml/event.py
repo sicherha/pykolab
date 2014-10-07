@@ -1,7 +1,5 @@
 import datetime
 import icalendar
-from icalendar import vDatetime
-from icalendar import vText
 import kolabformat
 import pytz
 import time
@@ -45,10 +43,15 @@ def event_from_message(message):
 
 
 class Event(object):
+    type = 'event'
+
     status_map = {
             "TENTATIVE": kolabformat.StatusTentative,
             "CONFIRMED": kolabformat.StatusConfirmed,
             "CANCELLED": kolabformat.StatusCancelled,
+            "COMPLETD":  kolabformat.StatusCompleted,
+            "IN-PROCESS": kolabformat.StatusInProcess,
+            "NEEDS-ACTION": kolabformat.StatusNeedsAction,
         }
 
     classification_map = {
@@ -362,7 +365,12 @@ class Event(object):
                 dt = self.get_start() + duration
         return dt
 
-    def get_date_text(self, date_format='%Y-%m-%d', time_format='%H:%M %Z'):
+    def get_date_text(self, date_format=None, time_format=None):
+        if date_format is None:
+            date_format = _("%Y-%m-%d")
+        if time_format is None:
+            time_format = _("%H:%M (%Z)")
+
         start = self.get_start()
         end = self.get_end()
         all_day = not hasattr(start, 'date')
@@ -526,6 +534,10 @@ class Event(object):
 
         return self._translate_value(status, self.status_map) if status else None
 
+    def get_ical_class(self):
+        class_ = self.event.classification()
+        return self._translate_value(class_, self.classification_map) if class_ else None
+
     def get_ical_sequence(self):
         return str(self.event.sequence()) if self.event.sequence() else None
 
@@ -611,9 +623,9 @@ class Event(object):
 
     def set_created(self, _datetime=None):
         if _datetime == None:
-            _datetime = datetime.datetime.now()
+            _datetime = datetime.datetime.utcnow()
 
-        self.event.setCreated(xmlutils.to_cdatetime(_datetime, False))
+        self.event.setCreated(xmlutils.to_cdatetime(_datetime, False, True))
 
     def set_description(self, description):
         self.event.setDescription(str(description))
@@ -623,7 +635,7 @@ class Event(object):
             self.event.setComment(str(comment))
 
     def set_dtstamp(self, _datetime):
-        self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False))
+        self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False, True))
 
     def set_end(self, _datetime):
         valid_datetime = False
@@ -655,20 +667,14 @@ class Event(object):
         self.event.setCustomProperties(props)
 
     def set_from_ical(self, attr, value):
+        attr = attr.replace('-', '')
         ical_setter = 'set_ical_' + attr
         default_setter = 'set_' + attr
 
-        if attr == "dtend":
-            self.set_ical_dtend(value.dt)
-        elif attr == "dtstart":
-            self.set_ical_dtstart(value.dt)
-        elif attr == "dtstamp":
-            self.set_ical_dtstamp(value.dt)
-        elif attr == "created":
-            self.set_created(value.dt)
-        elif attr == "lastmodified":
-            self.set_lastmodified(value.dt)
-        elif attr == "categories":
+        if isinstance(value, icalendar.vDDDTypes) and hasattr(value, 'dt'):
+            value = value.dt
+
+        if attr == "categories":
             self.add_category(value)
         elif attr == "class":
             self.set_classification(value)
@@ -733,9 +739,11 @@ class Event(object):
         self.set_lastmodified(lastmod)
 
     def set_ical_duration(self, value):
-        if value.dt:
-            duration = kolabformat.Duration(value.dt.days, 0, 0, value.dt.seconds, False)
-            self.event.setDuration(duration)
+        if hasattr(value, 'dt'):
+            value = value.dt
+
+        duration = kolabformat.Duration(value.days, 0, 0, value.seconds, False)
+        self.event.setDuration(duration)
 
     def set_ical_organizer(self, organizer):
         address = str(organizer).split(':')[-1]
@@ -774,12 +782,12 @@ class Event(object):
 
         if _datetime == None:
             valid_datetime = True
-            _datetime = datetime.datetime.now()
+            _datetime = datetime.datetime.utcnow()
 
         if not valid_datetime:
             raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance")
 
-        self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False))
+        self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False, True))
 
     def set_location(self, location):
         self.event.setLocation(str(location))
@@ -941,7 +949,7 @@ class Event(object):
         msg['Date'] = formatdate(localtime=True)
 
         msg.add_header('X-Kolab-MIME-Version', '3.0')
-        msg.add_header('X-Kolab-Type', 'application/x-vnd.kolab.event')
+        msg.add_header('X-Kolab-Type', 'application/x-vnd.kolab.' + self.type)
 
         text = utils.multiline_message("""
                     This is a Kolab Groupware object. To view this object you

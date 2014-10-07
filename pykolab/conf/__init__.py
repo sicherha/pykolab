@@ -590,6 +590,16 @@ class Conf(object):
                     except IOError, e:
                         log.error(_("Cannot start SASL authentication daemon"))
                         return False
+            elif os.path.isfile("/var/run/sasl2/mux"):
+                if os.path.isfile("/var/run/sasl2/saslauthd.pid"):
+                    log.error(_("Cannot start SASL authentication daemon"))
+                    return False
+                else:
+                    try:
+                        os.remove("/var/run/sasl2/mux")
+                    except IOError, e:
+                        log.error(_("Cannot start SASL authentication daemon"))
+                        return False
         return True
 
     def check_setting_use_imap(self, value):

@@ -33,5 +33,8 @@ class Defaults(object):
         self.mail_attributes = ['mail', 'alias']
         self.mailserver_attribute = 'mailhost'
 
+        # when you want a new domain to be added in a short time, you should reduce this value to 10 seconds
+        self.kolab_domain_sync_interval = 600
+
         self.kolab_default_locale = 'en_US'
         self.ldap_unique_attribute = 'nsuniqueid'

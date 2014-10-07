@@ -1,6 +1,9 @@
 import kolabformat
 from pykolab.xml import utils as xmlutils
 
+from pykolab.translate import _
+from pykolab.translate import N_
+
 """
     def setFrequency(self, *args): return _kolabformat.RecurrenceRule_setFrequency(self, *args)
     def frequency(self): return _kolabformat.RecurrenceRule_frequency(self)
@@ -30,6 +33,20 @@ from pykolab.xml import utils as xmlutils
     def bymonth(self): return _kolabformat.RecurrenceRule_bymonth(self)
     def isValid(self): return _kolabformat.RecurrenceRule_isValid(self)
 """
+
+frequency_labels = {
+    "YEARLY":   N_("Every %d year(s)"),
+    "MONTHLY":  N_("Every %d month(s)"),
+    "WEEKLY":   N_("Every %d week(s)"),
+    "DAILY":    N_("Every %d day(s)"),
+    "HOURLY":   N_("Every %d hours"),
+    "MINUTELY": N_("Every %d minutes"),
+    "SECONDLY": N_("Every %d seconds")
+}
+
+def frequency_label(freq):
+    return _(frequency_labels[freq]) if frequency_labels.has_key(freq) else _(freq)
+
 
 class RecurrenceRule(kolabformat.RecurrenceRule):
     frequency_map = {

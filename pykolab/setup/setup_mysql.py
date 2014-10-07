@@ -161,6 +161,7 @@ password='%s'
         p2.communicate()
 
         conf.command_set('kolab_wap', 'sql_uri', 'mysql://kolab:%s@localhost/kolab' % (mysql_kolab_password))
+        conf.command_set('kolab_smtp_access_policy', 'cache_uri', 'mysql://kolab:%s@localhost/kolab' % (mysql_kolab_password))
     else:
         log.warning(_("Could not find the MySQL Kolab schema file"))
 

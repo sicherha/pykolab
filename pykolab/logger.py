@@ -135,12 +135,8 @@ class Logger(logging.Logger):
                                 group_members
                             ) = grp.getgrnam(self.process_groupname)
 
-                    except KeyError:
-                        print >> sys.stderr, _("Group %s does not exist") % (
-                                self.process_groupname
-                            )
-
-                        sys.exit(1)
+                    except KeyError, errmsg:
+                        group_name = False
 
                 if ruid == 0:
                     # Means we haven't switched yet.
@@ -155,31 +151,31 @@ class Logger(logging.Logger):
                                 user_shell
                             ) = pwd.getpwnam(self.process_username)
 
-                    except KeyError:
-                        print >> sys.stderr, _("User %s does not exist") % (
-                                self.process_username
-                            )
+                    except KeyError, errmsg:
+                        user_name = False
 
-                        sys.exit(1)
+                if os.path.isfile(self.logfile):
+                    try:
+                        if not user_uid == 0 or group_gid == 0:
+                            os.chown(
+                                    self.logfile,
+                                    user_uid,
+                                    group_gid
+                                )
+                            os.chmod(self.logfile, 0660)
 
-                try:
-                    os.chown(
-                            self.logfile,
-                            user_uid,
-                            group_gid
-                        )
-                    os.chmod(self.logfile, 0660)
-                except Exception, errmsg:
-                    self.error(_("Could not change permissions on %s: %r") % (self.logfile, errmsg))
-                    if self.debuglevel > 8:
-                        import traceback
-                        traceback.print_exc()
+                    except Exception, errmsg:
+                        self.error(_("Could not change permissions on %s: %r") % (self.logfile, errmsg))
+                        if self.debuglevel > 8:
+                            import traceback
+                            traceback.print_exc()
 
         except Exception, errmsg:
-            self.error(_("Could not change permissions on %s: %r") % (self.logfile, errmsg))
-            if self.debuglevel > 8:
-                import traceback
-                traceback.print_exc()
+            if os.path.isfile(self.logfile):
+                self.error(_("Could not change permissions on %s: %r") % (self.logfile, errmsg))
+                if self.debuglevel > 8:
+                    import traceback
+                    traceback.print_exc()
 
         # Make sure the log file exists
         try:
@@ -218,6 +214,6 @@ class Logger(logging.Logger):
         if level <= self.debuglevel:
             # TODO: Not the way it's supposed to work!
             self.log(logging.DEBUG, '[%d]: %s' % (os.getpid(),msg))
- 
+
 
 logging.setLoggerClass(Logger)

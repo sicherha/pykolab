@@ -44,15 +44,18 @@ def execute(*args, **kw):
     for root, directories, filenames in os.walk('/usr/share/doc/'):
         for directory in directories:
             if directory.startswith("kolab-syncroton"):
-                for root, directories, filenames in os.walk(os.path.join('/usr/share/doc/', directory)):
+                for root, directories, filenames in os.walk(os.path.join(root, directory)):
                     for filename in filenames:
                         if filename.startswith('mysql.initial') and filename.endswith('.sql'):
                             schema_filepath = os.path.join(root,filename)
                             if not schema_filepath in schema_files:
                                 schema_files.append(schema_filepath)
+                                break
 
-                break
-        break
+                if len(schema_files) > 0:
+                    break
+        if len(schema_files) > 0:
+            break
 
     if not os.path.isfile('/tmp/kolab-setup-my.cnf'):
         utils.multiline_message(

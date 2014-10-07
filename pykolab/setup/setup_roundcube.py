@@ -149,7 +149,8 @@ def execute(*args, **kw):
                             if not schema_filepath in schema_files:
                                 schema_files.append(schema_filepath)
 
-                break
+                if len(schema_files) > 0:
+                    break
         break
 
     if os.path.isdir('/usr/share/roundcubemail'):

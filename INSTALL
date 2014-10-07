@@ -7,7 +7,7 @@
 * intltool
 * rpm-build
 
-* python-icalendar
+* python-icalendar (version 3.8.2 or higher)
 * python-kolabformat
 * python-kolab
 * python-nose
