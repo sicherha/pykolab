@@ -54,7 +54,7 @@ class RecurrenceRule(kolabformat.RecurrenceRule):
     }
 
     properties_map = {
-        'frequency': 'get_frequency',
+        'freq': 'get_frequency',
         'interval':  'interval',
         'count':     'count',
         'until':     'end',
