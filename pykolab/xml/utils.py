@@ -57,11 +57,17 @@ def from_cdatetime(_cdatetime, with_timezone=True):
         _timezone = _cdatetime.timezone()
 
         if _timezone == '' or _timezone == None:
-            _timezone = pytz.utc
+            _dt = datetime.datetime(year, month, day, hour, minute, second, tzinfo=pytz.utc)
         else:
-            _timezone = pytz.timezone(_timezone)
+            try:
+                # use pytz.timezone.localize() to correctly set DST in tzinfo according to the given date
+                _tz = pytz.timezone(_timezone)
+                _dt = _tz.localize(datetime.datetime(year, month, day, hour, minute, second))
+            except:
+                # fall back to local time
+                _dt = datetime.datetime(year, month, day, hour, minute, second)
 
-        return datetime.datetime(year, month, day, hour, minute, second, tzinfo=_timezone)
+        return _dt
 
     else:
         return datetime.datetime(year, month, day, hour, minute, second)
