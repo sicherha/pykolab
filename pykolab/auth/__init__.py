@@ -176,6 +176,9 @@ class Auth(pykolab.base.Base):
 
         self._auth._disconnect()
 
+        del self._auth
+        self._auth = None
+
     def find_recipient(self, address, domain=None):
         """
             Find one or more entries corresponding to the recipient address.
