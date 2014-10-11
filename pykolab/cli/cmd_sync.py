@@ -31,6 +31,14 @@ conf = pykolab.getConf()
 def __init__():
     commands.register('sync', execute, description="Synchronize Kolab Users with IMAP.")
 
+def cli_options():
+    my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
+    my_option_group.add_option( '--resync',
+                                dest    = "resync",
+                                action  = "store_true",
+                                default = False,
+                                help    = _("Resync from the beginning"))
+
 def execute(*args, **kw):
     auth = Auth()
     log.debug(_("Listing domains..."), level=5)

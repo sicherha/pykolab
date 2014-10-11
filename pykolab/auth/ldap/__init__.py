@@ -984,7 +984,20 @@ class LDAP(pykolab.base.Base):
 
         _filter = self._kolab_filter()
 
-        modified_after = self.get_latest_sync_timestamp()
+        modified_after = None
+
+        if hasattr(conf, 'resync'):
+            if not conf.resync:
+                modified_after = self.get_latest_sync_timestamp()
+            else:
+                modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format')
+                if modifytimestamp_format == None:
+                    modifytimestamp_format = "%Y%m%d%H%M%SZ"
+
+                modified_after = datetime.datetime(1900, 01, 01, 00, 00, 00).strftime(modifytimestamp_format)
+        else:
+            modified_after = self.get_latest_sync_timestamp()
+
         _filter = "(&%s(modifytimestamp>=%s))" % (_filter,modified_after)
 
         log.debug(_("Using filter %r") % (_filter), level=8)
