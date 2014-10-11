@@ -40,6 +40,8 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.wallace')
 conf = pykolab.getConf()
 
+from modules import cb_action_ACCEPT
+
 #conf.finalize_conf()
 #if conf.debuglevel > 8:
 #    max_threads = 1
@@ -62,6 +64,10 @@ def pickup_message(filepath, *args, **kw):
         else:
             modules.execute(kw['module'], filepath)
 
+    # After all modules are executed, continue with a call to
+    # accept the message and re-inject in to Postfix.
+    continue_with_accept = True
+
     for module in wallace_modules:
         try:
             result_filepath = modules.execute(module, filepath)
@@ -72,7 +78,11 @@ def pickup_message(filepath, *args, **kw):
         if not result_filepath == None and not result_filepath == False:
             filepath = result_filepath
         else:
-            break
+            # A module has returned False or None
+            continue_with_accept = False
+
+    if continue_with_accept:
+        cb_action_ACCEPT('wallace', filepath)
 
 def worker_process(*args, **kw):
     log.debug(_("Worker process %s initializing") % (multiprocessing.current_process().name), level=1)
