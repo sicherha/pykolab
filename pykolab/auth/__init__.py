@@ -200,6 +200,9 @@ class Auth(pykolab.base.Base):
         """
             Find one or more resources corresponding to the recipient address.
         """
+        if not self._auth or self._auth == None:
+            self.connect()
+
         result = self._auth.find_resource(address)
 
         if isinstance(result, list) and len(result) == 1:
