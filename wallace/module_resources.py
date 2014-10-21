@@ -112,7 +112,7 @@ def execute(*args, **kw):
         if not os.path.isdir(os.path.join(mybasepath, stage)):
             os.makedirs(os.path.join(mybasepath, stage))
 
-    log.debug(_("Resource Management called for %r, %r") % (args, kw), level=9)
+    log.debug(_("Resource Management called for %r, %r") % (args, kw), level=8)
 
     auth = Auth()
     imap = IMAP()
@@ -169,7 +169,7 @@ def execute(*args, **kw):
 
     any_itips = False
     any_resources = False
-    possibly_any_resources = True
+    possibly_any_resources = False
     reference_uid = None
 
     # An iTip message may contain multiple events. Later on, test if the message
@@ -197,11 +197,9 @@ def execute(*args, **kw):
 
     if any_itips:
         # See if any iTip actually allocates a resource.
-        if len([x['resources'] for x in itip_events if x.has_key('resources')]) == 0:
-            if len([x['attendees'] for x in itip_events if x.has_key('attendees')]) == 0:
-                possibly_any_resources = False
-        else:
-            possibly_any_resources = False
+        if len([x['resources'] for x in itip_events if x.has_key('resources')]) > 0 \
+            or len([x['attendees'] for x in itip_events if x.has_key('attendees')]) > 0:
+                possibly_any_resources = True
 
     if possibly_any_resources:
         auth.connect()
