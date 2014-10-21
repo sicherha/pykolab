@@ -159,9 +159,7 @@ class WallaceDaemon(object):
 
         self.modules = conf.get_list('wallace', 'modules')
         if self.modules == None:
-            self.modules = ['resources']
-        elif not 'resources' in self.modules:
-            self.modules.append('resources')
+            self.modules = []
 
     def do_wallace(self):
         if version.StrictVersion(sys.version[:3]) >= version.StrictVersion("2.7"):
