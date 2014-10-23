@@ -672,7 +672,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.purge_mailbox(self.john['mailbox'])
 
         # send update with new date and incremented sequence
-        new_start = datetime.datetime(2014,8,15, 15,0,0, tzinfo=pytz.timezone("Europe/Berlin"))
+        new_start = pytz.timezone("Europe/Berlin").localize(datetime.datetime(2014,8,15, 15,0,0))
         self.send_itip_update(self.jane['mail'], uid, new_start, summary="test", sequence=1)
 
         response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':participant_status_label('ACCEPTED') }, self.jane['mail'])
@@ -696,7 +696,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         # send update with new but conflicting date and incremented sequence
         self.create_calendar_event(datetime.datetime(2014,8,10, 10,30,0, tzinfo=pytz.timezone("Europe/Berlin")), user=self.jack)
-        new_start = datetime.datetime(2014,8,10, 9,30,0, tzinfo=pytz.timezone("Europe/Berlin"))
+        new_start = pytz.timezone("Europe/Berlin").localize(datetime.datetime(2014,8,10, 9,30,0))
         self.send_itip_update(self.jack['mail'], uid, new_start, summary="test (updated)", sequence=1)
 
         response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':participant_status_label('DECLINED') }, self.jack['mail'])
