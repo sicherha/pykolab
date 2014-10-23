@@ -25,6 +25,7 @@ import random
 import tempfile
 import time
 from urlparse import urlparse
+from dateutil.tz import tzlocal
 import base64
 import uuid
 import re
@@ -70,7 +71,7 @@ auth = None
 imap = None
 
 def __init__():
-    modules.register('resources', execute, description=description())
+    modules.register('resources', execute, description=description(), heartbeat=heartbeat)
 
 def accept(filepath):
     new_filepath = os.path.join(
@@ -391,6 +392,105 @@ def execute(*args, **kw):
     os.unlink(filepath)
 
 
+def heartbeat(lastrun):
+    global imap
+
+    # run archival job every hour only
+    now = int(time.time())
+    if lastrun == 0 or now - heartbeat._lastrun < 3600:
+        return
+
+    log.debug(_("module_resources.heartbeat(%d)") % (heartbeat._lastrun), level=8)
+
+    # get a list of resource records from LDAP
+    auth = Auth()
+    auth.connect()
+
+    resource_dns = auth.find_resource('*')
+
+    # filter by resource_base_dn
+    resource_base_dn = conf.get('ldap', 'resource_base_dn', None)
+    if resource_base_dn is not None:
+        resource_dns = [dn for dn in resource_dns if resource_base_dn in dn]
+
+    if len(resource_dns) > 0:
+        imap = IMAP()
+        imap.connect()
+
+        for resource_dn in resource_dns:
+            resource_attrs = auth.get_entry_attributes(None, resource_dn, ['kolabtargetfolder'])
+            if resource_attrs.has_key('kolabtargetfolder'):
+                try:
+                    expunge_resource_calendar(resource_attrs['kolabtargetfolder'])
+                except Exception, e:
+                    log.error(_("Expunge resource calendar for %s (%s) failed: %r") % (
+                        resource_dn, resource_attrs['kolabtargetfolder'], e
+                    ))
+
+        imap.disconnect()
+
+    auth.disconnect()
+
+    heartbeat._lastrun = now
+
+heartbeat._lastrun = 0
+
+
+def expunge_resource_calendar(mailbox):
+    """
+        Cleanup routine to remove events older than 100 days from the given resource calendar
+    """
+    global imap
+
+    log.debug(
+        _("Expunge events in resource folder %r") % (mailbox),
+        level=8
+    )
+
+    now = datetime.datetime.now(tzlocal())
+    expire_date = now - datetime.timedelta(days=100)
+
+    # might raise an exception, let that bubble
+    targetfolder = imap.folder_quote(mailbox)
+    imap.set_acl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
+    imap.imap.m.select(targetfolder)
+
+    typ, data = imap.imap.m.search(None, 'UNDELETED')
+
+    for num in data[0].split():
+        log.debug(
+            _("Fetching message ID %r from folder %r") % (num, mailbox),
+            level=9
+        )
+
+        typ, data = imap.imap.m.fetch(num, '(RFC822)')
+
+        event_message = message_from_string(data[0][1])
+
+        try:
+            event = event_from_message(message_from_string(data[0][1]))
+        except Exception, e:
+            log.error(_("Failed to parse event from message %s/%s: %r") % (mailbox, num, e))
+            continue
+
+        if event:
+            dt_end = to_dt(event.get_end())
+
+            # consider recurring events and get real end date
+            if event.is_recurring():
+                dt_end = event.get_last_occurrence()
+                if dt_end is None:
+                    # skip if recurring forever
+                    continue
+
+            if dt_end and dt_end < expire_date:
+                age = now - dt_end
+                log.debug(_("Flag event %s from message %s/%s as deleted (age = %d days)") % (event.uid, mailbox, num, age.days), level=8)
+                imap.imap.m.store(num, '+FLAGS', '\\Deleted')
+
+    imap.imap.m.expunge()
+
+
 def check_availability(itip_events, resource_dns, resources, receiving_attendee=None):
     """
         For each resource, determine if any of the events in question are in conflict.
@@ -540,7 +640,7 @@ def read_resource_calendar(resource_rec, itip_events):
 
     # might raise an exception, let that bubble
     imap.imap.m.select(imap.folder_quote(mailbox))
-    typ, data = imap.imap.m.search(None, 'ALL')
+    typ, data = imap.imap.m.search(None, 'UNDELETED')
 
     num_messages = len(data[0].split())
 

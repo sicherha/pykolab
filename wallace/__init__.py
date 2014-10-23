@@ -87,6 +87,23 @@ def pickup_message(filepath, *args, **kw):
     if continue_with_accept:
         cb_action_ACCEPT('wallace', filepath)
 
+def modules_heartbeat(wallace_modules):
+    lastrun = 0
+
+    while True:
+        try:
+            for module in wallace_modules:
+                try:
+                    modules.heartbeat(module, lastrun)
+                except:
+                    log.error(_("Module %s.heartbeat() failed with error: %s" % (module, traceback.format_exc())))
+
+            lastrun = int(time.time())
+            time.sleep(60)
+        except (SystemExit, KeyboardInterrupt), e:
+            log.info("Terminating heartbeat process")
+            break
+
 def worker_process(*args, **kw):
     log.debug(_("Worker process %s initializing") % (multiprocessing.current_process().name), level=1)
 
@@ -255,6 +272,11 @@ class WallaceDaemon(object):
                 self.pool.apply_async(pickup_message, (filepath, (self.modules)))
                 self.current_connections -= 1
 
+        # start background process to run periodic jobs in active modules
+        self.heartbeat = multiprocessing.Process(target=modules_heartbeat, args=[self.modules])
+        self.heartbeat.daemon = True
+        self.heartbeat.start()
+
         try:
             while 1:
                 while self.current_connections >= self.max_connections:
@@ -272,6 +294,9 @@ class WallaceDaemon(object):
             traceback.print_exc()
             s.shutdown(1)
             s.close()
+
+        # shut down hearbeat process
+        self.heartbeat.terminate()
 
     def data_header(self, mailfrom, rcpttos):
         COMMASPACE = ', '
@@ -305,6 +330,8 @@ class WallaceDaemon(object):
         pass
 
     def remove_pid(self, *args, **kw):
+        if hasattr(self, 'heartbeat'):
+            self.heartbeat.terminate()
         if os.access(conf.pidfile, os.R_OK):
             os.remove(conf.pidfile)
         raise SystemExit

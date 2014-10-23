@@ -115,6 +115,13 @@ def execute(name, *args, **kw):
 
     return modules[name]['function'](*args, **kw)
 
+def heartbeat(name, *args, **kw):
+    if not modules.has_key(name):
+        log.warning(_("No such module %r in modules %r (1).") % (name, modules))
+
+    if modules[name].has_key('heartbeat'):
+        return modules[name]['heartbeat'](*args, **kw)
+
 def cb_action_HOLD(module, filepath):
     log.info(_("Holding message in queue for manual review (%s by %s)") % (filepath, module))
 
@@ -334,7 +341,7 @@ def register_group(dirname, module):
 
                 exec("%s_%s_register()" % (module,name))
 
-def register(name, func, group=None, description=None, aliases=[]):
+def register(name, func, group=None, description=None, aliases=[], heartbeat=None):
     if not group == None:
         module = "%s_%s" % (group,name)
     else:
@@ -369,3 +376,5 @@ def register(name, func, group=None, description=None, aliases=[]):
                     'description': _("Alias for %s") % (name)
                 }
 
+        if callable(heartbeat):
+            modules[module]['heartbeat'] = heartbeat
