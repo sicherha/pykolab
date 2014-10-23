@@ -21,6 +21,20 @@ from recurrence_rule import RecurrenceRule
 
 log = pykolab.getLogger('pykolab.xml_event')
 
+def ustr(s):
+    if not isinstance(s, unicode):
+        for cs in ['utf-8','latin-1']:
+            try:
+                s = unicode(s, cs)
+                break
+            except:
+                pass
+
+    if isinstance(s, unicode):
+        return s.encode('utf-8')
+
+    return s
+
 def event_from_ical(string):
     return Event(from_ical=string)
 
@@ -130,7 +144,7 @@ class Event(object):
         self.event.setAttendees(self._attendees)
 
     def add_category(self, category):
-        self._categories.append(str(category))
+        self._categories.append(ustr(category))
         self.event.setCategories(self._categories)
 
     def add_exception_date(self, _datetime):
@@ -628,11 +642,11 @@ class Event(object):
         self.event.setCreated(xmlutils.to_cdatetime(_datetime, False, True))
 
     def set_description(self, description):
-        self.event.setDescription(str(description))
+        self.event.setDescription(ustr(description))
 
     def set_comment(self, comment):
         if hasattr(self.event, 'setComment'):
-            self.event.setComment(str(comment))
+            self.event.setComment(ustr(comment))
 
     def set_dtstamp(self, _datetime):
         self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False, True))
@@ -697,7 +711,7 @@ class Event(object):
                     params = {}
 
                 if params.has_key('CN'):
-                    name = str(params['CN'])
+                    name = ustr(params['CN'])
                 else:
                     name = None
 
@@ -756,7 +770,7 @@ class Event(object):
             params = {}
 
         if params.has_key('CN'):
-            cn = str(params['CN'])
+            cn = ustr(params['CN'])
 
         self.set_organizer(str(address), name=cn)
 
@@ -767,7 +781,7 @@ class Event(object):
         self.set_sequence(sequence)
 
     def set_ical_summary(self, summary):
-        self.set_summary(str(summary))
+        self.set_summary(ustr(summary))
 
     def set_ical_uid(self, uid):
         self.set_uid(str(uid))
@@ -790,7 +804,7 @@ class Event(object):
         self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False, True))
 
     def set_location(self, location):
-        self.event.setLocation(str(location))
+        self.event.setLocation(ustr(location))
 
     def set_organizer(self, email, name=None):
         contactreference = ContactReference(email)

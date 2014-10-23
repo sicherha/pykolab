@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pykolab
 import datetime
 import pytz
@@ -253,6 +255,54 @@ END:VEVENT
 END:VCALENDAR
 """
 
+itip_unicode = """MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="=_c8894dbdb8baeedacae836230e3436fd"
+From: "Doe, John" <john.doe@example.org>
+Date: Tue, 25 Feb 2014 13:54:14 +0100
+Message-ID: <240fe7ae7e139129e9eb95213c1016d7@example.org>
+User-Agent: Roundcube Webmail/0.9-0.3.el6.kolab_3.0
+To: resource-car-audia4@example.org
+Subject: "test"
+
+--=_c8894dbdb8baeedacae836230e3436fd
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+
+*test*
+
+--=_c8894dbdb8baeedacae836230e3436fd
+Content-Type: text/calendar; charset=UTF-8; method=REQUEST; name=event.ics
+Content-Disposition: attachment; filename=event.ics
+Content-Transfer-Encoding: quoted-printable
+
+
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Roundcube=20Webmail=200.9-0.3.el6.kolab_3.0//NONSGML=20Calendar//=
+EN
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:eea25142-fb1c-4831-a02d-ac9fb4c16b70
+DTSTAMP:20140213T125414Z
+DTSTART;TZID=3DEurope/London:20140713T100000
+DTEND;TZID=3DEurope/London:20140713T140000
+SUMMARY:Testing =C3=9Cmlauts
+DESCRIPTION:Testing =C3=9Cmlauts
+LOCATION:Rue the Gen=C3=A8ve
+ORGANIZER;CN=3D"D=C3=BE,=20John":mailto:john.doe@example.org
+ATTENDEE;ROLE=3DREQ-PARTICIPANT;CUTYPE=3DRESOURCE;PARTSTAT=3DNEEDS-ACTION;R=
+SVP=3DTRUE:mailto:resource-car-audia4@example.org
+ATTENDEE;ROLE=3DREQ-PARTICIPANT;PARTSTAT=3DTENTATIVE;CN=3DSomebody=20Else:m=
+ailto:somebody@else.com
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
+
+--=_c8894dbdb8baeedacae836230e3436fd--
+"""
+
 itip_empty = """MIME-Version: 1.0
 Date: Fri, 17 Jan 2014 13:51:50 +0100
 From: <john.doe@example.org>
@@ -317,6 +367,13 @@ class TestITip(unittest.TestCase):
 
         itips7 = itip.events_from_message(message_from_string(itip_non_multipart.replace("METHOD:REQUEST", "METHOD:PUBLISH").replace("method=REQUEST", "method=PUBLISH")))
         self.assertEqual(len(itips7), 0, "Invalid METHOD")
+
+        # iTips with unicode data
+        itips8 = itip.events_from_message(message_from_string(itip_unicode))
+        self.assertEqual(len(itips8), 1)
+        xml = itips8[0]['xml']
+        self.assertEqual(xml.get_summary(), "Testing Ümlauts")
+        self.assertEqual(xml.get_location(), "Rue the Genève")
 
 
     def test_002_check_date_conflict(self):
