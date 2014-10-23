@@ -48,7 +48,7 @@ def objects_from_message(message, objnames, methods=None):
             # Get the itip_payload
             itip_payload = part.get_payload(decode=True)
 
-            log.debug(_("Raw iTip payload: %s") % (itip_payload), level=9)
+            log.debug(_("Raw iTip payload (%r): %r") % (part.get_param('charset'), itip_payload), level=9)
 
             # Python iCalendar prior to 3.0 uses "from_string".
             if hasattr(icalendar.Calendar, 'from_ical'):
@@ -89,7 +89,7 @@ def objects_from_message(message, objnames, methods=None):
 
                     if c.has_key('dtstart'):
                         itip['start'] = c['dtstart'].dt
-                    elif itip['type'] == 'VEVENT':
+                    elif itip['type'] == 'event':
                         log.error(_("iTip event without a start"))
                         continue
 
