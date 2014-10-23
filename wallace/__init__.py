@@ -80,6 +80,9 @@ def pickup_message(filepath, *args, **kw):
         else:
             # A module has returned False or None
             continue_with_accept = False
+            # The message very likely has been consumed by the module that returned False
+            if not os.path.isfile(filepath):
+                break
 
     if continue_with_accept:
         cb_action_ACCEPT('wallace', filepath)
