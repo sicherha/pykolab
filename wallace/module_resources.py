@@ -778,8 +778,6 @@ def resource_record_from_email_address(email_address):
         resource_records = [ resource_records ]
         log.debug(_("Resource record: %r") % (resource_records), level=8)
 
-    auth.disconnect()
-
     return resource_records
 
 
