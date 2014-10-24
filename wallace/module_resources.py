@@ -442,13 +442,14 @@ def expunge_resource_calendar(mailbox):
     """
     global imap
 
+    days = int(conf.get('wallace', 'resource_calendar_expire_days', 100))
+    now = datetime.datetime.now(tzlocal())
+    expire_date = now - datetime.timedelta(days=days)
+
     log.debug(
-        _("Expunge events in resource folder %r") % (mailbox),
+        _("Expunge events in resource folder %r older than %d days") % (mailbox, days),
         level=8
     )
-
-    now = datetime.datetime.now(tzlocal())
-    expire_date = now - datetime.timedelta(days=100)
 
     # might raise an exception, let that bubble
     targetfolder = imap.folder_quote(mailbox)
