@@ -6,9 +6,8 @@ sendmail: /usr/sbin/sendmail
 sasl_pwcheck_method: auxprop saslauthd
 sasl_mech_list: PLAIN LOGIN
 allowplaintext: no
-tls_cert_file: /etc/pki/cyrus-imapd/cyrus-imapd.pem
-tls_key_file: /etc/pki/cyrus-imapd/cyrus-imapd.pem
-tls_ca_file: /etc/pki/cyrus-imapd/cyrus-imapd.pem
+tls_server_cert: /etc/pki/cyrus-imapd/cyrus-imapd.pem
+tls_server_key: /etc/pki/cyrus-imapd/cyrus-imapd.pem
 # uncomment this if you're operating in a DSCP environment (RFC-4594)
 # qosmarking: af13
 auth_mech: pts
@@ -47,5 +46,4 @@ username_tolower: 1
 deletedprefix: DELETED
 delete_mode: delayed
 expunge_mode: delayed
-flushseenstate: 1
 postuser: shared
