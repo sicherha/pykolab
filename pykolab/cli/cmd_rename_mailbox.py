@@ -70,5 +70,5 @@ def execute(*args, **kw):
         print >> sys.stderr, _("Target folder %r already exists") % (target_folder)
         sys.exit(1)
 
-    imap.user_mailbox_rename(source_folder.replace('user/',''), target_folder.replace('user/',''), partition=partition)
+    imap.imap.rename(source_folder, target_folder, partition)
 
