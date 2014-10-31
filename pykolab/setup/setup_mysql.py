@@ -127,6 +127,10 @@ password='%s'
     for root, directories, filenames in os.walk('/usr/share/doc/'):
         for filename in filenames:
             if filename.startswith('kolab_wap') and filename.endswith('.sql'):
+                # Skip the Oracle file
+                if filename.endswith('oracle.sql'):
+                    continue
+
                 schema_file = os.path.join(root,filename)
 
     if not schema_file == None:
