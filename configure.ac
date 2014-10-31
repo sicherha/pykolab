@@ -1,4 +1,4 @@
-AC_INIT([pykolab], 0.7.2)
+AC_INIT([pykolab], 0.7.3)
 AC_SUBST([RELEASE], 1)
 
 AC_CONFIG_SRCDIR(pykolab/constants.py.in)
