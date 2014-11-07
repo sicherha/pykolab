@@ -330,8 +330,6 @@ class WallaceDaemon(object):
         pass
 
     def remove_pid(self, *args, **kw):
-        if hasattr(self, 'heartbeat'):
-            self.heartbeat.terminate()
         if os.access(conf.pidfile, os.R_OK):
             os.remove(conf.pidfile)
         raise SystemExit
