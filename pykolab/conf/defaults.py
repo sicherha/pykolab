@@ -38,3 +38,5 @@ class Defaults(object):
 
         self.kolab_default_locale = 'en_US'
         self.ldap_unique_attribute = 'nsuniqueid'
+
+        self.wallace_resource_calendar_expire_days = 100

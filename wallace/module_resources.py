@@ -442,7 +442,7 @@ def expunge_resource_calendar(mailbox):
     """
     global imap
 
-    days = int(conf.get('wallace', 'resource_calendar_expire_days', 100))
+    days = int(conf.get('wallace', 'resource_calendar_expire_days'))
     now = datetime.datetime.now(tzlocal())
     expire_date = now - datetime.timedelta(days=days)
 
