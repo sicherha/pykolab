@@ -516,8 +516,8 @@ def sharedfolder_delete(params=None):
 def sharedfolders_list(params={}):
     return request('POST', 'sharedfolders.list', post=json.dumps(params))
 
-def system_capabilities():
-    return request('GET', 'system.capabilities')
+def system_capabilities(domain=None):
+    return request('GET', 'system.capabilities', get={'domain':domain})
 
 def system_get_domain():
     return request('GET', 'system.get_domain')
