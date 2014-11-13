@@ -18,7 +18,6 @@
 #
 
 import asyncore
-import binascii
 from distutils import version
 import grp
 import multiprocessing
