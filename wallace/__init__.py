@@ -42,13 +42,6 @@ conf = pykolab.getConf()
 
 from modules import cb_action_ACCEPT
 
-#conf.finalize_conf()
-#if conf.debuglevel > 8:
-#    max_threads = 1
-#else:
-#    max_threads = 24
-max_threads = 24
-
 def pickup_message(filepath, *args, **kw):
     wallace_modules = args[0]
     if kw.has_key('module'):
@@ -141,6 +134,14 @@ class WallaceDaemon(object):
             )
 
         daemon_group.add_option(
+                "--threads",
+                dest    = "max_threads",
+                action  = "store",
+                default = 24,
+                help    = _("Number of threads to use.")
+            )
+
+        daemon_group.add_option(
                 "-p", "--pid-file",
                 dest    = "pidfile",
                 action  = "store",
@@ -183,9 +184,9 @@ class WallaceDaemon(object):
 
     def do_wallace(self):
         if version.StrictVersion(sys.version[:3]) >= version.StrictVersion("2.7"):
-            self.pool = multiprocessing.Pool(max_threads, worker_process, (), 1)
+            self.pool = multiprocessing.Pool(conf.max_threads, worker_process, (), 1)
         else:
-            self.pool = multiprocessing.Pool(max_threads, worker_process, ())
+            self.pool = multiprocessing.Pool(conf.max_threads, worker_process, ())
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
