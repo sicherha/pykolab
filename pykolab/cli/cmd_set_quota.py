@@ -56,12 +56,9 @@ def execute(*args, **kw):
 
     if not imap.has_folder(folder):
         print >> sys.stderr, _("No such folder %r") % (folder)
+        sys.exit(1)
 
-    else:
-        imap.set_quota(folder, quota)
+    for _folder in imap.lm(folder):
+        imap.set_quota(_folder, quota)
+        print >> sys.stdout, "Quota for folder '%s' set to %d" % (_folder, quota)
 
-    # See if the folder is an INBOX folder
-    # If yes, edit LDAP (through WAP client)
-    # If no, edit IMAP
-
-    # Verify the folder actually exists in IMAP
