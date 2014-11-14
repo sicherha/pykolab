@@ -350,6 +350,9 @@ def ou_add(params={}):
 def ou_delete(params={}):
     return request('POST', 'ou.delete', post=json.dumps(params))
 
+def ou_edit(params={}):
+    return request('POST', 'ou.edit', post=json.dumps(params))
+
 def ou_find(params=None):
     post = { 'search': { 'params': {} } }
 
