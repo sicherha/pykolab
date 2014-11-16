@@ -218,8 +218,7 @@ class IMAP(object):
                 return True
             except:
                 log.error(
-                        _("Could not create folder %r") + \
-                                _(" on server %r") % (
+                        _("Could not create folder %r on server %r") % (
                                 folder_path,
                                 server
                             )
