@@ -110,6 +110,8 @@ class IMAP(object):
             if uri == None:
                 if conf.has_section(domain) and conf.has_option(domain, 'imap_uri'):
                     uri = conf.get(domain, 'imap_uri')
+        else:
+            self.domain = None
 
         scheme = None
         hostname = None
@@ -477,11 +479,20 @@ class IMAP(object):
             self.connect()
 
         created = False
+        last_log = time.time()
         while not created:
             created = self.has_folder(folder_name)
             if not created:
-                log.info(_("Waiting for the Cyrus IMAP Murder to settle..."))
+                if time.time() - last_log > 5:
+                    log.info(_("Waiting for the Cyrus IMAP Murder to settle..."))
+                    last_log = time.time()
+
                 time.sleep(0.5)
+
+        _additional_folders = None
+
+        if not hasattr(self, 'domain'):
+            self.domain == None
 
         if not self.domain == None:
             if conf.has_option(self.domain, "autocreate_folders"):
@@ -490,28 +501,28 @@ class IMAP(object):
                         "autocreate_folders"
                     )
 
-            elif conf.has_option('kolab', "autocreate_folders"):
+        if _additional_folders == None:
+            if conf.has_option('kolab', "autocreate_folders"):
                 _additional_folders = conf.get_raw(
                         'kolab',
                         "autocreate_folders"
                     )
-            else:
-                _additional_folders = {}
 
-            additional_folders = conf.plugins.exec_hook(
-                    "create_user_folders",
-                    kw={
-                            'folder': folder_name,
-                            'additional_folders': _additional_folders
-                        }
+        additional_folders = conf.plugins.exec_hook(
+                "create_user_folders",
+                kw={
+                        'folder': folder_name,
+                        'additional_folders': _additional_folders
+                    }
+            )
+
+        if not additional_folders == None:
+            self.user_mailbox_create_additional_folders(
+                    mailbox_base_name,
+                    additional_folders
                 )
 
-            if not additional_folders == None:
-                self.user_mailbox_create_additional_folders(
-                        mailbox_base_name,
-                        additional_folders
-                    )
-
+        if not self.domain == None:
             if conf.has_option(self.domain, "sieve_mgmt"):
                 sieve_mgmt_enabled = conf.get(self.domain, 'sieve_mgmt')
                 if utils.true_or_false(sieve_mgmt_enabled):
@@ -535,17 +546,26 @@ class IMAP(object):
         admin_login = conf.get(backend, 'admin_login')
         admin_password = conf.get(backend, 'admin_password')
 
+        if backend == "cyrus-imap" and hasattr(self.imap, 'murder') and self.imap.murder:
+            server = self.user_mailbox_server(folder)
+        else:
+            server = None
+
         success = False
+        last_log = time.time()
         while not success:
             try:
 
                 self.disconnect()
-                self.connect(login=False)
+                self.connect(login=False, server=server)
                 self.login_plain(admin_login, admin_password, folder)
                 (personal, other, shared) = self.namespaces()
                 success = True
             except Exception, errmsg:
-                log.debug(_("Waiting for the Cyrus murder to settle... %r") % (errmsg))
+                if time.time() - last_log > 5:
+                    log.debug(_("Waiting for the Cyrus murder to settle... %r") % (errmsg))
+                    last_log = time.time()
+
                 if conf.debuglevel > 8:
                     import traceback
                     traceback.print_exc()
@@ -561,7 +581,16 @@ class IMAP(object):
                 folder_name = "%s%s" % (personal, folder_name)
 
             try:
-                self.create_folder(folder_name)
+                created = False
+                last_log = time.time()
+                while not created:
+                    created = self.has_folder(folder_name)
+                    if not created:
+                        if time.time() - last_log > 5:
+                            log.info(_("Waiting for the Cyrus IMAP Murder to settle..."))
+                            last_log = time.time()
+
+                        time.sleep(0.5)
             except:
                 log.warning(_("Mailbox already exists: %s") % (folder_name))
                 if conf.debuglevel > 8:
