@@ -976,7 +976,7 @@ class LDAP(pykolab.base.Base):
             except:
                 log.error(_("Could not update dn %r:\n%r") % (dn, modlist))
 
-    def synchronize(self, mode=0):
+    def synchronize(self, mode=0, callback=None):
         """
             Synchronize with LDAP
         """
@@ -1017,6 +1017,9 @@ class LDAP(pykolab.base.Base):
 
         log.debug(_("Synchronization is searching against base DN: %s") % (base_dn), level=8)
 
+        if callback == None:
+            callback = self._synchronize_callback
+
         try:
             self._search(
                     base_dn,
@@ -1028,7 +1031,7 @@ class LDAP(pykolab.base.Base):
                             'modifytimestamp'
                         ],
                     override_search=override_search,
-                    callback=self._synchronize_callback,
+                    callback=callback,
                 )
         except Exception, errmsg:
             log.error("Exception occurred: %r" % (errmsg))
