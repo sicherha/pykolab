@@ -40,9 +40,7 @@ def execute(*args, **kw):
         Delete mailbox
     """
 
-    try:
-        delete_folder = conf.cli_args.pop(0)
-    except IndexError, e:
+    if len(conf.cli_args) < 1:
         print >> sys.stderr, _("No mailbox specified")
         sys.exit(1)
 
@@ -50,10 +48,18 @@ def execute(*args, **kw):
 
     imap.connect()
 
-    delete_folders = imap.list_folders(delete_folder)
+    delete_folders = []
+    while len(conf.cli_args) > 0:
+        folder = conf.cli_args.pop(0)
+        folders = imap.list_folders(folder)
+
+        if len(folders) < 1:
+            print >> sys.stderr, _("No such folder(s): %s") % (folder)
+
+        delete_folders.extend(folders)
 
     if len(delete_folders) == 0:
-        print >> sys.stderr, _("No such folder(s)")
+        print >> sys.stderr, _("No folders to delete.")
         sys.exit(1)
 
     for delete_folder in delete_folders:
