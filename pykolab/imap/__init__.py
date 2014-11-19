@@ -280,6 +280,12 @@ class IMAP(object):
         else:
             return '/'
 
+    def imap_murder(self):
+        if hasattr(self.imap, 'murder') and self.imap.murder:
+            return True
+        else:
+            return False
+
     def namespaces(self):
         """
             Obtain the namespaces.
@@ -474,20 +480,20 @@ class IMAP(object):
         self.create_folder(folder_name, server)
 
         # In a Cyrus IMAP Murder topology, wait for the murder to have settled
-        if hasattr(self.imap, 'murder') and self.imap.murder:
+        if self.imap_murder():
             self.disconnect()
             self.connect()
 
-        created = False
-        last_log = time.time()
-        while not created:
-            created = self.has_folder(folder_name)
-            if not created:
-                if time.time() - last_log > 5:
-                    log.info(_("Waiting for the Cyrus IMAP Murder to settle..."))
-                    last_log = time.time()
+            created = False
+            last_log = time.time()
+            while not created:
+                created = self.has_folder(folder_name)
+                if not created:
+                    if time.time() - last_log > 5:
+                        log.info(_("Waiting for the Cyrus IMAP Murder to settle..."))
+                        last_log = time.time()
 
-                time.sleep(0.5)
+                    time.sleep(0.5)
 
         _additional_folders = None
 
@@ -546,7 +552,7 @@ class IMAP(object):
         admin_login = conf.get(backend, 'admin_login')
         admin_password = conf.get(backend, 'admin_password')
 
-        if backend == "cyrus-imap" and hasattr(self.imap, 'murder') and self.imap.murder:
+        if self.imap_murder():
             server = self.user_mailbox_server(folder)
         else:
             server = None
@@ -562,13 +568,14 @@ class IMAP(object):
                 (personal, other, shared) = self.namespaces()
                 success = True
             except Exception, errmsg:
-                if time.time() - last_log > 5:
+                if time.time() - last_log > 5 and self.imap_murder():
                     log.debug(_("Waiting for the Cyrus murder to settle... %r") % (errmsg))
                     last_log = time.time()
 
                 if conf.debuglevel > 8:
                     import traceback
                     traceback.print_exc()
+
                 time.sleep(0.5)
 
         for additional_folder in additional_folders.keys():
