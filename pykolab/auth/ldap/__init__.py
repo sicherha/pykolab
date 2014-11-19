@@ -1421,13 +1421,19 @@ class LDAP(pykolab.base.Base):
         """
         self._change_delete_unknown(entry, change)
 
+    def _change_delete_resource(self, entry, change):
+        pass
+
+    def _change_delete_role(self, entry, change):
+        pass
+
     def _change_delete_sharedfolder(self, entry, change):
         pass
 
     def _change_delete_unknown(self, entry, change):
         """
             An entry has been deleted, and we do not know of what object type
-            the entry was - user, group, role or sharedfolder.
+            the entry was - user, group, resource, role or sharedfolder.
         """
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
@@ -1438,10 +1444,16 @@ class LDAP(pykolab.base.Base):
             return None
 
         success = True
-        for _type in ['user','group','role','sharedfolder']:
+        for _type in ['user','group','resource','role','sharedfolder']:
             try:
-                eval("success = self._change_delete_%s(entry, change)" % (_type))
+                success = eval("self._change_delete_%s(entry, change)" % (_type))
+                print success
             except:
+                if conf.debuglevel > 8:
+                    import traceback
+                    log.error(_("%s") % (traceback.format_exc()))
+
+                print success
                 success = False
 
             if success:
