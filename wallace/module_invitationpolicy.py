@@ -970,6 +970,10 @@ def send_update_notification(object, receiving_user, old=None, reply=True):
     from email.MIMEText import MIMEText
     from email.Utils import formatdate
 
+    # encode unicode strings with quoted-printable
+    from email import charset
+    charset.add_charset('utf-8', charset.SHORTEST, charset.QP)
+
     organizer = object.get_organizer()
     orgemail = organizer.email()
     orgname = organizer.name()
@@ -1053,12 +1057,12 @@ def send_update_notification(object, receiving_user, old=None, reply=True):
     message_text += "\n" + _("*** This is an automated message. Please do not reply. ***")
 
     # compose mime message
-    msg = MIMEText(utils.stripped_message(message_text))
+    msg = MIMEText(utils.stripped_message(message_text), _charset='utf-8')
 
     msg['To'] = receiving_user['mail']
     msg['Date'] = formatdate(localtime=True)
-    msg['Subject'] = _('"%s" has been updated') % (object.get_summary())
-    msg['From'] = '"%s" <%s>' % (orgname, orgemail) if orgname else orgemail
+    msg['Subject'] = utils.str2unicode(_('"%s" has been updated') % (object.get_summary()))
+    msg['From'] = utils.str2unicode('"%s" <%s>' % (orgname, orgemail) if orgname else orgemail)
 
     smtp = smtplib.SMTP("localhost", 10027)
 
@@ -1080,6 +1084,10 @@ def send_cancel_notification(object, receiving_user):
     import smtplib
     from email.MIMEText import MIMEText
     from email.Utils import formatdate
+
+    # encode unicode strings with quoted-printable
+    from email import charset
+    charset.add_charset('utf-8', charset.SHORTEST, charset.QP)
 
     log.debug(_("Send cancellation notification for %s %r to user %r") % (
         object.type, object.uid, receiving_user['mail']
@@ -1111,12 +1119,12 @@ def send_cancel_notification(object, receiving_user):
     message_text += "\n" + _("*** This is an automated message. Please do not reply. ***")
 
     # compose mime message
-    msg = MIMEText(utils.stripped_message(message_text))
+    msg = MIMEText(utils.stripped_message(message_text), _charset='utf-8')
 
     msg['To'] = receiving_user['mail']
     msg['Date'] = formatdate(localtime=True)
-    msg['Subject'] = _('"%s" has been cancelled') % (object.get_summary())
-    msg['From'] = '"%s" <%s>' % (orgname, orgemail) if orgname else orgemail
+    msg['Subject'] = utils.str2unicode(_('"%s" has been cancelled') % (object.get_summary()))
+    msg['From'] = utils.str2unicode('"%s" <%s>' % (orgname, orgemail) if orgname else orgemail)
 
     smtp = smtplib.SMTP("localhost", 10027)
 

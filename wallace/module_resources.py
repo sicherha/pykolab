@@ -1197,6 +1197,10 @@ def send_owner_notification(resource, owner, itip_event, success=True):
     from email.MIMEText import MIMEText
     from email.Utils import formatdate
 
+    # encode unicode strings with quoted-printable
+    from email import charset
+    charset.add_charset('utf-8', charset.SHORTEST, charset.QP)
+
     notify = False
     status = itip_event['xml'].get_attendee_by_email(resource['mail']).get_participant_status(True)
 
@@ -1223,12 +1227,14 @@ def send_owner_notification(resource, owner, itip_event, success=True):
 
         message_text = owner_notification_text(resource, owner, itip_event['xml'], success)
 
-        msg = MIMEText(utils.stripped_message(message_text))
+        msg = MIMEText(utils.stripped_message(message_text), _charset='utf-8')
 
         msg['To'] = owner['mail']
         msg['From'] = resource['mail']
         msg['Date'] = formatdate(localtime=True)
-        msg['Subject'] = _('Booking for %s has been %s') % (resource['cn'], participant_status_label(status) if success else _('failed'))
+        msg['Subject'] = utils.str2unicode(_('Booking for %s has been %s') % (
+            resource['cn'], participant_status_label(status) if success else _('failed')
+        ))
 
         smtp = smtplib.SMTP("localhost", 10027)
 

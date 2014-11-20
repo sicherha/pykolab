@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import pykolab
 import logging
@@ -160,4 +162,12 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_some },  'sam@example.org', 'event'))
         self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_avail }, 'user@domain.com', 'event'))
         self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_avail }, 'john@example.org', 'event'))
-        
+
+    def test_006_send_update_notification(self):
+        itips = pykolab.itip.events_from_message(message_from_string(itip_multipart.replace('SUMMARY:test', 'SUMMARY:with äöü')))
+        MIP.send_update_notification(itips[0]['xml'], { 'mail': 'sender@example.org' }, old=None, reply=True)
+
+        self.assertEqual(len(self.smtplog), 1)
+        self.assertIn("Subject: =?utf-8?", self.smtplog[0][2])
+        self.assertIn("The event 'with =C3=A4=C3=B6=C3=BC' at", self.smtplog[0][2])
+

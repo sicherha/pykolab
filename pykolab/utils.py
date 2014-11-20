@@ -309,6 +309,15 @@ def stripped_message(message):
 
     return "\n%s\n" % ("\n".join(lines))
 
+def str2unicode(s, encoding='utf-8'):
+    if isinstance(s, unicode):
+        return s
+    try:
+        return unicode(s, encoding)
+    except:
+        pass
+    return s
+
 def normalize(_object):
     if type(_object) == list:
         result = []

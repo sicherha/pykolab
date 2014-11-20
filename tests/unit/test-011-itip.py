@@ -465,5 +465,13 @@ class TestITip(unittest.TestCase):
         self.assertEqual(message.get('Subject'), _("Invitation for %(summary)s was %(status)s") % { 'summary':'test', 'status':_accepted })
 
         text = str(message.get_payload(0));
-        self.assertIn('SUMMARY=test', text)
-        self.assertIn('STATUS=' + _accepted, text)
+        self.assertIn('SUMMARY=3Dtest', text)
+        self.assertIn('STATUS=3D' + _accepted, text)
+
+    def test_004_send_reply_unicode(self):
+        itip_events = itip.events_from_message(message_from_string(itip_non_multipart.replace('SUMMARY:test', "SUMMARY:With äöü")))
+        itip.send_reply("resource-collection-car@example.org", itip_events, "SUMMARY=%(summary)s; STATUS=%(status)s; NAME=%(name)s;")
+
+        self.assertEqual(len(self.smtplog), 1)
+        self.assertIn("Subject: =?utf-8?q?Invitation_for_With_=C3=A4=C3=B6=C3=BC_was_Accepted?=", self.smtplog[0][2])
+        self.assertIn('SUMMARY=3DWith =C3=A4=C3=B6=C3=BC', self.smtplog[0][2])

@@ -574,7 +574,7 @@ class TestResourceInvitation(unittest.TestCase):
     def test_010_invalid_bookings(self):
         self.purge_mailbox(self.john['mailbox'])
 
-        itip_other = itip_invitation.replace("mailto:%s", "mailto:some-other-resource@example.org\nDESCRIPTION: Sent to %s")
+        itip_other = itip_invitation.replace("mailto:%s", "mailto:some-other-resource@example.org\nCOMMENT: Sent to %s")
         self.send_itip_invitation(self.audi['mail'], datetime.datetime(2014,3,22, 8,0,0), template=itip_other)
 
         time.sleep(1)

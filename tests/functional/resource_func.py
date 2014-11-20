@@ -15,7 +15,8 @@ def resource_add(type, cn, members=None, owner=None, **kw):
         'cn': cn,
         'kolabtargetfolder': "shared/Resources/" + cn + "@example.org",
         'uniquemember': members,
-        'owner': owner
+        'owner': owner,
+        'ou': 'ou=resources,dc=example,dc=org'
     }
 
     resource_details.update(kw)

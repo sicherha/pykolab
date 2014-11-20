@@ -945,7 +945,6 @@ class Event(object):
         from email.MIMEBase import MIMEBase
         from email.MIMEText import MIMEText
         from email.Utils import COMMASPACE, formatdate
-        from email import Encoders
 
         msg = MIMEMultipart()
         organizer = self.get_organizer()
@@ -1030,7 +1029,10 @@ class Event(object):
         from email.MIMEBase import MIMEBase
         from email.MIMEText import MIMEText
         from email.Utils import COMMASPACE, formatdate
-        from email import Encoders
+
+        # encode unicode strings with quoted-printable
+        from email import charset
+        charset.add_charset('utf-8', charset.SHORTEST, charset.QP)
 
         msg = MIMEMultipart()
 
@@ -1093,19 +1095,19 @@ class Event(object):
             else:
                 msg_from = from_address
 
-        msg['From'] = msg_from
+        msg['From'] = utils.str2unicode(msg_from)
 
         msg['Date'] = formatdate(localtime=True)
 
         if subject is None:
             subject = _("Invitation for %s was %s") % (self.get_summary(), participant_status_label(participant_status))
 
-        msg["Subject"] = subject
+        msg['Subject'] = utils.str2unicode(subject)
 
         if message_text is None:
             message_text = _("""This is an automated response to one of your event requests.""")
 
-        msg.attach(MIMEText(utils.stripped_message(message_text)))
+        msg.attach(MIMEText(utils.stripped_message(message_text), _charset='utf-8'))
 
         part = MIMEBase('text', 'calendar', charset='UTF-8', method=method)
         del part['MIME-Version']  # mime parts don't need this
