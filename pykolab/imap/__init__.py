@@ -588,6 +588,7 @@ class IMAP(object):
                 folder_name = "%s%s" % (personal, folder_name)
 
             try:
+                self.create_folder(folder_name)
                 created = False
                 last_log = time.time()
                 while not created:
