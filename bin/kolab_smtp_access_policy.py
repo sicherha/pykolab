@@ -37,6 +37,7 @@ from sqlalchemy import Integer
 from sqlalchemy import MetaData
 from sqlalchemy import String
 from sqlalchemy import Table
+from sqlalchemy import Sequence
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import mapper
@@ -84,7 +85,7 @@ except:
 session = None
 policy_result_table = Table(
         'policy_result', metadata,
-        Column('id', Integer, primary_key=True),
+        Column('id', Integer, Sequence('seq_id_result'), primary_key=True),
         Column('key', String(16), nullable=False),
         Column('value', Boolean, nullable=False),
         Column('sender', String(64), nullable=False),
@@ -127,7 +128,7 @@ mapper(PolicyResult, policy_result_table)
 
 statistic_table = Table(
         'statistic', metadata,
-        Column('id', Integer, primary_key=True),
+        Column('id', Integer, Sequence('seq_id_statistic'), primary_key=True),
         Column('sender', String(64), nullable=False),
         Column('recipient', String(64), nullable=False),
         Column('date', Date, nullable=False),
