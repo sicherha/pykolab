@@ -37,7 +37,6 @@
 
     // Kolab specific defaults
     \$config['product_name'] = 'Kolab Groupware';
-    \$config['skin_logo'] = 'skins/kolab/images/kolab_logo.png';
     \$config['quota_zero_as_unlimited'] = false;
     \$config['login_lc'] = 2;
     \$config['auto_create_user'] = true;
@@ -84,8 +83,7 @@
 
     \$config['session_lifetime'] = 180;
     \$config['password_charset'] = 'UTF-8';
-    \$config['useragent'] = 'Kolab 3.1/Roundcube ' . RCUBE_VERSION;
-    \$config['dont_override'] = Array('skin');
+    \$config['useragent'] = 'Kolab 3.4/Roundcube ' . RCUBE_VERSION;
 
     \$config['message_sort_col'] = 'date';
 
@@ -129,7 +127,7 @@
     \$config['ldap_debug'] = false;
     \$config['smtp_debug'] = false;
 
-    \$config['skin'] = 'larry';
+    \$config['skin'] = 'chameleon';
     \$config['skin_include_php'] = false;
     \$config['mime_magic'] = null;
     \$config['im_identify_path'] = '/usr/bin/identify';
