@@ -122,7 +122,15 @@ class IMAP(object):
 
         result = urlparse(uri)
 
-        if hasattr(result, 'hostname'):
+        if hasattr(result, 'netloc'):
+            scheme = result.scheme
+            if len(result.netloc.split(':')) > 1:
+                hostname = result.netloc.split(':')[0]
+                port = result.netloc.split(':')[1]
+            else:
+                hostname = result.netloc
+
+        elif hasattr(result, 'hostname'):
             hostname = result.hostname
         else:
             scheme = uri.split(':')[0]
@@ -131,11 +139,16 @@ class IMAP(object):
         if not server == None:
             hostname = server
 
-        if port == None:
-            port = 993
-
         if scheme == None or scheme == "":
             scheme = 'imaps'
+
+        if port == None:
+            if scheme == "imaps":
+                port = 993
+            elif scheme == "imap":
+                port = 143
+            else:
+                port = 993
 
         uri = '%s://%s:%s' % (scheme, hostname, port)
 
