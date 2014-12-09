@@ -128,7 +128,7 @@
     \$config['ldap_debug'] = false;
     \$config['smtp_debug'] = false;
 
-    \$config['skin'] = 'chameleon';
+    \$config['skin'] = '$skin';
     \$config['skin_include_php'] = false;
     \$config['mime_magic'] = null;
     \$config['im_identify_path'] = '/usr/bin/identify';

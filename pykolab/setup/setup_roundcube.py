@@ -88,6 +88,12 @@ def execute(*args, **kw):
             'conf': conf
         }
 
+    if os.access('/usr/share/roundcubemail/skins/enterprise/', os.R_OK):
+        rc_settings['skin'] = 'enterprise'
+    elif os.access('/usr/share/roundcubemail/skin/chameleon/', os_R_OK):
+        rc_settings['skin'] = 'chameleon'
+    else:
+        rc_settings['skin'] = 'larry'
 
     want_files = [
             'acl.inc.php',
