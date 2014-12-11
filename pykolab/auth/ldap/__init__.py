@@ -2140,19 +2140,22 @@ class LDAP(pykolab.base.Base):
 
         domain_base_dn = conf.get('ldap', 'domain_base_dn', quiet=True)
 
-        if not domain_base_dn == "":
+        domain_filter = conf.get('ldap', 'domain_filter')
 
-            # If we haven't returned already, let's continue searching
-            domain_name_attribute = conf.get('ldap', 'domain_name_attribute')
+        if not domain == None:
+            domain_filter = domain_filter.replace('*', domain)
+
+        if not domain_base_dn == "":
 
             _results = self._search(
                     domain_base_dn,
                     ldap.SCOPE_SUBTREE,
-                    "(%s=%s)" % (domain_name_attribute,domain),
+                    domain_filter,
                     override_search='_regular_search'
                 )
 
             domains = []
+
             for _domain in _results:
                 (domain_dn, _domain_attrs) = _domain
                 domain_rootdn_attribute = conf.get(
@@ -2163,11 +2166,13 @@ class LDAP(pykolab.base.Base):
                 if _domain_attrs.has_key(domain_rootdn_attribute):
                     self.domain_rootdns[domain] = _domain_attrs[domain_rootdn_attribute]
                     return _domain_attrs[domain_rootdn_attribute]
+
                 else:
                     if isinstance(_domain_attrs[domain_name_attribute], list):
                         domain = _domain_attrs[domain_name_attribute][0]
                     else:
                         domain = _domain_attrs[domain_name_attribute]
+
         else:
             if conf.has_option('ldap', 'base_dn'):
                 return conf.get('ldap', 'base_dn')
