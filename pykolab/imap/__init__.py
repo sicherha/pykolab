@@ -554,9 +554,9 @@ class IMAP(object):
 
         return folder_name
 
-    def user_mailbox_create_additional_folders(self, folder, additional_folders):
+    def user_mailbox_create_additional_folders(self, user, additional_folders):
         log.debug(
-                _("Creating additional folders for user %s") % (folder),
+                _("Creating additional folders for user %s") % (user),
                 level=8
             )
 
@@ -564,6 +564,8 @@ class IMAP(object):
 
         admin_login = conf.get(backend, 'admin_login')
         admin_password = conf.get(backend, 'admin_password')
+
+        folder = 'user%s%s' % (self.get_separator(), user)
 
         if self.imap_murder():
             server = self.user_mailbox_server(folder)
@@ -577,7 +579,7 @@ class IMAP(object):
 
                 self.disconnect()
                 self.connect(login=False, server=server)
-                self.login_plain(admin_login, admin_password, folder)
+                self.login_plain(admin_login, admin_password, user)
                 (personal, other, shared) = self.namespaces()
                 success = True
             except Exception, errmsg:
@@ -635,12 +637,12 @@ class IMAP(object):
                             "%s" % (additional_folders[additional_folder]["acls"][acl])
                         )
 
-        if len(folder.split('@')) > 1:
-            localpart = folder.split('@')[0]
-            domain = folder.split('@')[1]
+        if len(user.split('@')) > 1:
+            localpart = user.split('@')[0]
+            domain = user.split('@')[1]
             domain_suffix = "@%s" % (domain)
         else:
-            localpart = folder
+            localpart = user
             domain = None
             domain_suffix = ""
 
@@ -684,11 +686,11 @@ class IMAP(object):
                     _subscribe = False
 
             if _subscribe:
-                log.debug(_("Subscribing %s to folder %s") % (folder, _folder), level=8)
+                log.debug(_("Subscribing %s to folder %s") % (user, _folder), level=8)
                 try:
                     self.subscribe(_folder)
                 except Exception, errmsg:
-                    log.error(_("Subscribing %s to folder %s failed: %r") % (folder, _folder, errmsg))
+                    log.error(_("Subscribing %s to folder %s failed: %r") % (user, _folder, errmsg))
 
         self.logout()
         self.connect(domain=self.domain)
