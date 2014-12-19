@@ -2168,6 +2168,10 @@ class LDAP(pykolab.base.Base):
                     return _domain_attrs[domain_rootdn_attribute]
 
                 else:
+                    domain_name_attribute = self.config_get('domain_name_attribute')
+                    if domain_name_attribute == None:
+                        domain_name_attribute = 'associateddomain'
+
                     if isinstance(_domain_attrs[domain_name_attribute], list):
                         domain = _domain_attrs[domain_name_attribute][0]
                     else:
