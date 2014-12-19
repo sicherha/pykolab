@@ -9,8 +9,11 @@
     \$config['managesieve_mbox_encoding'] = 'UTF-8';
     \$config['managesieve_replace_delimiter'] = '';
     \$config['managesieve_disabled_extensions'] = array();
-    \$config['managesieve_debug'] = true;
+    \$config['managesieve_debug'] = false;
     \$config['managesieve_vacation'] = 1;
+
+    \$config['managesieve_filename_extension'] = '';
+    \$config['managesieve_kolab_master'] = true;
 
     if (file_exists(RCUBE_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
         include_once(RCUBE_CONFIG_DIR . '/' . \$_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
