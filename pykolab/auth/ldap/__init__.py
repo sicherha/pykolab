@@ -402,6 +402,34 @@ class LDAP(pykolab.base.Base):
 
         return utils.normalize(_entry_attrs)
 
+    def list_recipient_addresses(self, entry_id):
+        """
+            Give a list of all valid recipient addresses for an LDAP entry
+            identified by its ID.
+        """
+        mail_attributes = conf.get_list('ldap', 'mail_attributes')
+        entry = self.get_entry_attributes(entry_id, mail_attributes)
+
+        return self.extract_recipient_addresses(entry) if entry is not None else []
+
+    def extract_recipient_addresses(self, entry):
+        """
+            Extact a list of all valid recipient addresses for the given LDAP entry.
+            This includes all attributes configured for ldap.mail_attributes
+        """
+        recipient_addresses = []
+        mail_attributes = conf.get_list('ldap', 'mail_attributes')
+
+        for attr in mail_attributes:
+            if entry.has_key(attr):
+                if isinstance(entry[attr], list):
+                    recipient_addresses.extend(entry[attr])
+                elif isinstance(entry[attr], basestring):
+                    recipient_addresses.append(entry[attr])
+
+        return recipient_addresses
+
+
     def find_recipient(self, address="*", exclude_entry_id=None):
         """
             Given an address string or list of addresses, find one or more valid

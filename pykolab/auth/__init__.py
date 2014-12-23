@@ -216,6 +216,12 @@ class Auth(pykolab.base.Base):
     def find_user_dn(self, login, kolabuser=False):
         return self._auth._find_user_dn(login, kolabuser);
 
+    def list_recipient_addresses(self, user):
+        return self._auth.list_recipient_addresses(user)
+
+    def extract_recipient_addresses(self, entry):
+        return self._auth.extract_recipient_addresses(entry)
+
     def list_domains(self, domain=None):
         """
             List the domains using the auth_mechanism setting in the kolab

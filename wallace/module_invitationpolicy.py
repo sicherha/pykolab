@@ -247,6 +247,7 @@ def execute(*args, **kw):
 
     any_itips = False
     recipient_email = None
+    recipient_emails = []
     recipient_user_dn = None
 
     # An iTip message may contain multiple events. Later on, test if the message
@@ -271,7 +272,10 @@ def execute(*args, **kw):
         for recipient in recipients:
             recipient_user_dn = user_dn_from_email_address(recipient)
             if recipient_user_dn:
+                receiving_user = auth.get_entry_attributes(None, recipient_user_dn, ['*'])
+                recipient_emails = auth.extract_recipient_addresses(receiving_user)
                 recipient_email = recipient
+                log.debug(_("Recipient emails for %s: %r") % (recipient_user_dn, recipient_emails), level=8)
                 break
 
     if not any_itips:
@@ -286,12 +290,13 @@ def execute(*args, **kw):
 
     # for replies, the organizer is the recipient
     if itip_event['method'] == 'REPLY':
-        user_attendees = [itip_event['organizer']] if str(itip_event['organizer']).split(':')[-1] == recipient_email else []
+        organizer_mailto = str(itip_event['organizer']).split(':')[-1]
+        user_attendees = [organizer_mailto] if organizer_mailto in recipient_emails else []
 
     else:
         # Limit the attendees to the one that is actually invited with the current message.
         attendees = [str(a).split(':')[-1] for a in (itip_event['attendees'] if itip_event.has_key('attendees') else [])]
-        user_attendees = [a for a in attendees if a == recipient_email]
+        user_attendees = [a for a in attendees if a in recipient_emails]
 
         if itip_event.has_key('organizer'):
             sender_email = itip_event['xml'].get_organizer().email()
@@ -301,8 +306,10 @@ def execute(*args, **kw):
         log.info(_("No user attendee matching envelope recipient %s, skip message") % (recipient_email))
         return filepath
 
-    receiving_user = auth.get_entry_attributes(None, recipient_user_dn, ['*'])
     log.debug(_("Receiving user: %r") % (receiving_user), level=8)
+
+    # set recipient_email to the matching attendee mailto: address
+    recipient_email = user_attendees[0]
 
     # change gettext language to the preferredlanguage setting of the receiving user
     if receiving_user.has_key('preferredlanguage'):
