@@ -14,7 +14,7 @@ def to_dt(dt):
     """
 
     if isinstance(dt, datetime.date) and not isinstance(dt, datetime.datetime) or dt is not None and not hasattr(dt, 'hour'):
-        dt = datetime.datetime(dt.year, dt.month, dt.day, 0, 0, 0, 0, tzinfo=tzlocal())
+        dt = datetime.datetime(dt.year, dt.month, dt.day, 0, 0, 0, 0, tzinfo=pytz.utc)
 
     elif isinstance(dt, datetime.datetime):
         if dt.tzinfo == None:

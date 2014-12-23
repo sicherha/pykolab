@@ -533,6 +533,18 @@ END:VEVENT
         self.assertEqual(next_instance.get_start().month, 7)
         self.assertFalse(next_instance.is_recurring())
 
+        # check get_next_occurence() with an infinitely recurring all-day event
+        rrule = kolabformat.RecurrenceRule()
+        rrule.setFrequency(kolabformat.RecurrenceRule.Yearly)
+        self.event.set_recurrence(rrule);
+
+        self.event.set_start(datetime.date(2014, 5, 1))
+        self.event.set_end(datetime.date(2014, 5, 1))
+        next_date = self.event.get_next_occurence(datetime.date(2015, 1, 1))
+        self.assertIsInstance(next_date, datetime.date)
+        self.assertEqual(next_date.year, 2015)
+        self.assertEqual(next_date.month, 5)
+
     def test_021_calendaring_no_recurrence(self):
         _start = datetime.datetime(2014, 2, 1, 14, 30, 00, tzinfo=pytz.timezone("Europe/London"))
         self.event = Event()

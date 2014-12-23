@@ -1134,16 +1134,20 @@ class Event(object):
         from kolab.calendaring import EventCal
         return EventCal(self.event)
 
-    def get_next_occurence(self, datetime):
+    def get_next_occurence(self, _datetime):
         if not hasattr(self, 'eventcal'):
             self.eventcal = self.to_event_cal()
 
-        next_cdatetime = self.eventcal.getNextOccurence(xmlutils.to_cdatetime(datetime, True))
+        next_cdatetime = self.eventcal.getNextOccurence(xmlutils.to_cdatetime(_datetime, True))
         next_datetime  = xmlutils.from_cdatetime(next_cdatetime, True) if next_cdatetime is not None else None
 
         # cut infinite recurrence at a reasonable point
-        if next_datetime and not self.get_last_occurrence() and next_datetime > self._recurrence_end():
+        if next_datetime and not self.get_last_occurrence() and next_datetime > xmlutils.to_dt(self._recurrence_end()):
             next_datetime = None
+
+        # next_datetime is always a cdatetime, convert to date if necessary
+        if not isinstance(self.get_start(), datetime.datetime):
+            next_datetime = datetime.date(next_datetime.year, next_datetime.month, next_datetime.day)
 
         return next_datetime
 
