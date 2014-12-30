@@ -33,6 +33,16 @@ conf = pykolab.getConf()
 def __init__():
     commands.register('mailbox_cleanup', execute, description=description())
 
+def cli_options():
+    my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
+    my_option_group.add_option(
+            '--dry-run',
+            dest    = "dryrun",
+            action  = "store_true",
+            default = False,
+            help    = _("Do not actually delete mailboxes, but report what mailboxes would have been deleted.")
+        )
+
 def description():
     return _("Clean up mailboxes that do no longer have an owner.")
 
@@ -49,7 +59,7 @@ def execute(*args, **kw):
 
     folders = []
 
-    for domain,aliases in domains:
+    for domain in domains.keys():
         folders.extend(imap.lm("user/%%@%s" % (domain)))
 
     for folder in folders:
@@ -58,8 +68,11 @@ def execute(*args, **kw):
         recipient = auth.find_recipient(user)
 
         if len(recipient) == 0 or recipient == []:
-            log.info(_("Deleting folder 'user/%s'") % (user))
-            try:
-                imap.dm(folder)
-            except:
-                pass
+            if conf.dryrun:
+                log.info(_("Would have deleting folder 'user/%s' (dryrun)") % (user))
+            else:
+                log.info(_("Deleting folder 'user/%s'") % (user))
+                try:
+                    imap.dm(folder)
+                except:
+                    log.error(_("Error deleting folder 'user/%s'") 5 (user))
