@@ -75,4 +75,4 @@ def execute(*args, **kw):
                 try:
                     imap.dm(folder)
                 except:
-                    log.error(_("Error deleting folder 'user/%s'") 5 (user))
+                    log.error(_("Error deleting folder 'user/%s'") % (user))
