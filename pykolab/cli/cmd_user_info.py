@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import sys
+
 import commands
 
 import pykolab
@@ -38,11 +40,16 @@ def execute(*args, **kw):
     except IndexError, errmsg:
         user = utils.ask_question(_("Email address"))
 
-    wap_client.authenticate(username=conf.get("ldap", "bind_dn"), password=conf.get("ldap", "bind_pw"))
+    result = wap_client.authenticate(username=conf.get("ldap", "bind_dn"), password=conf.get("ldap", "bind_pw"))
+
     if len(user.split('@')) > 1:
         wap_client.system_select_domain(user.split('@')[1])
 
     user_info = wap_client.user_find({'mail':user})
+
+    if user_info == None or not user_info:
+        print >> sys.stderr, _("No such user %s") % (user)
+        sys.exit(0)
 
     for (k,v) in user_info.iteritems():
         print "%s: %r" % (k,v)
