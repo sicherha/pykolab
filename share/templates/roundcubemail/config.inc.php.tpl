@@ -113,7 +113,7 @@
 
     // Re-apply mandatory settings here.
 
-    \$config['debug_level'] = 0;
+    \$config['debug_level'] = 1;
     \$config['devel_mode'] = false;
     \$config['log_driver'] = 'file';
     \$config['log_date_format'] = 'd-M-Y H:i:s,u O';
