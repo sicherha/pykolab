@@ -2170,44 +2170,45 @@ class LDAP(pykolab.base.Base):
 
         domain_filter = conf.get('ldap', 'domain_filter')
 
-        if not domain == None:
-            domain_filter = domain_filter.replace('*', domain)
+        if not domain_filter == None:
+            if not domain == None:
+                domain_filter = domain_filter.replace('*', domain)
 
-        if not domain_base_dn == "":
+            if not domain_base_dn == "":
 
-            _results = self._search(
-                    domain_base_dn,
-                    ldap.SCOPE_SUBTREE,
-                    domain_filter,
-                    override_search='_regular_search'
-                )
-
-            domains = []
-
-            for _domain in _results:
-                (domain_dn, _domain_attrs) = _domain
-                domain_rootdn_attribute = conf.get(
-                        'ldap',
-                        'domain_rootdn_attribute'
+                _results = self._search(
+                        domain_base_dn,
+                        ldap.SCOPE_SUBTREE,
+                        domain_filter,
+                        override_search='_regular_search'
                     )
-                _domain_attrs = utils.normalize(_domain_attrs)
-                if _domain_attrs.has_key(domain_rootdn_attribute):
-                    self.domain_rootdns[domain] = _domain_attrs[domain_rootdn_attribute]
-                    return _domain_attrs[domain_rootdn_attribute]
 
-                else:
-                    domain_name_attribute = self.config_get('domain_name_attribute')
-                    if domain_name_attribute == None:
-                        domain_name_attribute = 'associateddomain'
+                domains = []
 
-                    if isinstance(_domain_attrs[domain_name_attribute], list):
-                        domain = _domain_attrs[domain_name_attribute][0]
+                for _domain in _results:
+                    (domain_dn, _domain_attrs) = _domain
+                    domain_rootdn_attribute = conf.get(
+                            'ldap',
+                            'domain_rootdn_attribute'
+                        )
+                    _domain_attrs = utils.normalize(_domain_attrs)
+                    if _domain_attrs.has_key(domain_rootdn_attribute):
+                        self.domain_rootdns[domain] = _domain_attrs[domain_rootdn_attribute]
+                        return _domain_attrs[domain_rootdn_attribute]
+
                     else:
-                        domain = _domain_attrs[domain_name_attribute]
+                        domain_name_attribute = self.config_get('domain_name_attribute')
+                        if domain_name_attribute == None:
+                            domain_name_attribute = 'associateddomain'
 
-        else:
-            if conf.has_option('ldap', 'base_dn'):
-                return conf.get('ldap', 'base_dn')
+                        if isinstance(_domain_attrs[domain_name_attribute], list):
+                            domain = _domain_attrs[domain_name_attribute][0]
+                        else:
+                            domain = _domain_attrs[domain_name_attribute]
+
+            else:
+                if conf.has_option('ldap', 'base_dn'):
+                    return conf.get('ldap', 'base_dn')
 
         self.domain_rootdns[domain] = utils.standard_root_dn(domain)
         return self.domain_rootdns[domain]
