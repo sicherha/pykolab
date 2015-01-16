@@ -1475,13 +1475,11 @@ class LDAP(pykolab.base.Base):
         for _type in ['user','group','resource','role','sharedfolder']:
             try:
                 success = eval("self._change_delete_%s(entry, change)" % (_type))
-                print success
             except:
                 if conf.debuglevel > 8:
                     import traceback
                     log.error(_("%s") % (traceback.format_exc()))
 
-                print success
                 success = False
 
             if success:
