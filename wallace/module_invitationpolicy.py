@@ -1044,18 +1044,18 @@ def send_update_notification(object, receiving_user, old=None, reply=True):
 
     # compose different notification texts for events/tasks
     if object.type == 'task':
-        message_text = """
+        message_text = _("""
             The assignment for '%(summary)s' has been updated in your tasklist.
             %(roundup)s
-        """ % {
+        """) % {
             'summary': object.get_summary(),
             'roundup': roundup
         }
     else:
-        message_text = """
+        message_text = _("""
             The event '%(summary)s' at %(start)s has been updated in your calendar.
             %(roundup)s
-        """ % {
+        """) % {
             'summary': object.get_summary(),
             'start': xmlutils.property_to_string('start', object.get_start()),
             'roundup': roundup
@@ -1106,18 +1106,18 @@ def send_cancel_notification(object, receiving_user):
 
     # compose different notification texts for events/tasks
     if object.type == 'task':
-        message_text = """
+        message_text = _("""
             The assignment for '%(summary)s' has been cancelled by %(organizer)s.
             The copy in your tasklist as been marked as cancelled accordingly.
-        """ % {
+        """) % {
             'summary': object.get_summary(),
             'organizer': orgname if orgname else orgemail
         }
     else:
-        message_text = """
+        message_text = _("""
             The event '%(summary)s' at %(start)s has been cancelled by %(organizer)s.
             The copy in your calendar as been marked as cancelled accordingly.
-        """ % {
+        """) % {
             'summary': object.get_summary(),
             'start': xmlutils.property_to_string('start', object.get_start()),
             'organizer': orgname if orgname else orgemail
