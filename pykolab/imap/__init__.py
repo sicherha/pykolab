@@ -335,7 +335,7 @@ class IMAP(object):
         """
             Set an ACL entry on a folder.
         """
-        _acl = []
+        _acl = ''
 
         short_rights = {
                 'all': 'lrsedntxakcpiw',
