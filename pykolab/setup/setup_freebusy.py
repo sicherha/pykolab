@@ -104,6 +104,7 @@ def execute(*args, **kw):
                     'filter': '(&(objectClass=kolabInetOrgPerson)(|(mail=%s)(alias=%s)))',
                     'attributes': 'mail',
                     'lc_attributes': 'mail',
+                    'primary_domain': conf.get('kolab', 'primary_domain'),
                     'fbsource': users_imap_uri,
                     'cacheto': '/var/cache/kolab-freebusy/%s.ifb',
                     'expires': '15m',
@@ -117,10 +118,28 @@ def execute(*args, **kw):
                     'bind_pw': conf.get('ldap', 'service_bind_pw'),
                     'attributes': 'mail, kolabtargetfolder',
                     'filter': '(&(objectClass=kolabsharedfolder)(kolabfoldertype=event)(mail=%s))',
+                    'primary_domain': conf.get('kolab', 'primary_domain'),
                     'fbsource': resources_imap_uri,
                     'cacheto': '/var/cache/kolab-freebusy/%s.ifb',
                     'expires': '15m',
                     'loglevel': 300,
+                },
+            'directory "kolab-resource-collections"': {
+                    'type': 'ldap',
+                    'host': conf.get('ldap', 'ldap_uri'),
+                    'base_dn': conf.get('ldap', 'resource_base_dn'),
+                    'bind_dn': conf.get('ldap', 'service_bind_dn'),
+                    'bind_pw': conf.get('ldap', 'service_bind_pw'),
+                    'filter': '(&(objectClass=kolabgroupofuniquenames)(mail=%s))',
+                    'attributes': 'uniquemember', 'mail'
+                    'resolve_dn': 'uniquemember',
+                    'resolve_attribute': 'mail',
+                    'primary_domain': conf.get('kolab', 'primary_domain'),
+                    'fbsource': 'aggregate://%uniquemember'
+                    'directories': 'kolab-resources',
+                    'cacheto': '/var/cache/kolab-freebusy/%mail.ifb',
+                    'expires': '15m',
+                    'loglevel': 200,
                 },
         }
 
