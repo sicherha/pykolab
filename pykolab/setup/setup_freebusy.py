@@ -68,18 +68,24 @@ def execute(*args, **kw):
 
     if hasattr(result, 'hostname'):
         hostname = result.hostname
+
+        if hasattr(result, 'port'):
+            port = result.port
+
+        if hasattr(result, 'scheme'):
+            scheme = result.scheme
+
     else:
         scheme = imap_uri.split(':')[0]
         (hostname, port) = imap_uri.split('/')[2].split(':')
 
-    if port == None:
+    if scheme == 'imaps' and (port == None or port == ''):
         port = 993
 
-    if scheme == None or scheme == "":
-        scheme = 'imaps'
+    if scheme == None or scheme == '':
+        scheme = 'imap'
 
-    if scheme == "imaps" and port == 993:
-        scheme = "imap"
+    if port == None or port == '':
         port = 143
 
     resources_imap_uri = '%s://%s:%s@%s:%s/%%kolabtargetfolder?acl=lrs' % (scheme, admin_login, admin_password, hostname, port)
