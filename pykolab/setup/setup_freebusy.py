@@ -145,7 +145,7 @@ def execute(*args, **kw):
                     'directories': 'kolab-resources',
                     'cacheto': '/var/cache/kolab-freebusy/%mail.ifb',
                     'expires': '15m',
-                    'loglevel': 200,
+                    'loglevel': 300,
                 },
         }
 
