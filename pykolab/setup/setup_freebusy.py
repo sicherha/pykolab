@@ -141,7 +141,7 @@ def execute(*args, **kw):
                     'resolve_dn': 'uniquemember',
                     'resolve_attribute': 'mail',
                     'primary_domain': conf.get('kolab', 'primary_domain'),
-                    'fbsource': 'aggregate://%uniquemember'
+                    'fbsource': 'aggregate://%uniquemember',
                     'directories': 'kolab-resources',
                     'cacheto': '/var/cache/kolab-freebusy/%mail.ifb',
                     'expires': '15m',
