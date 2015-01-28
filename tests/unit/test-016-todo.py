@@ -8,6 +8,7 @@ import icalendar
 from pykolab.xml import Attendee
 from pykolab.xml import Todo
 from pykolab.xml import TodoIntegrityError
+from pykolab.xml import InvalidEventStatusError
 from pykolab.xml import todo_from_ical
 from pykolab.xml import todo_from_string
 from pykolab.xml import todo_from_message
@@ -164,15 +165,20 @@ class TestTodoXML(unittest.TestCase):
         self.assertIsInstance(self.todo.__str__(), str)
 
     def test_002_full(self):
-        pass
+        self.todo.set_summary("test full")
+        status = self.todo.get_status()
+        self.assertEqual(status, kolabformat.StatusUndefined)
+        self.assertRaises(InvalidEventStatusError, self.todo.set_status, (-1))
+        self.todo.set_status(status)
+        # TODO: add more setters and getter tests here
 
     def test_010_load_from_xml(self):
         todo = todo_from_string(xml_todo)
         self.assertEqual(todo.uid, '18C2EBBD8B31D99F7AA578EDFDFB1AC0-FCBB6C4091F28CA0')
         self.assertEqual(todo.get_sequence(), 3)
         self.assertIsInstance(todo.get_due(), datetime.datetime)
-        self.assertEqual(str(todo.get_due()), "2014-08-22 13:30:00+01:00")
-        self.assertEqual(str(todo.get_start()), "2014-08-18 18:00:00+01:00")
+        self.assertEqual(str(todo.get_due()), "2014-08-22 13:30:00+02:00")
+        self.assertEqual(str(todo.get_start()), "2014-08-18 18:00:00+02:00")
         self.assertEqual(todo.get_categories(), ['iTip'])
         self.assertEqual(todo.get_attendee_by_email("john@example.org").get_participant_status(), kolabformat.PartNeedsAction)
         self.assertIsInstance(todo.get_organizer(), kolabformat.ContactReference)

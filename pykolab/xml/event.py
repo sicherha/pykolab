@@ -851,7 +851,7 @@ class Event(object):
             self.event.setStatus(self.status_map[status])
         elif status in self.status_map.values():
             self.event.setStatus(status)
-        else:
+        elif not status == kolabformat.StatusUndefined:
             raise InvalidEventStatusError, _("Invalid status set: %r") % (status)
 
     def set_summary(self, summary):

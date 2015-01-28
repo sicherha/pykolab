@@ -9,6 +9,7 @@ from recurrence_rule import RecurrenceRule
 from event import Event
 from event import EventIntegrityError
 from event import InvalidEventDateError
+from event import InvalidEventStatusError
 from event import event_from_ical
 from event import event_from_string
 from event import event_from_message
