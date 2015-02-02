@@ -62,12 +62,14 @@ COND_IF_AVAILABLE  = 64
 COND_IF_CONFLICT   = 128
 COND_TENTATIVE     = 256
 COND_NOTIFY        = 512
+COND_FORWARD       = 4096
 COND_TYPE_EVENT    = 1024
 COND_TYPE_TASK     = 2048
 COND_TYPE_ALL      = COND_TYPE_EVENT + COND_TYPE_TASK
 
 ACT_TENTATIVE         = ACT_ACCEPT + COND_TENTATIVE
 ACT_UPDATE_AND_NOTIFY = ACT_UPDATE + COND_NOTIFY
+ACT_SAVE_AND_FORWARD  = ACT_SAVE_TO_FOLDER + COND_FORWARD
 
 FOLDER_TYPE_ANNOTATION = '/vendor/kolab/folder-type'
 
@@ -83,6 +85,7 @@ policy_name_map = {
     'ALL_UPDATE':                     ACT_UPDATE + COND_TYPE_ALL,
     'ALL_UPDATE_AND_NOTIFY':          ACT_UPDATE_AND_NOTIFY + COND_TYPE_ALL,
     'ALL_SAVE_TO_FOLDER':             ACT_SAVE_TO_FOLDER + COND_TYPE_ALL,
+    'ALL_SAVE_AND_FORWARD':           ACT_SAVE_AND_FORWARD + COND_TYPE_ALL,
     # event related policy values
     'EVENT_MANUAL':                   ACT_MANUAL + COND_TYPE_EVENT,
     'EVENT_ACCEPT':                   ACT_ACCEPT + COND_TYPE_EVENT,
@@ -96,6 +99,7 @@ policy_name_map = {
     'EVENT_DELEGATE_IF_CONFLICT':     ACT_DELEGATE + COND_IF_CONFLICT + COND_TYPE_EVENT,
     'EVENT_REJECT_IF_CONFLICT':       ACT_REJECT + COND_IF_CONFLICT + COND_TYPE_EVENT,
     'EVENT_SAVE_TO_FOLDER':           ACT_SAVE_TO_FOLDER + COND_TYPE_EVENT,
+    'EVENT_SAVE_AND_FORWARD':         ACT_SAVE_AND_FORWARD + COND_TYPE_EVENT,
     # task related policy values
     'TASK_MANUAL':                    ACT_MANUAL + COND_TYPE_TASK,
     'TASK_ACCEPT':                    ACT_ACCEPT + COND_TYPE_TASK,
@@ -104,6 +108,7 @@ policy_name_map = {
     'TASK_UPDATE':                    ACT_UPDATE + COND_TYPE_TASK,
     'TASK_UPDATE_AND_NOTIFY':         ACT_UPDATE_AND_NOTIFY + COND_TYPE_TASK,
     'TASK_SAVE_TO_FOLDER':            ACT_SAVE_TO_FOLDER + COND_TYPE_TASK,
+    'TASK_SAVE_AND_FORWARD':          ACT_SAVE_AND_FORWARD + COND_TYPE_TASK,
     # legacy values
     'ACT_MANUAL':                     ACT_MANUAL + COND_TYPE_ALL,
     'ACT_ACCEPT':                     ACT_ACCEPT + COND_TYPE_ALL,
@@ -117,6 +122,7 @@ policy_name_map = {
     'ACT_UPDATE':                     ACT_UPDATE + COND_TYPE_ALL,
     'ACT_UPDATE_AND_NOTIFY':          ACT_UPDATE_AND_NOTIFY + COND_TYPE_ALL,
     'ACT_SAVE_TO_CALENDAR':           ACT_SAVE_TO_FOLDER + COND_TYPE_EVENT,
+    'ACT_SAVE_AND_FORWARD':           ACT_SAVE_AND_FORWARD + COND_TYPE_EVENT,
 }
 
 policy_value_map = dict([(v &~ COND_TYPE_ALL, k) for (k, v) in policy_name_map.iteritems()])
@@ -467,7 +473,11 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
         if not nonpart or existing:
             # save new copy from iTip
             if store_object(itip_event['xml'], receiving_user, targetfolder):
-                return MESSAGE_PROCESSED
+                if policy & COND_FORWARD:
+                    log.debug(_("Forward invitation for notification"), level=5)
+                    return MESSAGE_FORWARD
+                else:
+                    return MESSAGE_PROCESSED
 
     return None
 

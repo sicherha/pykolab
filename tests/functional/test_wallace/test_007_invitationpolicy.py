@@ -14,6 +14,7 @@ from pykolab.translate import _
 from pykolab.xml import event_from_message
 from pykolab.xml import todo_from_message
 from pykolab.xml import participant_status_label
+from pykolab.itip import events_from_message
 from email import message_from_string
 from twisted.trial import unittest
 
@@ -287,6 +288,17 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             'kolabinvitationpolicy': ['ACT_ACCEPT','ACT_UPDATE_AND_NOTIFY']
         }
 
+        self.lucy = {
+            'displayname': 'Lucy Meyer',
+            'mail': 'lucy.meyer@example.org',
+            'dn': 'uid=meyer,ou=People,dc=example,dc=org',
+            'preferredlanguage': 'en_US',
+            'mailbox': 'user/lucy.meyer@example.org',
+            'kolabcalendarfolder': 'user/lucy.meyer/Calendar@example.org',
+            'kolabtasksfolder': 'user/lucy.meyer/Tasks@example.org',
+            'kolabinvitationpolicy': ['ALL_SAVE_AND_FORWARD','ACT_UPDATE_AND_NOTIFY']
+        }
+
         self.external = {
             'displayname': 'Bob External',
             'mail': 'bob.external@gmail.com'
@@ -297,6 +309,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         user_add("Jane", "Manager", kolabinvitationpolicy=self.jane['kolabinvitationpolicy'], preferredlanguage=self.jane['preferredlanguage'])
         user_add("Jack", "Tentative", kolabinvitationpolicy=self.jack['kolabinvitationpolicy'], preferredlanguage=self.jack['preferredlanguage'])
         user_add("Mark", "German", kolabinvitationpolicy=self.mark['kolabinvitationpolicy'], preferredlanguage=self.mark['preferredlanguage'])
+        user_add("Lucy", "Meyer", kolabinvitationpolicy=self.lucy['kolabinvitationpolicy'], preferredlanguage=self.lucy['preferredlanguage'])
 
         time.sleep(1)
         from tests.functional.synchronize import synchronize_once
@@ -654,6 +667,25 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertIsInstance(event, pykolab.xml.Event)
         self.assertEqual(event.get_summary(), "test2")
         self.assertEqual(event.get_attendee(self.jack['mail']).get_participant_status(), kolabformat.PartNeedsAction)
+
+    def test_004_copy_to_calendar_and_forward(self):
+        uid = self.send_itip_invitation(self.lucy['mail'], datetime.datetime(2015,2,11, 14,0,0), summary="test forward")
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test forward', 'status':participant_status_label('ACCEPTED') }, self.lucy['mail'], self.lucy['mailbox'])
+        self.assertEqual(response, None, "No reply expected")
+
+        event = self.check_user_calendar_event(self.lucy['kolabcalendarfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_summary(), "test forward")
+        self.assertEqual(event.get_attendee(self.lucy['mail']).get_participant_status(), kolabformat.PartNeedsAction)
+
+        # find original itip invitation in user's inbox
+        message = self.check_message_received('"test"', 'john.doe@example.org', self.lucy['mailbox'])
+        self.assertIsInstance(message, email.message.Message)
+
+        itips = events_from_message(message)
+        self.assertEqual(len(itips), 1);
+        self.assertEqual(itips[0]['method'], 'REQUEST');
+        self.assertEqual(itips[0]['uid'], uid);
 
 
     def test_005_invite_rescheduling_accept(self):
