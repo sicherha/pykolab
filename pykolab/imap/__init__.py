@@ -319,21 +319,17 @@ class IMAP(object):
 
         _namespaces = re.split(r"\)\)\s\(\(", _namespaces)
 
-        _other_users = [
-                ''.join(_namespaces[1].replace('((','').replace('))','').split()[-1])
-            ]
-
         if len(_namespaces) >= 3:
             _shared = []
-            _shared.append(' '.join(_namespaces[2].replace('((','').replace('))','').split()[:-1]))
+            _shared.append(' '.join(_namespaces[2].replace('((','').replace('))','').split()[:-1]).replace('"', ''))
 
         if len(_namespaces) >= 2:
-            _other_users = ' '.join(_namespaces[1].replace('((','').replace('))','').split()[:-1])
+            _other_users = ' '.join(_namespaces[1].replace('((','').replace('))','').split()[:-1]).replace('"', '')
 
         if len(_namespaces) >= 1:
-            _personal = _namespaces[0].replace('((','').replace('))','').split()[0]
+            _personal = _namespaces[0].replace('((','').replace('))','').split()[0].replace('"', '')
 
-        return (_personal.replace('"', ''), _other_users.replace('"', ''), [x.replace('"', '') for x in _shared])
+        return (_personal, _other_users, _shared)
 
     def set_acl(self, folder, identifier, acl):
         """

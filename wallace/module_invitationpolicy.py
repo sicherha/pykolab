@@ -727,15 +727,12 @@ def list_user_folders(user_rec, type):
 
     (ns_personal, ns_other, ns_shared) = imap.namespaces()
 
-    if isinstance(ns_shared, list):
-        ns_shared = ns_shared[0]
-    if isinstance(ns_other, list):
-        ns_other = ns_other[0]
-
     for folder in folders:
         # exclude shared and other user's namespace
         # TODO: list shared folders the user has write privileges ?
-        if folder.startswith(ns_other) or folder.startswith(ns_shared):
+        if not ns_other is None and folder.startswith(ns_other):
+            continue;
+        if not ns_shared is None and len([_ns for _ns in ns_shared if folder.startswith(_ns)]) > 0:
             continue;
 
         metadata = imap.get_metadata(folder)
