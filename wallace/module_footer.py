@@ -21,12 +21,7 @@ import os
 import tempfile
 import time
 
-from email import message_from_string
-from email.MIMEBase import MIMEBase
-from email.MIMEText import MIMEText
-from email.parser import Parser
-from email.utils import formataddr
-from email.utils import getaddresses
+from email import message_from_file
 
 import modules
 
@@ -70,9 +65,8 @@ def execute(*args, **kw):
     os.rename(filepath, new_filepath)
     filepath = new_filepath
 
-    # parse message headers
-    # @TODO: make sure we can use True as the 2nd argument here
-    message = Parser().parse(open(filepath, 'r'), True)
+    # parse message
+    message = message_from_file(open(filepath, 'r'))
 
     # Possible footer answers are limited to ACCEPT only
     answers = [ 'ACCEPT' ]
@@ -83,6 +77,7 @@ def execute(*args, **kw):
     footer_text_file = conf.get('wallace', 'footer_text')
 
     if not os.path.isfile(footer_text_file) and not os.path.isfile(footer_html_file):
+        log.warning(_("No contents configured for footer module"))
         exec('modules.cb_action_%s(%r, %r)' % ('ACCEPT','footer', filepath))
         return
         
@@ -111,53 +106,41 @@ def execute(*args, **kw):
         exec('modules.cb_action_%s(%r, %r)' % ('ACCEPT','footer', filepath))
         return
 
-    if message.is_multipart():
-        if message.get_content_type() == "multipart/alternative":
-            log.debug("The message content type is multipart/alternative.")
+    for part in message.walk():
+        disposition = None
 
-        for part in message.walk():
-            disposition = None
+        try:
+            content_type = part.get_content_type()
+        except:
+            continue
 
-            try:
-                content_type = part.get_content_type()
-            except:
-                continue
+        try:
+            disposition = part.get("Content-Disposition")
+        except:
+            pass
 
-            try:
-                disposition = part.get("Content-Disposition")
-            except:
-                pass
+        log.debug("Walking message part: %s; disposition = %r" % (content_type, disposition), level=8)
 
-            if not disposition == None:
-                continue
+        if not disposition == None:
+            continue
 
-            if content_type == "text/plain":
-                content = part.get_payload()
-                content += "\n\n--\n%s" % (footer['plain'])
-                part.set_payload(content)
-                footer_added = True
-
-            elif content_type == "text/html":
-                content = part.get_payload()
-                content += "\n<!-- footer appended by Wallace -->\n"
-                content += "\n<html><body><hr />%s</body></html>\n" % (footer['html'])
-                part.set_payload(content)
-                footer_added = True
-
-    else:
-        # Check the main content-type.
-        if message.get_content_type() == "text/html":
-            content = message.get_payload()
-            content += "\n<!-- footer appended by Wallace -->\n"
-            content += "\n<html><body><hr />%s</body></html>\n" % (footer['html'])
-            message.set_payload(content)
+        if content_type == "text/plain":
+            content = part.get_payload()
+            content += "\n\n-- \n%s" % (footer['plain'])
+            part.set_payload(content)
             footer_added = True
+            log.debug("Text footer attached.", level=6)
 
-        else:
-            content = message.get_payload()
-            content += "\n\n--\n%s" % (footer['plain'])
-            message.set_payload(content)
+        elif content_type == "text/html":
+            content = part.get_payload()
+            append = "\n<!-- footer appended by Wallace -->\n" + footer['html']
+            if "</body>" in content:
+                part.set_payload(content.replace("</body>", append + "</body>"))
+            else:
+                part.set_payload("<html><body>" + content + append + "</body></html>")
+
             footer_added = True
+            log.debug("HTML footer attached.", level=6)
 
     if footer_added:
         log.debug("Footer attached.")
