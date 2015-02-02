@@ -18,6 +18,14 @@ from pykolab.imap import IMAP
 conf = pykolab.getConf()
 
 class TestWallaceFooter(unittest.TestCase):
+    user = None
+
+    @classmethod
+    def setUp(self):
+        """ Compatibility for twisted.trial.unittest
+        """
+        if not self.user:
+            self.setup_class()
 
     @classmethod
     def setup_class(self, *args, **kw):
