@@ -222,6 +222,9 @@ class Auth(pykolab.base.Base):
     def extract_recipient_addresses(self, entry):
         return self._auth.extract_recipient_addresses(entry)
 
+    def list_delegators(self, user):
+        return self._auth.list_delegators(user)
+
     def list_domains(self, domain=None):
         """
             List the domains using the auth_mechanism setting in the kolab

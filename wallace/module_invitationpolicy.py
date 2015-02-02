@@ -281,6 +281,12 @@ def execute(*args, **kw):
                 receiving_user = auth.get_entry_attributes(None, recipient_user_dn, ['*'])
                 recipient_emails = auth.extract_recipient_addresses(receiving_user)
                 recipient_email = recipient
+
+                # extend with addresses from delegators
+                receiving_user['_delegated_mailboxes'] = []
+                for _delegator in auth.list_delegators(recipient_user_dn):
+                    receiving_user['_delegated_mailboxes'].append(_delegator['_mailbox_basename'].split('@')[0])
+
                 log.debug(_("Recipient emails for %s: %r") % (recipient_user_dn, recipient_emails), level=8)
                 break
 
@@ -729,9 +735,11 @@ def list_user_folders(user_rec, type):
 
     for folder in folders:
         # exclude shared and other user's namespace
-        # TODO: list shared folders the user has write privileges ?
         if not ns_other is None and folder.startswith(ns_other):
-            continue;
+            # allow shared folders from delegators
+            if len([_mailbox for _mailbox in user_rec['_delegated_mailboxes'] if folder.startswith(ns_other + _mailbox + '/')]) == 0:
+                continue;
+        # TODO: list shared folders the user has write privileges ?
         if not ns_shared is None and len([_ns for _ns in ns_shared if folder.startswith(_ns)]) > 0:
             continue;
 

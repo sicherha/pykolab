@@ -306,7 +306,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         from tests.functional.user_add import user_add
         user_add("John", "Doe", kolabinvitationpolicy=self.john['kolabinvitationpolicy'], preferredlanguage=self.john['preferredlanguage'])
-        user_add("Jane", "Manager", kolabinvitationpolicy=self.jane['kolabinvitationpolicy'], preferredlanguage=self.jane['preferredlanguage'])
+        user_add("Jane", "Manager", kolabinvitationpolicy=self.jane['kolabinvitationpolicy'], preferredlanguage=self.jane['preferredlanguage'], kolabdelegate=[self.mark['dn']])
         user_add("Jack", "Tentative", kolabinvitationpolicy=self.jack['kolabinvitationpolicy'], preferredlanguage=self.jack['preferredlanguage'])
         user_add("Mark", "German", kolabinvitationpolicy=self.mark['kolabinvitationpolicy'], preferredlanguage=self.mark['preferredlanguage'])
         user_add("Lucy", "Meyer", kolabinvitationpolicy=self.lucy['kolabinvitationpolicy'], preferredlanguage=self.lucy['preferredlanguage'])
@@ -314,6 +314,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         time.sleep(1)
         from tests.functional.synchronize import synchronize_once
         synchronize_once()
+        time.sleep(4)
 
         # create confidential calendar folder for jane
         imap = IMAP()
@@ -326,6 +327,8 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
                 }
             }
         })
+        # grant full access for Mark to Jane's calendar
+        imap.set_acl(imap.folder_quote(self.jane['kolabcalendarfolder']), self.mark['mail'], "lrswipkxtecda")
         imap.disconnect()
 
 
@@ -988,6 +991,24 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         event = self.check_user_calendar_event(self.jane['kolabconfidentialcalendar'], uid)
         self.assertIsInstance(event, pykolab.xml.Event)
         self.assertEqual(event.get_summary(), "confidential")
+
+
+    def test_013_update_shared_folder(self):
+        # create an event organized by Mark (a delegate of Jane) into Jane's calendar
+        start = datetime.datetime(2015,3,10, 9,30,0, tzinfo=pytz.timezone("Europe/Berlin"))
+        uid = self.create_calendar_event(start, user=self.mark, attendees=[self.jane, self.john], folder=self.jane['kolabcalendarfolder'])
+
+        event = self.check_user_calendar_event(self.jane['kolabcalendarfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+
+        # send a reply from john to mark
+        self.send_itip_reply(uid, self.john['mail'], self.mark['mail'], start=start)
+
+        # check for the updated event in jane's calendar
+        time.sleep(10)
+        event = self.check_user_calendar_event(self.jane['kolabcalendarfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_attendee(self.john['mail']).get_participant_status(), kolabformat.PartAccepted)
 
 
     def test_020_task_assignment_accept(self):

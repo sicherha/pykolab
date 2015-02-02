@@ -429,6 +429,25 @@ class LDAP(pykolab.base.Base):
 
         return recipient_addresses
 
+    def list_delegators(self, entry_id):
+        """
+            Get a list of user records the given user is set to be a delegatee
+        """
+        delegators = []
+
+        mailbox_attribute = conf.get('cyrus-sasl', 'result_attribute')
+        if mailbox_attribute == None:
+            mailbox_attribute = 'mail'
+
+        for __delegator in self.search_entry_by_attribute('kolabDelegate', entry_id):
+            (_dn, _delegator) = __delegator
+            _delegator['dn'] = _dn;
+            _delegator['_mailbox_basename'] = _delegator[mailbox_attribute] if _delegator.has_key(mailbox_attribute) else None
+            if isinstance(_delegator['_mailbox_basename'], list):
+                _delegator['_mailbox_basename'] = _delegator['_mailbox_basename'][0]
+            delegators.append(_delegator)
+
+        return delegators
 
     def find_recipient(self, address="*", exclude_entry_id=None):
         """
