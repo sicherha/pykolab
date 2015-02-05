@@ -89,6 +89,6 @@ def execute(*args, **kw):
 
     for folder in folders:
         if not conf.raw:
-            print imap_utf7.decode(folder).encode('utf-8')
+            print imap_utf7.decode(folder)
         else:
             print folder

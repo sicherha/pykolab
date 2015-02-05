@@ -83,7 +83,7 @@ def execute(*args, **kw):
         metadata = []
         folders = imap.list_folders(folder)
         for folder in folders:
-            print "Folder", folder.encode('utf-8')
+            print "Folder", folder
 
             metadata = imap.get_metadata(folder)
 
