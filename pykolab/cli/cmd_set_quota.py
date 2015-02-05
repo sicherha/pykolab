@@ -17,6 +17,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+import sys
+
 import commands
 
 import pykolab
@@ -58,7 +60,7 @@ def execute(*args, **kw):
         print >> sys.stderr, _("No such folder %r") % (folder)
         sys.exit(1)
 
-    for _folder in imap.lm(folder):
+    for _folder in imap.lm(imap.folder_utf7(folder)):
         imap.set_quota(_folder, quota)
-        print >> sys.stdout, "Quota for folder '%s' set to %d" % (_folder, quota)
+        print >> sys.stdout, "Quota for folder '%s' set to %d" % (_folder, int(quota))
 
