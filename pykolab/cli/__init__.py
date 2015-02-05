@@ -24,6 +24,8 @@ import traceback
 import shutil
 import sys
 import time
+import codecs
+import locale
 
 from ldap.modlist import addModlist
 
@@ -60,6 +62,9 @@ class Cli(object):
 
         for cmd_component in to_execute:
             sys.argv.pop(sys.argv.index(cmd_component.replace('_','-')))
+
+        # wrap sys.stdout in a locale-aware StreamWriter (#3983)
+        sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
 
         commands.execute('_'.join(to_execute))
 
