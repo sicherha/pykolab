@@ -115,9 +115,9 @@ def objects_from_message(message, objnames, methods=None):
                     try:
                         # distinguish event and todo here
                         if itip['type'] == 'task':
-                            itip['xml'] = todo_from_ical(c.to_ical())
+                            itip['xml'] = todo_from_ical(c, itip_payload)
                         else:
-                            itip['xml'] = event_from_ical(c.to_ical())
+                            itip['xml'] = event_from_ical(c, itip_payload)
                     except Exception, e:
                         log.error("event|todo_from_ical() exception: %r; iCal: %s" % (e, itip_payload))
                         continue

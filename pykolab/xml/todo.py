@@ -2,6 +2,7 @@ import datetime
 import kolabformat
 import icalendar
 import pytz
+import base64
 
 import pykolab
 from pykolab import constants
@@ -12,8 +13,8 @@ from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.xml_todo')
 
-def todo_from_ical(string):
-    return Todo(from_ical=string)
+def todo_from_ical(ical, string=None):
+    return Todo(from_ical=ical, from_string=string)
 
 def todo_from_string(string):
     return Todo(from_string=string)
@@ -48,26 +49,40 @@ class Todo(Event):
             "end": "void"
         })
 
-        if from_ical == "":
+        if isinstance(from_ical, str) and from_ical == "":
             if from_string == "":
                 self.event = kolabformat.Todo()
             else:
                 self.event = kolabformat.readTodo(from_string, False)
                 self._load_attendees()
         else:
-            self.from_ical(from_ical)
+            self.from_ical(from_ical, from_string)
 
         self.uid = self.get_uid()
 
-    def from_ical(self, ical):
-        if hasattr(icalendar.Todo, 'from_ical'):
+    def from_ical(self, ical, raw):
+        if isinstance(ical, icalendar.Todo):
+            ical_todo = ical
+        elif hasattr(icalendar.Todo, 'from_ical'):
             ical_todo = icalendar.Todo.from_ical(ical)
         elif hasattr(icalendar.Todo, 'from_string'):
             ical_todo = icalendar.Todo.from_string(ical)
 
-        # use the libkolab calendaring bindings to load the full iCal data
-        if ical_todo.has_key('ATTACH') or [part for part in ical_todo.walk() if part.name == 'VALARM']:
-            self._xml_from_ical(ical)
+        # VCALENDAR block was given, find the first VTODO item
+        if isinstance(ical_todo, icalendar.Calendar):
+            for c in ical_todo.walk():
+                if c.name == 'VTODO':
+                    ical_todo = c
+                    break
+
+        log.debug("Todo.from_ical(); %r, %r, %r" % (type(ical_todo), ical_todo.has_key('ATTACH'), ical_todo.has_key('ATTENDEE')), level=8)
+
+        # DISABLED: use the libkolab calendaring bindings to load the full iCal data
+        # TODO: this requires support for iCal parsing in the kolab.calendaring bindings
+        if False and ical_todo.has_key('ATTACH') or [part for part in ical_todo.walk() if part.name == 'VALARM']:
+            if raw is None or raw == "":
+                raw = ical if isinstance(ical, str) else ical.to_ical()
+            self._xml_from_ical(raw)
         else:
             self.event = kolabformat.Todo()
 
@@ -88,8 +103,33 @@ class Todo(Event):
             self.set_from_ical('percentcomplete', ical_todo['PERCENT-COMPLETE'])
 
     def _xml_from_ical(self, ical):
+        # FIXME: kolabformat or kolab.calendaring modules do not provide bindings to import Todo from iCal
         self.event = Todo()
-        self.event.fromICal("BEGIN:VCALENDAR\nVERSION:2.0\n" + ical + "\nEND:VCALENDAR")
+
+    def set_ical_attach(self, attachment):
+        if hasattr(attachment, 'params'):
+            params = attachment.params
+        else:
+            params = {}
+
+        _attachment = kolabformat.Attachment()
+        if params.has_key('FMTTYPE'):
+            mimetype = str(params['FMTTYPE'])
+        else:
+            mimetype = 'application/octet-stream'
+
+        if params.has_key('X-LABEL'):
+            _attachment.setLabel(str(params['X-LABEL']))
+
+        decode = False
+        if params.has_key('ENCODING'):
+            if params['ENCODING'] == "BASE64" or params['ENCODING'] == "B":
+                decode = True
+
+        _attachment.setData(base64.b64decode(str(attachment)) if decode else str(attachment), mimetype)
+        vattach = self.event.attachments()
+        vattach.append(_attachment)
+        self.event.setAttachments(vattach)
 
     def set_ical_due(self, due):
         self.set_due(due)

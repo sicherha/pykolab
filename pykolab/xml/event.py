@@ -35,8 +35,8 @@ def ustr(s):
 
     return s
 
-def event_from_ical(string):
-    return Event(from_ical=string)
+def event_from_ical(ical, string=None):
+    return Event(from_ical=ical, from_string=string)
 
 def event_from_string(string):
     return Event(from_string=string)
@@ -121,14 +121,14 @@ class Event(object):
         self._categories = []
         self._attachment_parts = []
 
-        if from_ical == "":
+        if isinstance(from_ical, str) and from_ical == "":
             if from_string == "":
                 self.event = kolabformat.Event()
             else:
                 self.event = kolabformat.readEvent(from_string, False)
                 self._load_attendees()
         else:
-            self.from_ical(from_ical)
+            self.from_ical(from_ical, from_string)
 
         self.uid = self.get_uid()
 
@@ -259,16 +259,27 @@ class Event(object):
 
         self.event.setAttendees(self._attendees)
 
-    def from_ical(self, ical):
+    def from_ical(self, ical, raw=None):
+        if isinstance(ical, icalendar.Todo):
+            ical_todo = ical
         if hasattr(icalendar.Event, 'from_ical'):
             ical_event = icalendar.Event.from_ical(ical)
         elif hasattr(icalendar.Event, 'from_string'):
             ical_event = icalendar.Event.from_string(ical)
 
+        # VCALENDAR block was given, find the first VEVENT item
+        if isinstance(ical_event, icalendar.Calendar):
+            for c in ical_event.walk():
+                if c.name == 'VEVENT':
+                    ical_event = c
+                    break
+
         # use the libkolab calendaring bindings to load the full iCal data
         if ical_event.has_key('RRULE') or ical_event.has_key('ATTACH') \
              or [part for part in ical_event.walk() if part.name == 'VALARM']:
-            self._xml_from_ical(ical)
+            if raw is None or raw == "":
+                raw = ical if isinstance(ical, str) else ical.to_ical()
+            self._xml_from_ical(raw)
         else:
             self.event = kolabformat.Event()
 

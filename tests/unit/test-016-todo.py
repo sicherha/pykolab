@@ -41,6 +41,43 @@ END:VTODO
 END:VCALENDAR
 """
 
+ical_todo_attachment = """
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Roundcube//Roundcube libcalendaring 1.1-git//Sabre//Sabre VObject
+ 2.1.3//EN
+CALSCALE:GREGORIAN
+BEGIN:VTODO
+UID:18C2EBBD8B31D99F7AA578EDFDFB1AC0-FCBB6C4091F28CA0
+DTSTAMP;VALUE=DATE-TIME:20140820T101333Z
+CREATED;VALUE=DATE-TIME:20140731T100704Z
+LAST-MODIFIED;VALUE=DATE-TIME:20140820T101333Z
+DUE;VALUE=DATE-TIME;TZID=Europe/London:20150228T133000
+SUMMARY:Task with attachment
+SEQUENCE:3
+PRIORITY:1
+STATUS:IN-PROCESS
+ORGANIZER;CN=Thomas:mailto:thomas.bruederli@example.org
+ATTACH;VALUE=BINARY;ENCODING=BASE64;FMTTYPE=image/png;X-LABEL=silhouette.pn
+ g:iVBORw0KGgoAAAANSUhEUgAAAC4AAAAuCAIAAADY27xgAAAAGXRFWHRTb2Z0d2FyZQBBZG9i
+ ZSBJbWFnZVJlYWR5ccllPAAAAsRJREFUeNrsmeluKjEMhTswrAWB4P3fECGx79CjsTDmOKRkpF
+ xxpfoHSmchX7ybFrfb7eszpPH1MfKH8ofyH6KUtd/c7/en0wmfWBdF0Wq1Op1Ou91uNGoer6iX
+ V1ar1Xa7xUJeB4qsr9frdyVlWWZH2VZyPp+xPXHIAoK70+m02+1m9JXj8bhcLi+Xi3J4xUCazS
+ bUltdtd7ud7ldUIhC3u+iTwF0sFhlR4Kds4LtRZK1w4te5UM6V6JaqhqC3CQ28OAsKggJfbZ3U
+ eozCqZ4koHIZCGmD9ivuos9YONFirmxrI0UNZG1kbZeUXdJQNJNa91RlqMn0ekYUMZDup6dXVV
+ m+1OSZhqLx6bVCELJGSsyFQtFrF15JGYMZgoxubWGDSDVhvTipDKWhoBOIpFobxtlbJ0Gh0/tg
+ lgXal4woUHi/36fQoBQncDAlupa8DeVwOPRe4lUyGAwQ+dl7W+xBXkJBhEUqR32UoJfYIKrR4d
+ ZBgcdIRqfEqn+mekl9FNRbSTA249la3ev1/kXHD47ZbEYR5L9kMplkd9vNZqMFyIYxxfN8Pk8q
+ QGlagT5QDtfrNYUMlWW9LiGNPPSmC/+OgpK2r4RO6dOatZd+4gAAemdIi6Fg9EKLD4vASWkzv3
+ ew06NSCiA40CumAIoaIrhrcAwjF7aDo58gUchgNV+0n1BAcDgcoAZrXV9mI4qkhtK6FJFhi9Fo
+ ZKPsgQI1ACJieH/Kd570t+xFoIzHYzl5Q40CFGrSqGuks3qmYIKJfIl0nPKLxAMFw7Dv1+2QYf
+ vFSOBQubbOFDSc7ZcfWvHv6DzhOzT6IeOVPuz8Roex0f6EgsE/2IL4qdg7hIXz7/pBie7q1uWr
+ tp66xrif0l1KwUE4P7Y9Gci/ZgtNRFX+Rw06Q2RigsjuDc3urwKHxuNITaaxyD9mT2WvSDAXn/
+ Pvhh8BBgBjyfPSGbSYcwAAAABJRU5ErkJggg==
+END:VTODO
+END:VCALENDAR
+"""
+
 xml_todo = """
 <icalendar xmlns="urn:ietf:params:xml:ns:icalendar-2.0">
   <vcalendar>
@@ -222,6 +259,16 @@ METHOD:REQUEST
         self.assertIsInstance(vtodo['due'].dt, datetime.datetime)
         self.assertIsInstance(vtodo['dtstamp'].dt, datetime.datetime)
 
+
+    def test_022_ical_with_attachment(self):
+        todo = todo_from_ical(ical_todo_attachment)
+
+        vattachment = todo.get_attachments()
+        self.assertEqual(len(vattachment), 1)
+
+        attachment = vattachment[0]
+        self.assertEqual(attachment.mimetype(), 'image/png')
+        self.assertEqual(attachment.label(), 'silhouette.png')
 
     def test_030_to_dict(self):
         data = todo_from_string(xml_todo).to_dict()
