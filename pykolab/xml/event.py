@@ -60,6 +60,7 @@ class Event(object):
     type = 'event'
 
     status_map = {
+            None: kolabformat.StatusUndefined,
             "TENTATIVE": kolabformat.StatusTentative,
             "CONFIRMED": kolabformat.StatusConfirmed,
             "CANCELLED": kolabformat.StatusCancelled,

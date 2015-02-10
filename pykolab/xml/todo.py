@@ -7,6 +7,7 @@ import base64
 import pykolab
 from pykolab import constants
 from pykolab.xml import Event
+from pykolab.xml import RecurrenceRule
 from pykolab.xml import utils as xmlutils
 from pykolab.xml.event import InvalidEventDateError
 from pykolab.translate import _
@@ -130,6 +131,12 @@ class Todo(Event):
         vattach = self.event.attachments()
         vattach.append(_attachment)
         self.event.setAttachments(vattach)
+
+    def set_ical_rrule(self, rrule):
+        _rrule = RecurrenceRule()
+        _rrule.from_ical(rrule)
+        if _rrule.isValid():
+            self.event.setRecurrenceRule(_rrule)
 
     def set_ical_due(self, due):
         self.set_due(due)

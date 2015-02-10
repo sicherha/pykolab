@@ -26,6 +26,7 @@ CREATED;VALUE=DATE-TIME:20140731T100704Z
 LAST-MODIFIED;VALUE=DATE-TIME:20140820T101333Z
 DTSTART;VALUE=DATE-TIME;TZID=Europe/London:20140818T180000
 DUE;VALUE=DATE-TIME;TZID=Europe/London:20140822T133000
+RRULE:FREQ=MONTHLY;INTERVAL=2;COUNT=10;BYDAY=2MO,-1WE;UNTIL=20150220T180000Z
 SUMMARY:Sample Task assignment
 DESCRIPTION:Summary: Sample Task assignment\\nDue Date: 08/11/14\\nDue Time:
  \\n13:30 AM
@@ -240,6 +241,13 @@ METHOD:REQUEST
         self.assertIsInstance(todo.get_start(), datetime.datetime)
         self.assertEqual(todo.get_percentcomplete(), 20)
         #print str(todo)
+
+        data = todo.to_dict()
+        self.assertIsInstance(data['rrule'], dict)
+        self.assertEqual(data['rrule']['freq'], 'MONTHLY')
+        self.assertEqual(data['rrule']['interval'], 2)
+        self.assertEqual(data['rrule']['byday'], '2MO,-1WE')
+        self.assertIsInstance(data['rrule']['until'], datetime.datetime)
 
     def test_021_as_string_itip(self):
         self.todo.set_summary("test")

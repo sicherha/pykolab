@@ -1,3 +1,5 @@
+import icalendar
+import datetime
 import kolabformat
 from pykolab.xml import utils as xmlutils
 
@@ -91,17 +93,85 @@ class RecurrenceRule(kolabformat.RecurrenceRule):
         else:
             kolabformat.RecurrenceRule.__init__(self, rrule)
 
+    def from_ical(self, vrecur):
+        vectorimap = {
+            'BYSECOND': 'setBysecond',
+            'BYMINUTE': 'setByminute',
+            'BYHOUR': 'setByhour',
+            'BYMONTHDAY': 'setBymonthday',
+            'BYYEARDAY': 'setByyearday',
+            'BYMONTH': 'setBymonth',
+        }
+
+        settermap = {
+            'FREQ': 'set_frequency',
+            'INTERVAL': 'set_interval',
+            'COUNT': 'set_count',
+            'UNTIL': 'set_until',
+            'WKST': 'set_weekstart',
+            'BYDAY': 'set_byday',
+        }
+
+        for prop,setter in vectorimap.items():
+            if vrecur.has_key(prop):
+                getattr(self, setter)([int(v) for v in vrecur[prop]])
+
+        for prop,setter in settermap.items():
+            if vrecur.has_key(prop):
+                getattr(self, setter)(vrecur[prop])
+
+    def set_count(self, count):
+        if isinstance(count, list):
+            count = count[0]
+        self.setCount(int(count))
+
+    def set_interval(self, val):
+        if isinstance(val, list):
+            val = val[0]
+        self.setInterval(int(val))
+
+    def set_frequency(self, freq):
+        self._set_map_value(freq, self.frequency_map, 'setFrequency')
+
     def get_frequency(self, translated=False):
         freq = self.frequency()
         if translated:
             return self._translate_value(freq, self.frequency_map)
         return freq
 
+    def set_byday(self, bdays):
+        daypos = kolabformat.vectordaypos()
+        for wday in bdays:
+            weekday = str(wday)[-2:]
+            occurrence = int(wday.relative)
+            if str(wday)[0] == '-':
+                occurrence = occurrence * -1
+            if self.weekday_map.has_key(weekday):
+                daypos.append(kolabformat.DayPos(occurrence, self.weekday_map[weekday]))
+        self.setByday(daypos)
+
+    def set_weekstart(self, wkst):
+        self._set_map_value(wkst, self.weekday_map, 'setWeekStart')
+
     def get_weekstart(self, translated=False):
         wkst = self.weekStart()
         if translated:
             return self._translate_value(wkst, self.weekday_map)
         return wkst
+
+    def set_until(self, until):
+        if isinstance(until, list):
+            until = until[0]
+        if isinstance(until, datetime.datetime) or isinstance(until, datetime.date):
+            self.setEnd(xmlutils.to_cdatetime(until, True))
+
+    def _set_map_value(self, val, pmap, setter):
+        if isinstance(val, list):
+            val = val[0]
+        if val in pmap.keys():
+            getattr(self, setter)(pmap[val])
+        elif val in pmap.values():
+            getattr(self, setter)(val)
 
     def _translate_value(self, val, map):
         name_map = dict([(v, k) for (k, v) in map.iteritems()])
