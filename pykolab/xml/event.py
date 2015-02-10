@@ -260,9 +260,9 @@ class Event(object):
         self.event.setAttendees(self._attendees)
 
     def from_ical(self, ical, raw=None):
-        if isinstance(ical, icalendar.Todo):
-            ical_todo = ical
-        if hasattr(icalendar.Event, 'from_ical'):
+        if isinstance(ical, icalendar.Event) or isinstance(ical_event, icalendar.Calendar):
+            ical_event = ical
+        elif hasattr(icalendar.Event, 'from_ical'):
             ical_event = icalendar.Event.from_ical(ical)
         elif hasattr(icalendar.Event, 'from_string'):
             ical_event = icalendar.Event.from_string(ical)
@@ -300,9 +300,11 @@ class Event(object):
                 self.set_from_ical(attr.lower(), ical_event[attr])
 
     def _xml_from_ical(self, ical):
+        if not "BEGIN:VCALENDAR" in ical:
+            ical = "BEGIN:VCALENDAR\nVERSION:2.0\n" + ical + "\nEND:VCALENDAR"
         from kolab.calendaring import EventCal
         self.event = EventCal()
-        self.event.fromICal("BEGIN:VCALENDAR\nVERSION:2.0\n" + ical + "\nEND:VCALENDAR")
+        self.event.fromICal(ical)
 
     def get_attendee_participant_status(self, attendee):
         return attendee.get_participant_status()

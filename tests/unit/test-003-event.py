@@ -369,7 +369,7 @@ METHOD:REQUEST
         """ + ical_event + "END:VCALENDAR"
 
         ical = icalendar.Calendar.from_ical(ical_str)
-        event = event_from_ical(ical.walk('VEVENT')[0].to_ical())
+        event = event_from_ical(ical.walk('VEVENT')[0], ical_str)
 
         self.assertEqual(event.get_location(), "Location")
         self.assertEqual(str(event.get_lastmodified()), "2014-04-07 12:23:11+00:00")
@@ -384,7 +384,7 @@ METHOD:REQUEST
         self.assertTrue(event.is_recurring())
         self.assertIsInstance(event.get_duration(), datetime.timedelta)
         self.assertIsInstance(event.get_end(), datetime.datetime)
-        self.assertEqual(str(event.get_end()), "2014-05-23 12:30:00+01:00")
+        self.assertEqual(str(event.get_end()), "2014-05-23 12:30:00+02:00")
         self.assertEqual(len(event.get_exception_dates()), 2)
         self.assertIsInstance(event.get_exception_dates()[0], datetime.datetime)
         self.assertEqual(len(event.get_alarms()), 1)
@@ -632,7 +632,7 @@ END:VEVENT
         self.assertEqual(data['attach'][0]['fmttype'], 'text/html')
 
         self.assertIsInstance(data['rrule'], dict)
-        self.assertEqual(data['rrule']['frequency'], 'DAILY')
+        self.assertEqual(data['rrule']['freq'], 'DAILY')
         self.assertEqual(data['rrule']['interval'], 1)
         self.assertEqual(data['rrule']['wkst'], 'MO')
         self.assertIsInstance(data['rrule']['until'], datetime.date)
