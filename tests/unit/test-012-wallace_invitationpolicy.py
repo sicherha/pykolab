@@ -130,8 +130,9 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertEqual(MIP.get_matching_invitation_policies(user, 'c@gmail.com',      MIP.COND_TYPE_EVENT), [MIP.ACT_REJECT, MIP.ACT_MANUAL])
         self.assertEqual(MIP.get_matching_invitation_policies(user, 'd@somedomain.net', MIP.COND_TYPE_TASK),  [MIP.ACT_REJECT, MIP.ACT_MANUAL])
 
-        user = { 'kolabinvitationpolicy': ['ACT_ACCEPT:example.org', 'ACT_MANUAL:others'] }
-        self.assertEqual(MIP.get_matching_invitation_policies(user, 'd@somedomain.net', MIP.COND_TYPE_ALL), [MIP.ACT_MANUAL])
+        user = { 'kolabinvitationpolicy': ['ALL_SAVE_TO_FOLDER:maya.foo@example.org', 'ACT_REJECT:others'] }
+        self.assertEqual(MIP.get_matching_invitation_policies(user, 'maya.foo@example.org', MIP.COND_TYPE_ALL), [MIP.ACT_SAVE_TO_FOLDER])
+        self.assertEqual(MIP.get_matching_invitation_policies(user, 'd@somedomain.net',     MIP.COND_TYPE_ALL), [MIP.ACT_MANUAL])
 
     def test_004_write_locks(self):
         user = { 'cn': 'John Doe', 'mail': "doe@example.org" }

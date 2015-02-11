@@ -299,6 +299,17 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             'kolabinvitationpolicy': ['ALL_SAVE_AND_FORWARD','ACT_UPDATE_AND_NOTIFY']
         }
 
+        self.bill = {
+            'displayname': 'Bill Mayor',
+            'mail': 'bill.mayor@example.org',
+            'dn': 'uid=mayor,ou=People,dc=example,dc=org',
+            'preferredlanguage': 'en_US',
+            'mailbox': 'user/bill.mayor@example.org',
+            'kolabcalendarfolder': 'user/bill.mayor/Calendar@example.org',
+            'kolabtasksfolder': 'user/bill.mayor/Tasks@example.org',
+            'kolabinvitationpolicy': ['ALL_SAVE_TO_FOLDER:lucy.meyer@example.org','ALL_REJECT']
+        }
+
         self.external = {
             'displayname': 'Bob External',
             'mail': 'bob.external@gmail.com'
@@ -310,6 +321,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         user_add("Jack", "Tentative", kolabinvitationpolicy=self.jack['kolabinvitationpolicy'], preferredlanguage=self.jack['preferredlanguage'])
         user_add("Mark", "German", kolabinvitationpolicy=self.mark['kolabinvitationpolicy'], preferredlanguage=self.mark['preferredlanguage'])
         user_add("Lucy", "Meyer", kolabinvitationpolicy=self.lucy['kolabinvitationpolicy'], preferredlanguage=self.lucy['preferredlanguage'])
+        user_add("Bill", "Mayor", kolabinvitationpolicy=self.bill['kolabinvitationpolicy'], preferredlanguage=self.bill['preferredlanguage'])
 
         time.sleep(1)
         from tests.functional.synchronize import synchronize_once
@@ -339,7 +351,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         smtp = smtplib.SMTP('localhost', 10026)
         smtp.sendmail(from_addr, to_addr, mime_message % (to_addr, method, itip_payload))
 
-    def send_itip_invitation(self, attendee_email, start=None, allday=False, template=None, summary="test", sequence=0, partstat='NEEDS-ACTION'):
+    def send_itip_invitation(self, attendee_email, start=None, allday=False, template=None, summary="test", sequence=0, partstat='NEEDS-ACTION', from_addr=None):
         if start is None:
             start = datetime.datetime.now()
 
@@ -354,6 +366,12 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             default_template = itip_invitation
             date_format = '%Y%m%dT%H%M%S'
 
+        if from_addr is not None:
+            if template:
+                template = template.replace("john.doe@example.org", from_addr)
+            else:
+                default_template = default_template.replace("john.doe@example.org", from_addr)
+
         self.send_message((template if template is not None else default_template) % {
                 'uid': uid,
                 'start': start.strftime(date_format),
@@ -363,7 +381,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
                 'sequence': sequence,
                 'partstat': partstat
             },
-            attendee_email)
+            attendee_email, from_addr=from_addr)
 
         return uid
 
@@ -670,6 +688,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertIsInstance(event, pykolab.xml.Event)
         self.assertEqual(event.get_summary(), "test2")
         self.assertEqual(event.get_attendee(self.jack['mail']).get_participant_status(), kolabformat.PartNeedsAction)
+
 
     def test_004_copy_to_calendar_and_forward(self):
         uid = self.send_itip_invitation(self.lucy['mail'], datetime.datetime(2015,2,11, 14,0,0), summary="test forward")
@@ -1009,6 +1028,22 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         event = self.check_user_calendar_event(self.jane['kolabcalendarfolder'], uid)
         self.assertIsInstance(event, pykolab.xml.Event)
         self.assertEqual(event.get_attendee(self.john['mail']).get_participant_status(), kolabformat.PartAccepted)
+
+    def test_014_per_sender_policy(self):
+        # send invitation from john => REJECT
+        start = datetime.datetime(2015,2,28, 14,0,0)
+        uid = self.send_itip_invitation(self.bill['mail'], start)
+
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'test', 'status':participant_status_label('DECLINED') }, self.bill['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+        # send invitation from lucy => SAVE
+        start = datetime.datetime(2015,3,11, 10,0,0)
+        templ = itip_invitation.replace("Doe, John", self.lucy['displayname'])
+        uid = self.send_itip_invitation(self.bill['mail'], start, template=templ, from_addr=self.lucy['mail'])
+
+        event = self.check_user_calendar_event(self.bill['kolabcalendarfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
 
 
     def test_020_task_assignment_accept(self):
