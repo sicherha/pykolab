@@ -661,7 +661,7 @@ def get_matching_invitation_policies(receiving_user, sender_email, type_conditio
     matches = []
     for p in policies:
         if ':' in p:
-            (value, domain) = p.split(':')
+            (value, domain) = p.split(':', 1)
         else:
             value = p
             domain = ''

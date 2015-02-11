@@ -122,6 +122,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             'TASK_REJECT:*',
             'EVENT_ACCEPT:example.org',
             'EVENT_REJECT:gmail.com',
+            'ALL_UPDATE:outlook:com',
             'ALL_MANUAL:*'
         ] }
         self.assertEqual(MIP.get_matching_invitation_policies(user, 'a@fastmail.net',   MIP.COND_TYPE_EVENT), [MIP.ACT_MANUAL])
