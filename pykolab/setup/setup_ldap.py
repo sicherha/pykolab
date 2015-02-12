@@ -670,7 +670,10 @@ ServerAdminPwd = %(admin_pass)s
     auth._auth.ldap.modify_s(dn, modlist)
 
     if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['/bin/systemctl', 'enable', 'dirsrv-admin.service'])
+        if not os.path.isfile('/usr/lib/systemd/system/dirsrv-admin.service'):
+            log.info(_("directory server admin service not available"))
+        else:
+            subprocess.call(['/bin/systemctl', 'enable', 'dirsrv-admin.service'])
     elif os.path.isfile('/sbin/chkconfig'):
         subprocess.call(['/sbin/chkconfig', 'dirsrv-admin', 'on'])
     elif os.path.isfile('/usr/sbin/update-rc.d'):
