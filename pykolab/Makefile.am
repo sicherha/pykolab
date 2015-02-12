@@ -40,7 +40,8 @@ endif
 pykolab_imapdir = $(pythondir)/$(PACKAGE)/imap
 pykolab_imap_PYTHON = \
 	imap/__init__.py \
-	imap/cyrus.py
+	imap/cyrus.py \
+	imap/dovecot.py
 
 pykolab_itipdir = $(pythondir)/$(PACKAGE)/itip
 pykolab_itip_PYTHON = \
