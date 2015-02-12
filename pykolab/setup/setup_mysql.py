@@ -39,8 +39,13 @@ def description():
     return _("Setup MySQL.")
 
 def execute(*args, **kw):
+    # on CentOS7, there is MariaDB instead of MySQL
+    mysqlservice = 'mysqld.service'
+    if os.path.isfile('/usr/lib/systemd/system/mariadb.service'):
+        mysqlservice = 'mariadb.service'
+
     if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['/bin/systemctl', 'restart', 'mysqld.service'])
+        subprocess.call(['/bin/systemctl', 'restart', mysqlservice])
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'mysqld', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
@@ -49,7 +54,7 @@ def execute(*args, **kw):
         log.error(_("Could not start the MySQL database service."))
 
     if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['/bin/systemctl', 'enable', 'mysqld.service'])
+        subprocess.call(['/bin/systemctl', 'enable', mysqlservice])
     elif os.path.isfile('/sbin/chkconfig'):
         subprocess.call(['/sbin/chkconfig', 'mysqld', 'on'])
     elif os.path.isfile('/usr/sbin/update-rc.d'):
