@@ -90,7 +90,7 @@ def execute(*args, **kw):
 
     if os.access('/usr/share/roundcubemail/skins/enterprise/', os.R_OK):
         rc_settings['skin'] = 'enterprise'
-    elif os.access('/usr/share/roundcubemail/skin/chameleon/', os.R_OK):
+    elif os.access('/usr/share/roundcubemail/skins/chameleon/', os.R_OK):
         rc_settings['skin'] = 'chameleon'
     else:
         rc_settings['skin'] = 'larry'
