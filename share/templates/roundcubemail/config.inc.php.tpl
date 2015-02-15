@@ -68,7 +68,6 @@
             'password',
             'redundant_attachments',
             'tasklist',
-            'threading_as_default',
             // contextmenu must be after kolab_addressbook (#444)
             'contextmenu',
         );
