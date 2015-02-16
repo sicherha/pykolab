@@ -121,6 +121,7 @@ class Event(object):
     def __init__(self, from_ical="", from_string=""):
         self._attendees = []
         self._categories = []
+        self._exceptions = []
         self._attachment_parts = []
 
         if isinstance(from_ical, str) and from_ical == "":
@@ -129,6 +130,7 @@ class Event(object):
             else:
                 self.event = kolabformat.readEvent(from_string, False)
                 self._load_attendees()
+                self._load_exceptions()
         else:
             self.from_ical(from_ical, from_string)
 
@@ -139,6 +141,14 @@ class Event(object):
             att = Attendee(a.contact().email())
             att.copy_from(a)
             self._attendees.append(att)
+
+    def _load_exceptions(self):
+        for ex in self.event.exceptions():
+            exception = Event()
+            exception.uid = ex.uid()
+            exception.event = ex
+            exception._load_attendees()
+            self._exceptions.append(exception)
 
     def add_attendee(self, email, name=None, rsvp=False, role=None, participant_status=None, cutype="INDIVIDUAL", params=None):
         attendee = Attendee(email, name, rsvp, role, participant_status, cutype, params)
@@ -165,6 +175,31 @@ class Event(object):
             raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance")
 
         self.event.addExceptionDate(xmlutils.to_cdatetime(_datetime, True))
+
+    def add_exception(self, exception):
+        # sanity checks
+        if not self.is_recurring():
+            raise EventIntegrityError, "Cannot add exceptions to a non-recurring event"
+
+        recurrence_id = exception.get_recurrence_id()
+        if recurrence_id is None:
+            raise EventIntegrityError, "Recurrence exceptions require a Recurrence-ID property"
+
+        # check if an exception with the given recurrence-id already exists
+        append = True
+        vexceptions = self.event.exceptions()
+        for i, ex in enumerate(self._exceptions):
+            if ex.get_recurrence_id() == recurrence_id and ex.thisandfuture == exception.thisandfuture:
+                # update the existing exception
+                vexceptions[i] = exception.event
+                self._exceptions[i] = exception
+                append = False
+
+        if append:
+            vexceptions.append(exception.event)
+            self._exceptions.append(exception)
+
+        self.event.setExceptions(vexceptions)
 
     def as_string_itip(self, method="REQUEST"):
         cal = icalendar.Calendar()
@@ -264,7 +299,7 @@ class Event(object):
         self.event.setAttendees(self._attendees)
 
     def from_ical(self, ical, raw=None):
-        if isinstance(ical, icalendar.Event) or isinstance(ical_event, icalendar.Calendar):
+        if isinstance(ical, icalendar.Event) or isinstance(ical, icalendar.Calendar):
             ical_event = ical
         elif hasattr(icalendar.Event, 'from_ical'):
             ical_event = icalendar.Event.from_ical(ical)
@@ -309,6 +344,7 @@ class Event(object):
         from kolab.calendaring import EventCal
         self.event = EventCal()
         self.event.fromICal(ical)
+        self._load_exceptions()
 
     def get_attendee_participant_status(self, attendee):
         return attendee.get_participant_status()
@@ -422,6 +458,9 @@ class Event(object):
 
     def get_exception_dates(self):
         return map(lambda _: xmlutils.from_cdatetime(_, True), self.event.exceptionDates())
+
+    def get_exceptions(self):
+        return self._exceptions
 
     def get_attachments(self):
         return self.event.attachments()
@@ -1245,15 +1284,50 @@ class Event(object):
         if next_start:
             instance = Event(from_string=str(self))
             instance.set_start(next_start)
-            instance.set_recurrence(kolabformat.RecurrenceRule())  # remove recurrence rules
             instance.event.setRecurrenceID(xmlutils.to_cdatetime(next_start), False)
             next_end = self.get_occurence_end_date(next_start)
             if next_end:
                 instance.set_end(next_end)
 
-            # TODO: copy data from matching exception
+            # unset recurrence rule and exceptions
+            instance.set_recurrence(kolabformat.RecurrenceRule())
+            instance.event.setExceptions(kolabformat.vectorevent())
+            instance.event.setExceptionDates(kolabformat.vectordatetime())
+            instance._exceptions = []
+            instance._isexception = False
+
+            # copy data from matching exception
+            # (give precedence to single occurrence exceptions over thisandfuture)
+            for exception in self._exceptions:
+                recurrence_id = exception.get_recurrence_id()
+                if recurrence_id == next_start and (not exception.thisandfuture or not instance._isexception):
+                    instance = exception
+                    instance._isexception = True
+                    if not exception.thisandfuture:
+                        break
+                elif exception.thisandfuture and next_start > recurrence_id:
+                    # TODO: merge exception properties over this instance + adjust start/end with the according offset
+                    pass
 
             return instance
+
+        return None
+
+    def get_instance(self, _datetime):
+        # If no timezone information is given, use the one from event start
+        if _datetime.tzinfo == None:
+            _start = self.get_start()
+            _datetime = _datetime.replace(tzinfo=_start.tzinfo)
+
+        instance = self.get_next_instance(_datetime - datetime.timedelta(days=1))
+        while instance:
+            recurrence_id = instance.get_recurrence_id()
+            if type(recurrence_id) == type(_datetime) and recurrence_id <= _datetime:
+                if recurrence_id == _datetime:
+                    return instance
+                instance = self.get_next_instance(instance.get_start())
+            else:
+                break
 
         return None
 

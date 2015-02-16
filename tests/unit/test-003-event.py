@@ -25,7 +25,6 @@ UID:7a35527d-f783-4b58-b404-b1389bd2fc57
 DTSTAMP;VALUE=DATE-TIME:20140407T122311Z
 CREATED;VALUE=DATE-TIME:20140407T122245Z
 LAST-MODIFIED;VALUE=DATE-TIME:20140407T122311Z
-RECURRENCE-ID;TZID=Europe/Zurich;RANGE=THISANDFUTURE:20140523T110000
 DTSTART;TZID=Europe/Zurich;VALUE=DATE-TIME:20140523T110000
 DURATION:PT1H30M0S
 RRULE:FREQ=WEEKLY;INTERVAL=1;COUNT=10
@@ -67,6 +66,25 @@ BEGIN:VALARM
 ACTION:DISPLAY
 TRIGGER:-PT30M
 END:VALARM
+END:VEVENT
+"""
+
+ical_exception = """
+BEGIN:VEVENT
+UID:7a35527d-f783-4b58-b404-b1389bd2fc57
+DTSTAMP;VALUE=DATE-TIME:20140407T122311Z
+CREATED;VALUE=DATE-TIME:20140407T122245Z
+LAST-MODIFIED;VALUE=DATE-TIME:20140407T122311Z
+RECURRENCE-ID;TZID=Europe/Zurich;RANGE=THISANDFUTURE:20140606T110000
+DTSTART;TZID=Europe/Zurich;VALUE=DATE-TIME:20140607T120000
+DTEND;TZID=Europe/Zurich;VALUE=DATE-TIME:20140607T143000
+SUMMARY:Exception
+CATEGORIES:Personal
+TRANSP:TRANSPARENT
+PRIORITY:2
+SEQUENCE:3
+STATUS:CANCELLED
+ORGANIZER;CN=Doe\, John:mailto:john.doe@example.org
 END:VEVENT
 """
 
@@ -120,7 +138,7 @@ xml_event = """
             <recur>
               <freq>DAILY</freq>
               <until>
-                <date>2014-07-25</date>
+                <date>2015-07-25</date>
               </until>
             </recur>
           </rrule>
@@ -241,6 +259,72 @@ xml_event = """
             </properties>
           </valarm>
         </components>
+      </vevent>
+      <vevent>
+        <properties>
+          <uid>
+            <text>75c740bb-b3c6-442c-8021-ecbaeb0a025e</text>
+          </uid>
+          <created>
+            <date-time>2014-07-07T01:28:23Z</date-time>
+          </created>
+          <dtstamp>
+            <date-time>2014-07-07T01:28:23Z</date-time>
+          </dtstamp>
+          <sequence>
+            <integer>2</integer>
+          </sequence>
+          <class>
+            <text>PUBLIC</text>
+          </class>
+          <dtstart>
+            <parameters>
+              <tzid>
+                <text>/kolab.org/Europe/London</text>
+              </tzid>
+            </parameters>
+            <date-time>2014-08-16T13:00:00</date-time>
+          </dtstart>
+          <dtend>
+            <parameters>
+              <tzid><text>/kolab.org/Europe/London</text></tzid>
+            </parameters>
+            <date-time>2014-08-16T16:00:00</date-time>
+          </dtend>
+          <recurrence-id>
+            <parameters>
+              <tzid>
+                <text>/kolab.org/Europe/London</text>
+              </tzid>
+              <range>
+                <text>THISANDFUTURE</text>
+              </range>
+            </parameters>
+            <date-time>2014-08-16T10:00:00</date-time>
+          </recurrence-id>
+          <summary>
+            <text>exception</text>
+          </summary>
+          <description>
+            <text>exception</text>
+          </description>
+          <location>
+            <text>Room 101</text>
+          </location>
+          <organizer>
+            <parameters>
+              <cn><text>Doe, John</text></cn>
+            </parameters>
+            <cal-address>mailto:%3Cjohn%40example.org%3E</cal-address>
+          </organizer>
+          <attendee>
+            <parameters>
+              <partstat><text>DECLINED</text></partstat>
+              <role><text>REQ-PARTICIPANT</text></role>
+            </parameters>
+            <cal-address>mailto:%3Cjane%40example.org%3E</cal-address>
+          </attendee>
+        </properties>
       </vevent>
     </components>
   </vcalendar>
@@ -390,8 +474,14 @@ METHOD:REQUEST
         self.assertIsInstance(event.get_exception_dates()[0], datetime.datetime)
         self.assertEqual(len(event.get_alarms()), 1)
         self.assertEqual(len(event.get_attachments()), 2)
-        self.assertIsInstance(event.get_recurrence_id(), datetime.datetime)
-        self.assertEqual(event.thisandfuture, True)
+
+        # TODO: load ical_exception with main event
+        #self.assertEqual(len(event.get_exceptions()), 1)
+
+        exception = event_from_ical(ical_exception)
+        self.assertIsInstance(exception.get_recurrence_id(), datetime.datetime)
+        self.assertEqual(exception.thisandfuture, True)
+        self.assertEqual(str(exception.get_start()), "2014-06-07 12:00:00+02:00")
 
     def test_018_ical_to_message(self):
         event = event_from_ical(ical_event)
@@ -561,6 +651,23 @@ END:VEVENT
         self.assertEqual(self.event.get_next_occurence(_start), None)
         self.assertEqual(self.event.get_last_occurrence(), None)
 
+    def test_021_add_exceptions(self):
+        event = event_from_ical(ical_event)
+        exception = event_from_ical(ical_exception)
+        self.assertIsInstance(event, Event)
+        self.assertIsInstance(exception, Event)
+
+        event.add_exception(exception)
+        self.assertEquals(len(event.get_exceptions()), 1)
+
+        # second call shall replace the existing exception
+        event.add_exception(exception)
+        self.assertEquals(len(event.get_exceptions()), 1)
+
+        # first real occurrence should be our exception
+        occurrence = event.get_next_instance(event.get_start())
+        self.assertEqual(occurrence.get_summary(), "Exception")
+
     def test_022_load_from_xml(self):
         event = event_from_string(xml_event)
         self.assertEqual(event.uid, '75c740bb-b3c6-442c-8021-ecbaeb0a025e')
@@ -569,7 +676,29 @@ END:VEVENT
         self.assertEqual(len(event.get_attendee_by_email("somebody@else.com").get_delegated_to()), 1)
         self.assertEqual(event.get_sequence(), 1)
         self.assertIsInstance(event.get_start(), datetime.datetime)
-        self.assertEqual(str(event.get_start()), "2014-08-13 10:00:00+00:00")
+        self.assertEqual(str(event.get_start()), "2014-08-13 10:00:00+01:00")
+        self.assertTrue(event.is_recurring())
+
+        exceptions = event.get_exceptions()
+        self.assertEqual(len(exceptions), 1)
+
+        exception = exceptions[0]
+        self.assertIsInstance(exception.get_recurrence_id(), datetime.datetime)
+        self.assertTrue(exception.thisandfuture)
+        self.assertEqual(str(exception.get_start()), "2014-08-16 13:00:00+01:00")
+        self.assertEqual(exception.get_attendee_by_email("jane@example.org").get_participant_status(), kolabformat.PartDeclined)
+        self.assertRaises(ValueError, exception.get_attendee, "somebody@else.com")
+
+        # get instances with exception data
+        occurrence = event.get_next_instance(exception.get_start() - datetime.timedelta(days=1))
+        self.assertEqual(occurrence.get_start(), exception.get_start())
+        self.assertEqual(occurrence.get_summary(), "exception")
+
+        # find instance directly by date
+        _recurrence_id = datetime.datetime(2014, 8, 15, 10, 0, 0)
+        occurrence = event.get_instance(_recurrence_id)
+        self.assertIsInstance(occurrence, Event)
+        self.assertEqual(str(occurrence.get_recurrence_id()), "2014-08-15 10:00:00+01:00")
 
     def test_023_load_from_message(self):
         event = event_from_message(event_from_ical(ical_event).to_message())
