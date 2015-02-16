@@ -25,6 +25,7 @@ UID:7a35527d-f783-4b58-b404-b1389bd2fc57
 DTSTAMP;VALUE=DATE-TIME:20140407T122311Z
 CREATED;VALUE=DATE-TIME:20140407T122245Z
 LAST-MODIFIED;VALUE=DATE-TIME:20140407T122311Z
+RECURRENCE-ID;TZID=Europe/Zurich;RANGE=THISANDFUTURE:20140523T110000
 DTSTART;TZID=Europe/Zurich;VALUE=DATE-TIME:20140523T110000
 DURATION:PT1H30M0S
 RRULE:FREQ=WEEKLY;INTERVAL=1;COUNT=10
@@ -389,6 +390,8 @@ METHOD:REQUEST
         self.assertIsInstance(event.get_exception_dates()[0], datetime.datetime)
         self.assertEqual(len(event.get_alarms()), 1)
         self.assertEqual(len(event.get_attachments()), 2)
+        self.assertIsInstance(event.get_recurrence_id(), datetime.datetime)
+        self.assertEqual(event.thisandfuture, True)
 
     def test_018_ical_to_message(self):
         event = event_from_ical(ical_event)
@@ -436,6 +439,7 @@ END:VEVENT
         self.event.set_sequence(3)
         self.event.set_classification('CONFIDENTIAL')
         self.event.add_custom_property('X-Custom', 'check')
+        self.event.set_recurrence_id(datetime.datetime(2014, 05, 23, 11, 0, 0), True)
 
         ical = icalendar.Calendar.from_ical(self.event.as_string_itip())
         event = ical.walk('VEVENT')[0]
@@ -446,6 +450,8 @@ END:VEVENT
         self.assertEqual(event['X-CUSTOM'], "check")
         self.assertIsInstance(event['dtstamp'].dt, datetime.datetime)
         self.assertEqual(event['class'], "CONFIDENTIAL")
+        self.assertIsInstance(event['recurrence-id'].dt, datetime.datetime)
+        self.assertEqual(event['recurrence-id'].params.get('RANGE'), 'THISANDFUTURE')
 
     def test_019_to_message_itip(self):
         self.event = Event()
@@ -529,6 +535,7 @@ END:VEVENT
         # check get_next_instance() which returns a clone of the base event
         next_instance = self.event.get_next_instance(next_date)
         self.assertIsInstance(next_instance, Event)
+        self.assertIsInstance(next_instance.get_recurrence_id(), datetime.datetime)
         self.assertEqual(self.event.get_summary(), next_instance.get_summary())
         self.assertEqual(next_instance.get_start().month, 7)
         self.assertFalse(next_instance.is_recurring())

@@ -58,6 +58,7 @@ def event_from_message(message):
 
 class Event(object):
     type = 'event'
+    thisandfuture = False
 
     status_map = {
             None: kolabformat.StatusUndefined,
@@ -191,8 +192,9 @@ class Event(object):
 
         # NOTE: Make sure to list(set()) or duplicates may arise
         for attr in list(set(event.singletons)):
-            ical_getter = 'get_ical_%s' % (attr.lower())
-            default_getter = 'get_%s' % (attr.lower())
+            _attr = attr.lower().replace('-', '')
+            ical_getter = 'get_ical_%s' % (_attr)
+            default_getter = 'get_%s' % (_attr)
             retval = None
             if hasattr(self, ical_getter):
                 retval = getattr(self, ical_getter)()
@@ -205,8 +207,9 @@ class Event(object):
 
         # NOTE: Make sure to list(set()) or duplicates may arise
         for attr in list(set(event.multiple)):
-            ical_getter = 'get_ical_%s' % (attr.lower())
-            default_getter = 'get_%s' % (attr.lower())
+            _attr = attr.lower().replace('-', '')
+            ical_getter = 'get_ical_%s' % (_attr)
+            default_getter = 'get_%s' % (_attr)
             retval = None
             if hasattr(self, ical_getter):
                 retval = getattr(self, ical_getter)()
@@ -575,6 +578,16 @@ class Event(object):
             return [ comment ]
         return None
 
+    def get_ical_recurrenceid(self):
+        rid = self.get_recurrence_id()
+        if isinstance(rid, datetime.datetime) or isinstance(rid, datetime.date):
+            prop = icalendar.vDatetime(rid)
+            if self.thisandfuture:
+                prop.params.update({'RANGE':'THISANDFUTURE'})
+            return prop
+
+        return None
+
     def get_location(self):
         return self.event.location()
 
@@ -615,6 +628,14 @@ class Event(object):
         else:
             self.set_uid(uuid.uuid4())
             return self.get_uid()
+
+    def get_recurrence_id(self):
+        self.thisandfuture = self.event.thisAndFuture();
+        return xmlutils.from_cdatetime(self.event.recurrenceID(), True)
+
+    def get_thisandfuture(self):
+        self.thisandfuture = self.event.thisAndFuture();
+        return self.thisandfuture
 
     def get_sequence(self):
         return self.event.sequence()
@@ -698,6 +719,7 @@ class Event(object):
         attr = attr.replace('-', '')
         ical_setter = 'set_ical_' + attr
         default_setter = 'set_' + attr
+        params = value.params if hasattr(value, 'params') else {}
 
         if isinstance(value, icalendar.vDDDTypes) and hasattr(value, 'dt'):
             value = value.dt
@@ -706,6 +728,8 @@ class Event(object):
             self.add_category(value)
         elif attr == "class":
             self.set_classification(value)
+        elif attr == "recurrenceid":
+            self.set_ical_recurrenceid(value, params)
         elif hasattr(self, ical_setter):
             getattr(self, ical_setter)(value)
         elif hasattr(self, default_setter):
@@ -800,6 +824,13 @@ class Event(object):
     def set_ical_uid(self, uid):
         self.set_uid(str(uid))
 
+    def set_ical_recurrenceid(self, value, params):
+        try:
+            self.thisandfuture = params.get('RANGE', '') == 'THISANDFUTURE'
+            self.set_recurrence_id(value, self.thisandfuture)
+        except InvalidEventDateError, e:
+            pass
+
     def set_lastmodified(self, _datetime=None):
         valid_datetime = False
         if isinstance(_datetime, datetime.date):
@@ -874,6 +905,27 @@ class Event(object):
     def set_uid(self, uid):
         self.uid = uid
         self.event.setUid(str(uid))
+
+    def set_recurrence_id(self, _datetime, _thisandfuture=None):
+        valid_datetime = False
+        if isinstance(_datetime, datetime.date):
+            valid_datetime = True
+
+        if isinstance(_datetime, datetime.datetime):
+            # If no timezone information is passed on, use the one from event start
+            if _datetime.tzinfo == None:
+                _start = self.get_start()
+                _datetime = _datetime.replace(tzinfo=_start.tzinfo)
+
+            valid_datetime = True
+
+        if not valid_datetime:
+            raise InvalidEventDateError, _("Event recurrence-id needs datetime.datetime instance")
+
+        if _thisandfuture is None:
+            _thisandfuture = self.thisandfuture
+
+        self.event.setRecurrenceID(xmlutils.to_cdatetime(_datetime), _thisandfuture)
 
     def set_transparency(self, transp):
         return self.event.setTransparency(transp)
@@ -1194,10 +1246,12 @@ class Event(object):
             instance = Event(from_string=str(self))
             instance.set_start(next_start)
             instance.set_recurrence(kolabformat.RecurrenceRule())  # remove recurrence rules
-            instance.event.setRecurrenceID(instance.event.start(), False)
+            instance.event.setRecurrenceID(xmlutils.to_cdatetime(next_start), False)
             next_end = self.get_occurence_end_date(next_start)
             if next_end:
                 instance.set_end(next_end)
+
+            # TODO: copy data from matching exception
 
             return instance
 
