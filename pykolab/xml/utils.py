@@ -183,7 +183,7 @@ def property_to_string(propname, value):
 
         elif propname == 'rrule':
             from . import recurrence_rule
-            rrule = recurrence_rule.frequency_label(value['frequency']) % (value['interval'])
+            rrule = recurrence_rule.frequency_label(value['freq']) % (value['interval'])
             if value.has_key('count') and value['count'] > 0:
                 rrule += " " + _("for %d times") % (value['count'])
             elif value.has_key('until') and (isinstance(value['until'], datetime.datetime) or isinstance(value['until'], datetime.date)):
