@@ -702,13 +702,13 @@ class Event(object):
     def get_transparency(self):
         return self.event.transparency()
 
-    def set_attendees(self, _attendees):
-        self._attendees = _attendees
-        self.event.setAttendees(self._attendees)
-
-        # apply update to all exceptions
-        for exception in self._exceptions:
-            exception.merge_attendee_data(_attendees)
+    def set_attendees(self, _attendees, recursive=False):
+        if recursive:
+            self._attendees = []
+            self.update_attendees(_attendees, True)
+        else:
+            self._attendees = _attendees
+            self.event.setAttendees(self._attendees)
 
     def set_attendee_participant_status(self, attendee, status, rsvp=None):
         """

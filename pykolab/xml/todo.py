@@ -41,6 +41,7 @@ class Todo(Event):
     def __init__(self, from_ical="", from_string=""):
         self._attendees = []
         self._categories = []
+        self._exceptions = []
         self._attachment_parts = []
 
         self.properties_map.update({
