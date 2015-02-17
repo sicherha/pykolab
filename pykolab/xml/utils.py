@@ -122,6 +122,11 @@ def to_cdatetime(_datetime, with_timezone=True, as_utc=False):
     return _cdatetime
 
 
+def dates_equal(a, b):
+    date_format = '%Y%m%d' if isinstance(a, datetime.date) and isinstance(b, datetime.date) else '%Y%m%dT%H%M%S'
+    return type(a) == type(b) and a.strftime(date_format) == b.strftime(date_format)
+
+
 property_labels = {
     "name":        N_("Name"),
     "summary":     N_("Summary"),

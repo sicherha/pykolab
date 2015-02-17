@@ -303,7 +303,7 @@ class TestResourceInvitation(unittest.TestCase):
         imap.imap.m.select(mailbox)
 
         found = None
-        retries = 10
+        retries = 15
 
         while not found and retries > 0:
             retries -= 1

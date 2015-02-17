@@ -1347,6 +1347,9 @@ class Event(object):
             instance._exceptions = []
             instance._isexception = False
 
+            # unset attachments list (only stored in main event)
+            instance.event.setAttachments(kolabformat.vectorattachment())
+
             # copy data from matching exception
             # (give precedence to single occurrence exceptions over thisandfuture)
             for exception in self._exceptions:
@@ -1374,7 +1377,7 @@ class Event(object):
         while instance:
             recurrence_id = instance.get_recurrence_id()
             if type(recurrence_id) == type(_datetime) and recurrence_id <= _datetime:
-                if recurrence_id == _datetime:
+                if xmlutils.dates_equal(recurrence_id, _datetime):
                     return instance
                 instance = self.get_next_instance(instance.get_start())
             else:
