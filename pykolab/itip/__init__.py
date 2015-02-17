@@ -166,11 +166,25 @@ def check_event_conflict(kolab_event, itip_event):
         while not conflict and _is is not None:
             # log.debug("* Comparing event dates at %s/%s with %s/%s" % (_es, _ee, _is, _ie), level=9)
             conflict = check_date_conflict(_es, _ee, _is, _ie)
-            _is = to_dt(itip_event['xml'].get_next_occurence(_is)) if kolab_event.is_recurring() else None
+            _is = to_dt(itip_event['xml'].get_next_occurence(_is)) if itip_event['xml'].is_recurring() else None
             _ie = to_dt(itip_event['xml'].get_occurence_end_date(_is))
+
+            # get full occurrence to compare the dates from a possible exception
+            if _is is not None and len(itip_event['xml'].get_exceptions()):
+                _ix = itip_event['xml'].get_instance(_is)
+                if _ix is not None:
+                    _is = to_dt(_ix.get_start())
+                    _ie = to_dt(_ix.get_end())
 
         _es = to_dt(kolab_event.get_next_occurence(_es)) if kolab_event.is_recurring() else None
         _ee = to_dt(kolab_event.get_occurence_end_date(_es))
+
+        # get full instance to compare the dates from a possible exception
+        if _es is not None and len(kolab_event.get_exceptions()):
+            _ex = kolab_event.get_instance(_es)
+            if _ex is not None:
+                _es = to_dt(_ex.get_start())
+                _ee = to_dt(_ex.get_end())
 
     return conflict
 
