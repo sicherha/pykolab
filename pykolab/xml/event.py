@@ -150,10 +150,14 @@ class Event(object):
             exception._load_attendees()
             self._exceptions.append(exception)
 
-    def add_attendee(self, email, name=None, rsvp=False, role=None, participant_status=None, cutype="INDIVIDUAL", params=None):
-        attendee = Attendee(email, name, rsvp, role, participant_status, cutype, params)
-        self._attendees.append(attendee)
-        self.event.setAttendees(self._attendees)
+    def add_attendee(self, email_or_attendee, name=None, rsvp=False, role=None, participant_status=None, cutype="INDIVIDUAL", params=None):
+        if isinstance(email_or_attendee, Attendee):
+            attendee = email_or_attendee
+        else:
+            attendee = Attendee(email_or_attendee, name, rsvp, role, participant_status, cutype, params)
+
+        # apply update to self and all exceptions
+        self.update_attendees([attendee])
 
     def add_category(self, category):
         self._categories.append(ustr(category))
@@ -695,6 +699,14 @@ class Event(object):
     def get_transparency(self):
         return self.event.transparency()
 
+    def set_attendees(self, _attendees):
+        self._attendees = _attendees
+        self.event.setAttendees(self._attendees)
+
+        # apply update to all exceptions
+        for exception in self._exceptions:
+            exception.merge_attendee_data(_attendees)
+
     def set_attendee_participant_status(self, attendee, status, rsvp=None):
         """
             Set the participant status of an attendee to status.
@@ -708,6 +720,28 @@ class Event(object):
 
         if rsvp is not None:
             attendee.set_rsvp(rsvp)
+
+        # apply update to self and all exceptions
+        self.update_attendees([attendee])
+
+    def update_attendees(self, _attendees):
+        self.merge_attendee_data(_attendees)
+
+        for exception in self._exceptions:
+            exception.merge_attendee_data(_attendees)
+
+    def merge_attendee_data(self, _attendees):
+        for attendee in _attendees:
+            found = False
+
+            for candidate in self._attendees:
+                if candidate.get_email() == attendee.get_email():
+                    candidate.copy_from(attendee)
+                    found = True
+                    break
+
+            if not found:
+                self._attendees.append(attendee)
 
         self.event.setAttendees(self._attendees)
 

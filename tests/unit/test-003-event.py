@@ -404,6 +404,13 @@ class TestEventXML(unittest.TestCase):
     def test_009_invalid_participant_status(self):
         self.assertRaises(InvalidAttendeeParticipantStatusError, self.event.set_attendee_participant_status, "jane@doe.org", "INVALID")
 
+    def test_009_update_attendees(self):
+        jane = self.event.get_attendee("jane@doe.org")
+        jane.set_name("Jane (GI) Doe")
+        self.event.update_attendees([jane])
+        self.assertEqual(len(self.event.get_attendees()), 2)
+        self.assertEqual(self.event.get_attendee("jane@doe.org").get_name(), "Jane (GI) Doe")
+
     def test_010_datetime_from_string(self):
         self.assertRaises(InvalidEventDateError, self.event.set_start, "2012-05-23 11:58:00")
 
@@ -841,6 +848,23 @@ END:VEVENT
         self.assertEqual(property_to_string('alarm', data['alarm'][0]), "Display message 2 hour(s) before")
         self.assertEqual(property_to_string('attach', data['attach'][0]), "noname.1395223627.5555")
 
+
+    def test_027_merge_attendee_data(self):
+        event = event_from_string(xml_event)
+
+        jane = event.get_attendee("jane@example.org")
+        jane.set_participant_status('TENTATIVE')
+        jack = Attendee("jack@example.org", name="Jack", role='OPT-PARTICIPANT')
+
+        # update jane + add jack
+        event.update_attendees([jane,jack])
+        self.assertEqual(len(event.get_attendees()), 3)
+        self.assertEqual(event.get_attendee("jane@example.org").get_participant_status(), kolabformat.PartTentative)
+
+        exception = event.get_exceptions()[0]
+        self.assertEqual(len(exception.get_attendees()), 2)
+        self.assertEqual(event.get_attendee("jane@example.org").get_participant_status(), kolabformat.PartTentative)
+        self.assertEqual(event.get_attendee("jack@example.org").get_name(), "Jack")
 
     def _find_prop_in_list(self, diff, name):
         for prop in diff:
