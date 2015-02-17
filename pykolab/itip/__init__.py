@@ -1,6 +1,7 @@
 import icalendar
 import pykolab
 import traceback
+import kolabformat
 
 from pykolab.xml import to_dt
 from pykolab.xml import event_from_ical
@@ -86,6 +87,7 @@ def objects_from_message(message, objnames, methods=None):
                     itip['uid'] = str(c['uid'])
                     itip['method'] = str(cal['method']).upper()
                     itip['sequence'] = int(c['sequence']) if c.has_key('sequence') else 0
+                    itip['recurrence-id'] = c['recurrence-id'].dt if c.has_key('recurrence-id') and hasattr(c['recurrence-id'], 'dt') else None
 
                     if c.has_key('dtstart'):
                         itip['start'] = c['dtstart'].dt
@@ -151,21 +153,23 @@ def check_event_conflict(kolab_event, itip_event):
         return conflict
 
     # don't consider conflict if event has TRANSP:TRANSPARENT
-    if kolab_event.get_transparency():
+    if _is_transparent(kolab_event):
         return conflict
 
     _es = to_dt(kolab_event.get_start())
     _ee = to_dt(kolab_event.get_ical_dtend())  # use iCal style end date: next day for all-day events
+    _ev = kolab_event
 
     # naive loops to check for collisions in (recurring) events
     # TODO: compare recurrence rules directly (e.g. matching time slot or weekday or monthday)
     while not conflict and _es is not None:
         _is = to_dt(itip_event['start'])
         _ie = to_dt(itip_event['end'])
+        _iv = itip_event['xml']
 
         while not conflict and _is is not None:
             # log.debug("* Comparing event dates at %s/%s with %s/%s" % (_es, _ee, _is, _ie), level=9)
-            conflict = check_date_conflict(_es, _ee, _is, _ie)
+            conflict = not _is_transparent(_ev) and not _is_transparent(_iv) and check_date_conflict(_es, _ee, _is, _ie)
             _is = to_dt(itip_event['xml'].get_next_occurence(_is)) if itip_event['xml'].is_recurring() else None
             _ie = to_dt(itip_event['xml'].get_occurence_end_date(_is))
 
@@ -175,6 +179,7 @@ def check_event_conflict(kolab_event, itip_event):
                 if _ix is not None:
                     _is = to_dt(_ix.get_start())
                     _ie = to_dt(_ix.get_end())
+                    _iv = _ix
 
         _es = to_dt(kolab_event.get_next_occurence(_es)) if kolab_event.is_recurring() else None
         _ee = to_dt(kolab_event.get_occurence_end_date(_es))
@@ -185,8 +190,13 @@ def check_event_conflict(kolab_event, itip_event):
             if _ex is not None:
                 _es = to_dt(_ex.get_start())
                 _ee = to_dt(_ex.get_end())
+                _ev = _ex
 
     return conflict
+
+
+def _is_transparent(event):
+    return event.get_transparency() or event.get_status() == kolabformat.StatusCancelled
 
 
 def check_date_conflict(_es, _ee, _is, _ie):

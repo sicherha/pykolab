@@ -461,13 +461,21 @@ class TestITip(unittest.TestCase):
         event5.set_start(datetime.datetime(2012,7,9, 10,0,0, tzinfo=pytz.timezone("Europe/London")))
         event5.set_end(datetime.datetime(2012,7,9, 11,0,0, tzinfo=pytz.timezone("Europe/London")))
 
-        exception = Event(from_string=str(event5))
+        event_xml = str(event5)
+        exception = Event(from_string=event_xml)
         exception.set_start(datetime.datetime(2012,7,13, 14,0,0, tzinfo=pytz.timezone("Europe/London")))
         exception.set_end(datetime.datetime(2012,7,13, 16,0,0, tzinfo=pytz.timezone("Europe/London")))
         exception.set_recurrence_id(datetime.datetime(2012,7,13, 10,0,0, tzinfo=pytz.timezone("Europe/London")), False)
         event5.add_exception(exception)
         self.assertFalse(itip.check_event_conflict(event5, itip_event), "No conflict with exception date")
 
+        exception = Event(from_string=event_xml)
+        exception.set_start(datetime.datetime(2012,7,13, 10,0,0, tzinfo=pytz.timezone("Europe/London")))
+        exception.set_end(datetime.datetime(2012,7,13, 11,0,0, tzinfo=pytz.timezone("Europe/London")))
+        exception.set_status('CANCELLED')
+        exception.set_recurrence_id(datetime.datetime(2012,7,13, 10,0,0, tzinfo=pytz.timezone("Europe/London")), False)
+        event5.add_exception(exception)
+        self.assertFalse(itip.check_event_conflict(event5, itip_event), "No conflict with cancelled exception")
 
     def test_003_send_reply(self):
         itip_events = itip.events_from_message(message_from_string(itip_non_multipart))
