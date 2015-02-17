@@ -176,7 +176,7 @@ class Event(object):
             valid_datetime = True
 
         if not valid_datetime:
-            raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance")
+            raise InvalidEventDateError, _("Exdate needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime))
 
         self.event.addExceptionDate(xmlutils.to_cdatetime(_datetime, True))
 
@@ -597,6 +597,9 @@ class Event(object):
         except:
             return datetime.datetime.now()
 
+    def get_ical_lastmodified(self):
+        return self.get_ical_dtstamp()
+
     def get_ical_dtstart(self):
         return self.get_start()
 
@@ -786,7 +789,7 @@ class Event(object):
             valid_datetime = True
 
         if not valid_datetime:
-            raise InvalidEventDateError, _("Event end needs datetime.date or datetime.datetime instance")
+            raise InvalidEventDateError, _("Event end needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime))
 
         self.event.setEnd(xmlutils.to_cdatetime(_datetime, True))
 
@@ -931,7 +934,7 @@ class Event(object):
             _datetime = datetime.datetime.utcnow()
 
         if not valid_datetime:
-            raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance")
+            raise InvalidEventDateError, _("Event last-modified needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime))
 
         self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False, True))
 
@@ -974,7 +977,7 @@ class Event(object):
             valid_datetime = True
 
         if not valid_datetime:
-            raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance")
+            raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime))
 
         self.event.setStart(xmlutils.to_cdatetime(_datetime, True))
 
