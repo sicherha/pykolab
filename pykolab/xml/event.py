@@ -220,6 +220,19 @@ class Event(object):
         # TODO: Add timezone information using icalendar.?()
         #       Not sure if there is a class for it.
 
+        cal.add_component(self.to_ical())
+
+        # add recurrence exceptions
+        if len(self._exceptions) > 0 and not method == 'REPLY':
+            for exception in self._exceptions:
+                cal.add_component(exception.to_ical())
+
+        if hasattr(cal, 'to_ical'):
+            return cal.to_ical()
+        elif hasattr(cal, 'as_string'):
+            return cal.as_string()
+
+    def to_ical(self):
         event = icalendar.Event()
 
         # Required
@@ -259,12 +272,7 @@ class Event(object):
         for cs in self.event.customProperties():
             event.add(cs.identifier, cs.value)
 
-        cal.add_component(event)
-
-        if hasattr(cal, 'to_ical'):
-            return cal.to_ical()
-        elif hasattr(cal, 'as_string'):
-            return cal.as_string()
+        return event
 
     def delegate(self, delegators, delegatees, names=None):
         if not isinstance(delegators, list):
@@ -343,8 +351,10 @@ class Event(object):
             ical = "BEGIN:VCALENDAR\nVERSION:2.0\n" + ical + "\nEND:VCALENDAR"
         from kolab.calendaring import EventCal
         self.event = EventCal()
-        self.event.fromICal(ical)
-        self._load_exceptions()
+        success = self.event.fromICal(ical)
+        if success:
+            self._load_exceptions()
+        return success
 
     def get_attendee_participant_status(self, attendee):
         return attendee.get_participant_status()

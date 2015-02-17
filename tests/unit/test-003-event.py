@@ -668,6 +668,33 @@ END:VEVENT
         occurrence = event.get_next_instance(event.get_start())
         self.assertEqual(occurrence.get_summary(), "Exception")
 
+    def test_021_ical_exceptions(self):
+        self.event.set_summary("test")
+        self.event.set_start(datetime.datetime(2014, 05, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
+        self.event.set_end(datetime.datetime(2014, 05, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
+
+        rrule = kolabformat.RecurrenceRule()
+        rrule.setFrequency(kolabformat.RecurrenceRule.Weekly)
+        self.event.set_recurrence(rrule)
+
+        xmlexception = Event(from_string=str(self.event))
+        xmlexception.set_start(datetime.datetime(2014, 05, 30, 14, 00, 00, tzinfo=pytz.timezone("Europe/London")))
+        xmlexception.set_end(datetime.datetime(2014, 05, 30, 16, 00, 00, tzinfo=pytz.timezone("Europe/London")))
+        xmlexception.set_recurrence_id(datetime.datetime(2014, 05, 30, 11, 0, 0), False)
+        self.event.add_exception(xmlexception)
+
+        ical = icalendar.Calendar.from_ical(self.event.as_string_itip())
+        vevents = ical.walk('VEVENT')
+        event = vevents[0]
+        exception = vevents[1]
+
+        self.assertEqual(event['uid'], self.event.get_uid())
+        self.assertEqual(event['summary'], "test")
+
+        self.assertEqual(exception['uid'], self.event.get_uid())
+        self.assertIsInstance(exception['recurrence-id'].dt, datetime.datetime)
+        self.assertEqual(exception['recurrence-id'].params.get('RANGE'), None)
+
     def test_022_load_from_xml(self):
         event = event_from_string(xml_event)
         self.assertEqual(event.uid, '75c740bb-b3c6-442c-8021-ecbaeb0a025e')
