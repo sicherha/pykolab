@@ -855,16 +855,22 @@ END:VEVENT
         jane = event.get_attendee("jane@example.org")
         jane.set_participant_status('TENTATIVE')
         jack = Attendee("jack@example.org", name="Jack", role='OPT-PARTICIPANT')
+        some = event.set_attendee_participant_status("somebody@else.com", 'ACCEPTED')
 
         # update jane + add jack
         event.update_attendees([jane,jack])
         self.assertEqual(len(event.get_attendees()), 3)
         self.assertEqual(event.get_attendee("jane@example.org").get_participant_status(), kolabformat.PartTentative)
+        self.assertEqual(event.get_attendee("somebody@else.com").get_participant_status(), kolabformat.PartAccepted)
 
+        # test write + read
+        event = event_from_string(str(event))
         exception = event.get_exceptions()[0]
         self.assertEqual(len(exception.get_attendees()), 2)
         self.assertEqual(event.get_attendee("jane@example.org").get_participant_status(), kolabformat.PartTentative)
         self.assertEqual(event.get_attendee("jack@example.org").get_name(), "Jack")
+        self.assertRaises(ValueError, exception.get_attendee, "somebody@else.com")  # not addded to exception
+
 
     def _find_prop_in_list(self, diff, name):
         for prop in diff:

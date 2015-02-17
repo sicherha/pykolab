@@ -157,7 +157,7 @@ class Event(object):
             attendee = Attendee(email_or_attendee, name, rsvp, role, participant_status, cutype, params)
 
         # apply update to self and all exceptions
-        self.update_attendees([attendee])
+        self.update_attendees([attendee], True)
 
     def add_category(self, category):
         self._categories.append(ustr(category))
@@ -722,15 +722,19 @@ class Event(object):
             attendee.set_rsvp(rsvp)
 
         # apply update to self and all exceptions
-        self.update_attendees([attendee])
+        self.update_attendees([attendee], False)
 
-    def update_attendees(self, _attendees):
-        self.merge_attendee_data(_attendees)
+    def update_attendees(self, _attendees, append=True):
+        self.merge_attendee_data(_attendees, append)
 
-        for exception in self._exceptions:
-            exception.merge_attendee_data(_attendees)
+        if len(self._exceptions):
+            vexceptions = self.event.exceptions()
+            for i, exception in enumerate(self._exceptions):
+                exception.merge_attendee_data(_attendees, append)
+                vexceptions[i] = exception.event
+            self.event.setExceptions(vexceptions)
 
-    def merge_attendee_data(self, _attendees):
+    def merge_attendee_data(self, _attendees, append=True):
         for attendee in _attendees:
             found = False
 
@@ -740,7 +744,7 @@ class Event(object):
                     found = True
                     break
 
-            if not found:
+            if not found and append:
                 self._attendees.append(attendee)
 
         self.event.setAttendees(self._attendees)
