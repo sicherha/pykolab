@@ -226,7 +226,7 @@ bind_pw = %(service_bind_pw)s
 
 query_filter = (&(|(mail=%%s)(alias=%%s))(objectclass=kolabsharedfolder)(kolabFolderType=mail))
 result_attribute = kolabtargetfolder
-result_format = shared+%%s
+result_format = "shared+%%s"
 """ % {
                         "base_dn": conf.get('ldap', 'base_dn'),
                         "server_host": server_host,
