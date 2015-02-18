@@ -3,21 +3,29 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Christoph Wickert <christoph.wickert@gmail.com>, 2012
+# Christoph Wickert <christoph.wickert@gmail.com>, 2015
+# Christoph Wickert <christoph.wickert@gmail.com>, 2011
+# Dirk Marschner <info@marschner.cx>, 2015
+# Ettore Atalan <atalanttore@googlemail.com>, 2014-2015
 # Torsten Grote <grote@kolabsys.com>, 2012
+# Jeroen van Meeuwen <vanmeeuwen@kolabsys.com>, 2015
+# balin <johannes_graumann@web.de>, 2012
+# Jo <jo@caj-augsburg.de>, 2012
+# bitnukl, 2014
 # Thomas Brüderli <roundcube@gmail.com>, 2014
+# Till Savekoul <till@koul.de>, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: Kolab Groupware Solution\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-01-14 01:36+0100\n"
-"PO-Revision-Date: 2015-01-21 16:28+0000\n"
-"Last-Translator: Thomas Brüderli <roundcube@gmail.com>\n"
-"Language-Team: German (Germany) (http://www.transifex.com/projects/p/kolab/language/de_DE/)\n"
+"PO-Revision-Date: 2015-02-01 15:31+0000\n"
+"Last-Translator: Dirk Marschner <info@marschner.cx>\n"
+"Language-Team: German (http://www.transifex.com/projects/p/kolab/language/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: de_DE\n"
+"Language: de\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../bin/kolab_smtp_access_policy.py:210
@@ -37,12 +45,12 @@ msgstr "Konnte den Empfänger nicht finden"
 #: ../bin/kolab_smtp_access_policy.py:528
 #, python-format
 msgid "Could not find envelope sender user %s (511)"
-msgstr ""
+msgstr "Konnte Absender-Umschlag für Benutzer %s nicht finden (511)"
 
 #: ../bin/kolab_smtp_access_policy.py:571
 #, python-format
 msgid "Obtained authenticated user details for %r: %r"
-msgstr ""
+msgstr "Erhaltene Details des authentifizieren Benutzers %r: %r"
 
 #: ../bin/kolab_smtp_access_policy.py:628
 #, python-format
@@ -58,7 +66,7 @@ msgstr "Benutzer %s ist nicht berechtigt als Benutzer %s zu senden"
 #, python-format
 msgid ""
 "User %s attempted to use envelope sender address %s without authorization"
-msgstr ""
+msgstr "Benutzer %s versuchte die Absendeadresse %s ohne Berechtigung zu verwenden"
 
 #: ../bin/kolab_smtp_access_policy.py:714
 #: ../bin/kolab_smtp_access_policy.py:725
@@ -71,23 +79,23 @@ msgstr "Benutzer %s ist ein delegierter Benutzer von %s"
 msgid ""
 "Verifying authenticated sender '%(sender)s' with sasl_username "
 "'%(sasl_username)s' for recipient '%(recipient)s'"
-msgstr ""
+msgstr "Überprüfe authentisierten Absender '%(sender)s' mit SASL-Benutzernamen '%(sasl_username)s' für Empfänger '%(recipient)s'"
 
 #: ../bin/kolab_smtp_access_policy.py:752
 #, python-format
 msgid ""
 "Verifying unauthenticated sender '%(sender)s' for recipient '%(recipient)s'"
-msgstr ""
+msgstr "Überprüfe unauthentisierten Absender '%(sender)s' für Empfänger '%(recipient)s'"
 
 #: ../bin/kolab_smtp_access_policy.py:768
 #, python-format
 msgid "Reproducing verify_recipient(%s, %s) from cache"
-msgstr ""
+msgstr "Reproduziere verify_recipient(%s, %s) aus Cache"
 
 #: ../bin/kolab_smtp_access_policy.py:805
 #, python-format
 msgid "Using authentication domain %s instead of %s"
-msgstr "Benutze Authentisierungsdomain %s anstelle von %s"
+msgstr "Authentisierungsdomain %s anstelle von %s wird verwendet"
 
 #: ../bin/kolab_smtp_access_policy.py:815
 #, python-format
@@ -99,20 +107,20 @@ msgstr "Die Domain %s ist die primäre Domain"
 msgid ""
 "Checking the recipient for domain %s that is not ours. This is probably a "
 "configuration error."
-msgstr ""
+msgstr "Überprüfe Empfänger für fremde Domäne %s. Dies ist wahrscheinlich ein Konfigurationsfehler."
 
 #: ../bin/kolab_smtp_access_policy.py:838
 msgid ""
 "This recipient address is related to multiple object entries and the SMTP "
 "Access Policy can therefore not restrict message flow"
-msgstr ""
+msgstr "Diese Empfänger-Adresse bezieht sich auf mehrere Objekt-Einträge. Die SMTP Access Policy kann deshalb den Nachrichtenfluss nicht einschränken."
 
 #: ../bin/kolab_smtp_access_policy.py:855
 #, python-format
 msgid ""
 "Recipient address %r not found. Allowing since the MTA was configured to "
 "accept the recipient."
-msgstr ""
+msgstr "Emfänger-Adresse %r nicht gefunden. Erlauben, da MTA konfiguriert wurde, diesen Empfänger zu akzeptieren."
 
 #: ../bin/kolab_smtp_access_policy.py:891
 msgid "Invalid recipient"
@@ -120,30 +128,30 @@ msgstr "Ungültiger Empfänger"
 
 #: ../bin/kolab_smtp_access_policy.py:902
 msgid "Could not find this user, accepting"
-msgstr ""
+msgstr "Konnte keine Einschränkung für diesen Benutzer finden, akzeptiere Nachricht"
 
 #: ../bin/kolab_smtp_access_policy.py:975
 #: ../bin/kolab_smtp_access_policy.py:1051
 #, python-format
 msgid "Sender %s is not allowed to send to recipient %s"
-msgstr ""
+msgstr "Absender %s darf nicht an Empfänger %s senden"
 
 #: ../bin/kolab_smtp_access_policy.py:1039
 #, python-format
 msgid "Reproducing verify_sender(%r) from cache"
-msgstr ""
+msgstr "Reproduziere verify_sender(%r) aus Cache"
 
 #: ../bin/kolab_smtp_access_policy.py:1056
 msgid "Unverifiable sender."
-msgstr ""
+msgstr "Nicht überprüfbarer Absender."
 
 #: ../bin/kolab_smtp_access_policy.py:1061
 msgid "Sender is not using an alias"
-msgstr ""
+msgstr "Absender nutzt keinen Alias"
 
 #: ../bin/kolab_smtp_access_policy.py:1069
 msgid "Sender uses unauthorized envelope sender address"
-msgstr ""
+msgstr "Absender nutzt unerlaubte Absender-Umschlag Adresse"
 
 #: ../bin/kolab_smtp_access_policy.py:1086
 msgid "Could not verify sender"
@@ -152,7 +160,7 @@ msgstr "Konnte den Absender nicht verifizieren"
 #: ../bin/kolab_smtp_access_policy.py:1093
 msgid ""
 "Verifying whether sender is allowed to send to recipient using sender policy"
-msgstr ""
+msgstr "Überprüfe ob Absender an Empfänger gemäß Absender-Richtlinie senden darf"
 
 #: ../bin/kolab_smtp_access_policy.py:1106
 #, python-format
@@ -170,7 +178,7 @@ msgstr "Empfänger-Richtlinie für diesen Benutzer gefunden"
 #: ../bin/kolab_smtp_access_policy.py:1135
 #, python-format
 msgid "Sender %s not allowed to send to recipient %s"
-msgstr ""
+msgstr "Absender %s darf nicht an Empfänger %s senden"
 
 #: ../bin/kolab_smtp_access_policy.py:1156
 msgid "Cleaning up the cache"
@@ -180,42 +188,42 @@ msgstr "Aufräumen des Cache"
 msgid ""
 "The 'uri' setting in the kolab_smtp_access_policy section is soon going to "
 "be deprecated in favor of 'cache_uri'"
-msgstr ""
+msgstr "Die 'uri' Einstellung im Abschnitt kolab_smtp_access_policy wird bald überholt sein. Nutzen Sie 'cache_uri' stattdessen "
 
 #: ../bin/kolab_smtp_access_policy.py:1195
 #, python-format
 msgid "Operational Error in caching: %s"
-msgstr ""
+msgstr "Betriebsbedingter Fehler beim Cachen: %s"
 
 #: ../bin/kolab_smtp_access_policy.py:1247
 #, python-format
 msgid "Caching the policy result with timestamp %d"
-msgstr ""
+msgstr "Cachen des Richtlinienergebnisses mit Zeitstempel %d"
 
 #: ../bin/kolab_smtp_access_policy.py:1321
 #, python-format
 msgid "Returning action DEFER_IF_PERMIT: %s"
-msgstr ""
+msgstr "Antwort Aktion DEFER_IF_PERMIT: %s"
 
 #: ../bin/kolab_smtp_access_policy.py:1326
 #, python-format
 msgid "Returning action DUNNO: %s"
-msgstr ""
+msgstr "Antwort Aktion DUNNO: %s"
 
 #: ../bin/kolab_smtp_access_policy.py:1331
 #, python-format
 msgid "Returning action HOLD: %s"
-msgstr ""
+msgstr "Antwort Aktion HOLD: %s"
 
 #: ../bin/kolab_smtp_access_policy.py:1336
 #, python-format
 msgid "Returning action PERMIT: %s"
-msgstr ""
+msgstr "Antwort Aktion PERMIT: %s"
 
 #: ../bin/kolab_smtp_access_policy.py:1461
 #, python-format
 msgid "Returning action REJECT: %s"
-msgstr ""
+msgstr "Antwort Aktion REJECT: %s"
 
 #: ../bin/kolab_smtp_access_policy.py:1507
 msgid "Starting to loop for new request"
@@ -223,7 +231,7 @@ msgstr "Starte Schleife für neue Anfrage"
 
 #: ../bin/kolab_smtp_access_policy.py:1514
 msgid "Timeout for policy request reading exceeded"
-msgstr ""
+msgstr "Zeitüberschreitung beim Lesen der Richtlinienanfrage"
 
 #: ../bin/kolab_smtp_access_policy.py:1520
 msgid "End of current request"
@@ -232,11 +240,11 @@ msgstr "Ende der aktuellen Anfrage"
 #: ../bin/kolab_smtp_access_policy.py:1524
 #, python-format
 msgid "Getting line: %s"
-msgstr ""
+msgstr "Lese Zeile: %s"
 
 #: ../bin/kolab_smtp_access_policy.py:1528
 msgid "Returning request"
-msgstr ""
+msgstr "Rückgabe Richtlinenanfordung"
 
 #: ../bin/kolab_smtp_access_policy.py:1557
 msgid "Access Policy Options"
@@ -248,334 +256,334 @@ msgstr "Zeitüberschreitung der SMTP Richtlinien-Anfrage"
 
 #: ../bin/kolab_smtp_access_policy.py:1570
 msgid "Verify the recipient access policy."
-msgstr ""
+msgstr "Verifiziere die Empfänger-Zugriffs-Richtlinie."
 
 #: ../bin/kolab_smtp_access_policy.py:1576
 msgid "Verify the sender access policy."
-msgstr ""
+msgstr "Verifiziere die Sender-Zugriffs-Richtlinie."
 
 #: ../bin/kolab_smtp_access_policy.py:1582
 msgid "Allow unauthenticated senders."
-msgstr ""
+msgstr "Erlaube nicht authentisierte Sender."
 
 #: ../bin/kolab_smtp_access_policy.py:1596
 #, python-format
 msgid "Got request instance %s"
-msgstr ""
+msgstr "Anfrage bekommen für Instanz %s"
 
 #: ../bin/kolab_smtp_access_policy.py:1605
 #, python-format
 msgid "Request instance %s is in state %s"
-msgstr ""
+msgstr "Anfrage-Instanz %s ist im Status %s"
 
 #: ../bin/kolab_smtp_access_policy.py:1613
 #, python-format
 msgid "Request instance %s is not yet in DATA state"
-msgstr ""
+msgstr "Anfrage-Instanz %s ist noch nicht im DATA Status"
 
 #: ../bin/kolab_smtp_access_policy.py:1625
 #, python-format
 msgid "Request instance %s reached DATA state"
-msgstr ""
+msgstr "Anfrage-Instanz %s hat DATA Status erreicht"
 
 #: ../bin/kolab_smtp_access_policy.py:1645
 #, python-format
 msgid "Unhandled exception caught: %r"
-msgstr ""
+msgstr "Unbehandelte Ausnahme abgefangen: %r"
 
 #: ../bin/kolab_smtp_access_policy.py:1649
 msgid "Sender access denied"
-msgstr ""
+msgstr "Sender Zugriff verweigert"
 
 #: ../bin/kolab_smtp_access_policy.py:1651
 msgid "Recipient access denied"
-msgstr ""
+msgstr "Empfänger Zugriff verweigert"
 
 #: ../bin/kolab_smtp_access_policy.py:1653
 msgid "No objections"
-msgstr ""
+msgstr "Keine Einwände"
 
 #: ../conf.py:37 ../kolab-cli.py:34 ../saslauthd.py:33
 msgid "Cannot load pykolab/logger.py:"
-msgstr ""
+msgstr "Laden von pykolab/logger.py nicht möglich:"
 
 #: ../kolabd/__init__.py:49 ../saslauthd/__init__.py:51
 #: ../wallace/__init__.py:107
 msgid "Daemon Options"
-msgstr ""
+msgstr "Daemon Optionen"
 
 #: ../kolabd/__init__.py:56 ../saslauthd/__init__.py:58
 #: ../wallace/__init__.py:114
 msgid "Fork to the background."
-msgstr ""
+msgstr "In den Hintergrund abtauchen"
 
 #: ../kolabd/__init__.py:65 ../saslauthd/__init__.py:67
 #: ../wallace/__init__.py:148
 msgid "Path to the PID file to use."
-msgstr ""
+msgstr "Pfad zur PID-Datei"
 
 #: ../kolabd/__init__.py:74 ../saslauthd/__init__.py:85
 #: ../wallace/__init__.py:165
 msgid "Run as user USERNAME"
-msgstr ""
+msgstr "Als Benutzer USERNAME ausführen"
 
 #: ../kolabd/__init__.py:84 ../saslauthd/__init__.py:95
 #: ../wallace/__init__.py:131
 msgid "Run as group GROUPNAME"
-msgstr ""
+msgstr "Als Gruppe GROUPNAME ausführen"
 
 #: ../kolabd/__init__.py:122 ../pykolab/utils.py:234
 #: ../saslauthd/__init__.py:301 ../wallace/__init__.py:365
 #, python-format
 msgid "Group %s does not exist"
-msgstr ""
+msgstr "Gruppe %s exisitert nicht"
 
 #: ../kolabd/__init__.py:131 ../saslauthd/__init__.py:310
 #: ../wallace/__init__.py:374
 #, python-format
 msgid "Switching real and effective group id to %d"
-msgstr ""
+msgstr "Wechsle reale und effektive Gruppen-ID zu %d"
 
 #: ../kolabd/__init__.py:153 ../pykolab/utils.py:258
 #: ../saslauthd/__init__.py:332 ../wallace/__init__.py:396
 #, python-format
 msgid "User %s does not exist"
-msgstr ""
+msgstr "Benutzer %s existiert nicht"
 
 #: ../kolabd/__init__.py:163 ../saslauthd/__init__.py:342
 #: ../wallace/__init__.py:406
 #, python-format
 msgid "Switching real and effective user id to %d"
-msgstr ""
+msgstr "Wechsle reale und effektive Benutzer-ID zu %d"
 
 #: ../kolabd/__init__.py:172 ../saslauthd/__init__.py:351
 #: ../wallace/__init__.py:415
 msgid "Could not change real and effective uid and/or gid"
-msgstr ""
+msgstr "Konnte reale und effektive UID und/oder GID nicht ändern"
 
 #: ../kolabd/__init__.py:192 ../saslauthd/__init__.py:142
 #: ../wallace/__init__.py:435
 msgid "Interrupted by user"
-msgstr ""
+msgstr "Vom Benutzer unterbrochen"
 
 #: ../kolabd/__init__.py:197 ../kolabd/__init__.py:208
 msgid "Traceback occurred, please report a "
-msgstr ""
+msgstr "Traceback passiert, bitte melden Sie einen"
 
 #: ../kolabd/__init__.py:203 ../saslauthd/__init__.py:150
 #: ../wallace/__init__.py:444
 #, python-format
 msgid "Type Error: %s"
-msgstr ""
+msgstr "Typ-Fehler: %s"
 
 #: ../kolabd/__init__.py:230
 msgid "Could not connect to LDAP, is it running?"
-msgstr ""
+msgstr "Konnte nicht zu LDAP verbinden, läuft es?"
 
 #: ../kolabd/__init__.py:233 ../pykolab/auth/ldap/__init__.py:2242
 #: ../pykolab/cli/cmd_sync.py:67
 msgid "Listing domains..."
-msgstr "Domänen werden geladen…"
+msgstr "Liste Domains auf..."
 
 #: ../kolabd/__init__.py:244
 msgid "No domains. Not syncing"
-msgstr ""
+msgstr "Keine Domänen. Keine Synchronisation"
 
 #: ../kolabd/__init__.py:279
 #, python-format
 msgid "added domains: %r, removed domains: %r"
-msgstr ""
+msgstr "Domänen hinzugefügt: %r, Domänen entfernt: %r"
 
 #: ../kolabd/process.py:33
 #, python-format
 msgid "Process created for domain %s"
-msgstr ""
+msgstr "Prozess gestartet für Domäne %s"
 
 #: ../kolabd/process.py:42
 #, python-format
 msgid "Synchronizing for domain %s"
-msgstr ""
+msgstr "Synchronisiere für Domäne %s"
 
 #: ../kolabd/process.py:59
 #, python-format
 msgid ""
 "Error in process %r, terminating:\n"
 "\t%r"
-msgstr ""
+msgstr "Fehler im Prozess %r, beende:\n\t%r"
 
 #: ../kolabd.py:31 ../setup-kolab.py:36 ../wallace.py:31
 msgid "Cannot load pykolab/constants.py:"
-msgstr ""
+msgstr "Konnte nicht pykolab/constants.py laden:"
 
 #: ../pykolab/auth/__init__.py:89
 #, python-format
 msgid "Called for domain %r"
-msgstr ""
+msgstr "Aufgerufen für Domäne %r"
 
 #: ../pykolab/auth/__init__.py:106 ../pykolab/auth/__init__.py:115
 #, python-format
 msgid "Using section %s and domain %s"
-msgstr ""
+msgstr "Benutze Abschnitt %s und Domäne %s"
 
 #: ../pykolab/auth/__init__.py:120
 #, python-format
 msgid "Connecting to Authentication backend for domain %s"
-msgstr ""
+msgstr "Verbinde zu Authentifizierungsbackend für Domäne %s"
 
 #: ../pykolab/auth/__init__.py:131
 #, python-format
 msgid "Section %s has no option 'auth_mechanism'"
-msgstr ""
+msgstr "Abschnitt %s hat keinen Wert 'auth_mechanism'"
 
 #: ../pykolab/auth/__init__.py:138
 #, python-format
 msgid "Section %s has auth_mechanism: %r"
-msgstr ""
+msgstr "Abschnitt %s hat auth_mechanism: %r"
 
 #: ../pykolab/auth/__init__.py:147 ../pykolab/auth/__init__.py:156
 msgid "Starting LDAP..."
-msgstr ""
+msgstr "Starte LDAP..."
 
 #: ../pykolab/auth/ldap/cache.py:126
 #, python-format
 msgid "Inserting cache entry %r"
-msgstr ""
+msgstr "Hinzufügen Cacheeintrag %r"
 
 #: ../pykolab/auth/ldap/cache.py:147
 #, python-format
 msgid "Updating timestamp for cache entry %r"
-msgstr ""
+msgstr "Aktualisiere Zeitstempel für Cacheeintrag %r"
 
 #: ../pykolab/auth/ldap/cache.py:155
 #, python-format
 msgid "Updating result_attribute for cache entry %r"
-msgstr ""
+msgstr "Aktualisiere result_attribute für Cacheeintrag %r"
 
 #: ../pykolab/auth/ldap/__init__.py:52
 msgid "Python LDAP library does not support persistent search"
-msgstr ""
+msgstr "Die Python LDAP Bibliothek unterstützt keine persistente Suche"
 
 #: ../pykolab/auth/ldap/__init__.py:143
 #, python-format
 msgid "Attempting to authenticate user %s in realm %s"
-msgstr ""
+msgstr "Versuche Benutzer %s in Bereich %s zu authentisieren"
 
 #: ../pykolab/auth/ldap/__init__.py:175 ../pykolab/auth/ldap/__init__.py:226
 #, python-format
 msgid "Authentication cache failed: %r"
-msgstr ""
+msgstr "Authentifizierungscache fehlgeschlagen: %r"
 
 #: ../pykolab/auth/ldap/__init__.py:216 ../pykolab/auth/ldap/__init__.py:240
 #, python-format
 msgid "Binding with user_dn %s and password %s"
-msgstr ""
+msgstr "Binde mit user_dn %s und Passwort %s"
 
 #: ../pykolab/auth/ldap/__init__.py:231 ../pykolab/auth/ldap/__init__.py:263
 #, python-format
 msgid "Failed to authenticate as user %s"
-msgstr ""
+msgstr "Autorisation als Benutzer %s gescheitert"
 
 #: ../pykolab/auth/ldap/__init__.py:249
 #, python-format
 msgid "Error occured, there is no such object: %r"
-msgstr ""
+msgstr "Ausnahme aufgetreten, es gibt kein solches Objekt: %r"
 
 #: ../pykolab/auth/ldap/__init__.py:254
 msgid "Authentication cache failed to clear entry"
-msgstr ""
+msgstr "Authentifizierungscache konnte Eintrag nicht entfernen"
 
 #: ../pykolab/auth/ldap/__init__.py:260
 #, python-format
 msgid "Exception occured: %r"
-msgstr ""
+msgstr "Ausnahme aufgetreten: %r"
 
 #: ../pykolab/auth/ldap/__init__.py:280
 msgid "Connecting to LDAP..."
-msgstr "Zum LDAP verbinden…"
+msgstr "Verbinde zum LDAP..."
 
 #: ../pykolab/auth/ldap/__init__.py:284
 #, python-format
 msgid "Attempting to use LDAP URI %s"
-msgstr ""
+msgstr "Versuche LDAP URI %s zu benutzen"
 
 #: ../pykolab/auth/ldap/__init__.py:371
 #, python-format
 msgid "Entry ID: %r"
-msgstr ""
+msgstr "Eintragkennung: %r"
 
 #: ../pykolab/auth/ldap/__init__.py:373
 #, python-format
 msgid "Entry DN: %r"
-msgstr ""
+msgstr "Eintrag DN: %r"
 
 #: ../pykolab/auth/ldap/__init__.py:376
 #, python-format
 msgid ""
 "ldap search: (%r, %r, filterstr='(objectclass=*)', attrlist=[ 'dn' ] + %r"
-msgstr ""
+msgstr "LDAP Suche: (%r, %r, filterstr='(objectclass=*)', attrlist=[ 'dn' ] + %r"
 
 #: ../pykolab/auth/ldap/__init__.py:481
 #, python-format
 msgid "Finding recipient with filter %r"
-msgstr ""
+msgstr "Finde Empfänger mit Filter %r"
 
 #: ../pykolab/auth/ldap/__init__.py:557
 #, python-format
 msgid "Finding resource with filter %r"
-msgstr ""
+msgstr "Finde Ressource mit Filter %r"
 
 #: ../pykolab/auth/ldap/__init__.py:588
 #, python-format
 msgid "Using timestamp %r"
-msgstr ""
+msgstr "Zeitstempel %r wird verwendet"
 
 #: ../pykolab/auth/ldap/__init__.py:625
 #, python-format
 msgid "Not applying recipient policy for %s "
-msgstr ""
+msgstr "Keine Anwendung der Empfängerrichtlinie für %s"
 
 #: ../pykolab/auth/ldap/__init__.py:635
 #, python-format
 msgid "Applying recipient policy to %r"
-msgstr ""
+msgstr "Anwendung Empfängerrichtlinie zu %r"
 
 #: ../pykolab/auth/ldap/__init__.py:652
 #, python-format
 msgid "Using mail attributes: %r, with primary %r and "
-msgstr ""
+msgstr "Benutze Mailattribute: %r, mit primary %r und "
 
 #: ../pykolab/auth/ldap/__init__.py:663
 #, python-format
 msgid "key %r not in entry"
-msgstr ""
+msgstr "Key %r nicht im Eintrag"
 
 #: ../pykolab/auth/ldap/__init__.py:665
 #, python-format
 msgid "key %r is the prim. mail attr."
-msgstr ""
+msgstr "Key %r ist das primäre Mailattr."
 
 #: ../pykolab/auth/ldap/__init__.py:667
 msgid "prim. mail pol. is not empty"
-msgstr ""
+msgstr "Primäre Mailrichtlinie ist nicht leer"
 
 #: ../pykolab/auth/ldap/__init__.py:670
 #, python-format
 msgid "key %r is the sec. mail attr."
-msgstr ""
+msgstr "Key %r ist das sekundäre Mailattr."
 
 #: ../pykolab/auth/ldap/__init__.py:672
 msgid "sec. mail pol. is not empty"
-msgstr ""
+msgstr "Sekundäre Mailrichtlinie ist nicht leer"
 
 #: ../pykolab/auth/ldap/__init__.py:676 ../pykolab/auth/ldap/__init__.py:690
 #, python-format
 msgid "Attributes %r are not yet available for entry %r"
-msgstr ""
+msgstr "Attribute %r sind für Eintrag %r noch nicht verfügbar"
 
 #: ../pykolab/auth/ldap/__init__.py:729
 #, python-format
 msgid "No results for mail address %s found"
-msgstr ""
+msgstr "Keine Ergebnisse für E-Mail-Adresse %s gefunden"
 
 #: ../pykolab/auth/ldap/__init__.py:740
 #, python-format
@@ -585,25 +593,25 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:750
 #, python-format
 msgid "Too bad, primary email address %s "
-msgstr ""
+msgstr "Schlecht, primäre E-Mail-Adresse %s"
 
 #: ../pykolab/auth/ldap/__init__.py:761 ../pykolab/auth/ldap/__init__.py:850
 msgid "Address assigned to us"
-msgstr ""
+msgstr "Uns zugewiesene Adresse"
 
 #: ../pykolab/auth/ldap/__init__.py:816
 #, python-format
 msgid "No results for address %s found"
-msgstr ""
+msgstr "Keine Ergebnisse für Adresse %s gefunden"
 
 #: ../pykolab/auth/ldap/__init__.py:827
 #, python-format
 msgid "1 result for address %s found, "
-msgstr ""
+msgstr "1 Ergebnis für Adresse %s gefunden, "
 
 #: ../pykolab/auth/ldap/__init__.py:838
 msgid "Too bad, secondary email "
-msgstr ""
+msgstr "Schlecht, sekundäre E-Mail-Adresse"
 
 #: ../pykolab/auth/ldap/__init__.py:865
 msgid "Recipient policy composed the following set of secondary "
@@ -612,11 +620,11 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:876
 #, python-format
 msgid "Secondary mail addresses that we want is not None: %r"
-msgstr ""
+msgstr "Gewünschte sekundäre E-Mail-Adresse ist nicht leer: %r"
 
 #: ../pykolab/auth/ldap/__init__.py:887
 msgid "Avoiding the duplication of the primary mail "
-msgstr ""
+msgstr "Verhindere die Dopplung der primären E-Mail"
 
 #: ../pykolab/auth/ldap/__init__.py:898
 #, python-format
@@ -635,7 +643,7 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:924 ../pykolab/auth/ldap/__init__.py:930
 #, python-format
 msgid "entry[%s]: %r"
-msgstr ""
+msgstr "Eintrag[%s]: %r"
 
 #: ../pykolab/auth/ldap/__init__.py:941
 #, python-format
@@ -657,7 +665,7 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:1031
 #, python-format
 msgid "Using filter %r"
-msgstr ""
+msgstr "Filter %r wird verwendet"
 
 #: ../pykolab/auth/ldap/__init__.py:1046
 #, python-format
@@ -692,7 +700,7 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:1481 ../pykolab/auth/ldap/__init__.py:2809
 #, python-format
 msgid "%s"
-msgstr ""
+msgstr "%s"
 
 #: ../pykolab/auth/ldap/__init__.py:1748 ../pykolab/auth/ldap/__init__.py:1948
 #, python-format
@@ -707,16 +715,16 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:2162
 #, python-format
 msgid "Finding domain root dn for domain %s"
-msgstr ""
+msgstr "Suche root dn für die Domain %s"
 
 #: ../pykolab/auth/ldap/__init__.py:2269
 msgid "Authentication database DOWN"
-msgstr ""
+msgstr "Authentisierungsdatenbank UNTEN"
 
 #: ../pykolab/auth/ldap/__init__.py:2353 ../pykolab/auth/ldap/__init__.py:2401
 #, python-format
 msgid "Entry type: %s"
-msgstr ""
+msgstr "Eintragtyp: %s"
 
 #: ../pykolab/auth/ldap/__init__.py:2490
 msgid "LDAP Search Result Data Entry:"
@@ -729,7 +737,7 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:2511
 #, python-format
 msgid "Change Type: %r (%r)"
-msgstr ""
+msgstr "Typ ändern: %r (%r)"
 
 #: ../pykolab/auth/ldap/__init__.py:2519
 #, python-format
@@ -744,7 +752,7 @@ msgstr "Das gesuchte Objekt %s existiert nicht mehr"
 #: ../pykolab/auth/ldap/__init__.py:2584
 #, python-format
 msgid "%d results..."
-msgstr "%d Ergebnisse…"
+msgstr "%d Ergebnisse..."
 
 #: ../pykolab/auth/ldap/__init__.py:2687
 #, python-format
@@ -759,7 +767,7 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:2758
 #, python-format
 msgid "Found support for %s"
-msgstr ""
+msgstr "Unterstützung für %s gefunden"
 
 #: ../pykolab/auth/ldap/__init__.py:2803
 #, python-format
@@ -814,7 +822,7 @@ msgstr ""
 #: ../pykolab/cli/cmd_add_alias.py:105
 #, python-format
 msgid "Recipient %r is not the primary recipient for address %r"
-msgstr ""
+msgstr "Empfänger %r ist nicht der primäre Empfänger für Adresse %r"
 
 #: ../pykolab/cli/cmd_add_domain.py:36
 #: ../pykolab/cli/cmd_count_domain_mailboxes.py:38
@@ -832,15 +840,15 @@ msgstr ""
 #: ../pykolab/cli/cmd_sync_mailhost_attrs.py:39 ../pykolab/cli/cmd_sync.py:45
 #: ../pykolab/cli/cmd_undelete_mailbox.py:34
 msgid "CLI Options"
-msgstr "Kommandozeilenoptionen"
+msgstr "Kommandozeilen-Parameter"
 
 #: ../pykolab/cli/cmd_add_domain.py:42
 msgid "Add alias domain."
-msgstr ""
+msgstr "Hinzufügen Alias-Domäne."
 
 #: ../pykolab/cli/cmd_add_domain.py:47
 msgid "Add a new domain."
-msgstr ""
+msgstr "Hinzufügen einer neuen Domäne."
 
 #: ../pykolab/cli/cmd_add_domain.py:55 ../pykolab/cli/cmd_delete_domain.py:44
 #: ../pykolab/cli/cmd_find_domain.py:44
@@ -850,24 +858,24 @@ msgstr ""
 #: ../pykolab/cli/cmd_add_domain.py:67 ../pykolab/cli/cmd_delete_domain.py:56
 #: ../pykolab/cli/cmd_find_domain.py:56
 msgid "Domain name"
-msgstr ""
+msgstr "Name der Domain"
 
 #: ../pykolab/cli/cmd_add_user_subscription.py:37
 msgid "Subscribe a user to a folder."
-msgstr ""
+msgstr "Aboniere einen Ordner für einen Benutzer."
 
 #: ../pykolab/cli/cmd_add_user_subscription.py:47
 #: ../pykolab/cli/cmd_add_user_subscription.py:51
 #: ../pykolab/cli/cmd_remove_user_subscription.py:47
 #: ../pykolab/cli/cmd_remove_user_subscription.py:51
 msgid "Folder pattern"
-msgstr ""
+msgstr "Ordnermuster"
 
 #: ../pykolab/cli/cmd_add_user_subscription.py:50
 #: ../pykolab/cli/cmd_list_user_subscriptions.py:63
 #: ../pykolab/cli/cmd_remove_user_subscription.py:50
 msgid "User ID"
-msgstr ""
+msgstr "Benutzer ID"
 
 #: ../pykolab/cli/cmd_add_user_subscription.py:72
 #: ../pykolab/cli/cmd_remove_user_subscription.py:72
@@ -880,7 +888,7 @@ msgstr ""
 #: ../pykolab/cli/cmd_list_messages.py:67
 #: ../pykolab/cli/cmd_remove_user_subscription.py:73
 msgid "No such folder"
-msgstr ""
+msgstr "Dieser Ordner ist nicht vorhanden"
 
 #: ../pykolab/cli/cmd_count_domain_mailboxes.py:44
 #: ../pykolab/cli/cmd_list_deleted_mailboxes.py:50
@@ -897,19 +905,19 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_create_mailbox.py:50
 msgid "Create folder on PARTITION."
-msgstr ""
+msgstr "Verzeichnis anlegen auf PARTITION."
 
 #: ../pykolab/cli/cmd_create_mailbox.py:60
 msgid "Invalid argument"
-msgstr ""
+msgstr "Ungültiges Argument"
 
 #: ../pykolab/cli/cmd_create_mailbox.py:68
 msgid "Invalid argument for metadata"
-msgstr ""
+msgstr "Ungültiges Argument für die Metadaten"
 
 #: ../pykolab/cli/cmd_delete_domain.py:36
 msgid "Delete a domain."
-msgstr ""
+msgstr "Domäne löschen."
 
 #: ../pykolab/cli/cmd_delete_mailbox_acl.py:45
 #: ../pykolab/cli/cmd_delete_mailbox_acl.py:49
@@ -928,7 +936,7 @@ msgstr ""
 #: ../tests/unit/test-015-translate.py:18
 #: ../tests/unit/test-015-translate.py:20
 msgid "Folder name"
-msgstr ""
+msgstr "Ordnername"
 
 #: ../pykolab/cli/cmd_delete_mailbox_acl.py:60
 #: ../pykolab/cli/cmd_list_mailbox_acls.py:54
@@ -938,29 +946,29 @@ msgstr ""
 #: ../pykolab/cli/cmd_set_quota.py:58
 #, python-format
 msgid "No such folder %r"
-msgstr ""
+msgstr "Kein Ordner %r verfügbar"
 
 #: ../pykolab/cli/cmd_delete_mailbox.py:44
 msgid "No mailbox specified"
-msgstr ""
+msgstr "Keine Mailbox angegeben"
 
 #: ../pykolab/cli/cmd_delete_mailbox.py:57
 #, python-format
 msgid "No such folder(s): %s"
-msgstr ""
+msgstr "Kein solch Verzeichnis: %s"
 
 #: ../pykolab/cli/cmd_delete_mailbox.py:62
 msgid "No folders to delete."
-msgstr ""
+msgstr "Keine zu löschenden Ordner."
 
 #: ../pykolab/cli/cmd_delete_mailbox.py:69
 #, python-format
 msgid "Could not delete mailbox '%s'"
-msgstr ""
+msgstr "Konnte Postfach '%s' nicht löschen"
 
 #: ../pykolab/cli/cmd_delete_message.py:36
 msgid "Delete a message from a folder"
-msgstr ""
+msgstr "Lösche eine Nachricht aus Verzeichnis"
 
 #: ../pykolab/cli/cmd_delete_message.py:49
 msgid "Specify a UID"
@@ -978,12 +986,12 @@ msgstr ""
 #: ../pykolab/cli/cmd_export_mailbox.py:108
 #, python-format
 msgid "%s is not a directory"
-msgstr ""
+msgstr "%s ist kein Verzeichnis"
 
 #: ../pykolab/cli/cmd_export_mailbox.py:118
 #, python-format
 msgid "ZIP file at %s.zip"
-msgstr ""
+msgstr "ZIP-Datei unter %s.zip"
 
 #: ../pykolab/cli/cmd_export_mailbox.py:120
 #, python-format
@@ -1029,11 +1037,11 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_list_user_subscriptions.py:47
 msgid "List unsubscribed folders"
-msgstr ""
+msgstr "Liste nicht abonnierte Ordner"
 
 #: ../pykolab/cli/cmd_list_user_subscriptions.py:50
 msgid "List the folders a user is subscribed to."
-msgstr ""
+msgstr "Liste die Ordner, die ein Benutzer abonniert hat."
 
 #: ../pykolab/cli/cmd_list_user_subscriptions.py:98
 #, python-format
@@ -1082,7 +1090,7 @@ msgstr ""
 #: ../pykolab/cli/cmd_mailbox_cleanup.py:140
 #, python-format
 msgid "Deleting folder '%s'"
-msgstr ""
+msgstr "Ordner '%s' wird gelöscht"
 
 #: ../pykolab/cli/cmd_mailbox_cleanup.py:134
 #: ../pykolab/cli/cmd_mailbox_cleanup.py:144
@@ -1107,30 +1115,30 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_remove_mailaddress.py:49
 msgid "Invalid or unqualified email address."
-msgstr ""
+msgstr "Ungültige oder unqualifizierte E-Mail-Adresse."
 
 #: ../pykolab/cli/cmd_remove_mailaddress.py:57
 #, python-format
 msgid "No recipient found for email address %r"
-msgstr ""
+msgstr "Kein Empfänger gefunden für E-Mail-Adresse %r"
 
 #: ../pykolab/cli/cmd_remove_mailaddress.py:60
 #, python-format
 msgid "Found the following recipient(s): %r"
-msgstr ""
+msgstr "Folgende Empfänger gefunden: %r"
 
 #: ../pykolab/cli/cmd_remove_mailaddress.py:66
 #, python-format
 msgid "Using the following mail attributes: %r"
-msgstr ""
+msgstr "Nutze folgende Mail-Attribute: %r"
 
 #: ../pykolab/cli/cmd_remove_mailaddress.py:90
 msgid "Found the following recipients:"
-msgstr ""
+msgstr "Folgende Empfänger gefunden:"
 
 #: ../pykolab/cli/cmd_remove_user_subscription.py:37
 msgid "Unsubscribe a user from a folder."
-msgstr ""
+msgstr "Entferne einen Benutzer-Abonement von einem Ordner."
 
 #: ../pykolab/cli/cmd_remove_user_subscription.py:86
 #, python-format
@@ -1144,11 +1152,11 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_rename_mailbox.py:52
 msgid "No target mailbox name specified"
-msgstr ""
+msgstr "Keine Name für Ziel-Postfach angegeben"
 
 #: ../pykolab/cli/cmd_rename_mailbox.py:54
 msgid "No source mailbox name specified"
-msgstr ""
+msgstr "Keine Name für Quell-Postfach angegeben"
 
 #: ../pykolab/cli/cmd_rename_mailbox.py:66
 #, python-format
@@ -1164,7 +1172,7 @@ msgstr ""
 #: ../pykolab/cli/cmd_set_mailbox_acl.py:51
 #: ../pykolab/cli/cmd_set_mailbox_acl.py:56
 msgid "ACI Permissions"
-msgstr ""
+msgstr "ACI-Berechtigungen"
 
 #: ../pykolab/cli/cmd_set_mailbox_metadata.py:45
 msgid "Set annotation as user USER"
@@ -1174,16 +1182,16 @@ msgstr ""
 #: ../pykolab/cli/cmd_set_mailbox_metadata.py:63
 #: ../pykolab/cli/cmd_set_mailbox_metadata.py:68
 msgid "Metadata value"
-msgstr ""
+msgstr "Metadatenwert"
 
 #: ../pykolab/cli/cmd_set_mailbox_metadata.py:62
 #: ../pykolab/cli/cmd_set_mailbox_metadata.py:67
 msgid "Metadata path"
-msgstr ""
+msgstr "Metadatenpfad"
 
 #: ../pykolab/cli/cmd_set_quota.py:43 ../pykolab/cli/cmd_set_quota.py:47
 msgid "New quota"
-msgstr ""
+msgstr "Neues Kontingent"
 
 #: ../pykolab/cli/cmd_sync_mailhost_attrs.py:44
 msgid "Delete mailboxes for recipients that do not appear to exist in LDAP."
@@ -1246,17 +1254,17 @@ msgstr ""
 #: ../pykolab/cli/cmd_sync.py:72
 #, python-format
 msgid "Found %d domains in %d seconds"
-msgstr ""
+msgstr "%d Domains in %d Sekunden gefunden"
 
 #: ../pykolab/cli/cmd_sync.py:85
 #, python-format
 msgid "Running for domain %s"
-msgstr ""
+msgstr "Starte für Domain %s"
 
 #: ../pykolab/cli/cmd_sync.py:92
 #, python-format
 msgid "Synchronizing users for %s took %d seconds"
-msgstr ""
+msgstr "Benutzer für %s zu synchronisieren dauerte %d Sekunden"
 
 #: ../pykolab/cli/cmd_sync.py:109
 #, python-format
@@ -1285,11 +1293,11 @@ msgstr ""
 #: ../pykolab/cli/commands.py:97 ../pykolab/setup/components.py:90
 #, python-format
 msgid "Command Group: %s"
-msgstr ""
+msgstr "Befehlsgruppe: %s"
 
 #: ../pykolab/cli/commands.py:112 ../pykolab/cli/commands.py:117
 msgid "No such command."
-msgstr ""
+msgstr "Dieses Kommando existiert nicht."
 
 #: ../pykolab/cli/commands.py:167 ../pykolab/setup/components.py:231
 #, python-format
@@ -1300,16 +1308,16 @@ msgstr ""
 #: ../wallace/modules.py:376
 #, python-format
 msgid "Alias for %s"
-msgstr ""
+msgstr "Alias für %s"
 
 #: ../pykolab/cli/commands.py:200 ../pykolab/setup/components.py:265
 msgid "Not yet implemented"
-msgstr ""
+msgstr "Diese Funktion ist noch nicht implementiert"
 
 #: ../pykolab/cli/sieve/cmd_list.py:43 ../pykolab/cli/sieve/cmd_put.py:42
 #: ../pykolab/cli/sieve/cmd_refresh.py:44 ../pykolab/cli/sieve/cmd_test.py:43
 msgid "Email Address"
-msgstr "E-Mail-Adresse"
+msgstr "E-mail-Adresse"
 
 #: ../pykolab/cli/sieve/cmd_refresh.py:99
 #: ../pykolab/plugins/sievemgmt/__init__.py:111
@@ -1394,7 +1402,7 @@ msgstr ""
 #: ../pykolab/cli/telemetry/cmd_examine_command_issue.py:60
 #: ../pykolab/cli/telemetry/cmd_examine_session.py:65
 msgid "Invalid session identifier"
-msgstr ""
+msgstr "Ungültiger Sitzungsbezeichner"
 
 #: ../pykolab/cli/telemetry/cmd_examine_command_issue.py:75
 #: ../pykolab/cli/telemetry/cmd_examine_session.py:100
@@ -1408,11 +1416,11 @@ msgstr ""
 
 #: ../pykolab/cli/telemetry/cmd_list_sessions.py:35
 msgid "List Options"
-msgstr ""
+msgstr "Liste Optionen"
 
 #: ../pykolab/cli/telemetry/cmd_list_sessions.py:40
 msgid "Display sessions since ..."
-msgstr ""
+msgstr "Zeige Sitzungen seit..."
 
 #: ../pykolab/cli/telemetry/cmd_list_sessions.py:58
 #, python-format
@@ -1438,7 +1446,7 @@ msgstr ""
 #: ../pykolab/conf/entitlement.py:141
 #, python-format
 msgid "License file %s not readable!"
-msgstr ""
+msgstr "Lizenzdatei %s nicht lesbar!"
 
 #: ../pykolab/conf/entitlement.py:147
 msgid "No entitlement directory found"
@@ -1447,46 +1455,46 @@ msgstr ""
 #: ../pykolab/conf/__init__.py:87
 #, python-format
 msgid "Setting %s to %r (from defaults)"
-msgstr ""
+msgstr "Setze %s auf %r (aus den Standardeinstellungen)"
 
 #: ../pykolab/conf/__init__.py:106
 #, python-format
 msgid "Setting %s to %r (from CLI, verified)"
-msgstr ""
+msgstr "Setze %s auf %r (von der Kommandozeile, überprüft)"
 
 #: ../pykolab/conf/__init__.py:109
 #, python-format
 msgid "Setting %s to %r (from CLI, not checked)"
-msgstr ""
+msgstr "Setze %s auf %r (von der Kommandozeile, nicht überprüft)"
 
 #: ../pykolab/conf/__init__.py:150 ../pykolab/conf/__init__.py:207
 #, python-format
 msgid "Setting %s_%s to '****' (from configuration file)"
-msgstr ""
+msgstr "Setze %s_%s auf '****' (aus Konfigurationsdatei)"
 
 #: ../pykolab/conf/__init__.py:152 ../pykolab/conf/__init__.py:209
 #, python-format
 msgid "Setting %s_%s to %r (from configuration file)"
-msgstr ""
+msgstr "Setze %s_%s auf %r (aus Konfigurationsdatei)"
 
 #: ../pykolab/conf/__init__.py:162
 msgid "Setting options from configuration file"
-msgstr ""
+msgstr "Hole Optionen aus Konfigurationsdatei"
 
 #: ../pykolab/conf/__init__.py:223
 #, python-format
 msgid "Configuration file %s not readable"
-msgstr ""
+msgstr "Konfigurationsdatei %s ist nicht lesbar"
 
 #: ../pykolab/conf/__init__.py:226
 #, python-format
 msgid "Reading configuration file %s"
-msgstr ""
+msgstr "Lese Konfigurationsdatei %s"
 
 #: ../pykolab/conf/__init__.py:230
 #, python-format
 msgid "Invalid configuration file %s"
-msgstr ""
+msgstr "Ungültige Konfigurationsdatei %s"
 
 #: ../pykolab/conf/__init__.py:233
 #, python-format
@@ -1498,100 +1506,100 @@ msgstr ""
 #. #
 #: ../pykolab/conf/__init__.py:267
 msgid "Runtime Options"
-msgstr ""
+msgstr "Laufzeit-Einstellungen"
 
 #: ../pykolab/conf/__init__.py:272
 msgid "Configuration file to use"
-msgstr ""
+msgstr "Konfigurationsdatei, die benutzt werden soll"
 
 #: ../pykolab/conf/__init__.py:278
 msgid "Set the debugging "
-msgstr ""
+msgstr "Stelle Fehlerbehebung ein"
 
 #: ../pykolab/conf/__init__.py:286
 msgid "Set the logging level. "
-msgstr ""
+msgstr "Setze das Protokollniveau"
 
 #: ../pykolab/conf/__init__.py:294
 msgid "Log file to use"
-msgstr ""
+msgstr "Protokolldatei"
 
 #: ../pykolab/conf/__init__.py:300
 msgid "Be quiet."
-msgstr ""
+msgstr "Sei still."
 
 #: ../pykolab/conf/__init__.py:306
 msgid "Answer yes to all questions."
-msgstr ""
+msgstr "Ja auf alle Fragen."
 
 #: ../pykolab/conf/__init__.py:328
 msgid "No command supplied"
-msgstr ""
+msgstr "Kein Befehl angegeben"
 
 #: ../pykolab/conf/__init__.py:416
 msgid "Insufficient options. Need section, key and value -in that order."
-msgstr ""
+msgstr "Unzureichende Optionen. Brauche Sektion, Schlüssel und Wert in dieser Reihenfolge."
 
 #: ../pykolab/conf/__init__.py:419
 #, python-format
 msgid "No section '%s' exists."
-msgstr ""
+msgstr "Es existiert keine Sektion '%s'."
 
 #: ../pykolab/conf/__init__.py:461
 #, python-format
 msgid "Setting %s to %r (from the default values for CLI options)"
-msgstr ""
+msgstr "Setze %s auf %r (aus den Standardwerten für Kommandozeilenoptionen)"
 
 #: ../pykolab/conf/__init__.py:534
 #, python-format
 msgid "Could not execute configuration function: %s"
-msgstr ""
+msgstr "Konnte die Konfigurationsfunktion nicht ausführen: %s"
 
 #: ../pykolab/conf/__init__.py:542
 #, python-format
 msgid "Option %s/%s does not exist in config file %s, pulling from defaults"
-msgstr ""
+msgstr "Die Option %s/%s existiert in der Konfigurationsdatei %s nicht, sie wird aus den Standardeinstellungen geholt"
 
 #: ../pykolab/conf/__init__.py:550 ../pykolab/conf/__init__.py:553
 msgid "Option does not exist in defaults."
-msgstr ""
+msgstr "Diese Option hat keinen Standardwert."
 
 #: ../pykolab/conf/__init__.py:563
 #, python-format
 msgid "Configuration file %s not readable."
-msgstr ""
+msgstr "Konfigurationsdatei %s ist nicht lesbar."
 
 #: ../pykolab/conf/__init__.py:566
 #, python-format
 msgid "Configuration file %s does not exist."
-msgstr ""
+msgstr "Konfigurationsdatei %s existiert nicht."
 
 #: ../pykolab/conf/__init__.py:571
 msgid ""
 "WARNING: A negative debug level value does not make this program be any more"
 " silent."
-msgstr ""
+msgstr "Warnung: Eine negative Fehlerprotokollierungszahl macht dieses Programm nicht noch stiller."
 
 #: ../pykolab/conf/__init__.py:577
 msgid "This program has 9 levels of verbosity. Using the maximum of 9."
-msgstr ""
+msgstr "Dieses Programm hat 9 Ebenen der Detailliertheit. Benutze das Maximum 9."
 
 #: ../pykolab/conf/__init__.py:585 ../pykolab/conf/__init__.py:591
 #: ../pykolab/conf/__init__.py:595 ../pykolab/conf/__init__.py:601
 msgid "Cannot start SASL authentication daemon"
-msgstr ""
+msgstr "Konnte SASL Authentisierungsdaemon nicht starten"
 
 #: ../pykolab/conf/__init__.py:612
 msgid "No imaplib library found."
-msgstr ""
+msgstr "Keine imaplib-Bibliothek gefunden."
 
 #: ../pykolab/conf/__init__.py:622
 msgid "No LMTP class found in the smtplib library."
-msgstr ""
+msgstr "Keine Klasse namens LMTP in der smtplib-Bibliothek gefunden."
 
 #: ../pykolab/conf/__init__.py:632
 msgid "No SMTP class found in the smtplib library."
-msgstr ""
+msgstr "Keine Klasse namens SMTP in der smtplib-Bibliothek gefunden."
 
 #: ../pykolab/conf/__init__.py:646
 #, python-format
@@ -1611,7 +1619,7 @@ msgstr ""
 
 #: ../pykolab/constants.py.in:53
 msgid "WARNING"
-msgstr ""
+msgstr "WARNUNG"
 
 #: ../pykolab/constants.py.in:53
 msgid ""
@@ -1621,16 +1629,16 @@ msgstr ""
 
 #: ../pykolab/constants.py.in:72
 msgid "389 Directory Server or Red Hat Directory Server"
-msgstr ""
+msgstr "389 Verzeichnisserver oder Red Hat Verzeichnisserver"
 
 #: ../pykolab/constants.py.in:76 ../pykolab/constants.py.in:80
 msgid "OpenLDAP or compatible"
-msgstr ""
+msgstr "OpenLDAP oder kompatibel"
 
 #: ../pykolab/imap/cyrus.py:80
 #, python-format
 msgid "Could not connect to Cyrus IMAP server %r"
-msgstr ""
+msgstr "Verbindung zum Cyrus IMAP-Server %r nicht möglich"
 
 #: ../pykolab/imap/cyrus.py:138
 #, python-format
@@ -1639,11 +1647,11 @@ msgstr ""
 
 #: ../pykolab/imap/cyrus.py:143
 msgid "Detected we are running in a Murder topology"
-msgstr ""
+msgstr "Dieses System läuft in einer Murder-Topologie"
 
 #: ../pykolab/imap/cyrus.py:147
 msgid "This system is not part of a murder topology"
-msgstr ""
+msgstr "Dieses System ist nicht Teil einer Murder-Topologie"
 
 #: ../pykolab/imap/cyrus.py:168
 #, python-format
@@ -1662,7 +1670,7 @@ msgstr ""
 #: ../pykolab/imap/cyrus.py:200
 #, python-format
 msgid "No annotations for %s: %r"
-msgstr ""
+msgstr "Keine Annotationen für %s: %r"
 
 #: ../pykolab/imap/cyrus.py:207
 #, python-format
@@ -1672,47 +1680,47 @@ msgstr ""
 #: ../pykolab/imap/cyrus.py:227
 #, python-format
 msgid "Setting quota for folder %s to %s"
-msgstr ""
+msgstr "Setze Quota für Verzeichnis %s auf %s"
 
 #: ../pykolab/imap/cyrus.py:231
 #, python-format
 msgid "Could not set quota for mailfolder %s"
-msgstr ""
+msgstr "Konnte Quota für Verzeichnis %s nicht setzen"
 
 #: ../pykolab/imap/cyrus.py:241
 #, python-format
 msgid "Moving INBOX folder %s to %s on partition %s"
-msgstr ""
+msgstr "Verschiebe INBOX Verzeichnis %s nach %s auf Partition %s"
 
 #: ../pykolab/imap/cyrus.py:243
 #, python-format
 msgid "Moving INBOX folder %s to %s"
-msgstr ""
+msgstr "Verschiebe Eingangsordner %s nach %s"
 
 #: ../pykolab/imap/cyrus.py:259
 #, python-format
 msgid "Setting annotation %s on folder %s"
-msgstr ""
+msgstr "Setze Annotation %s auf Verzeichnis %s"
 
 #: ../pykolab/imap/cyrus.py:264
 #, python-format
 msgid "Could not set annotation %r on mail folder %r: %r"
-msgstr ""
+msgstr "Konnte Annotation %r auf Verzeichnis %r nicht setzen: %r"
 
 #: ../pykolab/imap/cyrus.py:268
 #, python-format
 msgid "Transferring folder %s from %s to %s"
-msgstr ""
+msgstr "Übertrage Verzeichnis %s von %s nach %s"
 
 #: ../pykolab/imap/cyrus.py:328
 #, python-format
 msgid "Undeleting %s to %s"
-msgstr ""
+msgstr "Wiederherstellen %s nach %s"
 
 #: ../pykolab/imap/cyrus.py:339
 #, python-format
 msgid "Would have transfered %s from %s to %s"
-msgstr ""
+msgstr "Haben %s von %s nach %s übertragen"
 
 #: ../pykolab/imap/cyrus.py:341
 #, python-format
@@ -1732,7 +1740,7 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:70
 #, python-format
 msgid "Iterating over %d folders"
-msgstr ""
+msgstr "Iteriere über %d Verzeichnisse"
 
 #. Set the ACL to '' (effectively deleting the ACL entry)
 #: ../pykolab/imap/__init__.py:83
@@ -1747,27 +1755,27 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:168
 #, python-format
 msgid "Logging on to Cyrus IMAP server %s"
-msgstr ""
+msgstr "Anmeldung am Cyrus IMAP Server %s"
 
 #: ../pykolab/imap/__init__.py:177
 #, python-format
 msgid "Logging on to Dovecot IMAP server %s"
-msgstr ""
+msgstr "Anmeldung am Dovecot IMAP Server %s"
 
 #: ../pykolab/imap/__init__.py:186
 #, python-format
 msgid "Logging on to generic IMAP server %s"
-msgstr ""
+msgstr "Anmeldung am generischen IMAP Server %s"
 
 #: ../pykolab/imap/__init__.py:204
 #, python-format
 msgid "Reusing existing IMAP server connection to %s"
-msgstr ""
+msgstr "Verbindung zum IMAP-Server %s wird wieder verwendet"
 
 #: ../pykolab/imap/__init__.py:206
 #, python-format
 msgid "Reconnecting to IMAP server %s"
-msgstr ""
+msgstr "Verbinde nochmal zum IMAP Server %s"
 
 #: ../pykolab/imap/__init__.py:223
 msgid "Called imap.disconnect() on a server that we had no connection to."
@@ -1781,12 +1789,12 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:247
 #, python-format
 msgid "Could not create folder %r"
-msgstr ""
+msgstr "Ordner %r konnte nicht erstellt werden"
 
 #: ../pykolab/imap/__init__.py:257 ../pykolab/imap/__init__.py:259
 #, python-format
 msgid "%r has no attribute %s"
-msgstr ""
+msgstr "%r hat kein Attribut %s"
 
 #: ../pykolab/imap/__init__.py:393
 #, python-format
@@ -1796,7 +1804,7 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:427 ../pykolab/imap/__init__.py:462
 #, python-format
 msgid "Creating new shared folder %s"
-msgstr ""
+msgstr "Erzeuge einen neuen geteilten Ordner %s"
 
 #: ../pykolab/imap/__init__.py:487 ../pykolab/imap/__init__.py:740
 #, python-format
@@ -1806,7 +1814,7 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:491
 #, python-format
 msgid "Creating new mailbox for user %s"
-msgstr ""
+msgstr "Erzeuge eine neue Mailbox für Benutzer %s"
 
 #: ../pykolab/imap/__init__.py:506 ../pykolab/imap/__init__.py:613
 msgid "Waiting for the Cyrus IMAP Murder to settle..."
@@ -1815,7 +1823,7 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:559
 #, python-format
 msgid "Creating additional folders for user %s"
-msgstr ""
+msgstr "Erzeuge weitere Order für Benutzer %s"
 
 #: ../pykolab/imap/__init__.py:587
 #, python-format
@@ -1830,11 +1838,11 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:618
 #, python-format
 msgid "Mailbox already exists: %s"
-msgstr ""
+msgstr "Mailbox existiert bereits: %s"
 
 #: ../pykolab/imap/__init__.py:658
 msgid "Subscribing user to the additional folders"
-msgstr ""
+msgstr "Abonniere weitere Ordner für den Benutzer"
 
 #: ../pykolab/imap/__init__.py:672
 msgid "Using the following tests for folder subscriptions:"
@@ -1843,12 +1851,12 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:674
 #, python-format
 msgid "    %r"
-msgstr ""
+msgstr "    %r"
 
 #: ../pykolab/imap/__init__.py:677
 #, python-format
 msgid "Folder %s"
-msgstr ""
+msgstr "Ordner %s"
 
 #: ../pykolab/imap/__init__.py:689
 #, python-format
@@ -1873,33 +1881,33 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:759 ../pykolab/imap/__init__.py:835
 #, python-format
 msgid "Renaming INBOX from %s to %s"
-msgstr ""
+msgstr "Benenne INBOX Ordner von %s in %s um"
 
 #: ../pykolab/imap/__init__.py:763
 #, python-format
 msgid "Could not rename INBOX folder %s to %s"
-msgstr ""
+msgstr "Konnte INBOX Ordner nicht von %s in %s umbenennen"
 
 #: ../pykolab/imap/__init__.py:765 ../pykolab/imap/__init__.py:839
 #, python-format
 msgid ""
 "Moving INBOX folder %s won't succeed as target folder %s already exists"
-msgstr ""
+msgstr "Der INBOX-Ordner %s kann nicht verschoben werden, weil der Zielordner %s bereits existiert"
 
 #: ../pykolab/imap/__init__.py:769
 #, python-format
 msgid "Server for mailbox %r is %r"
-msgstr ""
+msgstr "Server für Postfach %r ist %r"
 
 #: ../pykolab/imap/__init__.py:777
 #, python-format
 msgid "Looking for folder '%s', we found folders: %r"
-msgstr ""
+msgstr "Auf der Suche nach dem Ordner '%s' haben wir diese Ordner gefunden: %r"
 
 #: ../pykolab/imap/__init__.py:800
 #, python-format
 msgid "Setting ACL rights %s for subject %s on folder "
-msgstr ""
+msgstr "Richte ACL Rechte %s für Subjekt %s des Ordners ein"
 
 #: ../pykolab/imap/__init__.py:811
 #, python-format
@@ -1909,27 +1917,27 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:832
 #, python-format
 msgid "Found old INBOX folder %s"
-msgstr ""
+msgstr "Alter INBOX-Ordner %s gefunden"
 
 #: ../pykolab/imap/__init__.py:841
 #, python-format
 msgid "Did not find old folder user/%s to rename"
-msgstr ""
+msgstr "Konnte alten Ordner user/%s nicht zum umbenennen finden."
 
 #: ../pykolab/imap/__init__.py:843
 msgid "Value for user is not a dictionary"
-msgstr ""
+msgstr "Der Wert für user ist kein dictionary"
 
 #. TODO: Go in fact correct the quota.
 #: ../pykolab/imap/__init__.py:911
 #, python-format
 msgid "Cannot get current IMAP quota for folder %s"
-msgstr ""
+msgstr "Kann aktuelles IMAP Kontingent für den Ordner %s nicht bekommen"
 
 #: ../pykolab/imap/__init__.py:924
 #, python-format
 msgid "Quota for %s currently is %s"
-msgstr ""
+msgstr "Kontingent für %s ist aktuell %s"
 
 #: ../pykolab/imap/__init__.py:930
 #, python-format
@@ -1944,7 +1952,7 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:1012
 #, python-format
 msgid "Checking folder: %s"
-msgstr ""
+msgstr "Überprüfe Ordner: %s"
 
 #: ../pykolab/imap/__init__.py:1017
 #, python-format
@@ -1964,7 +1972,7 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:1038
 #, python-format
 msgid "Deleting folder %s"
-msgstr ""
+msgstr "Lösche Verzeichnis %s"
 
 #: ../pykolab/__init__.py:50
 msgid "Returning thread local configuration"
@@ -1982,30 +1990,30 @@ msgstr ""
 
 #: ../pykolab/itip/__init__.py:61
 msgid "Could not read iTip from message."
-msgstr ""
+msgstr "Konnte iTip nicht aus Nachricht lesen."
 
 #: ../pykolab/itip/__init__.py:69
 #, python-format
 msgid "Duplicate iTip object: %s"
-msgstr ""
+msgstr "Verdopple iTip Objekt: %s"
 
 #: ../pykolab/itip/__init__.py:93
 msgid "iTip event without a start"
-msgstr ""
+msgstr "iTip Termin ohne einen Beginn"
 
 #: ../pykolab/itip/__init__.py:138
 msgid "Message is not an iTip message (non-multipart message)"
-msgstr ""
+msgstr "Nachricht ist keine iTip Nachricht (keine Multipart Nachricht)"
 
 #: ../pykolab/itip/__init__.py:221
 #, python-format
 msgid "Send iTip reply %s for %s %r"
-msgstr ""
+msgstr "Sende iTip Antwort %s für %s %r"
 
 #: ../pykolab/itip/__init__.py:237
 #, python-format
 msgid "Failed to compose iTip reply message: %r: %s"
-msgstr ""
+msgstr "Erstellung iTip Antwortnachricht fehlgeschlagen: %r: %s"
 
 #: ../pykolab/itip/__init__.py:248 ../pykolab/itip/__init__.py:292
 #: ../wallace/module_invitationpolicy.py:1082
@@ -2013,17 +2021,17 @@ msgstr ""
 #: ../wallace/module_resources.py:1247
 #, python-format
 msgid "SMTP sendmail error: %r"
-msgstr ""
+msgstr "SMTP sendmail-Fehler: %r"
 
 #: ../pykolab/itip/__init__.py:280
 #, python-format
 msgid "Failed to compose iTip request message: %r"
-msgstr ""
+msgstr "Erstellung iTip Anforderungsnachricht fehlgeschlagen: %r"
 
 #: ../pykolab/logger.py:168 ../pykolab/logger.py:175
 #, python-format
 msgid "Could not change permissions on %s: %r"
-msgstr ""
+msgstr "Konnte Berechtigungen auf %s nicht ändern: %r"
 
 #: ../pykolab/logger.py:192
 #, python-format
@@ -2057,12 +2065,12 @@ msgstr ""
 #: ../pykolab/plugins/__init__.py:74
 #, python-format
 msgid "RuntimeError for plugin %s: %s"
-msgstr ""
+msgstr "Laufzeitfehler von Plugin %s: %s"
 
 #: ../pykolab/plugins/__init__.py:78
 #, python-format
 msgid "Plugin %s failed to load (%s: %s)"
-msgstr ""
+msgstr "Plugin %s konnte nicht geladen werden (%s: %s)"
 
 #: ../pykolab/plugins/__init__.py:116 ../pykolab/plugins/__init__.py:118
 #, python-format
@@ -2102,7 +2110,7 @@ msgstr ""
 #: ../pykolab/plugins/__init__.py:187
 #, python-format
 msgid "Cannot check options for plugin %s: %s"
-msgstr ""
+msgstr "Kein Zugriff auf Einstellungen des Plugins %s: %s"
 
 #: ../pykolab/plugins/__init__.py:189
 #, python-format
@@ -2170,7 +2178,7 @@ msgstr ""
 
 #: ../pykolab/setup/components.py:58
 msgid "Display this help."
-msgstr ""
+msgstr "Zeige diese Hilfe."
 
 #: ../pykolab/setup/components.py:149
 msgid "No component selected, continuing for all components"
@@ -2178,7 +2186,7 @@ msgstr ""
 
 #: ../pykolab/setup/components.py:187 ../pykolab/setup/components.py:192
 msgid "No such component."
-msgstr ""
+msgstr "Keine solche Komponente."
 
 #: ../pykolab/setup/setup_freebusy.py:46
 msgid "Setup Free/Busy."
@@ -2190,7 +2198,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_imap.py:45
 msgid "Setup IMAP."
-msgstr ""
+msgstr "Richte IMAP ein."
 
 #: ../pykolab/setup/setup_imap.py:89
 msgid "Could not write out Cyrus IMAP configuration file /etc/imapd.conf"
@@ -2213,7 +2221,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_kolabd.py:44
 msgid "Setup the Kolab daemon."
-msgstr ""
+msgstr "Richte den Kolab Daemon ein."
 
 #: ../pykolab/setup/setup_kolabd.py:52
 #, python-format
@@ -2230,7 +2238,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:45
 msgid "LDAP Options"
-msgstr ""
+msgstr "LDAP Optionen"
 
 #: ../pykolab/setup/setup_ldap.py:52
 msgid "Specify FQDN (overriding defaults)."
@@ -2254,7 +2262,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:88
 msgid "Setup LDAP."
-msgstr ""
+msgstr "LDAP Einrichten"
 
 #: ../pykolab/setup/setup_ldap.py:97
 msgid "Skipping setup of LDAP, as specified"
@@ -2290,7 +2298,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:162
 msgid "Administrator password"
-msgstr ""
+msgstr "Administrator Passwort"
 
 #: ../pykolab/setup/setup_ldap.py:169
 msgid ""
@@ -2304,7 +2312,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:178
 msgid "Directory Manager password"
-msgstr ""
+msgstr "Verzeichnismanager Passwort"
 
 #: ../pykolab/setup/setup_ldap.py:185
 msgid ""
@@ -2317,11 +2325,11 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:195 ../pykolab/setup/setup_ldap.py:198
 msgid "User"
-msgstr ""
+msgstr "Benutzer"
 
 #: ../pykolab/setup/setup_ldap.py:196 ../pykolab/setup/setup_ldap.py:199
 msgid "Group"
-msgstr ""
+msgstr "Gruppe"
 
 #: ../pykolab/setup/setup_ldap.py:234
 msgid ""
@@ -2343,7 +2351,7 @@ msgid ""
 "\n"
 "                                    Invalid input. Please try again.\n"
 "                                "
-msgstr ""
+msgstr "\n                                    Ungültige Eingabe. Bitte nochmals versuchen.\n                                "
 
 #: ../pykolab/setup/setup_ldap.py:262
 msgid ""
@@ -2372,7 +2380,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:344
 msgid "Setting up 389 Directory Server"
-msgstr ""
+msgstr "Richte 389 Verzeichnisserver ein"
 
 #: ../pykolab/setup/setup_ldap.py:356
 msgid ""
@@ -2418,7 +2426,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:441
 msgid "Cyrus Administrator password"
-msgstr ""
+msgstr "Cyrus Administrator Passwort"
 
 #: ../pykolab/setup/setup_ldap.py:448
 msgid ""
@@ -2432,30 +2440,30 @@ msgstr ""
 
 #: ../pykolab/setup/setup_ldap.py:457
 msgid "Kolab Service password"
-msgstr ""
+msgstr "Kolab-Dienst-Passwort"
 
 #: ../pykolab/setup/setup_ldap.py:467
 msgid "Writing out configuration to kolab.conf"
-msgstr ""
+msgstr "Schreibe Einstellungen in kolab.conf"
 
 #: ../pykolab/setup/setup_ldap.py:481
 msgid "Inserting service users into LDAP."
-msgstr ""
+msgstr "Füge Service-Benutzer ins LDAP ein."
 
 #: ../pykolab/setup/setup_ldap.py:555
 msgid "Writing out cn=kolab,cn=config"
-msgstr ""
+msgstr "Schreibe cn=kolab,cn=config"
 
 #. TODO: Add kolab-admin role
 #. TODO: Assign kolab-admin admin ACLs
 #: ../pykolab/setup/setup_ldap.py:579
 #, python-format
 msgid "Adding domain %s to list of domains for this deployment"
-msgstr ""
+msgstr "Füge Domain %s zu dieser Installation hinzu"
 
 #: ../pykolab/setup/setup_ldap.py:607
 msgid "Disabling anonymous binds"
-msgstr ""
+msgstr "Stelle anonymes Binden ab"
 
 #. TODO: Ensure the uid attribute is unique
 #. TODO^2: Consider renaming the general "attribute uniqueness to "uid
@@ -2475,7 +2483,7 @@ msgstr ""
 #. TODO: Add kolab-admin role
 #: ../pykolab/setup/setup_ldap.py:642
 msgid "Adding the kolab-admin role"
-msgstr ""
+msgstr "Füge Kolab-Admin Rolle hinzu"
 
 #. TODO: User writeable attributes on root_dn
 #: ../pykolab/setup/setup_ldap.py:653
@@ -2489,12 +2497,12 @@ msgstr ""
 
 #: ../pykolab/setup/setup_mta.py:41
 msgid "Setup MTA."
-msgstr ""
+msgstr "Richte MTA ein."
 
 #: ../pykolab/setup/setup_mta.py:317 ../pykolab/setup/setup_php.py:106
 #, python-format
 msgid "Setting key %r to %r"
-msgstr ""
+msgstr "Schlüssel %r wird auf %r festgelegt"
 
 #: ../pykolab/setup/setup_mta.py:350
 msgid "Could not write out Postfix configuration file /etc/postfix/master.cf"
@@ -2514,7 +2522,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_mysql.py:39
 msgid "Setup MySQL."
-msgstr ""
+msgstr "Richte MySQL ein."
 
 #: ../pykolab/setup/setup_mysql.py:49
 msgid "Could not start the MySQL database service."
@@ -2536,7 +2544,7 @@ msgstr ""
 #: ../pykolab/setup/setup_roundcube.py:190
 #: ../pykolab/setup/setup_syncroton.py:66
 msgid "MySQL root password"
-msgstr ""
+msgstr "MySQL root Password"
 
 #: ../pykolab/setup/setup_mysql.py:88
 msgid ""
@@ -2561,7 +2569,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_mysql.py:151
 msgid "MySQL kolab password"
-msgstr ""
+msgstr "MySQL-kolab Password"
 
 #: ../pykolab/setup/setup_mysql.py:170
 msgid "Could not find the MySQL Kolab schema file"
@@ -2569,11 +2577,11 @@ msgstr ""
 
 #: ../pykolab/setup/setup_php.py:42
 msgid "PHP Options"
-msgstr ""
+msgstr "PHP Optionen"
 
 #: ../pykolab/setup/setup_php.py:49
 msgid "Specify the timezone for PHP."
-msgstr ""
+msgstr "Zeitzone für PHP definieren."
 
 #: ../pykolab/setup/setup_php.py:57
 msgid "Specify the path to the php.ini file used with the webserver."
@@ -2581,7 +2589,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_php.py:61
 msgid "Setup PHP."
-msgstr ""
+msgstr "Richte PHP ein."
 
 #: ../pykolab/setup/setup_php.py:66
 msgid ""
@@ -2594,7 +2602,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_php.py:74
 msgid "Timezone ID"
-msgstr ""
+msgstr "Zeitzonen ID"
 
 #: ../pykolab/setup/setup_php.py:80
 #, python-format
@@ -2607,7 +2615,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_roundcube.py:44
 msgid "Setup Roundcube."
-msgstr ""
+msgstr "Stelle Roundcube ein."
 
 #: ../pykolab/setup/setup_roundcube.py:48
 msgid ""
@@ -2620,12 +2628,12 @@ msgstr ""
 
 #: ../pykolab/setup/setup_roundcube.py:56
 msgid "MySQL roundcube password"
-msgstr ""
+msgstr "MySQL roundcube Passwort"
 
 #: ../pykolab/setup/setup_roundcube.py:126
 #, python-format
 msgid "Using template file %r"
-msgstr ""
+msgstr "Vorlagendatei %r wird verwendet"
 
 #: ../pykolab/setup/setup_roundcube.py:133
 #, python-format
@@ -2639,7 +2647,7 @@ msgstr ""
 
 #: ../pykolab/setup/setup_syncroton.py:40
 msgid "Setup Syncroton."
-msgstr ""
+msgstr "Richte Syncroton ein."
 
 #. start_max = (int)(time.time())
 #: ../pykolab/telemetry.py:588
@@ -2664,30 +2672,30 @@ msgstr ""
 
 #: ../pykolab/telemetry.py:652
 msgid "No database available"
-msgstr ""
+msgstr "Keine Datenbank verfügbar"
 
 #: ../pykolab/utils.py:62 ../pykolab/utils.py:64
 #, python-format
 msgid "Confirm %s: "
-msgstr ""
+msgstr "Bestätige %s:"
 
 #: ../pykolab/utils.py:67
 msgid "Incorrect confirmation. "
-msgstr ""
+msgstr "Ungültige Bestätigung."
 
 #: ../pykolab/utils.py:72 ../pykolab/utils.py:77
 #, python-format
 msgid "%s: "
-msgstr ""
+msgstr "%s:"
 
 #: ../pykolab/utils.py:74 ../pykolab/utils.py:79
 #, python-format
 msgid "%s [%s]: "
-msgstr ""
+msgstr "%s [%s]: "
 
 #: ../pykolab/utils.py:124
 msgid "Please answer 'yes' or 'no'."
-msgstr ""
+msgstr "Bitte antworten Sie mit 'yes' (ja) oder 'no' (nein)."
 
 #: ../pykolab/utils.py:164
 msgid "Choice"
@@ -2767,7 +2775,7 @@ msgstr "Delegiert"
 
 #: ../pykolab/xml/attendee.py:14 ../pykolab/xml/attendee.py:22
 msgid "Completed"
-msgstr ""
+msgstr "Erledigt"
 
 #: ../pykolab/xml/attendee.py:15 ../pykolab/xml/attendee.py:23
 msgid "Started"
@@ -2872,37 +2880,37 @@ msgstr ""
 #: ../pykolab/xml/recurrence_rule.py:38
 #, python-format
 msgid "Every %d year(s)"
-msgstr ""
+msgstr "Alle %d Jahr(e)"
 
 #: ../pykolab/xml/recurrence_rule.py:39
 #, python-format
 msgid "Every %d month(s)"
-msgstr ""
+msgstr "Alle %d Monat(e)"
 
 #: ../pykolab/xml/recurrence_rule.py:40
 #, python-format
 msgid "Every %d week(s)"
-msgstr ""
+msgstr "Alle %d Woche(n)"
 
 #: ../pykolab/xml/recurrence_rule.py:41
 #, python-format
 msgid "Every %d day(s)"
-msgstr ""
+msgstr "Alle %d Tag(e)"
 
 #: ../pykolab/xml/recurrence_rule.py:42
 #, python-format
 msgid "Every %d hours"
-msgstr ""
+msgstr "Alle %d Stunden"
 
 #: ../pykolab/xml/recurrence_rule.py:43
 #, python-format
 msgid "Every %d minutes"
-msgstr ""
+msgstr "Alle %d Minuten"
 
 #: ../pykolab/xml/recurrence_rule.py:44
 #, python-format
 msgid "Every %d seconds"
-msgstr ""
+msgstr "Alle %d Sekunden"
 
 #: ../pykolab/xml/todo.py:110
 msgid "Todo due needs datetime.date or datetime.datetime instance"
@@ -2918,7 +2926,7 @@ msgstr "Zusammenfassung"
 
 #: ../pykolab/xml/utils.py:128
 msgid "Location"
-msgstr ""
+msgstr "Ort"
 
 #: ../pykolab/xml/utils.py:129
 msgid "Description"
@@ -2926,7 +2934,7 @@ msgstr "Beschreibung"
 
 #: ../pykolab/xml/utils.py:130
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: ../pykolab/xml/utils.py:131
 msgid "Status"
@@ -2934,27 +2942,27 @@ msgstr "Status"
 
 #: ../pykolab/xml/utils.py:132
 msgid "Priority"
-msgstr ""
+msgstr "Priorität"
 
 #: ../pykolab/xml/utils.py:133
 msgid "Attendee"
-msgstr ""
+msgstr "Teilnehmer"
 
 #: ../pykolab/xml/utils.py:134
 msgid "Start"
-msgstr ""
+msgstr "Beginn"
 
 #: ../pykolab/xml/utils.py:135
 msgid "End"
-msgstr ""
+msgstr "Ende"
 
 #: ../pykolab/xml/utils.py:136
 msgid "Due"
-msgstr ""
+msgstr "Fällig"
 
 #: ../pykolab/xml/utils.py:137
 msgid "Repeat"
-msgstr ""
+msgstr "Wiederholung"
 
 #: ../pykolab/xml/utils.py:138
 msgid "Repeat Exception"
@@ -2962,23 +2970,23 @@ msgstr ""
 
 #: ../pykolab/xml/utils.py:139
 msgid "Organizer"
-msgstr ""
+msgstr "Organisator"
 
 #: ../pykolab/xml/utils.py:140
 msgid "Attachment"
-msgstr ""
+msgstr "Anhang"
 
 #: ../pykolab/xml/utils.py:141
 msgid "Alarm"
-msgstr ""
+msgstr "Alarm"
 
 #: ../pykolab/xml/utils.py:142
 msgid "Classification"
-msgstr ""
+msgstr "Einstufung"
 
 #: ../pykolab/xml/utils.py:143
 msgid "Progress"
-msgstr ""
+msgstr "Fortschritt"
 
 #: ../pykolab/xml/utils.py:188
 #, python-format
@@ -3000,7 +3008,7 @@ msgstr ""
 
 #: ../pykolab/xml/utils.py:197
 msgid "Play sound"
-msgstr ""
+msgstr "Audio abspielen"
 
 #: ../pykolab/xml/utils.py:203
 #, python-format
@@ -3040,7 +3048,7 @@ msgstr ""
 #: ../wallace/__init__.py:439 ../wallace/__init__.py:448
 msgid ""
 "Traceback occurred, please report a bug at http://bugzilla.kolabsys.com"
-msgstr ""
+msgstr "Ein Fehler mit Traceback trat auf, bitte legen Sie einen Bericht auf  http://bugzilla.kolabsys.com an"
 
 #: ../saslauthd/__init__.py:194
 msgid "kolab-saslauthd could not accept "
@@ -3066,7 +3074,7 @@ msgstr ""
 #: ../wallace/module_resources.py:1235
 #, python-format
 msgid "Booking for %s has been %s"
-msgstr ""
+msgstr "Buchung für %s wurde %s"
 
 #. check confirmation message sent to resource owner (jane)
 #. check first confirmation message sent to resource owner (jane)
@@ -3080,13 +3088,13 @@ msgstr ""
 #: ../wallace/module_resources.py:1333
 #, python-format
 msgid "Booking request for %s requires confirmation"
-msgstr ""
+msgstr "Buchungsanfrage für %s benötigt eine Bestätigung"
 
 #: ../tests/functional/test_wallace/test_007_invitationpolicy.py:240
 #: ../wallace/module_invitationpolicy.py:448
 #, python-format
 msgid "\"%(summary)s\" has been %(status)s"
-msgstr ""
+msgstr "\"%(summary)s\" wurde %(status)s"
 
 #. check for notification message
 #. this notification should be suppressed until mark has replied, too
@@ -3103,7 +3111,7 @@ msgstr ""
 #: ../wallace/module_invitationpolicy.py:1071
 #, python-format
 msgid "\"%s\" has been updated"
-msgstr ""
+msgstr "\"%s\" wurde aktualisiert"
 
 #: ../tests/functional/test_wallace/test_007_invitationpolicy.py:813
 #: ../tests/functional/test_wallace/test_007_invitationpolicy.py:825
@@ -3115,7 +3123,7 @@ msgstr ""
 #: ../wallace/module_invitationpolicy.py:1133
 #, python-format
 msgid "\"%s\" has been cancelled"
-msgstr ""
+msgstr "\"%s\" wurde abgesagt"
 
 #: ../tests/unit/test-011-itip.py:465
 #, python-format
@@ -3144,7 +3152,7 @@ msgstr ""
 
 #: ../wallace/__init__.py:122
 msgid "Bind address for Wallace."
-msgstr ""
+msgstr "Bind-Adresse für Wallace."
 
 #: ../wallace/__init__.py:140
 msgid "Number of threads to use."
@@ -3152,7 +3160,7 @@ msgstr ""
 
 #: ../wallace/__init__.py:156
 msgid "Port that Wallace is supposed to use."
-msgstr ""
+msgstr "Port, den Wallace benutzen soll."
 
 #: ../wallace/__init__.py:205
 #, python-format
@@ -3161,11 +3169,11 @@ msgstr ""
 
 #: ../wallace/__init__.py:217
 msgid "Could not shut down socket"
-msgstr ""
+msgstr "Konnte Socket nicht schließen"
 
 #: ../wallace/__init__.py:286
 msgid "Accepted connection"
-msgstr ""
+msgstr "Verbindung akzeptiert"
 
 #: ../wallace/__init__.py:464
 #, python-format
@@ -3415,7 +3423,7 @@ msgstr ""
 #: ../wallace/module_invitationpolicy.py:694
 #, python-format
 msgid "IMAP proxy authentication failed: %r"
-msgstr ""
+msgstr "IMAP-Proxy Authentifizierung fehlgeschlagen: %r"
 
 #: ../wallace/module_invitationpolicy.py:716
 #, python-format
@@ -3503,7 +3511,7 @@ msgstr ""
 
 #: ../wallace/module_invitationpolicy.py:1041
 msgid "(removed)"
-msgstr ""
+msgstr "(entfernt)"
 
 #: ../wallace/module_invitationpolicy.py:1047
 #, python-format
@@ -3512,7 +3520,7 @@ msgid ""
 "            The assignment for '%(summary)s' has been updated in your tasklist.\n"
 "            %(roundup)s\n"
 "        "
-msgstr ""
+msgstr "\nDie Zuweisung für '%(summary)s' wurde in ihrer Aufgabenliste aktualisiert.\n%(roundup)s\n        "
 
 #: ../wallace/module_invitationpolicy.py:1055
 #, python-format
@@ -3521,18 +3529,18 @@ msgid ""
 "            The event '%(summary)s' at %(start)s has been updated in your calendar.\n"
 "            %(roundup)s\n"
 "        "
-msgstr ""
+msgstr "\nDas Ereignis '%(summary)s' um %(start)s wurde in ihrem Kalender aktualisiert.\n%(roundup)s\n        "
 
 #: ../wallace/module_invitationpolicy.py:1064
 #: ../wallace/module_invitationpolicy.py:1126
 #: ../wallace/module_invitationpolicy.py:1216
 msgid "*** This is an automated message. Please do not reply. ***"
-msgstr ""
+msgstr "*** Dies ist eine automatisierte Nachricht. Bitte antworten Sie nicht. ***"
 
 #: ../wallace/module_invitationpolicy.py:1099
 #, python-format
 msgid "Send cancellation notification for %s %r to user %r"
-msgstr ""
+msgstr "Benachrichtigung über die Absage von %s %r an Nutzer %r senden"
 
 #: ../wallace/module_invitationpolicy.py:1109
 #, python-format
@@ -3541,7 +3549,7 @@ msgid ""
 "            The assignment for '%(summary)s' has been cancelled by %(organizer)s.\n"
 "            The copy in your tasklist as been marked as cancelled accordingly.\n"
 "        "
-msgstr ""
+msgstr "\nDie Zuweisung für Aufgabe '%(summary)s' wurde von %(organizer)s abgesagt.\nDie Kopie in Ihrer Taskliste wurde entsprechend aktualisiert."
 
 #: ../wallace/module_invitationpolicy.py:1117
 #, python-format
@@ -3550,22 +3558,22 @@ msgid ""
 "            The event '%(summary)s' at %(start)s has been cancelled by %(organizer)s.\n"
 "            The copy in your calendar as been marked as cancelled accordingly.\n"
 "        "
-msgstr ""
+msgstr "\nDas Ereignis '%(summary)s' um %(start)s wurde von %(organizer)s abgesagt.\nDie Kopie in ihrem Kalender wurde entsprechend aktualisiert."
 
 #: ../wallace/module_invitationpolicy.py:1206
 #, python-format
 msgid "Updated %s's copy of %r: %r"
-msgstr ""
+msgstr "%s's Kopie von %r wurde aktualisiert: %r"
 
 #: ../wallace/module_invitationpolicy.py:1209
 #, python-format
 msgid "Attendee %s's copy of %r not found"
-msgstr ""
+msgstr "Die Kopie des Teilnehmers %s von %r wurde nicht gefunden"
 
 #: ../wallace/module_invitationpolicy.py:1212
 #, python-format
 msgid "Attendee %r not found in LDAP"
-msgstr ""
+msgstr "Teilnehmer %r wurde nicht in LDAP gefunden"
 
 #: ../wallace/module_invitationpolicy.py:1219
 #, python-format
@@ -3763,88 +3771,88 @@ msgstr ""
 #: ../wallace/module_resources.py:704
 #, python-format
 msgid "Failed to access resource calendar:: %r"
-msgstr ""
+msgstr "Zugriff auf Ressourcenkalender fehlgeschlagen: %r"
 
 #: ../wallace/module_resources.py:733
 #, python-format
 msgid "Apply invitation policies %r"
-msgstr ""
+msgstr "Anwenden der Einladungsrichtlinie %r"
 
 #: ../wallace/module_resources.py:752
 #, python-format
 msgid "Adding event to %r: %r"
-msgstr ""
+msgstr "Hinzufügen Termin zu %r: %r"
 
 #: ../wallace/module_resources.py:806
 #, python-format
 msgid "Failed to save event to resource calendar at %r: %r"
-msgstr ""
+msgstr "Speichern des Termins im Ressourcenkalender fehlgeschlagen in %r: %r"
 
 #: ../wallace/module_resources.py:823
 #, python-format
 msgid "Delete resource calendar object %r in %r: %r"
-msgstr ""
+msgstr "Lösche Kalenderobjekt der Ressource %r in %r: %r"
 
 #: ../wallace/module_resources.py:866
 #, python-format
 msgid "Checking if email address %r belongs to a resource (collection)"
-msgstr ""
+msgstr "Prüfe ob E-Mail-Adresse %r zu einer Ressource (Sammlung) gehört"
 
 #: ../wallace/module_resources.py:874 ../wallace/module_resources.py:946
 #: ../wallace/module_resources.py:980
 #, python-format
 msgid "Resource record(s): %r"
-msgstr ""
+msgstr "Ressourcen-Eintrag/Einträge: %r"
 
 #: ../wallace/module_resources.py:876 ../wallace/module_resources.py:948
 #: ../wallace/module_resources.py:983
 #, python-format
 msgid "No resource (collection) records found for %r"
-msgstr ""
+msgstr "Kein Ressourcen (Sammlung) - Eintrag für %r gefunden"
 
 #: ../wallace/module_resources.py:880 ../wallace/module_resources.py:952
 #: ../wallace/module_resources.py:987
 #, python-format
 msgid "Resource record: %r"
-msgstr ""
+msgstr "Ressourceneinträge: %r"
 
 #: ../wallace/module_resources.py:898
 #, python-format
 msgid "Raw itip_events: %r"
-msgstr ""
+msgstr "Originale itip_events: %r"
 
 #: ../wallace/module_resources.py:906
 #, python-format
 msgid "Raw set of attendees: %r"
-msgstr ""
+msgstr "Originalset der Teilnehmer: %r"
 
 #: ../wallace/module_resources.py:914
 #, python-format
 msgid "Raw set of resources: %r"
-msgstr ""
+msgstr "Originalset der Ressourcen: %r"
 
 #: ../wallace/module_resources.py:919
 #, python-format
 msgid "Raw set of organizers: %r"
-msgstr ""
+msgstr "Originalset der Organisatoren: %r"
 
 #: ../wallace/module_resources.py:939
 #, python-format
 msgid "Checking if attendee %r is a resource (collection)"
-msgstr ""
+msgstr "Prüfe ob Teilnehmer %r eine Ressource (Sammlung) ist"
 
 #: ../wallace/module_resources.py:955 ../wallace/module_resources.py:989
 msgid "Resource reservation made but no resource records found"
-msgstr ""
+msgstr "Ressourcenbuchung erfolgt, jedoch keine Ressourceneinträge gefunden"
 
 #: ../wallace/module_resources.py:974
 #, python-format
 msgid "Checking if resource %r is a resource (collection)"
-msgstr ""
+msgstr "Prüfe ob Resource %r eine Resource (Sammlung)"
 
 #: ../wallace/module_resources.py:992
 msgid "The following resources are being referred to in the "
-msgstr ""
+msgstr "Auf die folgenden Ressourcen wurde Bezug genommen in"
 
 #: ../wallace/module_resources.py:1157
 #, python-format
@@ -3854,7 +3862,7 @@ msgid ""
 "\n"
 "                Your reservation was delegated to \"%s\" which is available for the requested time.\n"
 "            "
-msgstr ""
+msgstr "\n*** Dies ist eine automatisch erstellte E-Mail. Bitte antworten Sie nicht direkt darauf. ***\n\nIhre Reservierung wurde an \"%s\" delegiert, welche(r) zum angeforderten Termin verfügbar ist.\n            "
 
 #: ../wallace/module_resources.py:1176
 #, python-format
@@ -3864,7 +3872,7 @@ msgid ""
 "        \n"
 "        We hereby inform you that your reservation was %s.\n"
 "    "
-msgstr ""
+msgstr "\n*** Dies ist eine automatisch erstellte E-Mail. Bitte antworten Sie nicht direkt darauf. ***\n\nHiermit informieren wir Sie, dass die Buchung %s wurde.\n    "
 
 #: ../wallace/module_resources.py:1183
 #, python-format
@@ -3878,11 +3886,11 @@ msgstr ""
 #: ../wallace/module_resources.py:1218
 #, python-format
 msgid "Sending booking notification for event %r to %r from %r"
-msgstr ""
+msgstr "Sende Buchungsbenachrichtigung für Termin %r zu %r von %r"
 
 #: ../wallace/module_resources.py:1236
 msgid "failed"
-msgstr ""
+msgstr "fehlgeschlagen"
 
 #: ../wallace/module_resources.py:1256
 #, python-format
@@ -3892,7 +3900,7 @@ msgid ""
 "\n"
 "            *** This is an automated message, sent to you as the resource owner. ***\n"
 "        "
-msgstr ""
+msgstr "\nDie Buchungsanfrage für %(resource)s durch %(orgname)s <%(orgemail)s> ist %(status)s für %(date)s.\n\n*** Dies ist eine automatisch erstellte E-Mail. Bitte antworten Sie nicht direkt darauf. ***\n        "
 
 #: ../wallace/module_resources.py:1262
 #, python-format
@@ -3903,12 +3911,12 @@ msgid ""
 "\n"
 "            *** This is an automated message, sent to you as the resource owner. ***\n"
 "        "
-msgstr ""
+msgstr "\nEine Buchungsanfrage für %(resource)s konnte nicht automatisch verarbeitet werden.\nBitte kontaktieren Sie %(orgname)s <%(orgemail)s>, welcher die Resource für den %(date)s angefragt hat.\nSubject: %(summary)s.\n\n*** Dies ist eine automatisch erstellte E-Mail. Bitte antworten Sie nicht direkt darauf. ***"
 
 #: ../wallace/module_resources.py:1306
 #, python-format
 msgid "Clone invitation for owner confirmation: %r from %r"
-msgstr ""
+msgstr "Kopiere Einladung für Eigentümer Bestätigung: %r von %r"
 
 #: ../wallace/module_resources.py:1312
 #, python-format
@@ -3925,59 +3933,59 @@ msgid ""
 "\n"
 "        *** This is an automated message, please don't reply by email. ***\n"
 "    "
-msgstr ""
+msgstr "\nEine Buchungsanfrage für %(resource)s benötigt Ihre Zustimmung!\nBitte akzeptieren Sie die Anfrage oder lehnen Sie diese ab ohne die Anfrage in Ihrem Kalender zu speichern.\n\nDie Buchungsanfrage wurde gesendet von %(orgname)s <%(orgemail)s>.\n\nBetreff: %(summary)s.\nTermin: %(date)s\nTeilnehmer: %(attendees)s\n\n*** Dies ist eine automatisch erstellte E-Mail. Bitte antworten Sie nicht direkt darauf. ***"
 
 #. This is a nested module
 #: ../wallace/modules.py:97
 #, python-format
 msgid "Module Group: %s"
-msgstr ""
+msgstr "Modulgruppe: %s"
 
 #: ../wallace/modules.py:108 ../wallace/modules.py:120
 #, python-format
 msgid "No such module %r in modules %r (1)."
-msgstr ""
+msgstr "Kein solches Modul %r in Modulen %r  (1)."
 
 #: ../wallace/modules.py:113
 #, python-format
 msgid "No such module %r in modules %r (2)."
-msgstr ""
+msgstr "Kein solches Modul %r in Modulen %r (2)."
 
 #: ../wallace/modules.py:126
 #, python-format
 msgid "Holding message in queue for manual review (%s by %s)"
-msgstr ""
+msgstr "Behalte Nachricht zur manuellen Prüfung in der Warteliste (%s von %s)"
 
 #: ../wallace/modules.py:129
 #, python-format
 msgid "Deferring message in %s (by module %s)"
-msgstr ""
+msgstr "Zurückgestellte Nachricht in %s (durch Modul %s)"
 
 #: ../wallace/modules.py:141
 #, python-format
 msgid "The time when the message was sent: %r"
-msgstr ""
+msgstr "Zeitpunkt des Versandts: %r"
 
 #: ../wallace/modules.py:142
 #, python-format
 msgid "The time now: %r"
-msgstr ""
+msgstr "Die Zeit ist jetzt: %r"
 
 #: ../wallace/modules.py:143
 #, python-format
 msgid "The time delta: %r"
-msgstr ""
+msgstr "Die Zeitdifferenz: %r"
 
 #. TODO: Send NDR back to user
 #: ../wallace/modules.py:147
 #, python-format
 msgid "Message in file %s older then 5 days, deleting"
-msgstr ""
+msgstr "Nachricht in Datei %s älter als 5 Tage, lösche"
 
 #: ../wallace/modules.py:172
 #, python-format
 msgid "Rejecting message in %s (by module %s)"
-msgstr ""
+msgstr "Weise Nachricht in %s (durch Modul %s) zurück"
 
 #: ../wallace/modules.py:193
 #, python-format
@@ -3992,31 +4000,31 @@ msgid ""
 "Your message is being delivered to any other recipients you may have\n"
 "sent your message to. There is no need to resend the message to those\n"
 "recipients.\n"
-msgstr ""
+msgstr "Ich bin das E-Mail-System Wallace auf %s.\n\nMit Bedauern muß ich Sie informieren, daß die angehängte Nachricht\nnicht an die folgenden Empfänger zugestellt werden konnte:\n\n- %s\n\nFalls Sie noch andere Empfänger angegeben haben wurde die Nachricht\nan diese zugestellt. An diese Empfänger müssen sie die Nachricht\nnicht erneut senden.\n"
 
 #: ../wallace/modules.py:208
 #, python-format
 msgid ""
 "X-Wallace-Module: %s\n"
 "X-Wallace-Result: REJECT\n"
-msgstr ""
+msgstr "X-Wallace-Modul: %s\nX-Wallace-Ergebnis: REJECT\n"
 
 #: ../wallace/modules.py:267
 #, python-format
 msgid "Accepting message in %s (by module %s)"
-msgstr ""
+msgstr "Akzeptiere Nachricht in %s (durch Modul %s)"
 
 #: ../wallace/modules.py:269
 #, python-format
 msgid "Accepting message in: %r"
-msgstr ""
+msgstr "Akzeptiere Nachricht in: %r"
 
 #: ../wallace/modules.py:276
 #, python-format
 msgid "recipients: %r"
-msgstr ""
+msgstr "Empfänger: %r"
 
 #: ../wallace/modules.py:354
 #, python-format
 msgid "Module '%s' already registered"
-msgstr ""
+msgstr "Modul '%s' ist bereits registriert"
