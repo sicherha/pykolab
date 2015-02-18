@@ -458,7 +458,7 @@ PRODID:-//Roundcube//Roundcube libcalendaring 1.1-git//Sabre//Sabre VObject
   2.1.3//EN
 CALSCALE:GREGORIAN
 METHOD:REQUEST
-        """ + ical_event + "END:VCALENDAR"
+        """ + ical_event + ical_exception + "END:VCALENDAR"
 
         ical = icalendar.Calendar.from_ical(ical_str)
         event = event_from_ical(ical.walk('VEVENT')[0], ical_str)
@@ -481,13 +481,11 @@ METHOD:REQUEST
         self.assertIsInstance(event.get_exception_dates()[0], datetime.datetime)
         self.assertEqual(len(event.get_alarms()), 1)
         self.assertEqual(len(event.get_attachments()), 2)
+        self.assertEqual(len(event.get_exceptions()), 1)
 
-        # TODO: load ical_exception with main event
-        #self.assertEqual(len(event.get_exceptions()), 1)
-
-        exception = event_from_ical(ical_exception)
+        exception = event.get_exceptions()[0]
         self.assertIsInstance(exception.get_recurrence_id(), datetime.datetime)
-        self.assertEqual(exception.thisandfuture, True)
+        # self.assertEqual(exception.thisandfuture, True)
         self.assertEqual(str(exception.get_start()), "2014-06-07 12:00:00+02:00")
 
     def test_018_ical_to_message(self):
