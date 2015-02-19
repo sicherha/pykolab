@@ -363,6 +363,7 @@ result_format = "shared+%%s"
             'primary_domain': conf.get('kolab', 'primary_domain'),
             'ldap_filter': "(|(mail=%m)(alias=%m))",
             'ldap_base_dn': conf.get('ldap', 'base_dn'),
+            'clamdsock': '/var/spool/amavisd/clamd.sock',
         }
 
     template_file = None
@@ -380,6 +381,12 @@ result_format = "shared+%%s"
             fp = open(template_file, 'r')
             template_definition = fp.read()
             fp.close()
+
+            if os.path.isfile('/etc/clamd.d/amavisd.conf'):
+                amavisdconf_content = file('/etc/clamd.d/amavisd.conf')
+                for line in amavisdconf_content:
+                  if line.startswith('LocalSocket'):
+                     amavisd_settings['clamdsock'] = line[len('LocalSocket '):].strip()
 
             t = Template(template_definition, searchList=[amavisd_settings])
 
