@@ -6,7 +6,7 @@ After=syslog.target network.target
 Type=forking
 PIDFile=/var/run/kolab-saslauthd/kolab-saslauthd.pid
 EnvironmentFile=/etc/sysconfig/kolab-saslauthd
-ExecStart=/usr/sbin/kolab-saslauthd $FLAGS
+ExecStart=/usr/sbin/kolab-saslauthd $FLAGS --socket /run/saslauthd/mux
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/kill -TERM $MAINPID
 
