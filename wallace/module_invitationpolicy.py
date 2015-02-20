@@ -400,34 +400,11 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
     condition_fulfilled = True
 
     # find existing event in user's calendar
-    existing = find_existing_object(itip_event['uid'], itip_event['type'], itip_event['recurrence-id'], receiving_user, True)
-    master = None
+    (existing, master) = find_existing_object(itip_event['uid'], itip_event['type'], itip_event['recurrence-id'], receiving_user, True)
 
     # compare sequence number to determine a (re-)scheduling request
     if existing is not None:
         log.debug(_("Existing %s: %r") % (existing.type, existing), level=9)
-
-        # reply for a single instance only
-        if itip_event['recurrence-id'] is not None:
-            log.debug(_("REQUEST refers to a single occurrence at %s") % (str(itip_event['recurrence-id'])), level=8)
-            # find instance in a recurring series
-            if existing.is_recurring():
-                master = existing
-                existing = master.get_instance(itip_event['recurrence-id'])
-            # compare recurrence-id with the found event
-            elif not xmlutils.dates_equal(itip_event['recurrence-id'], existing.get_recurrence_id()):
-                existing = None
-
-            if not existing:
-                log.info(_("The iTip REQUEST refers to an unknown occurrence '%s' of object '%s'. Forwarding to Inbox.") % (
-                    str(itip_event['recurrence-id']), itip_event['uid']
-                ))
-                return MESSAGE_FORWARD
-
-            if master:
-                setattr(existing, '_imap_folder', master._imap_folder)
-                setattr(existing, '_msguid', master._msguid)
-
         scheduling_required = itip_event['sequence'] > 0 and itip_event['sequence'] > existing.get_sequence()
         save_object = True
 
@@ -534,27 +511,9 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
 
         # find existing event in user's calendar
         # sets/checks lock to avoid concurrent wallace processes trying to update the same event simultaneously
-        existing = find_existing_object(itip_event['uid'], itip_event['type'], itip_event['recurrence-id'], receiving_user, True)
-        master = None
+        (existing, master) = find_existing_object(itip_event['uid'], itip_event['type'], itip_event['recurrence-id'], receiving_user, True)
 
         if existing:
-            # reply for a single instance only
-            if itip_event['recurrence-id'] is not None:
-                log.debug(_("REPLY refers to a single occurrence at %s") % (str(itip_event['recurrence-id'])), level=8)
-                # find instance in a recurring series
-                if existing.is_recurring():
-                    master = existing
-                    existing = master.get_instance(itip_event['recurrence-id'])
-                # compare recurrence-id with the found event
-                elif not xmlutils.dates_equal(itip_event['recurrence-id'], existing.get_recurrence_id()):
-                    existing = None
-
-                if not existing:
-                    log.info(_("The iTip REPLY refers to an unknown occurrence '%s' of object '%s'. Forwarding to Inbox.") % (
-                        str(itip_event['recurrence-id']), itip_event['uid']
-                    ))
-                    return MESSAGE_FORWARD
-
             # compare sequence number to avoid outdated replies?
             if not itip_event['sequence'] == existing.get_sequence():
                 log.info(_("The iTip reply sequence (%r) doesn't match the referred object version (%r). Forwarding to Inbox.") % (
@@ -636,27 +595,9 @@ def process_itip_cancel(itip_event, policy, recipient_email, sender_email, recei
     # auto-update the local copy with STATUS=CANCELLED
     if policy & ACT_UPDATE:
         # find existing object in user's folders
-        existing = find_existing_object(itip_event['uid'], itip_event['type'], itip_event['recurrence-id'], receiving_user, True)
-        master = None
+        (existing, master) = find_existing_object(itip_event['uid'], itip_event['type'], itip_event['recurrence-id'], receiving_user, True)
 
         if existing:
-            # reply for a single instance only
-            if itip_event['recurrence-id'] is not None:
-                log.debug(_("CANCEL refers to a single occurrence at %s") % (str(itip_event['recurrence-id'])), level=8)
-                # find instance in a recurring series
-                if existing.is_recurring():
-                    master = existing
-                    existing = master.get_instance(itip_event['recurrence-id'])
-                # compare recurrence-id with the found event
-                elif not xmlutils.dates_equal(itip_event['recurrence-id'], existing.get_recurrence_id()):
-                    existing = None
-
-                if not existing:
-                    log.info(_("The iTip CANCEL refers to an unknown occurrence '%s' of object '%s'. Forwarding to Inbox.") % (
-                        str(itip_event['recurrence-id']), itip_event['uid']
-                    ))
-                    return MESSAGE_FORWARD
-
             # on this-and-future cancel requests, set the recurrence until date on the master event
             if itip_event['recurrence-id'] and master and itip_event['xml'].get_thisandfuture():
                 rrule = master.get_recurrence()
@@ -851,6 +792,7 @@ def find_existing_object(uid, type, recurrence_id, user_rec, lock=False):
         set_write_lock(lock_key)
 
     event = None
+    master = None
     for folder in list_user_folders(user_rec, type):
         log.debug(_("Searching folder %r for %s %r") % (folder, type, uid), level=8)
         imap.imap.m.select(imap.folder_utf7(folder))
@@ -870,8 +812,15 @@ def find_existing_object(uid, type, recurrence_id, user_rec, lock=False):
                 else:
                     event = event_from_message(message_from_string(data[0][1]))
 
+                # find instance in a recurring series
+                if recurrence_id and event.is_recurring():
+                    master = event
+                    event = master.get_instance(recurrence_id)
+                    setattr(master, '_imap_folder', folder)
+                    setattr(master, '_msguid', msguid)
+
                 # compare recurrence-id and skip to next message if not matching
-                if recurrence_id and not event.is_recurring() and not xmlutils.dates_equal(recurrence_id, event.get_recurrence_id()):
+                elif recurrence_id and not event.is_recurring() and not xmlutils.dates_equal(recurrence_id, event.get_recurrence_id()):
                     log.debug(_("Recurrence-ID not matching on message %s, skipping: %r != %r") % (
                         msguid, recurrence_id, event.get_recurrence_id()
                     ), level=8)
@@ -880,17 +829,18 @@ def find_existing_object(uid, type, recurrence_id, user_rec, lock=False):
                 setattr(event, '_imap_folder', folder)
                 setattr(event, '_lock_key', lock_key)
                 setattr(event, '_msguid', msguid)
+
             except Exception, e:
                 log.error(_("Failed to parse %s from message %s/%s: %s") % (type, folder, num, traceback.format_exc()))
                 continue
 
             if event and event.uid == uid:
-                return event
+                return (event, master)
 
     if lock_key is not None:
         remove_write_lock(lock_key)
 
-    return event
+    return (event, master)
 
 
 def check_availability(itip_event, receiving_user):
@@ -1323,20 +1273,8 @@ def propagate_changes_to_attendees_accounts(object, updated_attendees=None):
         attendee_user_dn = user_dn_from_email_address(attendee.get_email())
         if attendee_user_dn:
             attendee_user = auth.get_entry_attributes(None, attendee_user_dn, ['*'])
-            attendee_object = find_existing_object(object.uid, object.type, recurrence_id, attendee_user, True)  # does IMAP authenticate
+            (attendee_object, master_object) = find_existing_object(object.uid, object.type, recurrence_id, attendee_user, True)  # does IMAP authenticate
             if attendee_object:
-                master_object = None
-
-                # updating a single instance only: add exception to master event
-                if recurrence_id:
-                    master_object = attendee_object
-                    attendee_object = master_object.get_instance(recurrence_id)
-                    if attendee_object is None:
-                        log.debug(_("Unable to find occurrence '%s' in %s's copy of object %r") % (
-                            str(recurrence_id), attendee_user['mail'], object.uid
-                        ), level=5)
-                        break
-
                 # find attendee's entry by one of its email addresses
                 attendee_emails = auth.extract_recipient_addresses(attendee_user)
                 for attendee_email in attendee_emails:
