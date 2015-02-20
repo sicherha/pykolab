@@ -445,11 +445,14 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         return uid
 
-    def send_itip_cancel(self, attendee_email, uid, template=None, summary="test", sequence=1, instance=None):
+    def send_itip_cancel(self, attendee_email, uid, template=None, summary="test", sequence=1, instance=None, thisandfuture=False):
         recurrence_id = ''
 
         if instance is not None:
-            recurrence_id = "\nRECURRENCE-ID;TZID=Europe/Berlin:" + instance.strftime('%Y%m%dT%H%M%S')
+            recurrence_id = "\nRECURRENCE-ID;TZID=Europe/Berlin%s:%s" % (
+                ';RANGE=THISANDFUTURE' if thisandfuture else '',
+                instance.strftime('%Y%m%dT%H%M%S')
+            )
 
         self.send_message((template if template is not None else itip_cancellation) % {
                 'uid': uid,
@@ -1225,6 +1228,29 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         response = self.check_message_received(self.itip_reply_subject % { 'summary':'new booking', 'status':participant_status_label('ACCEPTED') }, self.jane['mail'])
         self.assertIsInstance(response, email.message.Message)
+
+    def test_017_cancel_thisandfuture(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        start = datetime.datetime(2015,5,4, 6,30,0)
+        uid = self.send_itip_invitation(self.mark['mail'], summary="recurring", start=start, template=itip_recurring)
+
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'recurring', 'status':participant_status_label('ACCEPTED') }, self.mark['mail'])
+        self.assertIsInstance(response, email.message.Message)
+
+        event = self.check_user_calendar_event(self.mark['kolabcalendarfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+
+        exdate = start + datetime.timedelta(days=14)
+        self.send_itip_cancel(self.mark['mail'], uid, summary="recurring ended", instance=exdate, thisandfuture=True)
+
+        time.sleep(10)
+        event = self.check_user_calendar_event(self.mark['kolabcalendarfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+
+        rrule = event.get_recurrence().to_dict()
+        self.assertIsInstance(rrule['until'], datetime.datetime)
+        self.assertEqual(rrule['until'].strftime('%Y%m%d'), (exdate - datetime.timedelta(days=1)).strftime('%Y%m%d'))
 
 
     def test_018_invite_individual_occurrences(self):

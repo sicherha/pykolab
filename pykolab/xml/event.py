@@ -702,6 +702,9 @@ class Event(object):
     def get_transparency(self):
         return self.event.transparency()
 
+    def get_recurrence(self):
+        return RecurrenceRule(self.event.recurrenceRule())
+
     def set_attendees(self, _attendees, recursive=False):
         if recursive:
             self._attendees = []

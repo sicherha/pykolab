@@ -18,6 +18,7 @@
 #
 
 import datetime
+import pytz
 import os
 import tempfile
 import time
@@ -655,6 +656,14 @@ def process_itip_cancel(itip_event, policy, recipient_email, sender_email, recei
                         str(itip_event['recurrence-id']), itip_event['uid']
                     ))
                     return MESSAGE_FORWARD
+
+            # on this-and-future cancel requests, set the recurrence until date on the master event
+            if itip_event['recurrence-id'] and master and itip_event['xml'].get_thisandfuture():
+                rrule = master.get_recurrence()
+                rrule.set_count(0)
+                rrule.set_until(existing.get_start().astimezone(pytz.utc) + datetime.timedelta(days=-1))
+                master.set_recurrence(rrule)
+                existing.set_recurrence_id(existing.get_recurrence_id(), True)
 
             existing.set_status('CANCELLED')
             existing.set_transparency(True)
