@@ -479,7 +479,7 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
             receiving_attendee.set_name(receiving_user['cn'])
 
         # send iTip reply
-        if respond_with is not None:
+        if respond_with is not None and not respond_with == 'NEEDS-ACTION':
             receiving_attendee.set_participant_status(respond_with)
             send_reply(recipient_email, itip_event, invitation_response_text(itip_event['type']),
                 subject=_('"%(summary)s" has been %(status)s'))
