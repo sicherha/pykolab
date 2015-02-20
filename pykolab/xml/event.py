@@ -1305,7 +1305,7 @@ class Event(object):
             next_datetime = None
 
         # next_datetime is always a cdatetime, convert to date if necessary
-        if not isinstance(self.get_start(), datetime.datetime):
+        if next_datetime and not isinstance(self.get_start(), datetime.datetime):
             next_datetime = datetime.date(next_datetime.year, next_datetime.month, next_datetime.day)
 
         return next_datetime
