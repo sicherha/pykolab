@@ -525,8 +525,8 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
             log.debug(_("Auto-updating %s %r on iTip REPLY") % (existing.type, existing.uid), level=8)
             updated_attendees = []
             try:
-                existing_attendee = existing.get_attendee(sender_email)
                 existing.set_attendee_participant_status(sender_email, sender_attendee.get_participant_status(), rsvp=False)
+                existing_attendee = existing.get_attendee(sender_email)
                 updated_attendees.append(existing_attendee)
             except Exception, e:
                 log.error("Could not find corresponding attende in organizer's copy: %r" % (e))
@@ -800,11 +800,12 @@ def find_existing_object(uid, type, recurrence_id, user_rec, lock=False):
         res, data = imap.imap.m.search(None, '(UNDELETED HEADER SUBJECT "%s")' % (uid))
         for num in reversed(data[0].split()):
             res, data = imap.imap.m.fetch(num, '(UID RFC822)')
-            msguid = None
 
-            grep = re.search(r" UID (\d+)", data[0][0])
-            if grep:
-                msguid = grep.group(1)
+            try:
+                msguid = re.search(r"\WUID (\d+)", data[0][0]).group(1)
+            except Exception, e:
+                log.error(_("No UID found in IMAP response: %r") % (data[0][0]))
+                continue
 
             try:
                 if type == 'task':
