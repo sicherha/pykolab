@@ -65,7 +65,7 @@ class Event(object):
             "TENTATIVE": kolabformat.StatusTentative,
             "CONFIRMED": kolabformat.StatusConfirmed,
             "CANCELLED": kolabformat.StatusCancelled,
-            "COMPLETD":  kolabformat.StatusCompleted,
+            "COMPLETED":  kolabformat.StatusCompleted,
             "IN-PROCESS": kolabformat.StatusInProcess,
             "NEEDS-ACTION": kolabformat.StatusNeedsAction,
         }
