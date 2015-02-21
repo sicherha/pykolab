@@ -9,6 +9,7 @@ import pykolab
 
 from pykolab.xml import Attendee
 from pykolab.xml import Event
+from pykolab.xml import RecurrenceRule
 from pykolab.xml import EventIntegrityError
 from pykolab.xml import InvalidAttendeeParticipantStatusError
 from pykolab.xml import InvalidEventDateError
@@ -536,6 +537,14 @@ END:VEVENT
         self.event.add_custom_property('X-Custom', 'check')
         self.event.set_recurrence_id(datetime.datetime(2014, 05, 23, 11, 0, 0), True)
 
+        rrule = RecurrenceRule()
+        rrule.set_frequency(kolabformat.RecurrenceRule.Weekly)
+        rrule.set_byday(['2WE','-1SU'])
+        rrule.setBymonth([2])
+        rrule.set_count(10)
+        rrule.set_until(datetime.datetime(2014,7,23, 11,0,0, tzinfo=pytz.utc))
+        self.event.set_recurrence(rrule);
+
         ical = icalendar.Calendar.from_ical(self.event.as_string_itip())
         event = ical.walk('VEVENT')[0]
 
@@ -547,6 +556,14 @@ END:VEVENT
         self.assertEqual(event['class'], "CONFIDENTIAL")
         self.assertIsInstance(event['recurrence-id'].dt, datetime.datetime)
         self.assertEqual(event['recurrence-id'].params.get('RANGE'), 'THISANDFUTURE')
+
+        self.assertTrue(event.has_key('rrule'))
+        self.assertEqual(event['rrule']['FREQ'][0], 'WEEKLY')
+        self.assertEqual(event['rrule']['INTERVAL'][0], 1)
+        self.assertEqual(event['rrule']['COUNT'][0], 10)
+        self.assertEqual(event['rrule']['BYMONTH'][0], 2)
+        self.assertEqual(event['rrule']['BYDAY'], ['2WE','-1SU'])
+        self.assertIsInstance(event['rrule']['UNTIL'][0], datetime.datetime)
 
     def test_019_to_message_itip(self):
         self.event = Event()

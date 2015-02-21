@@ -142,6 +142,9 @@ class RecurrenceRule(kolabformat.RecurrenceRule):
     def set_byday(self, bdays):
         daypos = kolabformat.vectordaypos()
         for wday in bdays:
+            if isinstance(wday, str):
+                wday = icalendar.vWeekday(wday)
+
             weekday = str(wday)[-2:]
             occurrence = int(wday.relative)
             if str(wday)[0] == '-':
@@ -177,7 +180,11 @@ class RecurrenceRule(kolabformat.RecurrenceRule):
         name_map = dict([(v, k) for (k, v) in map.iteritems()])
         return name_map[val] if name_map.has_key(val) else 'UNKNOWN'
 
-    def to_dict(self):
+    def to_ical(self):
+        rrule = icalendar.vRecur(dict((k,v) for k,v in self.to_dict(True).items() if not (type(v) == str and v == '' or type(v) == list and len(v) == 0)))
+        return rrule
+
+    def to_dict(self, raw=False):
         if not self.isValid() or self.frequency() == kolabformat.RecurrenceRule.FreqNone:
             return None
 
@@ -194,9 +201,12 @@ class RecurrenceRule(kolabformat.RecurrenceRule):
             if isinstance(val, kolabformat.cDateTime):
                 val = xmlutils.from_cdatetime(val, True)
             elif isinstance(val, kolabformat.vectori):
-                val = ",".join([int(v) for x in val])
+                val = [int(x) for x in val]
             elif isinstance(val, kolabformat.vectordaypos):
-                val = ",".join(["%s%s" % (str(x.occurence()) if x.occurence() != 0 else '', self._translate_value(x.weekday(), self.weekday_map)) for x in val])
+                val = ["%s%s" % (str(x.occurence()) if x.occurence() != 0 else '', self._translate_value(x.weekday(), self.weekday_map)) for x in val]
+
+            if not raw and isinstance(val, list):
+                val = ",".join(val)
             if val is not None:
                 data[p] = val
 

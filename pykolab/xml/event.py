@@ -644,6 +644,13 @@ class Event(object):
 
         return None
 
+    def get_ical_rrule(self):
+        result = []
+        rrule = self.get_recurrence()
+        if rrule.isValid():
+            result.append(rrule.to_ical())
+        return result
+
     def get_location(self):
         return self.event.location()
 
