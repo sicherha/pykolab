@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2015 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -44,6 +44,7 @@ from pykolab.auth import Auth
 from pykolab.conf import Conf
 from pykolab.imap import IMAP
 from pykolab.xml import to_dt
+from pykolab.xml import utils as xmlutils
 from pykolab.xml import event_from_message
 from pykolab.xml import participant_status_label
 from pykolab.itip import events_from_message
@@ -265,14 +266,16 @@ def execute(*args, **kw):
 
             # find initial reservation referenced by the reply
             if reference_uid:
-                event = find_existing_event(reference_uid, receiving_resource)
+                (event, master) = find_existing_event(reference_uid, itip_event['recurrence-id'], receiving_resource)
+                log.debug(_("iTip REPLY to %r, %r; matches %r") % (reference_uid, itip_event['recurrence-id'], type(event)), level=8)
+
                 if event:
                     try:
                         sender_attendee = itip_event['xml'].get_attendee_by_email(sender_email)
                         owner_reply = sender_attendee.get_participant_status()
                         log.debug(_("Sender Attendee: %r => %r") % (sender_attendee, owner_reply), level=9)
                     except Exception, e:
-                        log.error("Could not find envelope sender attendee: %r" % (e))
+                        log.error(_("Could not find envelope sender attendee: %r") % (e))
                         continue
 
                     # compare sequence number to avoid outdated replies
@@ -287,18 +290,16 @@ def execute(*args, **kw):
                     if comment:
                         event.set_comment(str(comment))
 
-                    itip_event_ = dict(xml=event, uid=event.get_uid())
+                    _itip_event = dict(xml=event, uid=event.get_uid(), _master=master)
+                    _itip_event['recurrence-id'] = event.get_recurrence_id()
 
                     if owner_reply == kolabformat.PartAccepted:
                         event.set_status(kolabformat.StatusConfirmed)
-                        accept_reservation_request(itip_event_, receiving_resource, confirmed=True)
+                        accept_reservation_request(_itip_event, receiving_resource, confirmed=True)
                     elif owner_reply == kolabformat.PartDeclined:
-                        decline_reservation_request(itip_event_, receiving_resource)
-                        # TODO: set status=CANCELLED instead of deleting?
-                        # event.set_status(kolabformat.StatusCancelled)
-                        delete_resource_event(reference_uid, receiving_resource)
+                        decline_reservation_request(_itip_event, receiving_resource)
                     else:
-                        log.info("Invalid response (%r) recieved from resource owner for event %r" % (
+                        log.info(_("Invalid response (%r) recieved from resource owner for event %r") % (
                             sender_attendee.get_participant_status(True), reference_uid
                         ))
                 else:
@@ -316,7 +317,7 @@ def execute(*args, **kw):
             receiving_attendee = itip_event['xml'].get_attendee_by_email(receiving_resource['mail'])
             log.debug(_("Receiving Resource: %r; %r") % (receiving_resource, receiving_attendee), level=9)
         except Exception, e:
-            log.error("Could not find envelope attendee: %r" % (e))
+            log.error(_("Could not find envelope attendee: %r") % (e))
             continue
 
         # ignore updates and cancellations to resource collections who already delegated the event
@@ -329,7 +330,19 @@ def execute(*args, **kw):
             for resource in resource_dns:
                 if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()] \
                     and resources[resource].has_key('kolabtargetfolder'):
-                    delete_resource_event(itip_event['uid'], resources[resource])
+                    (event, master) = find_existing_event(itip_event['uid'], itip_event['recurrence-id'], resources[resource])
+                    # remove entire event
+                    if event and master is None:
+                        log.debug(_("Cancellation for entire event %r: deleting") % (itip_event['uid']), level=8)
+                        delete_resource_event(itip_event['uid'], resources[resource], event._msguid)
+                    # just cancel one single occurrence: add exception with status=cancelled
+                    elif master and master.is_recurring():
+                        log.debug(_("Cancellation for a single occurrence %r of %r: updating...") % (itip_event['recurrence-id'], itip_event['uid']), level=8)
+                        event.set_status('CANCELLED')
+                        event.set_transparency(True)
+                        _itip_event = dict(xml=event, uid=event.get_uid(), _master=master)
+                        _itip_event['recurrence-id'] = event.get_recurrence_id()
+                        save_resource_event(_itip_event, resources[resource])
 
             done = True
 
@@ -345,11 +358,6 @@ def execute(*args, **kw):
     # accept reservation
     if available_resource is not None:
         if available_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
-            # replace existing copy of this event
-            if len(available_resource['existing_events']) > 0:
-                for uid in available_resource['existing_events']:
-                    delete_resource_event(uid, available_resource)
-
             log.debug(_("Accept invitation for individual resource %r / %r") % (available_resource['dn'], available_resource['mail']), level=8)
 
             # check if reservation was delegated
@@ -557,6 +565,10 @@ def check_availability(itip_events, resource_dns, resources, receiving_attendee=
 
             # This is the event being conflicted with!
             for itip_event in itip_events:
+                # do not re-assign single occurrences to another resource
+                if itip_event['recurrence-id'] is not None:
+                    continue
+
                 # Now we have the event that was conflicting
                 if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
                     # this resource initially was delegated from a collection ?
@@ -583,8 +595,8 @@ def check_availability(itip_events, resource_dns, resources, receiving_attendee=
 
                             # remove existing_events as we now delegated back to the collection
                             if len(resources[resource]['existing_events']) > 0:
-                                for uid in resources[resource]['existing_events']:
-                                    delete_resource_event(uid, resources[resource])
+                                for existing in resources[resource]['existing_events']:
+                                    delete_resource_event(existing.uid, resources[resource], existing._msguid)
 
                     done = True
 
@@ -655,7 +667,13 @@ def read_resource_calendar(resource_rec, itip_events):
             level=9
         )
 
-        typ, data = imap.imap.m.fetch(num, '(RFC822)')
+        typ, data = imap.imap.m.fetch(num, '(UID RFC822)')
+
+        try:
+            msguid = re.search(r"\WUID (\d+)", data[0][0]).group(1)
+        except Exception, e:
+            log.error(_("No UID found in IMAP response: %r") % (data[0][0]))
+            continue
 
         event_message = message_from_string(data[0][1])
 
@@ -669,8 +687,12 @@ def read_resource_calendar(resource_rec, itip_events):
             for itip in itip_events:
                 conflict = check_event_conflict(event, itip)
 
-                if event.get_uid() == itip['uid']:
-                    resource_rec['existing_events'].append(itip['uid'])
+                if event.get_uid() == itip['uid'] and (event.is_recurring() or itip['recurrence-id'] == event.get_recurrence_id()):
+                    setattr(event, '_msguid', msguid)
+                    if event.is_recurring():
+                        resource_rec['existing_master'] = event
+                    else:
+                        resource_rec['existing_events'].append(event)
 
                 if conflict:
                     log.info(
@@ -686,13 +708,14 @@ def read_resource_calendar(resource_rec, itip_events):
     return num_messages
 
 
-def find_existing_event(uid, resource_rec):
+def find_existing_event(uid, recurrence_id, resource_rec):
     """
         Search the resources's calendar folder for the given event (by UID)
     """
     global imap
 
     event = None
+    master = None
     mailbox = resource_rec['kolabtargetfolder']
 
     log.debug(_("Searching %r for event %r") % (mailbox, uid), level=9)
@@ -705,18 +728,39 @@ def find_existing_event(uid, resource_rec):
         return event
 
     for num in reversed(data[0].split()):
-        typ, data = imap.imap.m.fetch(num, '(RFC822)')
+        typ, data = imap.imap.m.fetch(num, '(UID RFC822)')
+
+        try:
+            msguid = re.search(r"\WUID (\d+)", data[0][0]).group(1)
+        except Exception, e:
+            log.error(_("No UID found in IMAP response: %r") % (data[0][0]))
+            continue
 
         try:
             event = event_from_message(message_from_string(data[0][1]))
+
+            # find instance in a recurring series
+            if recurrence_id and event.is_recurring():
+                master = event
+                event = master.get_instance(recurrence_id)
+                setattr(master, '_msguid', msguid)
+
+            # compare recurrence-id and skip to next message if not matching
+            elif recurrence_id and not event.is_recurring() and not xmlutils.dates_equal(recurrence_id, event.get_recurrence_id()):
+                log.debug(_("Recurrence-ID not matching on message %s, skipping: %r != %r") % (
+                    msguid, recurrence_id, event.get_recurrence_id()
+                ), level=8)
+                continue
+            setattr(event, '_msguid', msguid)
+
         except Exception, e:
             log.error(_("Failed to parse event from message %s/%s: %r") % (mailbox, num, e))
             continue
 
         if event and event.uid == uid:
-            return event
+            return (event, master)
 
-    return event
+    return (event, master)
 
 
 def accept_reservation_request(itip_event, resource, delegator=None, confirmed=False):
@@ -746,7 +790,7 @@ def accept_reservation_request(itip_event, resource, delegator=None, confirmed=F
         partstat
     )
 
-    saved = save_resource_event(itip_event, resource, replace=confirmed)
+    saved = save_resource_event(itip_event, resource)
 
     log.debug(
         _("Adding event to %r: %r") % (resource['kolabtargetfolder'], saved),
@@ -773,6 +817,20 @@ def decline_reservation_request(itip_event, resource):
         "DECLINED"
     )
 
+    # update master event
+    if resource.get('existing_master') is not None or itip_event.get('_master') is not None:
+        save_resource_event(itip_event, resource)
+
+    # remove old copy of the reservation
+    elif resource.get('existing_events', []) and len(resource['existing_events']) > 0:
+        for existing in resource['existing_events']:
+            delete_resource_event(existing.uid, resource, existing._msguid)
+
+    # delete old event referenced by itip_event (from owner confirmation)
+    elif hasattr(itip_event['xml'], '_msguid'):
+        delete_resource_event(itip_event['xml'].uid, resource, itip_event['xml']._msguid)
+
+    # send response and notification
     owner = get_resource_owner(resource)
     send_response(resource['mail'], itip_event, get_resource_owner(resource))
 
@@ -780,25 +838,41 @@ def decline_reservation_request(itip_event, resource):
         send_owner_notification(resource, owner, itip_event, True)
 
 
-def save_resource_event(itip_event, resource, replace=False):
+def save_resource_event(itip_event, resource):
     """
         Append the given event object to the resource's calendar
     """
     try:
-        # Administrator login name comes from configuration.
+        save_event = itip_event['xml']
         targetfolder = imap.folder_quote(resource['kolabtargetfolder'])
 
+        # add exception to existing recurring main event
+        if resource.get('existing_master') is not None:
+            save_event = resource['existing_master']
+            save_event.add_exception(itip_event['xml'])
+
+        elif itip_event.get('_master') is not None:
+            save_event = itip_event['_master']
+            save_event.add_exception(itip_event['xml'])
+
         # remove old copy of the reservation (also sets ACLs)
-        if replace:
-            delete_resource_event(itip_event['uid'], resource)
+        if resource.has_key('existing_events') and len(resource['existing_events']) > 0:
+            for existing in resource['existing_events']:
+                delete_resource_event(existing.uid, resource, existing._msguid)
+
+        # delete old version referenced save_event
+        elif hasattr(save_event, '_msguid'):
+            delete_resource_event(save_event.uid, resource, save_event._msguid)
+
         else:
             imap.set_acl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
 
+        # append new version
         result = imap.imap.m.append(
             targetfolder,
             None,
             None,
-            itip_event['xml'].to_message(creator="Kolab Server <wallace@localhost>").as_string()
+            save_event.to_message(creator="Kolab Server <wallace@localhost>").as_string()
         )
         return result
 
@@ -810,24 +884,42 @@ def save_resource_event(itip_event, resource, replace=False):
     return False
 
 
-def delete_resource_event(uid, resource):
+def delete_resource_event(uid, resource, msguid=None):
     """
         Removes the IMAP object with the given UID from a resource's calendar folder
     """
     targetfolder = imap.folder_quote(resource['kolabtargetfolder'])
-    imap.set_acl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
-    imap.imap.m.select(targetfolder)
 
-    typ, data = imap.imap.m.search(None, '(HEADER SUBJECT "%s")' % uid)
+    try:
+        imap.set_acl(targetfolder, conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'), "lrswipkxtecda")
+        imap.imap.m.select(targetfolder)
 
-    log.debug(_("Delete resource calendar object %r in %r: %r") % (
-        uid, resource['kolabtargetfolder'], data
-    ), level=9)
+        # delete by IMAP UID
+        if msguid is not None:
+            log.debug(_("Delete resource calendar object from %r by UID %r") % (
+                targetfolder, msguid
+            ), level=8)
 
-    for num in data[0].split():
-        imap.imap.m.store(num, '+FLAGS', '\\Deleted')
+            imap.imap.m.uid('store', msguid, '+FLAGS', '(\\Deleted)')
+        else:
+            typ, data = imap.imap.m.search(None, '(HEADER SUBJECT "%s")' % uid)
 
-    imap.imap.m.expunge()
+            log.debug(_("Delete resource calendar object %r in %r: %r") % (
+                uid, resource['kolabtargetfolder'], data
+            ), level=9)
+
+            for num in data[0].split():
+                imap.imap.m.store(num, '+FLAGS', '\\Deleted')
+
+        imap.imap.m.expunge()
+        return True
+
+    except Exception, e:
+        log.error(_("Failed to delete calendar object %r from folder %r: %r") % (
+            uid, targetfolder, e
+        ))
+
+    return False
 
 
 def reject(filepath):
@@ -1116,7 +1208,7 @@ def get_resource_invitationpolicy(resource):
         if not isinstance(collections, list):
             collections = [ (collections['dn'],collections) ]
 
-        log.debug("Check collections %r for kolabinvitationpolicy attributes" % (collections), level=9)
+        log.debug(_("Check collections %r for kolabinvitationpolicy attributes") % (collections), level=9)
 
         for dn,collection in collections:
             # ldap.search_entry_by_attribute() doesn't return the attributes lower-cased
@@ -1289,6 +1381,13 @@ def send_owner_confirmation(resource, owner, itip_event):
     organizer = event.get_organizer()
     event_attendees = [a.get_displayname() for a in event.get_attendees() if not a.get_cutype() == kolabformat.CutypeResource]
 
+    log.debug(
+        _("Clone invitation for owner confirmation: %r from %r") % (
+            itip_event['uid'], event.get_organizer().email()
+        ),
+        level=8
+    )
+
     # generate new UID and set the resource as organizer
     (mail, domain) = resource['mail'].split('@')
     event.set_uid(str(uuid.uuid4()))
@@ -1301,13 +1400,6 @@ def send_owner_confirmation(resource, owner, itip_event):
 
     # flag this iTip message as confirmation type
     event.add_custom_property('X-Kolab-InvitationType', 'CONFIRMATION')
-
-    log.debug(
-        _("Clone invitation for owner confirmation: %r from %r") % (
-            itip_event['uid'], event.get_organizer().email()
-        ),
-        level=8
-    )
 
     message_text = _("""
         A reservation request for %(resource)s requires your approval!
