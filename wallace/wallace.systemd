@@ -4,11 +4,11 @@ After=syslog.target network.target
 
 [Service]
 Type=forking
-PIDFile=/var/run/wallaced/wallaced.pid
+PIDFile=/run/wallaced/wallaced.pid
 User=kolab
 Group=kolab
 EnvironmentFile=/etc/sysconfig/wallace
-ExecStart=/usr/sbin/wallaced $FLAGS
+ExecStart=/usr/sbin/wallaced $FLAGS --pid-file /run/wallaced/wallaced.pid
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/kill -TERM $MAINPID
 
