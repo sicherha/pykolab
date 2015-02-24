@@ -1148,7 +1148,7 @@ def send_update_notification(object, receiving_user, old=None, reply=True):
         }
 
     if object.get_recurrence_id():
-        message_text += "\n" + _("NOTE: This update only refers to this single occurrence!")
+        message_text += _("NOTE: This update only refers to this single occurrence!") + "\n"
 
     message_text += "\n" + _("*** This is an automated message. Please do not reply. ***")
 
