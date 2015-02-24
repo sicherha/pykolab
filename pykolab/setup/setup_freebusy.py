@@ -21,6 +21,7 @@ from ConfigParser import RawConfigParser
 import os
 import sys
 import time
+import socket
 from urlparse import urlparse
 
 import components
@@ -92,6 +93,17 @@ def execute(*args, **kw):
     users_imap_uri = '%s://%%s:%s@%s:%s/?proxy_auth=%s' % (scheme, admin_password, hostname, port, admin_login)
 
     freebusy_settings = {
+            'httpauth': {
+                    'type': 'ldap',
+                    'host': conf.get('ldap', 'ldap_uri'),
+                    'base_dn': conf.get('ldap', 'base_dn'),
+                    'bind_dn': conf.get('ldap', 'service_bind_dn'),
+                    'bind_pw': conf.get('ldap', 'service_bind_pw'),
+                    'filter': '(&(objectClass=kolabInetOrgPerson)(|(mail=%s)(alias=%s)(uid=%s)))',
+                },
+            'trustednetworks': {
+                    'allow': ','.join(get_local_ips())
+                },
             'directory "local"': {
                     'type': 'static',
                     'fbsource': 'file:/var/lib/kolab-freebusy/%s.ifb',
@@ -167,3 +179,13 @@ def execute(*args, **kw):
     cfg_parser.write(fp)
     fp.close()
 
+def get_local_ips():
+    ips = ['::1','127.0.0.1']
+    for family in [socket.AF_INET, socket.AF_INET6]:
+        try:
+            for ip in socket.getaddrinfo(socket.getfqdn(), None, family):
+                if ip[4][0] not in ips:
+                    ips.append(ip[4][0])
+        except:
+            pass
+    return ips
