@@ -833,6 +833,8 @@ def find_existing_object(uid, type, recurrence_id, user_rec, lock=False):
 
             except Exception, e:
                 log.error(_("Failed to parse %s from message %s/%s: %s") % (type, folder, num, traceback.format_exc()))
+                event = None
+                master = None
                 continue
 
             if event and event.uid == uid:
