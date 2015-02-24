@@ -28,8 +28,7 @@ import os
 N_ = lambda x: x
 _ = lambda x: current.lgettext(x)
 
-localedir = '/usr/local/share/locale'
-current = gettext.translation(domain, localedir, fallback=True)
+current = gettext.translation(domain, fallback=True)
 
 def getDefaultLangs():
     languages = []
@@ -58,6 +57,6 @@ def setUserLanguage(lang):
             langs.append(l)
 
     try:
-        current = gettext.translation(domain, localedir, languages=langs, fallback=True)
+        current = gettext.translation(domain, languages=langs, fallback=True)
     except:
         pass
