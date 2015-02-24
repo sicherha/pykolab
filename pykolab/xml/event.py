@@ -1379,9 +1379,10 @@ class Event(object):
 
     def get_instance(self, _datetime):
         # If no timezone information is given, use the one from event start
-        if _datetime.tzinfo == None:
+        if isinstance(_datetime, datetime.datetime) and _datetime.tzinfo == None:
             _start = self.get_start()
-            _datetime = _datetime.replace(tzinfo=_start.tzinfo)
+            if hasattr(_start, 'tzinfo'):
+                _datetime = _datetime.replace(tzinfo=_start.tzinfo)
 
         instance = self.get_next_instance(_datetime - datetime.timedelta(days=1))
         while instance:

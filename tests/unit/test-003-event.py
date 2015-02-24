@@ -690,6 +690,33 @@ END:VEVENT
         occurrence = event.get_next_instance(event.get_start())
         self.assertEqual(occurrence.get_summary(), "Exception")
 
+    def test_021_allday_recurrence(self):
+        rrule = kolabformat.RecurrenceRule()
+        rrule.setFrequency(kolabformat.RecurrenceRule.Daily)
+        rrule.setCount(10)
+
+        self.event = Event()
+        self.event.set_summary('alldays')
+        self.event.set_recurrence(rrule);
+
+        _start = datetime.date(2015,1,1)
+        self.event.set_start(_start)
+        self.event.set_end(_start)
+
+        exdate = datetime.date(2015,1,5)
+        xmlexception = Event(from_string=str(self.event))
+        xmlexception.set_start(exdate)
+        xmlexception.set_end(exdate)
+        xmlexception.set_recurrence_id(exdate, False)
+        xmlexception.set_status('CANCELLED')
+        self.event.add_exception(xmlexception)
+
+        inst3 = self.event.get_instance(datetime.date(2015,1,3))
+        self.assertEqual(inst3.get_start(), datetime.date(2015,1,3))
+
+        inst5 = self.event.get_instance(exdate)
+        self.assertEqual(inst5.get_status(True), 'CANCELLED')
+
     def test_021_ical_exceptions(self):
         self.event.set_summary("test")
         self.event.set_start(datetime.datetime(2014, 05, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
