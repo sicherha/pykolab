@@ -825,6 +825,8 @@ def find_existing_object(uid, type, recurrence_id, user_rec, lock=False):
                     log.debug(_("Recurrence-ID not matching on message %s, skipping: %r != %r") % (
                         msguid, recurrence_id, event.get_recurrence_id()
                     ), level=8)
+                    event = None
+                    master = None
                     continue
 
                 setattr(event, '_imap_folder', folder)
