@@ -744,6 +744,44 @@ END:VEVENT
         self.assertIsInstance(exception['recurrence-id'].dt, datetime.datetime)
         self.assertEqual(exception['recurrence-id'].params.get('RANGE'), None)
 
+    def test_021_single_instances(self):
+        self.event = Event()
+        self.event.set_summary('singles')
+
+        _start = datetime.datetime(2015,3,1, 14,0,0, tzinfo=pytz.timezone("Europe/London"))
+        self.event.set_start(_start)
+        self.event.set_end(_start + datetime.timedelta(hours=1))
+        self.event.set_recurrence_id(_start)
+
+        _start2 = datetime.datetime(2015,3,5, 15,0,0, tzinfo=pytz.timezone("Europe/London"))
+        xmlexception = Event(from_string=str(self.event))
+        xmlexception.set_start(_start2)
+        xmlexception.set_end(_start2 + datetime.timedelta(hours=1))
+        xmlexception.set_summary('singles #2')
+        xmlexception.set_recurrence_id(_start2)
+        self.event.add_exception(xmlexception)
+
+        self.assertEqual(self.event.has_exceptions(), True)
+
+        first = self.event.get_instance(_start)
+        self.assertIsInstance(first, Event)
+        self.assertEqual(first.get_summary(), "singles")
+
+        second = self.event.get_instance(_start2)
+        self.assertIsInstance(second, Event)
+        self.assertEqual(second.get_summary(), "singles #2")
+
+        # update main instance
+        first.set_status('CANCELLED')
+        first.set_summary("singles #1")
+        self.event.add_exception(first)
+
+        event = event_from_string(str(self.event))
+        self.assertEqual(self.event.has_exceptions(), True)
+        self.assertEqual(event.get_status(True), 'CANCELLED')
+        self.assertEqual(event.get_summary(), "singles #1")
+
+
     def test_022_load_from_xml(self):
         event = event_from_string(xml_event)
         self.assertEqual(event.uid, '75c740bb-b3c6-442c-8021-ecbaeb0a025e')

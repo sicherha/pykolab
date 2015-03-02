@@ -440,6 +440,7 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
 
         log.debug(_("Auto-updating %s %r on iTip REQUEST (no re-scheduling)") % (existing.type, existing.uid), level=8)
         save_object = True
+        rsvp = False
 
         # retain task status and percent-complete properties from my old copy
         if is_task:
@@ -473,10 +474,13 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
     if save_object:
         targetfolder = None
 
+        # delete old version from IMAP
         if existing:
-            # delete old version from IMAP
             targetfolder = existing._imap_folder
             delete_object(existing)
+        elif master and hasattr(master, '_imap_folder'):
+            targetfolder = master._imap_folder
+            delete_object(master)
 
         if not nonpart or existing:
             # save new copy from iTip
@@ -814,12 +818,17 @@ def find_existing_object(uid, type, recurrence_id, user_rec, lock=False):
                     event = event_from_message(message_from_string(data[0][1]))
 
                 # find instance in a recurring series
-                if recurrence_id and event.is_recurring():
+                if recurrence_id and (event.is_recurring() or event.has_exceptions() or event.get_recurrence_id()):
                     master = event
                     event = master.get_instance(recurrence_id)
                     setattr(master, '_imap_folder', folder)
                     setattr(master, '_msguid', msguid)
 
+                    # return master, even if instance is not found
+                    if not event and master.uid == uid:
+                        log.debug("Instance not found, returning master" % (), level=8)
+                        return (event, master)
+                """
                 # compare recurrence-id and skip to next message if not matching
                 elif recurrence_id and not event.is_recurring() and not xmlutils.dates_equal(recurrence_id, event.get_recurrence_id()):
                     log.debug(_("Recurrence-ID not matching on message %s, skipping: %r != %r") % (
@@ -828,10 +837,11 @@ def find_existing_object(uid, type, recurrence_id, user_rec, lock=False):
                     event = None
                     master = None
                     continue
-
-                setattr(event, '_imap_folder', folder)
-                setattr(event, '_lock_key', lock_key)
-                setattr(event, '_msguid', msguid)
+                """
+                if event is not None:
+                    setattr(event, '_imap_folder', folder)
+                    setattr(event, '_lock_key', lock_key)
+                    setattr(event, '_msguid', msguid)
 
             except Exception, e:
                 log.error(_("Failed to parse %s from message %s/%s: %s") % (type, folder, num, traceback.format_exc()))

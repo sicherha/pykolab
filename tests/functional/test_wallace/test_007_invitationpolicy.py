@@ -351,11 +351,13 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         smtp = smtplib.SMTP('localhost', 10026)
         smtp.sendmail(from_addr, to_addr, mime_message % (to_addr, method, itip_payload))
 
-    def send_itip_invitation(self, attendee_email, start=None, allday=False, template=None, summary="test", sequence=0, partstat='NEEDS-ACTION', from_addr=None, instance=None):
+    def send_itip_invitation(self, attendee_email, start=None, allday=False, template=None, summary="test", sequence=0, partstat='NEEDS-ACTION', from_addr=None, uid=None, instance=None):
         if start is None:
             start = datetime.datetime.now()
 
-        uid = str(uuid.uuid4())
+        if uid is None:
+            uid = str(uuid.uuid4())
+
         recurrence_id = ''
 
         if allday:
@@ -1235,8 +1237,11 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         start = datetime.datetime(2015,5,4, 6,30,0)
         uid = self.send_itip_invitation(self.mark['mail'], summary="recurring", start=start, template=itip_recurring)
 
-        response = self.check_message_received(self.itip_reply_subject % { 'summary':'recurring', 'status':participant_status_label('ACCEPTED') }, self.mark['mail'])
+        pykolab.translate.setUserLanguage(self.mark['preferredlanguage'])
+        response = self.check_message_received(_('"%(summary)s" has been %(status)s') % { 'summary':'recurring', 'status':participant_status_label('ACCEPTED') }, self.mark['mail'])
         self.assertIsInstance(response, email.message.Message)
+
+        pykolab.translate.setUserLanguage(conf.get('kolab','default_locale'))
 
         event = self.check_user_calendar_event(self.mark['kolabcalendarfolder'], uid)
         self.assertIsInstance(event, pykolab.xml.Event)
@@ -1266,6 +1271,37 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         event = self.check_user_calendar_event(self.jane['kolabcalendarfolder'], uid)
         self.assertIsInstance(event, pykolab.xml.Event)
         self.assertIsInstance(event.get_recurrence_id(), datetime.datetime)
+
+        # send another invitation with the same UID for different RECURRENCE-ID
+        newstart = datetime.datetime(2015,2,6, 17,0,0, tzinfo=pytz.timezone("Europe/Zurich"))
+        self.send_itip_invitation(self.jane['mail'], summary="single #2", uid=uid, start=newstart, instance=newstart)
+
+        response = self.check_message_received(self.itip_reply_subject % { 'summary':'single #2', 'status':participant_status_label('ACCEPTED') }, self.jane['mail'])
+        self.assertIsInstance(response, email.message.Message)
+        self.assertIn("RECURRENCE-ID", str(response))
+
+        event = self.check_user_calendar_event(self.jane['kolabcalendarfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(len(event.get_exceptions()), 1)
+
+        exception = event.get_instance(newstart)
+        self.assertEqual(exception.get_summary(), "single #2")
+        self.assertEqual(exception.get_recurrence_id(), newstart)
+
+        # send an update occurrence #1
+        self.send_itip_invitation(self.jane['mail'], summary="updated #1", uid=uid, start=start, instance=start)
+        time.sleep(5)
+
+        # send an update occurrence #2
+        self.send_itip_invitation(self.jane['mail'], summary="updated #2", uid=uid, start=newstart, instance=newstart)
+
+        time.sleep(10)
+        event = self.check_user_calendar_event(self.jane['kolabcalendarfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(event.get_summary(), "updated #1")
+
+        exception = event.get_instance(newstart)
+        self.assertEqual(exception.get_summary(), "updated #2")
 
 
     def test_020_task_assignment_accept(self):

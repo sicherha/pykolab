@@ -181,10 +181,6 @@ class Event(object):
         self.event.addExceptionDate(xmlutils.to_cdatetime(_datetime, True))
 
     def add_exception(self, exception):
-        # sanity checks
-        if not self.is_recurring():
-            raise EventIntegrityError, "Cannot add exceptions to a non-recurring event"
-
         recurrence_id = exception.get_recurrence_id()
         if recurrence_id is None:
             raise EventIntegrityError, "Recurrence exceptions require a Recurrence-ID property"
@@ -198,6 +194,13 @@ class Event(object):
                 vexceptions[i] = exception.event
                 self._exceptions[i] = exception
                 append = False
+
+        # check if main event matches the given recurrence-id
+        if append and self.get_recurrence_id() == recurrence_id:
+            self.event = exception.event
+            self._load_attendees()
+            self._load_exceptions()
+            append = False
 
         if append:
             vexceptions.append(exception.event)
@@ -475,6 +478,9 @@ class Event(object):
 
     def get_exceptions(self):
         return self._exceptions
+
+    def has_exceptions(self):
+        return len(self._exceptions) > 0
 
     def get_attachments(self):
         return self.event.attachments()
@@ -1384,15 +1390,27 @@ class Event(object):
             if hasattr(_start, 'tzinfo'):
                 _datetime = _datetime.replace(tzinfo=_start.tzinfo)
 
-        instance = self.get_next_instance(_datetime - datetime.timedelta(days=1))
-        while instance:
-            recurrence_id = instance.get_recurrence_id()
-            if type(recurrence_id) == type(_datetime) and recurrence_id <= _datetime:
-                if xmlutils.dates_equal(recurrence_id, _datetime):
-                    return instance
-                instance = self.get_next_instance(instance.get_start())
-            else:
-                break
+        if self.is_recurring():
+            instance = self.get_next_instance(_datetime - datetime.timedelta(days=1))
+            while instance:
+                recurrence_id = instance.get_recurrence_id()
+                if type(recurrence_id) == type(_datetime) and recurrence_id <= _datetime:
+                    if xmlutils.dates_equal(recurrence_id, _datetime):
+                        return instance
+                    instance = self.get_next_instance(instance.get_start())
+                else:
+                    break
+
+        elif self.has_exceptions():
+            for exception in self._exceptions:
+                recurrence_id = exception.get_recurrence_id()
+                if type(recurrence_id) == type(_datetime) and xmlutils.dates_equal(recurrence_id, _datetime):
+                    return exception
+
+        if self.get_recurrence_id():
+            recurrence_id = self.get_recurrence_id()
+            if type(recurrence_id) == type(_datetime) and xmlutils.dates_equal(recurrence_id, _datetime):
+                return self
 
         return None
 
