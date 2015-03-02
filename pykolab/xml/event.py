@@ -700,7 +700,15 @@ class Event(object):
 
     def get_recurrence_id(self):
         self.thisandfuture = self.event.thisAndFuture();
-        return xmlutils.from_cdatetime(self.event.recurrenceID(), True)
+        recurrence_id = xmlutils.from_cdatetime(self.event.recurrenceID(), True)
+
+        # fix recurrence-id type if stored as date instead of datetime
+        if recurrence_id is not None and isinstance(recurrence_id, datetime.date):
+            dtstart = self.get_start()
+            if not type(recurrence_id) == type(dtstart):
+                recurrence_id = datetime.datetime.combine(recurrence_id, dtstart.time()).replace(tzinfo=dtstart.tzinfo)
+
+        return recurrence_id
 
     def get_thisandfuture(self):
         self.thisandfuture = self.event.thisAndFuture();

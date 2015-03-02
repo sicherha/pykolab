@@ -814,6 +814,14 @@ END:VEVENT
         self.assertIsInstance(occurrence, Event)
         self.assertEqual(str(occurrence.get_recurrence_id()), "2014-08-15 10:00:00+01:00")
 
+        # set invalid date-only recurrence-id
+        exception.set_recurrence_id(datetime.date(2014,8,16))
+        event.add_exception(exception)
+
+        inst = event.get_next_instance(_recurrence_id);
+        self.assertIsInstance(inst, Event)
+        self.assertIsInstance(inst.get_recurrence_id(), datetime.datetime)
+
     def test_023_load_from_message(self):
         event = event_from_message(event_from_ical(ical_event).to_message())
         event.set_sequence(3)
