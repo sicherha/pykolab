@@ -828,16 +828,7 @@ def find_existing_object(uid, type, recurrence_id, user_rec, lock=False):
                     if not event and master.uid == uid:
                         log.debug("Instance not found, returning master" % (), level=8)
                         return (event, master)
-                """
-                # compare recurrence-id and skip to next message if not matching
-                elif recurrence_id and not event.is_recurring() and not xmlutils.dates_equal(recurrence_id, event.get_recurrence_id()):
-                    log.debug(_("Recurrence-ID not matching on message %s, skipping: %r != %r") % (
-                        msguid, recurrence_id, event.get_recurrence_id()
-                    ), level=8)
-                    event = None
-                    master = None
-                    continue
-                """
+
                 if event is not None:
                     setattr(event, '_imap_folder', folder)
                     setattr(event, '_lock_key', lock_key)
