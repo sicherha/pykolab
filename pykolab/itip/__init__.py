@@ -159,6 +159,7 @@ def check_event_conflict(kolab_event, itip_event):
     _es = to_dt(kolab_event.get_start())
     _ee = to_dt(kolab_event.get_ical_dtend())  # use iCal style end date: next day for all-day events
     _ev = kolab_event
+    _ei = 0
 
     # naive loops to check for collisions in (recurring) events
     # TODO: compare recurrence rules directly (e.g. matching time slot or weekday or monthday)
@@ -166,6 +167,7 @@ def check_event_conflict(kolab_event, itip_event):
         _is = to_dt(itip_event['start'])
         _ie = to_dt(itip_event['end'])
         _iv = itip_event['xml']
+        _ii = 0
 
         while not conflict and _is is not None:
             # log.debug("* Comparing event dates at %s/%s with %s/%s" % (_es, _ee, _is, _ie), level=9)
@@ -174,23 +176,37 @@ def check_event_conflict(kolab_event, itip_event):
             _ie = to_dt(itip_event['xml'].get_occurence_end_date(_is))
 
             # get full occurrence to compare the dates from a possible exception
-            if _is is not None and len(itip_event['xml'].get_exceptions()):
+            if _is is not None and itip_event['xml'].has_exceptions():
                 _ix = itip_event['xml'].get_instance(_is)
                 if _ix is not None:
                     _is = to_dt(_ix.get_start())
                     _ie = to_dt(_ix.get_end())
                     _iv = _ix
 
+            # iterate through all exceptions (non-recurring)
+            elif _is is None and not itip_event['xml'].is_recurring() and itip_event['xml'].has_exceptions() and len(itip_event['xml'].get_exceptions()) > _ii:
+                _ix = itip_event['xml'].get_exceptions()[_ii]
+                _is = to_dt(_ix.get_start())
+                _ie = to_dt(_ix.get_end())
+                _ii += 1
+
         _es = to_dt(kolab_event.get_next_occurence(_es)) if kolab_event.is_recurring() else None
         _ee = to_dt(kolab_event.get_occurence_end_date(_es))
 
         # get full instance to compare the dates from a possible exception
-        if _es is not None and len(kolab_event.get_exceptions()):
+        if _es is not None and kolab_event.has_exceptions():
             _ex = kolab_event.get_instance(_es)
             if _ex is not None:
                 _es = to_dt(_ex.get_start())
                 _ee = to_dt(_ex.get_end())
                 _ev = _ex
+
+        # iterate through all exceptions (non-recurring)
+        elif _es is None and not kolab_event.is_recurring() and kolab_event.has_exceptions() and len(kolab_event.get_exceptions()) > _ei:
+            _ex = kolab_event.get_exceptions()[_ei]
+            _es = to_dt(_ex.get_start())
+            _ee = to_dt(_ex.get_end())
+            _ei += 1
 
     return conflict
 

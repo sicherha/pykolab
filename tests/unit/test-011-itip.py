@@ -82,7 +82,7 @@ CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
 UID:626421779C777FBE9C9B85A80D04DDFA-A4BF5BBB9FEAA271
-DTSTAMP:20120713T1254140
+DTSTAMP:20120713T125414Z
 DTSTART;TZID=3DEurope/London:20120713T100000
 DTEND;TZID=3DEurope/London:20120713T110000
 SUMMARY:test
@@ -476,6 +476,46 @@ class TestITip(unittest.TestCase):
         exception.set_recurrence_id(datetime.datetime(2012,7,13, 10,0,0, tzinfo=pytz.timezone("Europe/London")), False)
         event5.add_exception(exception)
         self.assertFalse(itip.check_event_conflict(event5, itip_event), "No conflict with cancelled exception")
+
+    def test_002_check_event_conflict_single(self):
+        itip_event = itip.events_from_message(message_from_string(itip_non_multipart))[0]
+
+        event = Event()
+        event.set_start(datetime.datetime(2012,7,10, 9,30,0, tzinfo=itip_event['start'].tzinfo))
+        event.set_end(datetime.datetime(2012,7,10, 10,30,0, tzinfo=itip_event['start'].tzinfo))
+        event.set_recurrence_id(event.get_start())
+
+        dtstart = datetime.datetime(2012,7,13, 9,30,0, tzinfo=itip_event['start'].tzinfo)
+        second = Event(from_string=str(event))
+        second.set_start(dtstart)
+        second.set_end(dtstart + datetime.timedelta(hours=1))
+        second.set_recurrence_id(dtstart)
+        event.add_exception(second)
+
+        self.assertTrue(itip.check_event_conflict(event, itip_event), "Conflicting dates (exception)")
+
+        itip_event = itip.events_from_message(message_from_string(itip_non_multipart))[0]
+
+        dtstart = datetime.datetime(2012,7,15, 10,0,0, tzinfo=itip_event['start'].tzinfo)
+        second = Event(from_string=str(itip_event['xml']))
+        second.set_start(dtstart + datetime.timedelta(hours=1))
+        second.set_end(dtstart + datetime.timedelta(hours=2))
+        second.set_recurrence_id(dtstart)
+        itip_event['xml'].add_exception(second)
+        self.assertEqual(len(itip_event['xml'].get_exceptions()), 1)
+
+        event = Event()
+        event.set_start(datetime.datetime(2012,7,11, 9,30,0, tzinfo=itip_event['start'].tzinfo))
+        event.set_end(datetime.datetime(2012,7,11, 10,30,0, tzinfo=itip_event['start'].tzinfo))
+
+        self.assertFalse(itip.check_event_conflict(event, itip_event), "Conflicting dates (no)")
+
+        event = Event()
+        event.set_start(datetime.datetime(2012,7,15, 11,0,0, tzinfo=itip_event['start'].tzinfo))
+        event.set_end(datetime.datetime(2012,7,15, 11,30,0, tzinfo=itip_event['start'].tzinfo))
+
+        self.assertTrue(itip.check_event_conflict(event, itip_event), "Conflicting dates (exception)")
+
 
     def test_003_send_reply(self):
         itip_events = itip.events_from_message(message_from_string(itip_non_multipart))
