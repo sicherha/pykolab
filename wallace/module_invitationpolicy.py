@@ -826,7 +826,6 @@ def find_existing_object(uid, type, recurrence_id, user_rec, lock=False):
 
                     # return master, even if instance is not found
                     if not event and master.uid == uid:
-                        log.debug("Instance not found, returning master" % (), level=8)
                         return (event, master)
 
                 if event is not None:

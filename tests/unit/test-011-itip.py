@@ -501,6 +501,7 @@ class TestITip(unittest.TestCase):
         second.set_start(dtstart + datetime.timedelta(hours=1))
         second.set_end(dtstart + datetime.timedelta(hours=2))
         second.set_recurrence_id(dtstart)
+        second.set_transparency(True)
         itip_event['xml'].add_exception(second)
         self.assertEqual(len(itip_event['xml'].get_exceptions()), 1)
 
@@ -514,7 +515,7 @@ class TestITip(unittest.TestCase):
         event.set_start(datetime.datetime(2012,7,15, 11,0,0, tzinfo=itip_event['start'].tzinfo))
         event.set_end(datetime.datetime(2012,7,15, 11,30,0, tzinfo=itip_event['start'].tzinfo))
 
-        self.assertTrue(itip.check_event_conflict(event, itip_event), "Conflicting dates (exception)")
+        self.assertFalse(itip.check_event_conflict(event, itip_event), "Conflicting dates (exception)")
 
 
     def test_003_send_reply(self):

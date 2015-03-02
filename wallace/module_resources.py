@@ -336,7 +336,7 @@ def execute(*args, **kw):
                         log.debug(_("Cancellation for entire event %r: deleting") % (itip_event['uid']), level=8)
                         delete_resource_event(itip_event['uid'], resources[resource], event._msguid)
                     # just cancel one single occurrence: add exception with status=cancelled
-                    elif master and master.is_recurring():
+                    elif master is not None:
                         log.debug(_("Cancellation for a single occurrence %r of %r: updating...") % (itip_event['recurrence-id'], itip_event['uid']), level=8)
                         event.set_status('CANCELLED')
                         event.set_transparency(True)
@@ -687,9 +687,9 @@ def read_resource_calendar(resource_rec, itip_events):
             for itip in itip_events:
                 conflict = check_event_conflict(event, itip)
 
-                if event.get_uid() == itip['uid'] and (event.is_recurring() or itip['recurrence-id'] == event.get_recurrence_id()):
+                if event.get_uid() == itip['uid']:
                     setattr(event, '_msguid', msguid)
-                    if event.is_recurring():
+                    if event.is_recurring() or itip['recurrence-id']:
                         resource_rec['existing_master'] = event
                     else:
                         resource_rec['existing_events'].append(event)
@@ -740,21 +740,29 @@ def find_existing_event(uid, recurrence_id, resource_rec):
             event = event_from_message(message_from_string(data[0][1]))
 
             # find instance in a recurring series
-            if recurrence_id and event.is_recurring():
+            if recurrence_id and (event.is_recurring() or event.has_exceptions()):
                 master = event
                 event = master.get_instance(recurrence_id)
                 setattr(master, '_msguid', msguid)
 
+                # return master, even if instance is not found
+                if not event and master.uid == uid:
+                    return (event, master)
+
             # compare recurrence-id and skip to next message if not matching
-            elif recurrence_id and not event.is_recurring() and not xmlutils.dates_equal(recurrence_id, event.get_recurrence_id()):
+            elif recurrence_id and not xmlutils.dates_equal(recurrence_id, event.get_recurrence_id()):
                 log.debug(_("Recurrence-ID not matching on message %s, skipping: %r != %r") % (
                     msguid, recurrence_id, event.get_recurrence_id()
                 ), level=8)
                 continue
-            setattr(event, '_msguid', msguid)
+
+            if event is not None:
+                setattr(event, '_msguid', msguid)
 
         except Exception, e:
             log.error(_("Failed to parse event from message %s/%s: %r") % (mailbox, num, e))
+            event = None
+            master = None
             continue
 
         if event and event.uid == uid:
