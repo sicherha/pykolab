@@ -643,7 +643,7 @@ class Event(object):
     def get_ical_recurrenceid(self):
         rid = self.get_recurrence_id()
         if isinstance(rid, datetime.datetime) or isinstance(rid, datetime.date):
-            prop = icalendar.vDatetime(rid)
+            prop = icalendar.vDate(rid) if isinstance(rid, datetime.date) else icalendar.vDatetime(rid)
             if self.thisandfuture:
                 prop.params.update({'RANGE':'THISANDFUTURE'})
             return prop
