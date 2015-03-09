@@ -277,6 +277,9 @@ def execute(*args, **kw):
     if any_itips and len([x['uid'] for x in itip_events if x.has_key('attendees') or x.has_key('organizer')]) > 0:
         auth.connect()
 
+        # we're looking at the first itip object
+        itip_event = itip_events[0]
+
         for recipient in recipients:
             recipient_user_dn = user_dn_from_email_address(recipient)
             if recipient_user_dn:
@@ -285,9 +288,11 @@ def execute(*args, **kw):
                 recipient_email = recipient
 
                 # extend with addresses from delegators
+                # (only do this lookup for REPLY messages)
                 receiving_user['_delegated_mailboxes'] = []
-                for _delegator in auth.list_delegators(recipient_user_dn):
-                    receiving_user['_delegated_mailboxes'].append(_delegator['_mailbox_basename'].split('@')[0])
+                if itip_event['method'] == 'REPLY':
+                    for _delegator in auth.list_delegators(recipient_user_dn):
+                        receiving_user['_delegated_mailboxes'].append(_delegator['_mailbox_basename'].split('@')[0])
 
                 log.debug(_("Recipient emails for %s: %r") % (recipient_user_dn, recipient_emails), level=8)
                 break
@@ -298,9 +303,6 @@ def execute(*args, **kw):
     elif recipient_email is None:
         log.debug(_("iTips, but no users, pass along %r") % (filepath), level=5)
         return filepath
-
-    # we're looking at the first itip object
-    itip_event = itip_events[0]
 
     # for replies, the organizer is the recipient
     if itip_event['method'] == 'REPLY':
