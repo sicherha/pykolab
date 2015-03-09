@@ -394,6 +394,7 @@ class TestITip(unittest.TestCase):
         bstart = datetime.datetime(2014,7,13, 12,0,0)
         bend   = astart + datetime.timedelta(hours=1)
         self.assertFalse(itip.check_date_conflict(astart, aend, bstart, bend))
+        self.assertFalse(itip.check_date_conflict(bstart, bend, astart, aend))
 
         bstart = datetime.datetime(2014,6,13, 10,0,0)
         bend   = datetime.datetime(2014,6,14, 12,0,0)

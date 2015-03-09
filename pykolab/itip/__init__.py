@@ -234,7 +234,7 @@ def check_date_conflict(_es, _ee, _is, _ie):
     elif _es == _is:
         conflict = True
     else: # _es > _is
-        if _es <= _ie:
+        if _es < _ie:
             conflict = True
         else:
             conflict = False
