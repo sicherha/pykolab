@@ -542,7 +542,7 @@ END:VEVENT
         rrule.set_byday(['2WE','-1SU'])
         rrule.setBymonth([2])
         rrule.set_count(10)
-        rrule.set_until(datetime.datetime(2014,7,23, 11,0,0, tzinfo=pytz.utc))
+        rrule.set_until(datetime.datetime(2014,7,23, 11,0,0, tzinfo=pytz.timezone("Europe/London")))
         self.event.set_recurrence(rrule);
 
         ical = icalendar.Calendar.from_ical(self.event.as_string_itip())
@@ -564,6 +564,7 @@ END:VEVENT
         self.assertEqual(event['rrule']['BYMONTH'][0], 2)
         self.assertEqual(event['rrule']['BYDAY'], ['2WE','-1SU'])
         self.assertIsInstance(event['rrule']['UNTIL'][0], datetime.datetime)
+        self.assertEquals(event['rrule']['UNTIL'][0].tzinfo, pytz.utc)
 
     def test_019_to_message_itip(self):
         self.event = Event()

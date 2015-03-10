@@ -1,3 +1,4 @@
+import pytz
 import icalendar
 import datetime
 import kolabformat
@@ -166,6 +167,9 @@ class RecurrenceRule(kolabformat.RecurrenceRule):
         if isinstance(until, list):
             until = until[0]
         if isinstance(until, datetime.datetime) or isinstance(until, datetime.date):
+            # move into UTC timezone according to RFC 5545
+            if isinstance(until, datetime.datetime):
+                until = until.astimezone(pytz.utc)
             self.setEnd(xmlutils.to_cdatetime(until, True))
 
     def _set_map_value(self, val, pmap, setter):
