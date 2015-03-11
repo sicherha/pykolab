@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-23 21:01-0500\n"
+"POT-Creation-Date: 2015-03-11 11:46-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1990,25 +1990,25 @@ msgstr ""
 msgid "Message is not an iTip message (non-multipart message)"
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:245
+#: ../pykolab/itip/__init__.py:261
 #, python-format
 msgid "Send iTip reply %s for %s %r"
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:261
+#: ../pykolab/itip/__init__.py:277
 #, python-format
 msgid "Failed to compose iTip reply message: %r: %s"
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:272 ../pykolab/itip/__init__.py:316
-#: ../wallace/module_invitationpolicy.py:1172
-#: ../wallace/module_invitationpolicy.py:1234
-#: ../wallace/module_resources.py:1339
+#: ../pykolab/itip/__init__.py:288 ../pykolab/itip/__init__.py:332
+#: ../wallace/module_invitationpolicy.py:1205
+#: ../wallace/module_invitationpolicy.py:1269
+#: ../wallace/module_resources.py:1347
 #, python-format
 msgid "SMTP sendmail error: %r"
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:304
+#: ../pykolab/itip/__init__.py:320
 #, python-format
 msgid "Failed to compose iTip request message: %r"
 msgstr ""
@@ -2173,11 +2173,11 @@ msgstr ""
 msgid "No such component."
 msgstr ""
 
-#: ../pykolab/setup/setup_freebusy.py:46
+#: ../pykolab/setup/setup_freebusy.py:47
 msgid "Setup Free/Busy."
 msgstr ""
 
-#: ../pykolab/setup/setup_freebusy.py:50
+#: ../pykolab/setup/setup_freebusy.py:51
 msgid "Free/Busy is not installed on this system"
 msgstr ""
 
@@ -2732,29 +2732,29 @@ msgstr ""
 msgid "Could not change the permissions on %s"
 msgstr ""
 
-#: ../pykolab/utils.py:488
+#: ../pykolab/utils.py:484
 #, python-format
 msgid "Transliterating string %r with locale %r"
 msgstr ""
 
-#: ../pykolab/utils.py:496
+#: ../pykolab/utils.py:492
 msgid "Attempting to set locale"
 msgstr ""
 
-#: ../pykolab/utils.py:498
+#: ../pykolab/utils.py:494
 msgid "Success setting locale"
 msgstr ""
 
-#: ../pykolab/utils.py:500
+#: ../pykolab/utils.py:496
 msgid "Failure to set locale"
 msgstr ""
 
-#: ../pykolab/utils.py:508
+#: ../pykolab/utils.py:504
 #, python-format
 msgid "Executing '%s | %s'"
 msgstr ""
 
-#: ../pykolab/utils.py:519
+#: ../pykolab/utils.py:515
 #, python-format
 msgid "Could not translate %s using locale %s"
 msgstr ""
@@ -2835,117 +2835,117 @@ msgstr ""
 msgid "Exdate needs datetime.date or datetime.datetime instance, got %r"
 msgstr ""
 
-#: ../pykolab/xml/event.py:375
+#: ../pykolab/xml/event.py:395
 #, python-format
 msgid "No attendee with email or name %r"
 msgstr ""
 
-#: ../pykolab/xml/event.py:383
+#: ../pykolab/xml/event.py:403
 #, python-format
 msgid "Invalid argument value attendee %r, must be basestring or Attendee"
 msgstr ""
 
-#: ../pykolab/xml/event.py:395
+#: ../pykolab/xml/event.py:415
 #, python-format
 msgid "No attendee with email %r"
 msgstr ""
 
-#: ../pykolab/xml/event.py:401
+#: ../pykolab/xml/event.py:421
 #, python-format
 msgid "No attendee with name %r"
 msgstr ""
 
-#: ../pykolab/xml/event.py:451 ../pykolab/xml/utils.py:162
+#: ../pykolab/xml/event.py:471 ../pykolab/xml/utils.py:162
 msgid "%Y-%m-%d"
 msgstr ""
 
-#: ../pykolab/xml/event.py:453 ../pykolab/xml/utils.py:163
+#: ../pykolab/xml/event.py:473 ../pykolab/xml/utils.py:163
 msgid "%H:%M (%Z)"
 msgstr ""
 
-#: ../pykolab/xml/event.py:580
+#: ../pykolab/xml/event.py:603
 msgid "Invalid participant status"
-msgstr ""
-
-#: ../pykolab/xml/event.py:771
-#, python-format
-msgid "Invalid classification %r"
 msgstr ""
 
 #: ../pykolab/xml/event.py:802
 #, python-format
+msgid "Invalid classification %r"
+msgstr ""
+
+#: ../pykolab/xml/event.py:833
+#, python-format
 msgid "Event end needs datetime.date or datetime.datetime instance, got %r"
 msgstr ""
 
-#: ../pykolab/xml/event.py:812
+#: ../pykolab/xml/event.py:843
 #, python-format
 msgid "Invalid custom property name %r"
 msgstr ""
 
-#: ../pykolab/xml/event.py:947
+#: ../pykolab/xml/event.py:978
 #, python-format
 msgid ""
 "Event last-modified needs datetime.date or datetime.datetime instance, got %r"
 msgstr ""
 
-#: ../pykolab/xml/event.py:990
+#: ../pykolab/xml/event.py:1021
 #, python-format
 msgid "Event start needs datetime.date or datetime.datetime instance, got %r"
 msgstr ""
 
-#: ../pykolab/xml/event.py:1000
+#: ../pykolab/xml/event.py:1031
 #, python-format
 msgid "Invalid status set: %r"
 msgstr ""
 
-#: ../pykolab/xml/event.py:1023
+#: ../pykolab/xml/event.py:1054
 msgid "Event recurrence-id needs datetime.datetime instance"
 msgstr ""
 
-#: ../pykolab/xml/event.py:1260
+#: ../pykolab/xml/event.py:1291
 msgid "No sender specified"
 msgstr ""
 
-#: ../pykolab/xml/event.py:1269
+#: ../pykolab/xml/event.py:1300
 #, python-format
 msgid "Invitation for %s was %s"
 msgstr ""
 
-#: ../pykolab/xml/event.py:1274
+#: ../pykolab/xml/event.py:1305
 msgid "This is an automated response to one of your event requests."
-msgstr ""
-
-#: ../pykolab/xml/recurrence_rule.py:40
-#, python-format
-msgid "Every %d year(s)"
 msgstr ""
 
 #: ../pykolab/xml/recurrence_rule.py:41
 #, python-format
-msgid "Every %d month(s)"
+msgid "Every %d year(s)"
 msgstr ""
 
 #: ../pykolab/xml/recurrence_rule.py:42
 #, python-format
-msgid "Every %d week(s)"
+msgid "Every %d month(s)"
 msgstr ""
 
 #: ../pykolab/xml/recurrence_rule.py:43
 #, python-format
-msgid "Every %d day(s)"
+msgid "Every %d week(s)"
 msgstr ""
 
 #: ../pykolab/xml/recurrence_rule.py:44
 #, python-format
-msgid "Every %d hours"
+msgid "Every %d day(s)"
 msgstr ""
 
 #: ../pykolab/xml/recurrence_rule.py:45
 #, python-format
-msgid "Every %d minutes"
+msgid "Every %d hours"
 msgstr ""
 
 #: ../pykolab/xml/recurrence_rule.py:46
+#, python-format
+msgid "Every %d minutes"
+msgstr ""
+
+#: ../pykolab/xml/recurrence_rule.py:47
 #, python-format
 msgid "Every %d seconds"
 msgstr ""
@@ -3096,7 +3096,7 @@ msgid "Maximum tries exceeded, exiting"
 msgstr ""
 
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:197
-#: ../wallace/module_resources.py:1243
+#: ../wallace/module_resources.py:1251
 #, python-format
 msgid "Reservation Request for %(summary)s was %(status)s"
 msgstr ""
@@ -3107,7 +3107,7 @@ msgstr ""
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:732
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:788
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:801
-#: ../wallace/module_resources.py:1327
+#: ../wallace/module_resources.py:1335
 #, python-format
 msgid "Booking for %s has been %s"
 msgstr ""
@@ -3121,17 +3121,27 @@ msgstr ""
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:760
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:777
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:831
-#: ../tests/functional/test_wallace/test_005_resource_invitation.py:948
-#: ../tests/functional/test_wallace/test_005_resource_invitation.py:964
-#: ../wallace/module_resources.py:1425
+#: ../tests/functional/test_wallace/test_005_resource_invitation.py:980
+#: ../tests/functional/test_wallace/test_005_resource_invitation.py:996
+#: ../wallace/module_resources.py:1433
 #, python-format
 msgid "Booking request for %s requires confirmation"
 msgstr ""
 
 #: ../tests/functional/test_wallace/test_007_invitationpolicy.py:241
-#: ../wallace/module_invitationpolicy.py:462
+#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:1288
+#: ../wallace/module_invitationpolicy.py:474
 #, python-format
 msgid "\"%(summary)s\" has been %(status)s"
+msgstr ""
+
+#. this should trigger a notification message
+#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:897
+#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:1272
+#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:1421
+#: ../wallace/module_invitationpolicy.py:1258
+#, python-format
+msgid "\"%s\" has been cancelled"
 msgstr ""
 
 #. check for notification message
@@ -3139,31 +3149,24 @@ msgstr ""
 #. this triggers an additional notification
 #. this should also trigger an update notification
 #. this should trigger an update notification
-#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:897
-#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:903
-#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:916
+#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:915
+#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:921
 #: ../tests/functional/test_wallace/test_007_invitationpolicy.py:934
-#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:1037
-#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:1042
-#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:1318
-#: ../wallace/module_invitationpolicy.py:1160
+#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:952
+#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:1055
+#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:1060
+#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:1401
+#: ../wallace/module_invitationpolicy.py:1193
 #, python-format
 msgid "\"%s\" has been updated"
 msgstr ""
 
-#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:908
-#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:920
+#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:926
+#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:938
 msgid "PENDING"
 msgstr ""
 
-#. this should trigger a notification message
-#: ../tests/functional/test_wallace/test_007_invitationpolicy.py:1338
-#: ../wallace/module_invitationpolicy.py:1223
-#, python-format
-msgid "\"%s\" has been cancelled"
-msgstr ""
-
-#: ../tests/unit/test-011-itip.py:490
+#: ../tests/unit/test-011-itip.py:532
 #, python-format
 msgid "Invitation for %(summary)s was %(status)s"
 msgstr ""
@@ -3219,21 +3222,21 @@ msgid "Could not write pid file %s"
 msgstr ""
 
 #: ../wallace/module_footer.py:55 ../wallace/module_gpgencrypt.py:60
-#: ../wallace/module_invitationpolicy.py:218 ../wallace/module_optout.py:61
+#: ../wallace/module_invitationpolicy.py:227 ../wallace/module_optout.py:61
 #: ../wallace/module_resources.py:127
 #, python-format
 msgid "Issuing callback after processing to stage %s"
 msgstr ""
 
 #: ../wallace/module_footer.py:56 ../wallace/module_gpgencrypt.py:61
-#: ../wallace/module_invitationpolicy.py:220 ../wallace/module_optout.py:62
+#: ../wallace/module_invitationpolicy.py:229 ../wallace/module_optout.py:62
 #: ../wallace/module_resources.py:133
 #, python-format
 msgid "Testing cb_action_%s()"
 msgstr ""
 
 #: ../wallace/module_footer.py:58 ../wallace/module_gpgencrypt.py:63
-#: ../wallace/module_invitationpolicy.py:222 ../wallace/module_optout.py:64
+#: ../wallace/module_invitationpolicy.py:231 ../wallace/module_optout.py:64
 #: ../wallace/module_resources.py:136
 #, python-format
 msgid "Attempting to execute cb_action_%s()"
@@ -3303,290 +3306,294 @@ msgstr ""
 msgid "An error occurred: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:204
+#: ../wallace/module_invitationpolicy.py:213
 #, python-format
 msgid "Invitation policy called for %r, %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:266
+#: ../wallace/module_invitationpolicy.py:275
 #, python-format
 msgid "Failed to parse iTip objects from message: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:270
+#: ../wallace/module_invitationpolicy.py:279
 msgid ""
 "Message is not an iTip message or does not contain any (valid) iTip objects."
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:274
+#: ../wallace/module_invitationpolicy.py:283
 #, python-format
 msgid ""
 "iTip objects attached to this message contain the following information: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:292
+#: ../wallace/module_invitationpolicy.py:306
 #, python-format
 msgid "Recipient emails for %s: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:296
+#: ../wallace/module_invitationpolicy.py:310
 #, python-format
 msgid "No itips, no users, pass along %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:299
+#: ../wallace/module_invitationpolicy.py:313
 #, python-format
 msgid "iTips, but no users, pass along %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:320
+#: ../wallace/module_invitationpolicy.py:331
 #, python-format
 msgid "No user attendee matching envelope recipient %s, skip message"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:323
+#: ../wallace/module_invitationpolicy.py:334
 #, python-format
 msgid "Receiving user: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:351
+#: ../wallace/module_invitationpolicy.py:362
 #, python-format
 msgid "Apply invitation policy %r for sender %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:362
+#: ../wallace/module_invitationpolicy.py:373
 #, python-format
 msgid "Ignoring '%s' iTip method"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:366
+#: ../wallace/module_invitationpolicy.py:377
 #, python-format
 msgid "iTip message %r consumed by the invitationpolicy module"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:382
+#: ../wallace/module_invitationpolicy.py:393
 msgid "Pass invitation for manual processing"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:387
+#: ../wallace/module_invitationpolicy.py:398
 #, python-format
 msgid "Receiving Attendee: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:407
+#: ../wallace/module_invitationpolicy.py:418
 #, python-format
 msgid "Existing %s: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:418
+#: ../wallace/module_invitationpolicy.py:429
 #, python-format
 msgid "Precondition for object %r fulfilled: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:436
+#: ../wallace/module_invitationpolicy.py:447
 #, python-format
 msgid ""
 "The iTip request sequence (%r) doesn't match the referred object version (%"
 "r). Ignoring."
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:441
+#: ../wallace/module_invitationpolicy.py:452
 #, python-format
 msgid "Auto-updating %s %r on iTip REQUEST (no re-scheduling)"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:485
+#: ../wallace/module_invitationpolicy.py:500
 msgid "Forward invitation for notification"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:500
+#: ../wallace/module_invitationpolicy.py:515
 msgid "Pass reply for manual processing"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:507
+#: ../wallace/module_invitationpolicy.py:522
 #, python-format
 msgid "Sender Attendee: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:519
+#: ../wallace/module_invitationpolicy.py:534
 #, python-format
 msgid ""
 "The iTip reply sequence (%r) doesn't match the referred object version (%r). "
 "Forwarding to Inbox."
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:525
+#: ../wallace/module_invitationpolicy.py:540
 #, python-format
 msgid "Auto-updating %s %r on iTip REPLY"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:552
+#: ../wallace/module_invitationpolicy.py:567
 #, python-format
 msgid "Add delegatee: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:555
+#: ../wallace/module_invitationpolicy.py:570
 #, python-format
 msgid "Update existing delegatee: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:562
+#: ../wallace/module_invitationpolicy.py:577
 #, python-format
 msgid "Update delegator: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:579
+#: ../wallace/module_invitationpolicy.py:594
 msgid ""
 "The object referred by this reply was not found in the user's folders. "
 "Forwarding to Inbox."
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:592
+#: ../wallace/module_invitationpolicy.py:607
 msgid "Pass cancellation for manual processing"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:619
+#: ../wallace/module_invitationpolicy.py:630
+#, python-format
+msgid "Remove cancelled %s instance %s from %r"
+msgstr ""
+
+#: ../wallace/module_invitationpolicy.py:641
+#, python-format
+msgid "Update cancelled %s %r with STATUS=CANCELLED"
+msgstr ""
+
+#: ../wallace/module_invitationpolicy.py:654
 msgid ""
 "The object referred by this cancel request was not found in the user's "
 "folders. Forwarding to Inbox."
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:648
+#: ../wallace/module_invitationpolicy.py:683
 #, python-format
 msgid "Checking if email address %r belongs to a local user"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:653
+#: ../wallace/module_invitationpolicy.py:688
 #, python-format
 msgid "User DN: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:655
+#: ../wallace/module_invitationpolicy.py:690
 #, python-format
 msgid "No user record(s) found for %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:711
+#: ../wallace/module_invitationpolicy.py:746
 #, python-format
 msgid "User record doesn't have the mailbox attribute %r set"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:724
+#: ../wallace/module_invitationpolicy.py:759
 #, python-format
 msgid "IMAP proxy authentication failed: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:746
+#: ../wallace/module_invitationpolicy.py:781
 #, python-format
 msgid "List %r folders for user %r: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:761
+#: ../wallace/module_invitationpolicy.py:796
 #, python-format
 msgid "IMAP metadata for %r: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:797
+#: ../wallace/module_invitationpolicy.py:832
 #, python-format
 msgid "Searching folder %r for %s %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:807
+#: ../wallace/module_invitationpolicy.py:842
 #: ../wallace/module_resources.py:675 ../wallace/module_resources.py:736
 #, python-format
 msgid "No UID found in IMAP response: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:825
-#: ../wallace/module_resources.py:750
-#, python-format
-msgid "Recurrence-ID not matching on message %s, skipping: %r != %r"
-msgstr ""
-
-#: ../wallace/module_invitationpolicy.py:835
+#: ../wallace/module_invitationpolicy.py:868
 #, python-format
 msgid "Failed to parse %s from message %s/%s: %s"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:863
+#: ../wallace/module_invitationpolicy.py:896
 #, python-format
 msgid "Listing events from folder %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:876
+#: ../wallace/module_invitationpolicy.py:909
 #: ../wallace/module_resources.py:482 ../wallace/module_resources.py:683
-#: ../wallace/module_resources.py:757
+#: ../wallace/module_resources.py:763
 #, python-format
 msgid "Failed to parse event from message %s/%s: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:882
+#: ../wallace/module_invitationpolicy.py:915
 #, python-format
 msgid "Existing event %r conflicts with invitation %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:889
+#: ../wallace/module_invitationpolicy.py:922
 #: ../wallace/module_resources.py:526
 #, python-format
 msgid "start: %r, end: %r, total: %r, messages: %d"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:915
+#: ../wallace/module_invitationpolicy.py:948
 #, python-format
 msgid "%r is locked, waiting..."
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:987
+#: ../wallace/module_invitationpolicy.py:1020
 #, python-format
 msgid "Failed to save %s: no target folder found for user %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:998
+#: ../wallace/module_invitationpolicy.py:1031
 #, python-format
 msgid "Save %s %r to user folder %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1011
+#: ../wallace/module_invitationpolicy.py:1044
 #, python-format
 msgid "Failed to save %s to user folder at %r: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1030
+#: ../wallace/module_invitationpolicy.py:1063
 #, python-format
 msgid "Delete %s %r in %r by UID: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1038
+#: ../wallace/module_invitationpolicy.py:1071
 #, python-format
 msgid "Delete %s %r in %r: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1049
+#: ../wallace/module_invitationpolicy.py:1082
 #, python-format
 msgid "Failed to delete %s from folder %r: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1075
+#: ../wallace/module_invitationpolicy.py:1108
 #, python-format
 msgid "Compose participation status summary for %s %r to user %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1108
+#: ../wallace/module_invitationpolicy.py:1141
 #, python-format
 msgid ""
 "Waiting for more automated replies (got %d of %d); skipping notification"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1118
+#: ../wallace/module_invitationpolicy.py:1151
 #, python-format
 msgid "Changes submitted by %s have been automatically applied."
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1127
+#: ../wallace/module_invitationpolicy.py:1160
 msgid "(removed)"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1133
+#: ../wallace/module_invitationpolicy.py:1166
 #, python-format
 msgid ""
 "\n"
@@ -3596,7 +3603,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1141
+#: ../wallace/module_invitationpolicy.py:1174
 #, python-format
 msgid ""
 "\n"
@@ -3606,69 +3613,74 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1151
+#: ../wallace/module_invitationpolicy.py:1184
 msgid "NOTE: This update only refers to this single occurrence!"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1153
-#: ../wallace/module_invitationpolicy.py:1216
-#: ../wallace/module_invitationpolicy.py:1317
+#: ../wallace/module_invitationpolicy.py:1186
+#: ../wallace/module_invitationpolicy.py:1251
+#: ../wallace/module_invitationpolicy.py:1352
 msgid "*** This is an automated message. Please do not reply. ***"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1170
+#: ../wallace/module_invitationpolicy.py:1203
 #, python-format
 msgid "Sent update notification to %r: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1189
+#: ../wallace/module_invitationpolicy.py:1222
 #, python-format
 msgid "Send cancellation notification for %s %r to user %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1199
+#: ../wallace/module_invitationpolicy.py:1232
 #, python-format
-msgid ""
-"\n"
-"            The assignment for '%(summary)s' has been cancelled by %"
-"(organizer)s.\n"
-"            The copy in your tasklist as been marked as cancelled "
-"accordingly.\n"
-"        "
+msgid "The assignment for '%(summary)s' has been cancelled by %(organizer)s."
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1207
-#, python-format
-msgid ""
-"\n"
-"            The event '%(summary)s' at %(start)s has been cancelled by %"
-"(organizer)s.\n"
-"            The copy in your calendar as been marked as cancelled "
-"accordingly.\n"
-"        "
+#: ../wallace/module_invitationpolicy.py:1237
+msgid "The copy in your tasklist as been removed accordingly."
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1307
+#: ../wallace/module_invitationpolicy.py:1239
+msgid "The copy in your tasklist as been marked as cancelled accordingly."
+msgstr ""
+
+#: ../wallace/module_invitationpolicy.py:1241
+#, python-format
+msgid ""
+"The event '%(summary)s' at %(start)s has been cancelled by %(organizer)s."
+msgstr ""
+
+#: ../wallace/module_invitationpolicy.py:1247
+msgid "The copy in your calendar as been removed accordingly."
+msgstr ""
+
+#: ../wallace/module_invitationpolicy.py:1249
+msgid "The copy in your calendar as been marked as cancelled accordingly."
+msgstr ""
+
+#: ../wallace/module_invitationpolicy.py:1342
 #, python-format
 msgid "Updated %s's copy of %r: %r"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1310
+#: ../wallace/module_invitationpolicy.py:1345
 #, python-format
 msgid "Attendee %s's copy of %r not found"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1313
+#: ../wallace/module_invitationpolicy.py:1348
 #, python-format
 msgid "Attendee %r not found in LDAP"
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1320
+#: ../wallace/module_invitationpolicy.py:1355
 #, python-format
 msgid "%(name)s has %(status)s your assignment for %(summary)s."
 msgstr ""
 
-#: ../wallace/module_invitationpolicy.py:1322
+#: ../wallace/module_invitationpolicy.py:1357
 #, python-format
 msgid "%(name)s has %(status)s your invitation for %(summary)s."
 msgstr ""
@@ -3891,103 +3903,108 @@ msgstr ""
 msgid "Failed to access resource calendar:: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:777
+#: ../wallace/module_resources.py:754
+#, python-format
+msgid "Recurrence-ID not matching on message %s, skipping: %r != %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:785
 #, python-format
 msgid "Apply invitation policies %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:796
+#: ../wallace/module_resources.py:804
 #, python-format
 msgid "Adding event to %r: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:880
+#: ../wallace/module_resources.py:888
 #, python-format
 msgid "Failed to save event to resource calendar at %r: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:899
+#: ../wallace/module_resources.py:907
 #, python-format
 msgid "Delete resource calendar object from %r by UID %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:907
+#: ../wallace/module_resources.py:915
 #, python-format
 msgid "Delete resource calendar object %r in %r: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:918
+#: ../wallace/module_resources.py:926
 #, python-format
 msgid "Failed to delete calendar object %r from folder %r: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:958
+#: ../wallace/module_resources.py:966
 #, python-format
 msgid "Checking if email address %r belongs to a resource (collection)"
 msgstr ""
 
-#: ../wallace/module_resources.py:966 ../wallace/module_resources.py:1038
-#: ../wallace/module_resources.py:1072
+#: ../wallace/module_resources.py:974 ../wallace/module_resources.py:1046
+#: ../wallace/module_resources.py:1080
 #, python-format
 msgid "Resource record(s): %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:968 ../wallace/module_resources.py:1040
-#: ../wallace/module_resources.py:1075
+#: ../wallace/module_resources.py:976 ../wallace/module_resources.py:1048
+#: ../wallace/module_resources.py:1083
 #, python-format
 msgid "No resource (collection) records found for %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:972 ../wallace/module_resources.py:1044
-#: ../wallace/module_resources.py:1079
+#: ../wallace/module_resources.py:980 ../wallace/module_resources.py:1052
+#: ../wallace/module_resources.py:1087
 #, python-format
 msgid "Resource record: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:990
+#: ../wallace/module_resources.py:998
 #, python-format
 msgid "Raw itip_events: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:998
+#: ../wallace/module_resources.py:1006
 #, python-format
 msgid "Raw set of attendees: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:1006
+#: ../wallace/module_resources.py:1014
 #, python-format
 msgid "Raw set of resources: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:1011
+#: ../wallace/module_resources.py:1019
 #, python-format
 msgid "Raw set of organizers: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:1031
+#: ../wallace/module_resources.py:1039
 #, python-format
 msgid "Checking if attendee %r is a resource (collection)"
 msgstr ""
 
-#: ../wallace/module_resources.py:1047 ../wallace/module_resources.py:1081
+#: ../wallace/module_resources.py:1055 ../wallace/module_resources.py:1089
 msgid "Resource reservation made but no resource records found"
 msgstr ""
 
-#: ../wallace/module_resources.py:1066
+#: ../wallace/module_resources.py:1074
 #, python-format
 msgid "Checking if resource %r is a resource (collection)"
 msgstr ""
 
-#: ../wallace/module_resources.py:1084
+#: ../wallace/module_resources.py:1092
 msgid "The following resources are being referred to in the "
 msgstr ""
 
-#: ../wallace/module_resources.py:1211
+#: ../wallace/module_resources.py:1219
 #, python-format
 msgid "Check collections %r for kolabinvitationpolicy attributes"
 msgstr ""
 
-#: ../wallace/module_resources.py:1249
+#: ../wallace/module_resources.py:1257
 #, python-format
 msgid ""
 "\n"
@@ -3998,7 +4015,7 @@ msgid ""
 "            "
 msgstr ""
 
-#: ../wallace/module_resources.py:1268
+#: ../wallace/module_resources.py:1276
 #, python-format
 msgid ""
 "\n"
@@ -4008,7 +4025,7 @@ msgid ""
 "    "
 msgstr ""
 
-#: ../wallace/module_resources.py:1275
+#: ../wallace/module_resources.py:1283
 #, python-format
 msgid ""
 "\n"
@@ -4017,16 +4034,16 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../wallace/module_resources.py:1310
+#: ../wallace/module_resources.py:1318
 #, python-format
 msgid "Sending booking notification for event %r to %r from %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:1328
+#: ../wallace/module_resources.py:1336
 msgid "failed"
 msgstr ""
 
-#: ../wallace/module_resources.py:1348
+#: ../wallace/module_resources.py:1356
 #, python-format
 msgid ""
 "\n"
@@ -4038,7 +4055,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../wallace/module_resources.py:1354
+#: ../wallace/module_resources.py:1362
 #, python-format
 msgid ""
 "\n"
@@ -4052,12 +4069,12 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../wallace/module_resources.py:1385
+#: ../wallace/module_resources.py:1393
 #, python-format
 msgid "Clone invitation for owner confirmation: %r from %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:1404
+#: ../wallace/module_resources.py:1412
 #, python-format
 msgid ""
 "\n"
