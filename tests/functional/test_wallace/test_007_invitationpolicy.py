@@ -263,7 +263,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             'kolabcalendarfolder': 'user/jane.manager/Calendar@example.org',
             'kolabtasksfolder': 'user/jane.manager/Tasks@example.org',
             'kolabconfidentialcalendar': 'user/jane.manager/Calendar/Confidential@example.org',
-            'kolabinvitationpolicy': ['ACT_ACCEPT_IF_NO_CONFLICT','ACT_REJECT_IF_CONFLICT','TASK_ACCEPT','ACT_UPDATE']
+            'kolabinvitationpolicy': ['ACT_ACCEPT_IF_NO_CONFLICT','ACT_REJECT_IF_CONFLICT','TASK_ACCEPT','TASK_UPDATE_AND_NOTIFY','ACT_UPDATE']
         }
 
         self.jack = {
@@ -296,7 +296,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
             'mailbox': 'user/lucy.meyer@example.org',
             'kolabcalendarfolder': 'user/lucy.meyer/Calendar@example.org',
             'kolabtasksfolder': 'user/lucy.meyer/Tasks@example.org',
-            'kolabinvitationpolicy': ['ALL_SAVE_AND_FORWARD','ACT_UPDATE_AND_NOTIFY']
+            'kolabinvitationpolicy': ['ALL_SAVE_AND_FORWARD','ACT_CANCEL_DELETE_AND_NOTIFY','ACT_UPDATE_AND_NOTIFY']
         }
 
         self.bill = {
@@ -885,6 +885,22 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertTrue(event.get_transparency())
 
 
+    def test_007_invitation_cancel_and_delete(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        uid = self.send_itip_invitation(self.lucy['mail'], summary="cancel-delete")
+        event = self.check_user_calendar_event(self.lucy['kolabcalendarfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+
+        self.send_itip_cancel(self.lucy['mail'], uid, summary="cancel-delete")
+
+        response = self.check_message_received(_('"%s" has been cancelled') % ('cancel-delete'), self.john['mail'], mailbox=self.lucy['mailbox'])
+        self.assertIsInstance(response, email.message.Message)
+
+        # verify event was removed from the user's calendar
+        self.assertEqual(self.check_user_calendar_event(self.lucy['kolabcalendarfolder'], uid), None)
+
+
     def test_008_inivtation_reply_notify(self):
         self.purge_mailbox(self.john['mailbox'])
 
@@ -1230,6 +1246,37 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         response = self.check_message_received(self.itip_reply_subject % { 'summary':'new booking', 'status':participant_status_label('ACCEPTED') }, self.jane['mail'])
         self.assertIsInstance(response, email.message.Message)
+
+    def test_017_cancel_delete_single_occurrence(self):
+        self.purge_mailbox(self.john['mailbox'])
+
+        start = datetime.datetime(2015,3,24, 13,0,0, tzinfo=pytz.timezone("Europe/Zurich"))
+        uid = self.send_itip_invitation(self.lucy['mail'], summary="recurring cancel-delete", start=start, template=itip_recurring)
+
+        event = self.check_user_calendar_event(self.lucy['kolabcalendarfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+
+        # send update to a single instance with the same sequence: no re-scheduling
+        exdate = start + datetime.timedelta(days=14)
+        exstart = exdate + datetime.timedelta(hours=5)
+        self.send_itip_update(self.lucy['mail'], uid, exstart, summary="recurring rescheduled", sequence=1, partstat='NEEDS-ACTION', instance=exdate)
+
+        time.sleep(10)
+        event = self.check_user_calendar_event(self.lucy['kolabcalendarfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(len(event.get_exceptions()), 1)
+
+        # send cancellation for exception
+        self.send_itip_cancel(self.lucy['mail'], uid, summary="recurring rescheduled", instance=exdate)
+
+        response = self.check_message_received(_('"%s" has been cancelled') % ('recurring rescheduled'), self.john['mail'], mailbox=self.lucy['mailbox'])
+        self.assertIsInstance(response, email.message.Message)
+
+        event = self.check_user_calendar_event(self.lucy['kolabcalendarfolder'], uid)
+        self.assertIsInstance(event, pykolab.xml.Event)
+        self.assertEqual(len(event.get_exception_dates()), 1)
+        self.assertEqual(event.get_exception_dates()[0].strftime("%Y-%m-%d"), exdate.strftime("%Y-%m-%d"))
+        self.assertEqual(len(event.get_exceptions()), 0)
 
     def test_017_cancel_thisandfuture(self):
         self.purge_mailbox(self.john['mailbox'])

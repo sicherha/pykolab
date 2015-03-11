@@ -208,6 +208,23 @@ class Event(object):
 
         self.event.setExceptions(vexceptions)
 
+    def del_exception(self, exception):
+        recurrence_id = exception.get_recurrence_id()
+        if recurrence_id is None:
+            raise EventIntegrityError, "Recurrence exceptions require a Recurrence-ID property"
+
+        updated = False
+        vexceptions = self.event.exceptions()
+        for i, ex in enumerate(self._exceptions):
+            if ex.get_recurrence_id() == recurrence_id and ex.thisandfuture == exception.thisandfuture:
+                del vexceptions[i]
+                del self._exceptions[i]
+                updated = True
+
+        if updated:
+            self.event.setExceptions(vexceptions)
+
+
     def as_string_itip(self, method="REQUEST"):
         cal = icalendar.Calendar()
         cal.add(

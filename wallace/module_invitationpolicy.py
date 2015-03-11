@@ -57,20 +57,22 @@ ACT_ACCEPT         = 2
 ACT_DELEGATE       = 4
 ACT_REJECT         = 8
 ACT_UPDATE         = 16
-ACT_SAVE_TO_FOLDER = 32
+ACT_CANCEL_DELETE  = 32
+ACT_SAVE_TO_FOLDER = 64
 
-COND_IF_AVAILABLE  = 64
-COND_IF_CONFLICT   = 128
-COND_TENTATIVE     = 256
-COND_NOTIFY        = 512
-COND_FORWARD       = 4096
-COND_TYPE_EVENT    = 1024
-COND_TYPE_TASK     = 2048
+COND_IF_AVAILABLE  = 128
+COND_IF_CONFLICT   = 256
+COND_TENTATIVE     = 512
+COND_NOTIFY        = 1024
+COND_FORWARD       = 2048
+COND_TYPE_EVENT    = 4096
+COND_TYPE_TASK     = 8192
 COND_TYPE_ALL      = COND_TYPE_EVENT + COND_TYPE_TASK
 
 ACT_TENTATIVE         = ACT_ACCEPT + COND_TENTATIVE
 ACT_UPDATE_AND_NOTIFY = ACT_UPDATE + COND_NOTIFY
 ACT_SAVE_AND_FORWARD  = ACT_SAVE_TO_FOLDER + COND_FORWARD
+ACT_CANCEL_DELETE_AND_NOTIFY = ACT_CANCEL_DELETE + COND_NOTIFY
 
 FOLDER_TYPE_ANNOTATION = '/vendor/kolab/folder-type'
 
@@ -87,6 +89,8 @@ policy_name_map = {
     'ALL_UPDATE_AND_NOTIFY':          ACT_UPDATE_AND_NOTIFY + COND_TYPE_ALL,
     'ALL_SAVE_TO_FOLDER':             ACT_SAVE_TO_FOLDER + COND_TYPE_ALL,
     'ALL_SAVE_AND_FORWARD':           ACT_SAVE_AND_FORWARD + COND_TYPE_ALL,
+    'ALL_CANCEL_DELETE':              ACT_CANCEL_DELETE + COND_TYPE_ALL,
+    'ALL_CANCEL_DELETE_AND_NOTIFY':   ACT_CANCEL_DELETE_AND_NOTIFY + COND_TYPE_ALL,
     # event related policy values
     'EVENT_MANUAL':                   ACT_MANUAL + COND_TYPE_EVENT,
     'EVENT_ACCEPT':                   ACT_ACCEPT + COND_TYPE_EVENT,
@@ -101,6 +105,8 @@ policy_name_map = {
     'EVENT_REJECT_IF_CONFLICT':       ACT_REJECT + COND_IF_CONFLICT + COND_TYPE_EVENT,
     'EVENT_SAVE_TO_FOLDER':           ACT_SAVE_TO_FOLDER + COND_TYPE_EVENT,
     'EVENT_SAVE_AND_FORWARD':         ACT_SAVE_AND_FORWARD + COND_TYPE_EVENT,
+    'EVENT_CANCEL_DELETE':            ACT_CANCEL_DELETE + COND_TYPE_EVENT,
+    'EVENT_CANCEL_DELETE_AND_NOTIFY': ACT_CANCEL_DELETE_AND_NOTIFY + COND_TYPE_EVENT,
     # task related policy values
     'TASK_MANUAL':                    ACT_MANUAL + COND_TYPE_TASK,
     'TASK_ACCEPT':                    ACT_ACCEPT + COND_TYPE_TASK,
@@ -110,6 +116,8 @@ policy_name_map = {
     'TASK_UPDATE_AND_NOTIFY':         ACT_UPDATE_AND_NOTIFY + COND_TYPE_TASK,
     'TASK_SAVE_TO_FOLDER':            ACT_SAVE_TO_FOLDER + COND_TYPE_TASK,
     'TASK_SAVE_AND_FORWARD':          ACT_SAVE_AND_FORWARD + COND_TYPE_TASK,
+    'TASK_CANCEL_DELETE':             ACT_CANCEL_DELETE + COND_TYPE_TASK,
+    'TASK_CANCEL_DELETE_AND_NOTIFY':  ACT_CANCEL_DELETE_AND_NOTIFY + COND_TYPE_TASK,
     # legacy values
     'ACT_MANUAL':                     ACT_MANUAL + COND_TYPE_ALL,
     'ACT_ACCEPT':                     ACT_ACCEPT + COND_TYPE_ALL,
@@ -122,6 +130,8 @@ policy_name_map = {
     'ACT_REJECT_IF_CONFLICT':         ACT_REJECT + COND_IF_CONFLICT + COND_TYPE_EVENT,
     'ACT_UPDATE':                     ACT_UPDATE + COND_TYPE_ALL,
     'ACT_UPDATE_AND_NOTIFY':          ACT_UPDATE_AND_NOTIFY + COND_TYPE_ALL,
+    'ACT_CANCEL_DELETE':              ACT_CANCEL_DELETE + COND_TYPE_ALL,
+    'ACT_CANCEL_DELETE_AND_NOTIFY':   ACT_CANCEL_DELETE_AND_NOTIFY + COND_TYPE_ALL,
     'ACT_SAVE_TO_CALENDAR':           ACT_SAVE_TO_FOLDER + COND_TYPE_EVENT,
     'ACT_SAVE_AND_FORWARD':           ACT_SAVE_AND_FORWARD + COND_TYPE_EVENT,
 }
@@ -597,10 +607,11 @@ def process_itip_cancel(itip_event, policy, recipient_email, sender_email, recei
         log.info(_("Pass cancellation for manual processing"))
         return MESSAGE_FORWARD
 
-    # auto-update the local copy with STATUS=CANCELLED
-    if policy & ACT_UPDATE:
+    # auto-update the local copy
+    if policy & ACT_UPDATE or policy & ACT_CANCEL_DELETE:
         # find existing object in user's folders
         (existing, master) = find_existing_object(itip_event['uid'], itip_event['type'], itip_event['recurrence-id'], receiving_user, True)
+        remove_object = policy & ACT_CANCEL_DELETE
 
         if existing:
             # on this-and-future cancel requests, set the recurrence until date on the master event
@@ -610,13 +621,32 @@ def process_itip_cancel(itip_event, policy, recipient_email, sender_email, recei
                 rrule.set_until(existing.get_start() + datetime.timedelta(days=-1))
                 master.set_recurrence(rrule)
                 existing.set_recurrence_id(existing.get_recurrence_id(), True)
+                remove_object = False
 
-            existing.set_status('CANCELLED')
-            existing.set_transparency(True)
-            if update_object(existing, receiving_user, master):
+            # delete the local copy
+            if remove_object:
+                # remove exception and register an exdate to the main event
+                if master:
+                    log.debug(_("Remove cancelled %s instance %s from %r") % (existing.type, itip_event['recurrence-id'], existing.uid), level=8)
+                    master.add_exception_date(existing.get_start())
+                    master.del_exception(existing)
+                    success = update_object(master, receiving_user)
+
+                # delete main event
+                else:
+                    success = delete_object(existing)
+
+            # update the local copy with STATUS=CANCELLED
+            else:
+                log.debug(_("Update cancelled %s %r with STATUS=CANCELLED") % (existing.type, existing.uid), level=8)
+                existing.set_status('CANCELLED')
+                existing.set_transparency(True)
+                success = update_object(existing, receiving_user, master)
+
+            if success:
                 # send cancellation notification
-                if policy & ACT_UPDATE_AND_NOTIFY:
-                    send_cancel_notification(existing, receiving_user)
+                if policy & COND_NOTIFY:
+                    send_cancel_notification(existing, receiving_user, remove_object)
 
                 return MESSAGE_PROCESSED
 
@@ -1177,7 +1207,7 @@ def send_update_notification(object, receiving_user, old=None, reply=True):
     smtp.quit()
 
 
-def send_cancel_notification(object, receiving_user):
+def send_cancel_notification(object, receiving_user, deleted=False):
     """
         Send a notification about event/task cancellation
     """
@@ -1199,24 +1229,26 @@ def send_cancel_notification(object, receiving_user):
 
     # compose different notification texts for events/tasks
     if object.type == 'task':
-        message_text = _("""
-            The assignment for '%(summary)s' has been cancelled by %(organizer)s.
-            The copy in your tasklist as been marked as cancelled accordingly.
-        """) % {
+        message_text = _("The assignment for '%(summary)s' has been cancelled by %(organizer)s.") % {
             'summary': object.get_summary(),
             'organizer': orgname if orgname else orgemail
         }
+        if deleted:
+            message_text += " " + _("The copy in your tasklist as been removed accordingly.")
+        else:
+            message_text += " " + _("The copy in your tasklist as been marked as cancelled accordingly.")
     else:
-        message_text = _("""
-            The event '%(summary)s' at %(start)s has been cancelled by %(organizer)s.
-            The copy in your calendar as been marked as cancelled accordingly.
-        """) % {
+        message_text = _("The event '%(summary)s' at %(start)s has been cancelled by %(organizer)s.") % {
             'summary': object.get_summary(),
             'start': xmlutils.property_to_string('start', object.get_start()),
             'organizer': orgname if orgname else orgemail
         }
+        if deleted:
+            message_text += " " + _("The copy in your calendar as been removed accordingly.")
+        else:
+            message_text += " " + _("The copy in your calendar as been marked as cancelled accordingly.")
 
-    message_text += "\n" + _("*** This is an automated message. Please do not reply. ***")
+    message_text += "\n\n" + _("*** This is an automated message. Please do not reply. ***")
 
     # compose mime message
     msg = MIMEText(utils.stripped_message(message_text), _charset='utf-8')
