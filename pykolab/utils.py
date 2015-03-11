@@ -303,11 +303,7 @@ def multiline_message(message):
     return "\n%s\n" % ("\n".join(lines))
 
 def stripped_message(message):
-    lines = []
-    for line in message.strip().split("\n"):
-        lines.append(multiline_message(line).strip())
-
-    return "\n%s\n" % ("\n".join(lines))
+    return "\n" + message.strip() + "\n"
 
 def str2unicode(s, encoding='utf-8'):
     if isinstance(s, unicode):
