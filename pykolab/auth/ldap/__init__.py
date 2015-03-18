@@ -2031,6 +2031,68 @@ class LDAP(pykolab.base.Base):
         self.ldap = None
         self.bind = False
 
+    def _domain_naming_context(self, domain):
+        self._bind()
+
+        # The list of naming contexts in the LDAP server
+        attrs = self.get_entry_attributes("", ['namingContexts'])
+
+        naming_contexts = attrs['namingcontexts']
+
+        log.debug(
+                _("Naming contexts found: %r") % (naming_contexts),
+                level=8
+            )
+
+        self._kolab_domain_root_dn(domain)
+
+        log.debug(
+                _("Domains/Root DNs found: %r") % (
+                        self.domain_rootdns
+                    ),
+                level=8
+            )
+
+        # If we have a 1:1 match, continue as planned
+        if self.domain_rootdns.has_key(domain):
+            if self.domain_rootdns[domain] in naming_contexts:
+                log.debug(
+                        _("Domain '%s' has a root dn all by itself, namely '%s'") % (
+                                domain,
+                                self.domain_rootdns[domain]
+                            ),
+                        level=8
+                    )
+
+                return domain
+
+            else:
+                naming_context = ''.join(
+                        [x for x in self.domain_rootdns.keys() \
+                            if self.domain_rootdns[x] in \
+                            [y for y in naming_contexts \
+                                    if self.domain_rootdns[domain].endswith(y) \
+                            ] \
+                        ]
+                    )
+
+                log.debug(
+                        _("Domain '%s' has a base dn residing inside root dn '%s'") % (
+                                domain,
+                                naming_context
+                            ),
+                        level=8
+                    )
+
+                return naming_context
+        else:
+            # Should not end up here
+            log.error(
+                    _("Could not find a naming context for domain '%s'") % (domain)
+                )
+
+            return None        
+
     def _entry_dict(self, value):
         """
             Tests if 'value' is a valid entry dictionary with a DN contained
