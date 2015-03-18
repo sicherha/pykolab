@@ -271,6 +271,9 @@ class Auth(pykolab.base.Base):
     def domain_default_quota(self, domain):
         return self._auth._domain_default_quota(domain)
 
+    def domain_naming_context(self, domain):
+        return self._auth._domain_naming_context(domain)
+
     def get_entry_attribute(self, domain, entry, attribute):
         return self._auth.get_entry_attribute(entry, attribute)
 
