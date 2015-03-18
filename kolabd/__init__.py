@@ -248,7 +248,9 @@ class KolabDaemon(object):
             # domains now is a list of tuples, we want the primary_domains
             primary_domains = []
             for primary_domain in list(set(domains.values())):
-                primary_domains.append(primary_domain)
+                primary_domain = primary_auth.domain_naming_context(primary_domain)
+                if not primary_domain == None:
+                    primary_domains.append(primary_domain)
 
             # Now we can check if any changes happened.
             added_domains = []
