@@ -114,6 +114,9 @@ xml_todo = """
           <categories>
             <text>iTip</text>
           </categories>
+          <related-to>
+            <text>9F3E68BED4A94DA2A51EE589F7FDC6C8-A4BF5BBB9FEAA271</text>
+          </related-to>
           <dtstart>
             <parameters>
               <tzid><text>/kolab.org/Europe/Berlin</text></tzid>
@@ -222,6 +225,7 @@ class TestTodoXML(unittest.TestCase):
         self.assertIsInstance(todo.get_organizer(), kolabformat.ContactReference)
         self.assertEqual(todo.get_organizer().name(), "Thomas")
         self.assertEqual(todo.get_status(True), "IN-PROCESS")
+        self.assertEqual(todo.get_related_to(), "9F3E68BED4A94DA2A51EE589F7FDC6C8-A4BF5BBB9FEAA271")
 
 
     def test_020_load_from_ical(self):

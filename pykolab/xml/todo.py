@@ -47,6 +47,7 @@ class Todo(Event):
         self.properties_map.update({
             "due": "get_due",
             "percent-complete": "get_percentcomplete",
+            "related-to": "get_related_to",
             "duration": "void",
             "end": "void"
         })
@@ -182,6 +183,11 @@ class Todo(Event):
         return self.event.percentComplete()
 
     def get_duration(self):
+        return None
+
+    def get_related_to(self):
+        for x in self.event.relatedTo():
+            return x
         return None
 
     def as_string_itip(self, method="REQUEST"):
