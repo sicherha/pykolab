@@ -804,9 +804,11 @@ def list_user_folders(user_rec, type):
                 if metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].endswith('.default'):
                     user_rec['_default_folder'] = folder
 
-                # store confidential folder in user record
+                # store private and confidential folders in user record
                 if metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].endswith('.confidential') and not user_rec.has_key('_confidential_folder'):
                     user_rec['_confidential_folder'] = folder
+                if metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].endswith('.private') and not user_rec.has_key('_private_folder'):
+                    user_rec['_private_folder'] = folder
 
     # cache with user record
     user_rec['_imap_folders'] = result
@@ -1015,6 +1017,8 @@ def store_object(object, user_rec, targetfolder=None, master=None):
         # use *.confidential folder for invitations classified as confidential
         if object.get_classification() == kolabformat.ClassConfidential and user_rec.has_key('_confidential_folder'):
             targetfolder = user_rec['_confidential_folder']
+        elif object.get_classification() == kolabformat.ClassPrivate and user_rec.has_key('_private_folder'):
+            targetfolder = user_rec['_private_folder']
 
     if not targetfolder:
         log.error(_("Failed to save %s: no target folder found for user %r") % (object.type, user_rec['mail']))
