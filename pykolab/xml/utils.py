@@ -253,16 +253,15 @@ def compute_diff(a, b, reduced=False):
                 aa = [aa]
             if not isinstance(bb, list):
                 bb = [bb]
+
+            (aa, bb) = order_proplists(aa, bb)
             index = 0
             length = max(len(aa), len(bb))
             while index < length:
                 aai = aa[index] if index < len(aa) else None
                 bbi = bb[index] if index < len(bb) else None
                 if not compare_values(aai, bbi):
-                    if reduced:
-                        (old, new) = reduce_properties(aai, bbi)
-                    else:
-                        (old, new) = (aai, bbi)
+                    (old, new) = reduce_properties(aai, bbi) if reduced else (aai, bbi)
                     diff.append(OrderedDict([('property', prop), ('index', index), ('old', old), ('new', new)]))
                 index += 1
 
@@ -275,6 +274,47 @@ def compute_diff(a, b, reduced=False):
             diff.append(OrderedDict([('property', prop), ('old', old), ('new', new)]))
 
     return diff
+
+
+def order_proplists(a, b):
+    """
+        Orders two lists so that equal entries have the same position
+    """
+    # nothing to be done here
+    if len(a) == 0 and len(b) == 0:
+        return (a, b)
+
+    base = a
+    comp = b
+    flip = False
+
+    if len(a) > len(b):
+        flip = True
+        base = b
+        comp = a
+
+    indices = []
+    top = len(comp) + 1
+    for bb in comp:
+        index = None
+
+        # find a matching entry in base
+        for j, aa in enumerate(base):
+            if compare_values(aa, bb):
+                index = j
+                break
+
+        # move non-matching items to the end of the list
+        if index is None:
+            index = top
+            top += 1
+
+        indices.append(index)
+
+    # do sort by indices
+    indices, comp = zip(*sorted(zip(indices, comp), key=lambda x: x[0]))
+
+    return (comp, base) if flip else (base, comp)
 
 
 def compare_values(aa, bb):
