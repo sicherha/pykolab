@@ -20,7 +20,7 @@ def note_from_message(message):
             elif note and part.has_key('Content-ID'):
                 note._attachment_parts.append(part)
 
-    return todo
+    return note
 
 
 class Note(kolabformat.Note):
