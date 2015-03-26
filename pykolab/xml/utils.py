@@ -127,6 +127,24 @@ def dates_equal(a, b):
     return type(a) == type(b) and a.strftime(date_format) == b.strftime(date_format)
 
 
+def ustr(s):
+    """
+        Force the given (unicode) string into UTF-8 encoding
+    """
+    if not isinstance(s, unicode):
+        for cs in ['utf-8','latin-1']:
+            try:
+                s = unicode(s, cs)
+                break
+            except:
+                pass
+
+    if isinstance(s, unicode):
+        return s.encode('utf-8')
+
+    return s
+
+
 property_labels = {
     "name":        N_("Name"),
     "summary":     N_("Summary"),
