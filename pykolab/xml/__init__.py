@@ -20,6 +20,11 @@ from todo import todo_from_ical
 from todo import todo_from_string
 from todo import todo_from_message
 
+from note import Note
+from note import NoteIntegrityError
+from note import note_from_string
+from note import note_from_message
+
 from utils import property_label
 from utils import property_to_string
 from utils import compute_diff
@@ -31,6 +36,7 @@ __all__ = [
         "ContactReference",
         "Event",
         "Todo",
+        "Note",
         "RecurrenceRule",
         "event_from_ical",
         "event_from_string",
@@ -38,6 +44,8 @@ __all__ = [
         "todo_from_ical",
         "todo_from_string",
         "todo_from_message",
+        "note_from_string",
+        "note_from_message",
         "property_label",
         "property_to_string",
         "compute_diff",
@@ -49,6 +57,7 @@ errors = [
         "InvalidEventDateError",
         "InvalidAttendeeParticipantStatusError",
         "TodoIntegrityError",
+        "NoteIntegrityError",
     ]
 
 __all__.extend(errors)
