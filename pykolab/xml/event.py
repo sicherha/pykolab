@@ -12,6 +12,7 @@ from pykolab import constants
 from pykolab import utils
 from pykolab.xml import utils as xmlutils
 from pykolab.xml import participant_status_label
+from pykolab.xml.utils import ustr
 from pykolab.translate import _
 
 from os import path
@@ -21,19 +22,6 @@ from recurrence_rule import RecurrenceRule
 
 log = pykolab.getLogger('pykolab.xml_event')
 
-def ustr(s):
-    if not isinstance(s, unicode):
-        for cs in ['utf-8','latin-1']:
-            try:
-                s = unicode(s, cs)
-                break
-            except:
-                pass
-
-    if isinstance(s, unicode):
-        return s.encode('utf-8')
-
-    return s
 
 def event_from_ical(ical, string=None):
     return Event(from_ical=ical, from_string=string)
@@ -680,7 +668,7 @@ class Event(object):
     def get_lastmodified(self):
         try:
             _datetime = self.event.lastModified()
-            if retval == None or retval == "":
+            if _datetime == None or not _datetime.isValid():
                 self.__str__()
         except:
             self.__str__()
