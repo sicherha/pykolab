@@ -428,7 +428,9 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
 
         log.debug(_("Precondition for object %r fulfilled: %r") % (itip_event['uid'], condition_fulfilled), level=5)
 
-        respond_with = None
+        if existing:
+            respond_with = None
+
         if policy & ACT_ACCEPT and condition_fulfilled:
             respond_with = 'TENTATIVE' if policy & COND_TENTATIVE else 'ACCEPTED'
 
@@ -475,7 +477,7 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
 
         elif policy & ACT_SAVE_TO_FOLDER:
             # copy the invitation into the user's default folder with PARTSTAT=NEEDS-ACTION
-            itip_event['xml'].set_attendee_participant_status(receiving_attendee, 'NEEDS-ACTION')
+            itip_event['xml'].set_attendee_participant_status(receiving_attendee, respond_with or 'NEEDS-ACTION')
             save_object = True
 
         else:
