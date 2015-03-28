@@ -21,6 +21,7 @@ import _ldap
 import ldap
 import ldap.async
 import ldap.controls
+import ldap.filter
 import logging
 import time
 
@@ -964,7 +965,7 @@ class LDAP(pykolab.base.Base):
     def search_entry_by_attribute(self, attr, value, **kw):
         self._bind()
 
-        _filter = "(%s=%s)" % (attr, value)
+        _filter = "(%s=%s)" % (attr, ldap.filter.escape_filter_chars(value))
 
         config_base_dn = self.config_get('base_dn')
         ldap_base_dn = self._kolab_domain_root_dn(self.domain)
