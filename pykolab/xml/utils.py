@@ -318,7 +318,7 @@ def order_proplists(a, b):
 
         # find a matching entry in base
         for j, aa in enumerate(base):
-            if compare_values(aa, bb):
+            if compare_values(aa, bb, True):
                 index = j
                 break
 
@@ -335,7 +335,7 @@ def order_proplists(a, b):
     return (comp, base) if flip else (base, comp)
 
 
-def compare_values(aa, bb):
+def compare_values(aa, bb, partial=False):
     ignore_keys = ['rsvp']
     if not aa.__class__ == bb.__class__:
         return False
@@ -347,6 +347,14 @@ def compare_values(aa, bb):
         for k in ignore_keys:
             aa.pop(k, None)
             bb.pop(k, None)
+
+        # accept partial match
+        if partial:
+            for k,v in aa.iteritems():
+                if bb.has_key(k) and bb[k] == v:
+                    return True
+
+            return False
 
     return aa == bb
 

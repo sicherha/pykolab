@@ -170,6 +170,14 @@ class TestComputeDiff(unittest.TestCase):
         self.assertEqual(aa[0], bb[0])
         self.assertEqual(aa[1], bb[1])
 
+    def test_000_order_proplists2(self):
+        a1 = {'code': '4567',  'locality': 'Worktown', 'country': 'Switzerland', 'region': '', 'label': '', 'street': 'Workstreet 22', 'type': 'work'}
+        a2 = {'code': '55550', 'locality': 'San Francisco', 'country': 'USA', 'region': 'CA', 'label': '', 'street': 'O-steet', 'type': 'office'}
+        a3 = {'code': '6666',  'locality': 'Workcity', 'country': 'Switzerland', 'region': 'ZH', 'label': '', 'street': 'Workstreet 22', 'type': 'work'}
+        a4 = dict(a2)
+
+        (aa, bb) = order_proplists([a1, a2], [a3, a4])
+        self.assertEqual(aa[1], bb[1])
 
     def test_001_attachments(self):
         old = Todo(from_string=xml_todo_01)
