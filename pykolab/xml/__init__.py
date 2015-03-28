@@ -3,6 +3,9 @@ from attendee import InvalidAttendeeParticipantStatusError
 from attendee import participant_status_label
 
 from contact import Contact
+from contact import ContactIntegrityError
+from contact import contact_from_string
+from contact import contact_from_message
 from contact_reference import ContactReference
 from recurrence_rule import RecurrenceRule
 
@@ -46,6 +49,8 @@ __all__ = [
         "todo_from_message",
         "note_from_string",
         "note_from_message",
+        "contact_from_string",
+        "contact_from_message",
         "property_label",
         "property_to_string",
         "compute_diff",
@@ -58,6 +63,7 @@ errors = [
         "InvalidAttendeeParticipantStatusError",
         "TodoIntegrityError",
         "NoteIntegrityError",
+        "ContactIntegrityError",
     ]
 
 __all__.extend(errors)
