@@ -1,7 +1,7 @@
 <?php
     // This will overwrite defined LDAP filter
     // Note: LDAP addressbook defined for kolab_auth plugin is used
-    \$config['kolab_delegation_filter'] = '(|(objectClass=kolabInetOrgPerson)(objectclass=kolabsharedfolder))';
+    \$config['kolab_delegation_filter'] = '(|(objectClass=kolabInetOrgPerson)(&(objectclass=kolabsharedfolder)(kolabFolderType=mail)))';
 
     // Delegates field (from fieldmap configuration) to get delegates list
     // Note: This is a field name, not LDAP attribute name
