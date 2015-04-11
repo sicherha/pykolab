@@ -3,7 +3,7 @@ partition-default: /var/spool/imap
 admins: $admins
 sievedir: /var/lib/imap/sieve
 sendmail: /usr/sbin/sendmail
-sasl_pwcheck_method: auxprop saslauthd
+sasl_pwcheck_method: saslauthd
 sasl_mech_list: PLAIN LOGIN
 allowplaintext: no
 tls_server_cert: /etc/pki/cyrus-imapd/cyrus-imapd.pem
