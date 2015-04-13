@@ -35,6 +35,16 @@ conf = pykolab.getConf()
 def __init__():
     components.register('mysql', execute, description=description())
 
+def cli_options():
+    ldap_group = conf.add_cli_parser_option_group(_("MySQL Options"))
+
+    ldap_group.add_option(
+            "--mysqlserver",
+            dest    = "mysqlserver",
+            action  = "store",
+            help    = _("Specify whether to use an (existing) or (new) MySQL server.")
+        )
+
 def description():
     return _("Setup MySQL.")
 
@@ -73,7 +83,13 @@ def execute(*args, **kw):
             os.path.exists('/var/run/mysqld/mysqld.sock') or \
             os.path.exists('/var/run/mysql/mysql.sock') or \
             os.path.exists('/var/run/mysqld/mysqld.pid'):
-        answer = utils.ask_menu(_("What MySQL server are we setting up?"), options)
+        if conf.mysqlserver:
+            if conf.mysqlserver == 'existing':
+                answer = 1
+            elif conf.mysqlserver == 'new':
+                answer = 2
+        if answer == 0:
+            answer = utils.ask_menu(_("What MySQL server are we setting up?"), options)
 
     if answer == "1" or answer == 1:
         print >> sys.stderr, utils.multiline_message(
