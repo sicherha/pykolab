@@ -30,6 +30,7 @@ from pykolab import constants
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.utils')
+conf = pykolab.getConf()
 
 def ask_question(question, default="", password=False, confirm=False):
     """
@@ -42,6 +43,12 @@ def ask_question(question, default="", password=False, confirm=False):
 
         Usage: pykolab.utils.ask_question("What is the server?", default="localhost")
     """
+    
+    if not default == "" and not default == None and conf.cli_keywords.answer_default:
+        if not conf.cli_keywords.quiet:
+            print ("%s [%s]: " % (question, default))
+        return default
+
     if password:
         if default == "" or default == None:
             answer = getpass.getpass("%s: " % (question))
@@ -108,6 +115,14 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
         default_no = "'no'"
         default_yes = "Please type 'yes'"
 
+    if conf.cli_keywords.answer_yes or (conf.cli_keywords.answer_default and default_answer is not None):
+        if not conf.cli_keywords.quiet:
+            print ("%s [%s/%s]: " % (question,default_yes,default_no))
+        if conf.cli_keywords.answer_yes:
+            return True
+        if conf.cli_keywords.answer_default:
+            return default_answer
+
     answer = False
     while answer == False:
         answer = raw_input("%s [%s/%s]: " % (question,default_yes,default_no))
@@ -129,6 +144,11 @@ def ask_confirmation(question, default="y", all_inclusive_no=True):
                 return True
 
 def ask_menu(question, options={}, default=''):
+    if not default == '' and conf.cli_keywords.answer_default:
+        if not conf.cli_keywords.quiet:
+            print question + " [" + default + "]:"
+        return default
+
     if not default == '':
         print question + " [" + default + "]:"
     else:
@@ -280,6 +300,9 @@ def generate_password():
     return output
 
 def multiline_message(message):
+    if conf.cli_keywords.quiet:
+        return ""
+
     column_width = 80
 
     # First, replace all occurences of "\n"

@@ -278,6 +278,12 @@ class Conf(object):
                                     help    = _("Set the debugging " + \
                                         "verbosity. Maximum is 9, tracing " + \
                                         "protocols like LDAP, SQL and IMAP."))
+        
+        runtime_group.add_option(   "-e", "--default",
+                                    dest    = "answer_default",
+                                    action  = "store_true",
+                                    default = False,
+                                    help    = _("Use the default answer to all questions."))
 
         runtime_group.add_option(   "-l",
                                     dest    = "loglevel",
