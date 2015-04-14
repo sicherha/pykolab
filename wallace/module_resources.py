@@ -299,7 +299,7 @@ def execute(*args, **kw):
                     elif owner_reply == kolabformat.PartDeclined:
                         decline_reservation_request(_itip_event, receiving_resource)
                     else:
-                        log.info(_("Invalid response (%r) recieved from resource owner for event %r") % (
+                        log.info(_("Invalid response (%r) received from resource owner for event %r") % (
                             sender_attendee.get_participant_status(True), reference_uid
                         ))
                 else:
@@ -553,7 +553,7 @@ def check_availability(itip_events, resource_dns, resources, receiving_attendee=
 
             else:
                 # TODO: shuffle existing bookings of collection members in order
-                # to make one availale for the requested time
+                # to make one available for the requested time
                 pass
 
             continue

@@ -76,7 +76,7 @@ def getflags(test):
         if len(flag): flags.append(flag)
     return flags
 
-### A smart function to return an array of splitted strings
+### A smart function to return an array of split strings
 ### and honours quoted strings
 def splitquote(text):
     data = text.split(QUOTE)
@@ -451,11 +451,11 @@ class CYRUS:
         self.__verbose( '[LOGOUT] %s: %s' % (res, msg[0]) )
 
     def getEncoding(self):
-        """Get current input/ouput codification"""
+        """Get current input/output codification"""
         return self.ENCODING
 
     def setEncoding(self, enc = None):
-        """Set current input/ouput codification"""
+        """Set current input/output codification"""
         if enc is None:
             self.ENCODING = 'imap'
         elif enc in self.ENCODING_LIST:

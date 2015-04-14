@@ -241,7 +241,7 @@ class Conf(object):
         """
             Create options from plugins.
 
-            This function must be called seperately from Conf.__init__(), or
+            This function must be called separately from Conf.__init__(), or
             the configuration store is not yet done initializing when the
             plugins class and the plugins themselves go look for it.
         """
@@ -475,7 +475,7 @@ class Conf(object):
 
     def get_list(self, section, key):
         """
-            Gets a comma and/or space seperated list from the configuration file
+            Gets a comma and/or space separated list from the configuration file
             and returns a list.
         """
         values = []

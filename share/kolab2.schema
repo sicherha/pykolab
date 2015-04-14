@@ -76,7 +76,7 @@ attributetype ( 1.3.6.1.4.1.19414.2.1.3
 
 # kolabEncryptedPassword is an asymmetrically (RSA) encrypted copy of the
 # cleartext password. This is required in order to pass the password from
-# the maintainance/administration application to the kolabHomeServer running the
+# the maintenance/administration application to the kolabHomeServer running the
 # resource handler application in a secure manner.
 # Actually this attribute is deprecated as of Kolab 2.1. Instead we grant the
 # calendar user dn: cn=calendar,cn=internal,dc=yourcompany,dc=com access to
@@ -350,7 +350,7 @@ attributetype ( 1.3.6.1.4.1.19414.1.1.1.25
   SUP labeledURI
   SINGLE-VALUE )
 
-# Single string with $ seperated lines consisting of
+# Single string with $ separated lines consisting of
 # surname $
 # givenName $
 # dateOfBirth $
@@ -363,7 +363,7 @@ attributetype ( 1.3.6.1.4.1.19414.1.1.1.27
   SUBSTR caseIgnoreListSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.41 )
 
-# Single string with $ seperated lines consisting of
+# Single string with $ separated lines consisting of
 # surname $
 # givenName $
 # dateOfBirth $
@@ -961,8 +961,8 @@ objectclass ( 1.3.6.1.4.1.19414.2.2.1
 
 # public folders are typically visible to everyone subscribed to
 # the server without the need for an extra login. Subfolders are
-# defined using the hiarchy seperator '/' e.g. "sf/sub1". Please note
-# that the term public folder is prefered to shared folder because
+# defined using the hiarchy separator '/' e.g. "sf/sub1". Please note
+# that the term public folder is preferred to shared folder because
 # normal user mailboxes can also share folders using acls.
 objectclass ( 1.3.6.1.4.1.19414.2.2.9
   NAME 'kolabSharedFolder'

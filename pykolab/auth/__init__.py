@@ -53,7 +53,7 @@ class Auth(pykolab.base.Base):
         if len(login) == 3:
             # The realm has not been specified. See if we know whether or not
             # to use virtual_domains, as this may be a cause for the realm not
-            # having been specified seperately.
+            # having been specified separately.
             use_virtual_domains = conf.get('imap', 'virtual_domains')
 
             # TODO: Insert debug statements

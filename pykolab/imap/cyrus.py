@@ -336,7 +336,7 @@ class Cyrus(cyruslib.CYRUS):
                 self.rename(undelete_folder,target_folder)
             else:
                 if not target_server == self.server:
-                    print >> sys.stdout, _("Would have transfered %s from %s to %s") % (undelete_folder, self.server, target_server)
+                    print >> sys.stdout, _("Would have transferred %s from %s to %s") % (undelete_folder, self.server, target_server)
 
                 print >> sys.stdout, _("Would have renamed %s to %s") % (undelete_folder, target_folder)
 
@@ -437,7 +437,7 @@ class Cyrus(cyruslib.CYRUS):
         # user/userid@example.org
         #
 
-        # Here, we explicitely remove any virtdomain folders.
+        # Here, we explicitly remove any virtdomain folders.
         if mbox['domain'] == None:
             _folders = []
             for folder in folders:

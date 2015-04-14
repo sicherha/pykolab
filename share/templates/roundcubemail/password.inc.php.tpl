@@ -49,7 +49,7 @@
 
     // LDAP connection method
     // There is two connection method for changing a user's LDAP password.
-    // 'user': use user credential (recommanded, require password_confirm_current=true)
+    // 'user': use user credential (recommended, require password_confirm_current=true)
     // 'admin': use admin credential (this mode require password_ldap_adminDN and password_ldap_adminPW)
     // Default: 'user'
     \$config['password_ldap_method'] = 'user';
