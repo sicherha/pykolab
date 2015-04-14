@@ -1,0 +1,16 @@
+{
+    "linters": {
+        "pep8": {
+            "type": "pep8",
+            "include": "(\\.py$)",
+            "severity": {
+                "E121": "disabled",
+                "E126": "disabled"
+            }
+        },
+        "spelling" : {
+            "type": "spelling",
+            "exclude": "(po\\/.*$)"
+        }
+    }
+}
