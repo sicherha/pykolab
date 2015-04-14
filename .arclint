@@ -1,5 +1,8 @@
 {
     "linters": {
+        "chmod": {
+            "type": "chmod"
+        },
         "merge-conflict": {
             "type": "merge-conflict"
         },
