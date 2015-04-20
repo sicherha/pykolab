@@ -52,7 +52,7 @@ log = pykolab.getLogger('pykolab.auth_cache')
 
 metadata = MetaData()
 
-db = None
+db = {}
 
 ##
 ## Classes
@@ -165,8 +165,8 @@ def init_db(domain,reinit=False):
     """
     global db
 
-    if not db == None and not reinit:
-        return db
+    if domain in db and not reinit:
+        return db[domain]
 
     if reinit:
         import os
@@ -184,9 +184,9 @@ def init_db(domain,reinit=False):
         metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)
-    db = Session()
+    db[domain] = Session()
 
-    return db
+    return db[domain]
 
 def last_modify_timestamp(domain):
     modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format')
