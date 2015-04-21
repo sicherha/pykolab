@@ -43,6 +43,24 @@ def cli_options():
             help    = _("Include messages flagged as \Deleted")
         )
 
+    my_option_group.add_option(
+            '--server',
+            dest    = "connect_server",
+            action  = "store",
+            default = None,
+            metavar = "SERVER",
+            help    = _("List mailboxes on server SERVER only.")
+        )
+
+    my_option_group.add_option(
+            '--user',
+            dest    = "user",
+            action  = "store",
+            default = None,
+            metavar = "USER",
+            help    = _("List messages as user USER")
+        )
+
 def description():
     return _("List messages in a folder")
 
@@ -58,8 +76,23 @@ def execute(*args, **kw):
         log.error(_("Specify a folder"))
         sys.exit(1)
 
+    domain = None
+
     imap = IMAP()
-    imap.connect()
+
+    if not conf.user == None:
+        imap.connect(domain=domain, login=False, server=conf.connect_server)
+
+        backend = conf.get(domain, 'imap_backend')
+        if backend == None:
+            backend = conf.get('kolab', 'imap_backend')
+
+        admin_login = conf.get(backend, 'admin_login')
+        admin_password = conf.get(backend, 'admin_password')
+
+        imap.login_plain(admin_login, admin_password, conf.user)
+    else:
+        imap.connect(domain=domain, server=conf.connect_server)
 
     _folder = imap.lm(imap_utf7.encode(folder))
 
@@ -67,7 +100,8 @@ def execute(*args, **kw):
         log.error(_("No such folder"))
         sys.exit(1)
 
-    imap.set_acl(folder, 'cyrus-admin', 'lrs')
+    if conf.user == None:
+        imap.set_acl(folder, 'cyrus-admin', 'lrs')
 
     imap.select(imap_utf7.encode(folder))
 
@@ -96,4 +130,5 @@ def execute(*args, **kw):
         else:
             print num
 
-    imap.set_acl(folder, 'cyrus-admin', '')
+    if conf.user == None:
+        imap.set_acl(folder, 'cyrus-admin', '')
