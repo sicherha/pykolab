@@ -227,7 +227,7 @@ password='%s'
     time.sleep(2)
 
     if os.path.isfile('/bin/systemctl'):
-        if os.patch.isfile('/etc/debian_version'):
+        if os.path.isfile('/etc/debian_version'):
             subprocess.call(['/bin/systemctl', 'restart', 'apache2.service'])
         else:
             subprocess.call(['/bin/systemctl', 'restart', 'httpd.service'])
@@ -239,7 +239,7 @@ password='%s'
         log.error(_("Could not start the webserver server service."))
 
     if os.path.isfile('/bin/systemctl'):
-        if os.patch.isfile('/etc/debian_version'):
+        if os.path.isfile('/etc/debian_version'):
             subprocess.call(['/bin/systemctl', 'enable', 'apache2.service'])
         else:
             subprocess.call(['/bin/systemctl', 'enable', 'httpd.service'])

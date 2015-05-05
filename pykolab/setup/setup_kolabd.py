@@ -72,7 +72,7 @@ def execute(*args, **kw):
         myaugeas.close()
 
     if os.path.isfile('/bin/systemctl'):
-        if os.patch.isfile('/etc/debian_version'):
+        if os.path.isfile('/etc/debian_version'):
             subprocess.call(['/bin/systemctl', 'restart', 'kolab-server.service'])
         else:
             subprocess.call(['/bin/systemctl', 'restart', 'kolabd.service'])
@@ -84,7 +84,7 @@ def execute(*args, **kw):
         log.error(_("Could not start the kolab server service."))
 
     if os.path.isfile('/bin/systemctl'):
-        if os.patch.isfile('/etc/debian_version'):
+        if os.path.isfile('/etc/debian_version'):
             subprocess.call(['/bin/systemctl', 'enable', 'kolab-server.service'])
         else:
             subprocess.call(['/bin/systemctl', 'enable', 'kolabd.service'])
