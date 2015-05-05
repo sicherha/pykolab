@@ -72,7 +72,10 @@ def execute(*args, **kw):
         myaugeas.close()
 
     if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['/bin/systemctl', 'restart', 'kolabd.service'])
+        if os.patch.isfile('/etc/debian_version'):
+            subprocess.call(['/bin/systemctl', 'restart', 'kolab-server.service'])
+        else:
+            subprocess.call(['/bin/systemctl', 'restart', 'kolabd.service'])
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'kolabd', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
@@ -81,7 +84,10 @@ def execute(*args, **kw):
         log.error(_("Could not start the kolab server service."))
 
     if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['/bin/systemctl', 'enable', 'kolabd.service'])
+        if os.patch.isfile('/etc/debian_version'):
+            subprocess.call(['/bin/systemctl', 'enable', 'kolab-server.service'])
+        else:
+            subprocess.call(['/bin/systemctl', 'enable', 'kolabd.service'])
     elif os.path.isfile('/sbin/chkconfig'):
         subprocess.call(['/sbin/chkconfig', 'kolabd', 'on'])
     elif os.path.isfile('/usr/sbin/update-rc.d'):
