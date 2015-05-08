@@ -214,12 +214,17 @@
             'ssl_verify_peer' => false,
         );
 
-    # required for php 5.6, see https://bbs.archlinux.org/viewtopic.php?id=193012
+    # required for php 5.6, see https://bbs.archlinux.org/viewtopic.php?id=193012 and http://php.net/manual/de/context.ssl.php
+    # production environment requires real security settings!!!
     \$config['imap_conn_options']=array(
             'ssl'=>array(
+            'verify_peer_name'=>false,
             'verify_peer'=>false,
-            'allow_self_signed'=>true,
-            'peer_name'=>'localhost.localdomain',
-            'ciphers'=>'TLSv1+HIGH:!aNull:@STRENGTH'));
+            'allow_self_signed'=>true));
+    \$config['smtp_conn_options']=array(
+            'ssl'=>array(
+            'verify_peer_name'=>false,
+            'verify_peer'=>false,
+            'allow_self_signed'=>true));
 
 ?>
