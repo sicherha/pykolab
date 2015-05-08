@@ -220,7 +220,6 @@
             'verify_peer'=>false,
             'allow_self_signed'=>true,
             'peer_name'=>'localhost.localdomain',
-            'ciphers'=>'TLSv1+HIGH:!aNull:@STRENGTH',
-            'cafile'=>'/etc/ssl/certs/ca-bundle.crt'));
+            'ciphers'=>'TLSv1+HIGH:!aNull:@STRENGTH'));
 
 ?>
