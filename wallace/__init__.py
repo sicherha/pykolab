@@ -137,6 +137,7 @@ class WallaceDaemon(object):
                 dest    = "max_threads",
                 action  = "store",
                 default = 24,
+                type    = int,
                 help    = _("Number of threads to use.")
             )
 
