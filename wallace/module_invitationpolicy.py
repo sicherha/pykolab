@@ -940,24 +940,28 @@ def set_write_lock(key, wait=True):
     if not os.path.isdir(os.path.join(mybasepath, 'locks')):
         os.makedirs(os.path.join(mybasepath, 'locks'))
 
-    file = os.path.join(mybasepath, 'locks', key + '.lock')
-    locked = os.path.getmtime(file) if os.path.isfile(file) else 0
-    expired = time.time() - 300
+    filename = os.path.join(mybasepath, 'locks', key + '.lock')
+    locktime = 0
+
+    if os.path.isfile(filename):
+        locktime = os.path.getmtime(filename)
+
+    locktime = locktime + 300
 
     # wait if file lock is in place
-    while locked and locked > expired:
+    while time.time() < locktime:
         if not wait:
             return False
 
         log.debug(_("%r is locked, waiting...") % (key), level=9)
         time.sleep(0.5)
-        locked = os.path.getmtime(file) if os.path.isfile(file) else 0
+        locked = os.path.getmtime(filename) if os.path.isfile(filename) else 0
 
     # touch the file
-    if os.path.isfile(file):
-        os.utime(file, None)
+    if os.path.isfile(filename):
+        os.utime(filename, None)
     else:
-        open(file, 'w').close()
+        open(filename, 'w').close()
 
     # register active lock
     write_locks.append(key)
