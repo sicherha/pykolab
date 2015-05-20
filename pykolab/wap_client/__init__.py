@@ -98,9 +98,21 @@ def connect(uri=None):
             conn = httplib.HTTPSConnection(API_HOSTNAME, API_PORT)
         else:
             conn = httplib.HTTPConnection(API_HOSTNAME, API_PORT)
+
         conn.connect()
 
     return conn
+
+def disconnect(quit=False):
+    global conn, session_id
+
+    if quit and session_id:
+        request('GET', 'system.quit')
+        session_id = None
+
+    if conn:
+        conn.close()
+        conn = None
 
 def domain_add(domain, aliases=[]):
     dna = conf.get('ldap', 'domain_name_attribute')
@@ -380,12 +392,13 @@ def request(method, api_uri, get=None, post=None, headers={}):
     else:
         return False
 
-def request_raw(method, api_uri, get=None, post=None, headers={}):
+def request_raw(method, api_uri, get=None, post=None, headers={}, isretry=False):
     global session_id
 
     if not session_id == None:
         headers["X-Session-Token"] = session_id
 
+    reconnect = False
     conn = connect()
 
     if conf.debuglevel > 8:
@@ -398,13 +411,24 @@ def request_raw(method, api_uri, get=None, post=None, headers={}):
 
     log.debug(_("Requesting %r with params %r") % ("%s/%s" % (API_BASE,api_uri), (get, post)), level=8)
 
-    conn.request(method.upper(), "%s/%s%s" % (API_BASE, api_uri, _get), post, headers)
+    try:
+        conn.request(method.upper(), "%s/%s%s" % (API_BASE, api_uri, _get), post, headers)
 
-    response = conn.getresponse()
+        response = conn.getresponse()
+        data = response.read()
 
-    data = response.read()
+        log.debug(_("Got response: %r") % (data), level=8)
 
-    log.debug(_("Got response: %r") % (data), level=8)
+    except (httplib.BadStatusLine, httplib.CannotSendRequest) as e:
+        if isretry:
+            raise e
+        log.info(_("Connection error: %r; re-connecting..."), e)
+        reconnect = True
+
+    # retry with a new connection
+    if reconnect:
+        disconnect()
+        return request_raw(method, api_uri, get, post, headers, True)
 
     try:
         response_data = json.loads(data)
