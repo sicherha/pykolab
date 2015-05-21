@@ -20,6 +20,7 @@
 import os
 import subprocess
 import tempfile
+import time
 
 import components
 
@@ -49,6 +50,14 @@ def description():
     return _("Setup MySQL.")
 
 def execute(*args, **kw):
+
+    socket_paths = [
+            "/var/lib/mysql/mysql.sock",
+            "/var/run/mysqld/mysqld.sock",
+            "/var/run/mysql/mysql.sock",
+            "/var/run/mysqld/mysqld.pid"
+        ]
+
     # on CentOS7, there is MariaDB instead of MySQL
     mysqlservice = 'mysqld.service'
     if os.path.isfile('/usr/lib/systemd/system/mariadb.service'):
@@ -73,16 +82,24 @@ def execute(*args, **kw):
         log.error(_("Could not configure to start on boot, the " + \
                 "MySQL database service."))
 
+    log.info(_("Waiting for at most 30 seconds for MySQL/MariaDB to settle..."))
+    max_wait = 30
+    while max_wait > 0:
+        for socket_path in socket_paths:
+            if os.path.exists(socket_path):
+                max_wait = 0
+
+        if max_wait > 0:
+            max_wait = max_wait - 1
+            time.sleep(1)
+
     options = {
             1: "Existing MySQL server (with root password already set).",
             2: "New MySQL server (needs to be initialized)."
         }
 
     answer = 0
-    if os.path.exists('/var/lib/mysql/mysql.sock') or \
-            os.path.exists('/var/run/mysqld/mysqld.sock') or \
-            os.path.exists('/var/run/mysql/mysql.sock') or \
-            os.path.exists('/var/run/mysqld/mysqld.pid'):
+    if len([x for x in socket_paths if os.path.exists(x)]) > 0:
         if conf.mysqlserver:
             if conf.mysqlserver == 'existing':
                 answer = 1
