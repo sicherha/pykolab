@@ -63,6 +63,10 @@ class Cli(object):
         for cmd_component in to_execute:
             sys.argv.pop(sys.argv.index(cmd_component.replace('_','-')))
 
+        # force default encoding to match the locale encoding (T249)
+        reload(sys)
+        sys.setdefaultencoding(locale.getpreferredencoding() or 'utf-8')
+
         # wrap sys.stdout in a locale-aware StreamWriter (#3983)
         sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
 
