@@ -1209,15 +1209,21 @@ def send_update_notification(object, receiving_user, old=None, reply=True):
         smtp.set_debuglevel(True)
 
     success = False
+    retries = 5
 
-    while not success:
+    while not success and retries > 0:
         try:
             success = smtp.sendmail(orgemail, receiving_user['mail'], msg.as_string())
             log.debug(_("Sent update notification to %r: %r") % (receiving_user['mail'], success), level=8)
             smtp.quit()
+            break
         except Exception, e:
             log.error(_("SMTP sendmail error: %r") % (e))
-            time.sleep(10)
+
+        time.sleep(10)
+        retries -= 1
+
+    return success
 
 
 def send_cancel_notification(object, receiving_user, deleted=False):

@@ -104,6 +104,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
     def _mock_smtp_sendmail(self, from_addr, to_addr, message, mail_options=None, rcpt_options=None):
         self.smtplog.append((from_addr, to_addr, message))
+        return True
 
     def test_001_itip_events_from_message(self):
         itips = pykolab.itip.events_from_message(message_from_string(itip_multipart))
