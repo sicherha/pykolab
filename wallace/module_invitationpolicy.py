@@ -946,16 +946,14 @@ def set_write_lock(key, wait=True):
     if os.path.isfile(filename):
         locktime = os.path.getmtime(filename)
 
-    locktime = locktime + 300
-
     # wait if file lock is in place
-    while time.time() < locktime:
+    while time.time() < locktime + 300:
         if not wait:
             return False
 
         log.debug(_("%r is locked, waiting...") % (key), level=9)
         time.sleep(0.5)
-        locked = os.path.getmtime(filename) if os.path.isfile(filename) else 0
+        locktime = os.path.getmtime(filename) if os.path.isfile(filename) else 0
 
     # touch the file
     if os.path.isfile(filename):
