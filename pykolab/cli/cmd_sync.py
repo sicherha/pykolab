@@ -100,7 +100,8 @@ def queue_add(*args, **kw):
     global pool
     for dn, entry in kw['entry']:
         entry['dn'] = dn
-        pool.apply_async(_synchronize, (), dict(**entry))
+        r = pool.apply_async(_synchronize, (), dict(**entry))
+        r.wait()
 
 def worker_process(*args, **kw):
     pass
@@ -108,7 +109,7 @@ def worker_process(*args, **kw):
 def _synchronize(*args, **kw):
     log.info(_("Worker process %s handling %s") % (multiprocessing.current_process().name, kw['dn']))
 
-    entry = utils.normalize(entry)
+    entry = utils.normalize(kw)
 
     if not entry.has_key('mail'):
         return
