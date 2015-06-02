@@ -134,15 +134,15 @@ def execute(*args, **kw):
                     level=8
                 )
 
-        fp = None
-        if os.path.isdir('/etc/roundcubemail'):
-            fp = open('/etc/roundcubemail/%s' % (want_file), 'w')
-        elif os.path.isdir('/etc/roundcube'):
-            fp = open('/etc/roundcube/%s' % (want_file), 'w')
+            fp = None
+            if os.path.isdir('/etc/roundcubemail'):
+                fp = open('/etc/roundcubemail/%s' % (want_file), 'w')
+            elif os.path.isdir('/etc/roundcube'):
+                fp = open('/etc/roundcube/%s' % (want_file), 'w')
 
-        if not fp == None:
-            fp.write(t.__str__())
-            fp.close()
+            if not fp == None:
+                fp.write(t.__str__())
+                fp.close()
 
     schema_files = []
     for root, directories, filenames in os.walk('/usr/share/doc/'):
