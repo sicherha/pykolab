@@ -7,7 +7,7 @@
     \$config['calendar_work_start'] = 6;
     \$config['calendar_work_end'] = 18;
     \$config['calendar_event_coloring'] = 0;
-    \$config['calendar_caldav_url'] = 'http://' . \$_SERVER['HTTP_HOST'] . '/iRony/calendars/%u/%i';
+    \$config['calendar_caldav_url'] = 'http://%h/iRony/calendars/%u/%i';
 
     \$config['calendar_itip_smtp_server'] = '';
     \$config['calendar_itip_smtp_user'] = '';
