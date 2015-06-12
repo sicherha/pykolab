@@ -130,7 +130,7 @@ def domain_delete(domain, force=False):
     param['id'] = domain_id
 
     if force:
-      param['force'] = force
+        param['force'] = force
     post = json.dumps(param)
 
     return request('POST', 'domain.delete', post=post)

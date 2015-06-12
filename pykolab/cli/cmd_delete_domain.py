@@ -67,8 +67,8 @@ def execute(*args, **kw):
         domain = utils.ask_question(_("Domain name"))
 
     if wap_client.domain_delete(domain, conf.force):
-      print("Domain %s has been marked as deleted." % domain)
-      print("Please run this command to actually delete the domain: ")
-      print("   php /usr/share/kolab-webadmin/bin/domain_delete.php")
+        print("Domain %s has been marked as deleted." % domain)
+        print("Please run this command to actually delete the domain: ")
+        print("   php /usr/share/kolab-webadmin/bin/domain_delete.php")
     else:
-      print("Domain %s has not been deleted." % domain)
+        print("Domain %s has not been deleted." % domain)
