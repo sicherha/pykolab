@@ -123,12 +123,15 @@ def domain_add(domain, aliases=[]):
 
     return request('POST', 'domain.add', post=post)
 
-def domain_delete(domain):
+def domain_delete(domain, force=False):
     domain_id, domain_attrs = domain_find(domain).popitem()
 
-    post = json.dumps({
-            'id': domain_id
-        })
+    param = {}
+    param['id'] = domain_id
+
+    if force:
+      param['force'] = force
+    post = json.dumps(param)
 
     return request('POST', 'domain.delete', post=post)
 
@@ -390,6 +393,7 @@ def request(method, api_uri, get=None, post=None, headers={}):
         del response_data['status']
         return response_data['result']
     else:
+        print("%s: %s (code %s)" % (response_data['status'], response_data['reason'], response_data['code']))
         return False
 
 def request_raw(method, api_uri, get=None, post=None, headers={}, isretry=False):

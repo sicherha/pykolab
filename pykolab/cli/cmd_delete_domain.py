@@ -35,6 +35,17 @@ def __init__():
 def description():
     return _("Delete a domain.")
 
+def cli_options():
+    my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
+
+    my_option_group.add_option(
+            '--force',
+            dest    = "force",
+            action  = "store_true",
+            default = False,
+            help    = _("Force deleting the domain even if it contains user accounts")
+        )
+
 def execute(*args, **kw):
     from pykolab import wap_client
 
@@ -55,4 +66,9 @@ def execute(*args, **kw):
     except IndexError, errmsg:
         domain = utils.ask_question(_("Domain name"))
 
-    wap_client.domain_delete(domain)
+    if wap_client.domain_delete(domain, conf.force):
+      print("Domain %s has been marked as deleted." % domain)
+      print("Please run this command to actually delete the domain: ")
+      print("   php /usr/share/kolab-webadmin/bin/domain_delete.php")
+    else:
+      print("Domain %s has not been deleted." % domain)
