@@ -418,6 +418,7 @@ ServerAdminPwd = %(admin_pass)s
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['/bin/systemctl', 'restart', 'dirsrv.target'])
+        time.sleep(20)
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'dirsrv', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
