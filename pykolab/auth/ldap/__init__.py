@@ -176,7 +176,10 @@ class LDAP(pykolab.base.Base):
                 log.error(_("Authentication cache failed: %r") % (errmsg))
                 pass
 
-        user_filter = self.config_get_raw('user_filter') % ({'base_dn':base_dn})
+        try:
+            user_filter = self.config_get_raw('user_filter') % ({'base_dn':base_dn})
+        except TypeError, errmsg:
+            user_filter = self.config_get_raw('user_filter')
 
         _filter = '(&(|'
 
@@ -1798,8 +1801,24 @@ class LDAP(pykolab.base.Base):
                         )
 
                 cache.get_entry(self.domain, entry)
+            else:
+                imap_mailbox = "user%s%s" % (
+                        self.imap.get_separator(),
+                        entry[result_attribute]
+                    )
 
-        self.user_quota(entry, "user%s%s" % (self.imap.get_separator(),entry[result_attribute]))
+                if not self.imap.has_folder(imap_mailbox):
+                    self.imap_user_mailbox_create(
+                            entry[result_attribute]
+                        )
+
+        self.user_quota(
+                entry,
+                "user%s%s" % (
+                        self.imap.get_separator(),
+                        entry[result_attribute]
+                    )
+            )
 
         if conf.has_option(self.domain, 'sieve_mgmt'):
             sieve_mgmt_enabled = conf.get(self.domain, 'sieve_mgmt')
