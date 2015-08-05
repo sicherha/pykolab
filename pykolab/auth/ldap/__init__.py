@@ -24,6 +24,7 @@ import ldap.controls
 import ldap.filter
 import logging
 import time
+import traceback
 
 import pykolab
 import pykolab.base
@@ -206,12 +207,19 @@ class LDAP(pykolab.base.Base):
                     ['entrydn']
                 )
 
-            (
-                    _result_type,
-                    _result_data,
-                    _result_msgid,
-                    _result_controls
-                ) = self.ldap.result3(_search)
+            try:
+                (
+                        _result_type,
+                        _result_data,
+                        _result_msgid,
+                        _result_controls
+                    ) = self.ldap.result3(_search)
+
+            except ldap.SERVER_DOWN, errmsg:
+                log.error(_("LDAP server unavailable: %r") % (errmsg))
+                log.error(_("%s") % (traceback.format_exc())
+                self._disconnect()
+                return False
 
             if len(_result_data) >= 1:
                 (entry_dn, entry_attrs) = _result_data[0]
@@ -229,6 +237,12 @@ class LDAP(pykolab.base.Base):
                 except Exception, errmsg:
                     log.error(_("Authentication cache failed: %r") % (errmsg))
                     pass
+
+            except ldap.SERVER_DOWN, errmsg:
+                log.error(_("Authentication failed, LDAP server unavailable"))
+                self._disconnect()
+                pass
+
             except:
                 try:
                     log.debug(
@@ -249,6 +263,7 @@ class LDAP(pykolab.base.Base):
                 self.ldap.simple_bind_s(entry_dn, login[1])
                 auth_cache.set_entry(_filter, entry_dn)
                 retval = True
+
             except ldap.NO_SUCH_OBJECT, errmsg:
                 log.debug(_("Error occured, there is no such object: %r") % (errmsg), level=8)
                 self.bind = False
@@ -965,6 +980,10 @@ class LDAP(pykolab.base.Base):
 
         return entry_modifications
 
+    def reconnect(self):
+        self._disconnect()
+        self.connect()
+
     def search_entry_by_attribute(self, attr, value, **kw):
         self._bind()
 
@@ -1085,10 +1104,8 @@ class LDAP(pykolab.base.Base):
                     callback=callback,
                 )
         except Exception, errmsg:
-            log.error("Exception occurred: %r" % (errmsg))
-            if conf.debuglevel > 8:
-                import traceback
-                traceback.print_exc()
+            log.error("An error occurred: %r" % (errmsg))
+            log.error(_("%s") % (traceback.format_exc()))
 
     def user_quota(self, entry_id, folder):
         default_quota = self.config_get('default_quota')
@@ -1179,14 +1196,13 @@ class LDAP(pykolab.base.Base):
                 self.ldap.simple_bind_s(bind_dn, bind_pw)
                 self.bind = True
             except ldap.SERVER_DOWN:
-                # Can't contact LDAP server
-                #
-                # - Service not started
-                # - Service faulty
-                # - Firewall
-                pass
+                log.error(_("LDAP server unavailable: %r") % (errmsg))
+                log.error(_("%s") % (traceback.format_exc()))
             except ldap.INVALID_CREDENTIALS:
                 log.error(_("Invalid DN, username and/or password."))
+
+        else:
+            log.debug(_("_bind called, but already bound"), level=9)
 
     def _change_add_group(self, entry, change):
         """
@@ -1498,10 +1514,9 @@ class LDAP(pykolab.base.Base):
         for _type in ['user','group','resource','role','sharedfolder']:
             try:
                 success = eval("self._change_delete_%s(entry, change)" % (_type))
-            except:
-                if conf.debuglevel > 8:
-                    import traceback
-                    log.error(_("%s") % (traceback.format_exc()))
+            except Exception, errmsg:
+                log.error(_("An error occured: %r") % (errmsg))
+                log.error(_("%s") % (traceback.format_exc()))
 
                 success = False
 
@@ -2874,41 +2889,53 @@ class LDAP(pykolab.base.Base):
             _use_ldap_controls = self.ldap.supported_controls
 
         for supported_control in _use_ldap_controls:
-            try:
-                exec("""_results = self.%s(
-                        %r,
-                        scope=%r,
-                        filterstr=%r,
-                        attrlist=%r,
-                        attrsonly=%r,
-                        timeout=%r,
-                        callback=callback,
-                        primary_domain=%r,
-                        secondary_domains=%r
-                    )""" % (
-                            supported_control,
-                            base_dn,
-                            scope,
-                            filterstr,
-                            attrlist,
-                            attrsonly,
-                            timeout,
-                            primary_domain,
-                            secondary_domains
+            # Repeat the same supported control until
+            # a failure (Exception) occurs that been
+            # recognized as not an error related to the
+            # supported control (such as ldap.SERVER_DOWN).
+            failed_ok = False
+
+            while not failed_ok:
+                try:
+                    exec("""_results = self.%s(
+                            %r,
+                            scope=%r,
+                            filterstr=%r,
+                            attrlist=%r,
+                            attrsonly=%r,
+                            timeout=%r,
+                            callback=callback,
+                            primary_domain=%r,
+                            secondary_domains=%r
+                        )""" % (
+                                supported_control,
+                                base_dn,
+                                scope,
+                                filterstr,
+                                attrlist,
+                                attrsonly,
+                                timeout,
+                                primary_domain,
+                                secondary_domains
+                            )
                         )
-                    )
 
-                break
+                    break
 
-            except Exception, errmsg:
-                log.error(_("An error occured using %s: %r") % (supported_control, errmsg))
-                import traceback
+                except ldap.SERVER_DOWN, errmsg:
+                    log.error(_("LDAP server unavailable: %r") % (errmsg))
+                    log.error(_("%s") % (traceback.format_exc()))
+                    log.error(_("-- reconnecting in 10 seconds."))
 
-                if conf.debuglevel > 8:
-                    traceback.print_exc()
+                    time.sleep(10)
+                    self.reconnect()
 
-                log.error(_("%s") % (traceback.format_exc()))
+                except Exception, errmsg:
+                    failed_ok = True
 
-                continue
+                    log.error(_("An error occured using %s: %r") % (supported_control, errmsg))
+                    log.error(_("%s") % (traceback.format_exc()))
+
+                    continue
 
         return _results
