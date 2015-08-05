@@ -271,8 +271,8 @@ def execute(*args, **kw):
     # is an iTip message by checking the length of this list.
     try:
         itip_events = objects_from_message(message, ['VEVENT','VTODO'], ['REQUEST', 'REPLY', 'CANCEL'])
-    except Exception, e:
-        log.error(_("Failed to parse iTip objects from message: %r" % (e)))
+    except Exception, errmsg:
+        log.error(_("Failed to parse iTip objects from message: %r" % (errmsg)))
         itip_events = []
 
     if not len(itip_events) > 0:
@@ -396,8 +396,8 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
     try:
         receiving_attendee = itip_event['xml'].get_attendee_by_email(recipient_email)
         log.debug(_("Receiving Attendee: %r") % (receiving_attendee), level=9)
-    except Exception, e:
-        log.error("Could not find envelope attendee: %r" % (e))
+    except Exception, errmsg:
+        log.error("Could not find envelope attendee: %r" % (errmsg))
         return MESSAGE_FORWARD
 
     # process request to participating attendees with RSVP=TRUE or PARTSTAT=NEEDS-ACTION
@@ -522,8 +522,8 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
         try:
             sender_attendee = itip_event['xml'].get_attendee_by_email(sender_email)
             log.debug(_("Sender Attendee: %r") % (sender_attendee), level=9)
-        except Exception, e:
-            log.error("Could not find envelope sender attendee: %r" % (e))
+        except Exception, errmsg:
+            log.error("Could not find envelope sender attendee: %r" % (errmsg))
             return MESSAGE_FORWARD
 
         # find existing event in user's calendar
@@ -545,8 +545,8 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
                 existing.set_attendee_participant_status(sender_email, sender_attendee.get_participant_status(), rsvp=False)
                 existing_attendee = existing.get_attendee(sender_email)
                 updated_attendees.append(existing_attendee)
-            except Exception, e:
-                log.error("Could not find corresponding attende in organizer's copy: %r" % (e))
+            except Exception, errmsg:
+                log.error("Could not find corresponding attende in organizer's copy: %r" % (errmsg))
 
                 # append delegated-from attendee ?
                 if len(sender_attendee.get_delegated_from()) > 0:
@@ -578,8 +578,8 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
                     existing.update_attendees([existing_attendee])
                     log.debug(_("Update delegator: %r") % (existing_attendee.to_dict()), level=9)
 
-                except Exception, e:
-                    log.error("Could not find delegated-to attendee: %r" % (e))
+                except Exception, errmsg:
+                    log.error("Could not find delegated-to attendee: %r" % (errmsg))
 
             # update the organizer's copy of the object
             if update_object(existing, receiving_user, master):
@@ -842,7 +842,7 @@ def find_existing_object(uid, type, recurrence_id, user_rec, lock=False):
 
             try:
                 msguid = re.search(r"\WUID (\d+)", data[0][0]).group(1)
-            except Exception, e:
+            except Exception, errmsg:
                 log.error(_("No UID found in IMAP response: %r") % (data[0][0]))
                 continue
 
@@ -868,7 +868,7 @@ def find_existing_object(uid, type, recurrence_id, user_rec, lock=False):
                     setattr(event, '_lock_key', lock_key)
                     setattr(event, '_msguid', msguid)
 
-            except Exception, e:
+            except Exception, errmsg:
                 log.error(_("Failed to parse %s from message %s/%s: %s") % (type, folder, num, traceback.format_exc()))
                 event = None
                 master = None
@@ -909,8 +909,8 @@ def check_availability(itip_event, receiving_user):
 
             try:
                 event = event_from_message(message_from_string(data[0][1]))
-            except Exception, e:
-                log.error(_("Failed to parse event from message %s/%s: %r") % (folder, num, e))
+            except Exception, errmsg:
+                log.error(_("Failed to parse event from message %s/%s: %r") % (folder, num, errmsg))
                 continue
 
             if event and event.uid:
@@ -1013,9 +1013,15 @@ def store_object(object, user_rec, targetfolder=None, master=None):
         Append the given object to the user's default calendar/tasklist
     """
     
-    # find default calendar folder to save object to
+    # find default calendar folder to save object to if no target folder
+    # has already been specified.
     if targetfolder is None:
-        targetfolder = list_user_folders(user_rec, object.type)[0]
+        targetfolders = list_user_folders(user_rec, object.type)
+
+        if not targetfolders == None and len(targetfolders) > 0:
+            targetfolder = targetfolders[0]
+
+    if targetfolder is None:
         if user_rec.has_key('_default_folder'):
             targetfolder = user_rec['_default_folder']
         # use *.confidential folder for invitations classified as confidential
@@ -1024,9 +1030,9 @@ def store_object(object, user_rec, targetfolder=None, master=None):
         elif object.get_classification() == kolabformat.ClassPrivate and user_rec.has_key('_private_folder'):
             targetfolder = user_rec['_private_folder']
 
-    if not targetfolder:
+    if targetfolder == None:
         log.error(_("Failed to save %s: no target folder found for user %r") % (object.type, user_rec['mail']))
-        return Fasle
+        return False
 
     saveobj = object
 
@@ -1048,9 +1054,9 @@ def store_object(object, user_rec, targetfolder=None, master=None):
         )
         return result
 
-    except Exception, e:
+    except Exception, errmsg:
         log.error(_("Failed to save %s to user folder at %r: %r") % (
-            saveobj.type, targetfolder, e
+            saveobj.type, targetfolder, errmsg
         ))
 
     return False
@@ -1086,9 +1092,9 @@ def delete_object(existing):
         imap.imap.m.expunge()
         return True
 
-    except Exception, e:
+    except Exception, errmsg:
         log.error(_("Failed to delete %s from folder %r: %r") % (
-            existing.type, targetfolder, e
+            existing.type, targetfolder, errmsg
         ))
 
     return False
@@ -1215,8 +1221,8 @@ def send_update_notification(object, receiving_user, old=None, reply=True):
             log.debug(_("Sent update notification to %r: %r") % (receiving_user['mail'], success), level=8)
             smtp.quit()
             break
-        except Exception, e:
-            log.error(_("SMTP sendmail error: %r") % (e))
+        except Exception, errmsg:
+            log.error(_("SMTP sendmail error: %r") % (errmsg))
 
         time.sleep(10)
         retries -= 1
@@ -1282,8 +1288,8 @@ def send_cancel_notification(object, receiving_user, deleted=False):
 
     try:
         smtp.sendmail(orgemail, receiving_user['mail'], msg.as_string())
-    except Exception, e:
-        log.error(_("SMTP sendmail error: %r") % (e))
+    except Exception, errmsg:
+        log.error(_("SMTP sendmail error: %r") % (errmsg))
 
     smtp.quit()
 
