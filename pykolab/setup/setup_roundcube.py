@@ -226,6 +226,30 @@ password='%s'
 
     time.sleep(2)
 
+    # Find Roundcube configuration that is not readable by the
+    # webserver user/group.
+    if os.path.isdir('/etc/roundcubemail/'):
+        rccpath = "/etc/roundcubemail/"
+    elif os.path.isdir('/etc/roundcube/'):
+        rccpath = "/etc/roundcube"
+    else:
+        log.warning(_("Cannot find the configuration directory for roundcube."))
+        rccpath = None
+
+    root_uid = 0
+
+    for webserver_group in [ 'apache', 'www-data' ]:
+        try:
+            (a,b,webserver_gid,c) = grp.getgrnam('apache')
+            break
+        except Exception, errmsg:
+            pass
+
+    if not rccpath == None:
+        for root, directories, filenames in os.walk(rccpath):
+            for filename in filenames:
+                os.chown(os.path.join(root, filename), root_uid, webserver_gid)
+
     if os.path.isfile('/bin/systemctl'):
         if os.path.isfile('/etc/debian_version'):
             subprocess.call(['/bin/systemctl', 'restart', 'apache2.service'])
