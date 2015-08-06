@@ -217,7 +217,7 @@ class LDAP(pykolab.base.Base):
 
             except ldap.SERVER_DOWN, errmsg:
                 log.error(_("LDAP server unavailable: %r") % (errmsg))
-                log.error(_("%s") % (traceback.format_exc())
+                log.error(_("%s") % (traceback.format_exc()))
                 self._disconnect()
                 return False
 
