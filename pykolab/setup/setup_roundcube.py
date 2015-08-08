@@ -18,6 +18,7 @@
 #
 
 from Cheetah.Template import Template
+import grp
 import hashlib
 import os
 import random
