@@ -268,17 +268,22 @@ class KolabDaemon(object):
                 time.sleep(5)
                 continue
 
-            # domains now is a list of tuples, we want the primary_domains
+            # domains now is a list of tuples in the format of
+            # ('primary',[secondaries]), we want the primary_domains
             primary_domains = []
-            for primary_domain in list(set(domains.values())):
-                primary_domain = primary_auth.domain_naming_context(primary_domain)
-                if not primary_domain == None:
-                    primary_domains.append(primary_domain)
+            for primary_domain, secondaries in domains:
+                domain_base_dn = primary_auth.domain_naming_context(primary_domain)
+
+                if not domain_base_dn == None:
+                    if not domain_base_dn in primary_domains):
+                        primary_domains.append(domain_base_dn)
 
             # Now we can check if any changes happened.
             added_domains = []
             removed_domains = []
 
+            # Combine the domains from LDAP with the domain processes
+            # accounted for locally.
             all_domains = set(primary_domains + domain_auth.keys())
 
             for domain in all_domains:
@@ -311,6 +316,7 @@ class KolabDaemon(object):
             for domain in added_domains:
                 domain_auth[domain] = Process(domain)
                 domain_auth[domain].start()
+
                 # Pause or hammer your LDAP server to death
                 if len(added_domains) >= 5:
                     time.sleep(10)
