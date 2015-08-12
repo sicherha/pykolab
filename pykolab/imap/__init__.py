@@ -351,6 +351,9 @@ class IMAP(object):
 
         if short_rights.has_key(acl):
             acl = short_rights[acl]
+        else:
+            log.error(_("Invalid access identifier %r for subject %r") % (acl, identifier))
+            return False
 
         # Special treatment for '-' and '+' characters
         if '+' in acl or '-' in acl:
