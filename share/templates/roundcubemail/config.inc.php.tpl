@@ -18,6 +18,15 @@
     \$config['imap_delimiter'] = '/';
     \$config['imap_force_lsub'] = true;
 
+    // IMAP Connection TLS settings, adjust for Production
+    \$config['imap_conn_options'] = Array(
+            'ssl' => Array(
+                    'verify_peer_name' => false,
+                    'verify_peer' => false,
+                    'allow_self_signed' => true
+                )
+        );
+
     // Caching and storage settings
     \$config['imap_cache'] = 'db';
     \$config['imap_cache_ttl'] = '10d';
@@ -31,6 +40,15 @@
     \$config['smtp_user'] = '%u';
     \$config['smtp_pass'] = '%p';
     \$config['smtp_helo_host'] = \$_SERVER["HTTP_HOST"];
+
+    // SMTP Connection TLS settings, adjust for Production
+    \$config['smtp_conn_options'] = Array(
+            'ssl' => Array(
+                    'verify_peer_name' => false,
+                    'verify_peer' => false,
+                    'allow_self_signed' => true
+                )
+        );
 
     // LDAP Settings
     \$config['ldap_cache'] = 'db';
@@ -213,18 +231,5 @@
             'ssl_verify_host' => false,
             'ssl_verify_peer' => false,
         );
-
-    # required for php 5.6, see https://bbs.archlinux.org/viewtopic.php?id=193012 and http://php.net/manual/de/context.ssl.php
-    # production environment requires real security settings!!!
-    \$config['imap_conn_options']=array(
-            'ssl'=>array(
-            'verify_peer_name'=>false,
-            'verify_peer'=>false,
-            'allow_self_signed'=>true));
-    \$config['smtp_conn_options']=array(
-            'ssl'=>array(
-            'verify_peer_name'=>false,
-            'verify_peer'=>false,
-            'allow_self_signed'=>true));
 
 ?>
