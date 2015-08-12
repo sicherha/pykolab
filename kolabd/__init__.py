@@ -172,16 +172,39 @@ class KolabDaemon(object):
             log.error(_("Could not change real and effective uid and/or gid"))
 
         try:
-            pid = 1
+            pid = os.getpid()
+
             if conf.fork_mode:
                 pid = os.fork()
 
-            if pid == 0:
-                log.remove_stdout_handler()
-                self.write_pid()
-                self.set_signal_handlers()
+            if pid > 0 and not conf.fork_mode:
                 self.do_sync()
-            elif not conf.fork_mode:
+
+            elif pid > 0:
+                sys.exit(0)
+
+            else:
+                # Give up the session, all control,
+                # all open file descriptors, see #5151
+                os.chdir("/")
+                os.umask(0)
+                os.setsid()
+
+                pid = os.fork()
+
+                if pid > 0:
+                    sys.exit(0)
+
+                sys.stderr.flush()
+                sys.stdout.flush()
+
+                os.close(0)
+                os.close(1)
+                os.close(2)
+
+                log.remove_stdout_handler()
+                self.set_signal_handlers()
+                self.write_pid()
                 self.do_sync()
 
         except SystemExit, errcode:

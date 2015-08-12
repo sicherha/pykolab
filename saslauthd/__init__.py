@@ -122,17 +122,40 @@ class SASLAuthDaemon(object):
         self._drop_privileges()
 
         try:
-            pid = 1
+            pid = os.getpid()
+
             if conf.fork_mode:
                 pid = os.fork()
 
-            if pid == 0:
+            if pid > 0 and not conf.fork_mode:
+                self.do_saslauthd()
+
+            elif pid > 0:
+                sys.exit(0)
+
+            else:
+                # Give up the session, all control,
+                # all open file descriptors, see #5151
+                os.chdir("/")
+                os.umask(0)
+                os.setsid()
+
+                pid = os.fork()
+
+                if pid > 0:
+                    sys.exit(0)
+
+                sys.stderr.flush()
+                sys.stdout.flush()
+
+                os.close(0)
+                os.close(1)
+                os.close(2)
+
                 self.thread_count += 1
                 log.remove_stdout_handler()
                 self.set_signal_handlers()
                 self.write_pid()
-                self.do_saslauthd()
-            elif not conf.fork_mode:
                 self.do_saslauthd()
 
         except SystemExit, e:
