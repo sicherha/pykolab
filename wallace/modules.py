@@ -122,6 +122,53 @@ def heartbeat(name, *args, **kw):
     if modules[name].has_key('heartbeat'):
         return modules[name]['heartbeat'](*args, **kw)
 
+def _sendmail(sender, recipients, msg):
+    # NOTE: Use "127.0.0.1" here for IPv6 (see also the service
+    # definition in master.cf).
+    smtp = smtplib.SMTP("127.0.0.1", 10027)
+
+    if conf.debuglevel > 8:
+        smtp.set_debuglevel(True)
+
+    # Not an infinite loop
+    while True:
+        try:
+            smtp.sendmail(
+                    sender,
+                    recipients,
+                    msg
+                )
+
+            smtp.quit()
+
+            return True
+
+        except smtplib.SMTPServerDisconnected, errmsg:
+            smtp.quit()
+            smtp.connect()
+
+        except smtplib.SMTPDataError, errmsg:
+            # DEFER
+            log.error("SMTP Data Error, %r" % (errmsg))
+
+        except smtplib.SMTPHeloError, errmsg:
+            # DEFER
+            log.error("SMTP HELO Error, %r" % (errmsg))
+
+        except smtplib.SMTPRecipientsRefused, errmsg:
+            # REJECT, send NDR
+            log.error("SMTP Recipient(s) Refused, %r" % (errmsg))
+
+        except smtplib.SMTPSenderRefused, errmsg:
+            # REJECT, send NDR
+            log.error("SMTP Sender Refused, %r" % (errmsg))
+
+        except Exception, errmsg:
+            log.error(_("Unknown error occurred; %r") % (errmsg))
+            log.error("%r" % (traceback.format_exc()))
+
+        return False
+
 def cb_action_HOLD(module, filepath):
     log.info(_("Holding message in queue for manual review (%s by %s)") % (filepath, module))
 
@@ -239,28 +286,13 @@ X-Wallace-Result: REJECT
     part.add_header("Content-Description", "Undelivered Message")
     msg.attach(part)
 
-    smtp = smtplib.SMTP("localhost", 10027)
+    result = _sendmail(
+            "MAILER-DAEMON@%s" % (constants.fqdn),
+            [formataddr(envelope_sender[0])],
+            msg.as_string()
+        )
 
-    try:
-        smtp.sendmail(
-                "MAILER-DAEMON@%s" % (constants.fqdn),
-                [formataddr(envelope_sender[0])],
-                msg.as_string()
-            )
-
-    except smtplib.SMTPDataError, errmsg:
-        # DEFER
-        pass
-    except smtplib.SMTPHeloError, errmsg:
-        # DEFER
-        pass
-    except smtplib.SMTPRecipientsRefused, errmsg:
-        # REJECT, send NDR
-        pass
-    except smtplib.SMTPSenderRefused, errmsg:
-        # REJECT, send NDR
-        pass
-    finally:
+    if result:
         os.unlink(filepath)
 
 def cb_action_ACCEPT(module, filepath):
@@ -279,41 +311,19 @@ def cb_action_ACCEPT(module, filepath):
     del message['X-Kolab-From']
     del message['X-Kolab-To']
 
-    smtp = smtplib.SMTP("localhost", 10027)
+    result = _sendmail(
+            sender,
+            recipients,
+            # - Make sure we do not send this as binary.
+            # - Second, strip NUL characters - I don't know where they
+            #   come from (TODO)
+            # - Third, a character return is inserted somewhere. It
+            #   divides the body from the headers - and we don't like (TODO)
+            # @TODO: check if we need Parser().parse() to load the whole message
+            message.as_string()
+        )
 
-    if conf.debuglevel > 8:
-        smtp.set_debuglevel(True)
-
-    try:
-        smtp.sendmail(
-                sender,
-                recipients,
-                # - Make sure we do not send this as binary.
-                # - Second, strip NUL characters - I don't know where they
-                #   come from (TODO)
-                # - Third, a character return is inserted somewhere. It
-                #   divides the body from the headers - and we don't like (TODO)
-                # @TODO: check if we need Parser().parse() to load the whole message
-                message.as_string()
-            )
-
-    except smtplib.SMTPDataError, errmsg:
-        log.error("SMTP Data Error, %r" % (errmsg))
-        # DEFER
-        pass
-    except smtplib.SMTPHeloError, errmsg:
-        log.error("SMTP HELO Error, %r" % (errmsg))
-        # DEFER
-        pass
-    except smtplib.SMTPRecipientsRefused, errmsg:
-        log.error("SMTP Recipient(s) Refused, %r" % (errmsg))
-        # DEFER
-        pass
-    except smtplib.SMTPSenderRefused, errmsg:
-        log.error("SMTP Sender Refused, %r" % (errmsg))
-        # DEFER
-        pass
-    finally:
+    if result:
         os.unlink(filepath)
 
 def register_group(dirname, module):
