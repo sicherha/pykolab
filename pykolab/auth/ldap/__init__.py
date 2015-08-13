@@ -1627,6 +1627,9 @@ class LDAP(pykolab.base.Base):
     def _change_moddn_sharedfolder(self, entry, change):
         pass
 
+    def _change_modify_None(self, entry, change):
+        pass
+
     def _change_modify_group(self, entry, change):
         pass
 
