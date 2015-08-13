@@ -333,6 +333,10 @@ class WallaceDaemon(object):
     def remove_pid(self, *args, **kw):
         if os.access(conf.pidfile, os.R_OK):
             os.remove(conf.pidfile)
+
+        self.pool.close()
+        self.pool.join()
+
         raise SystemExit
 
     def run(self):
