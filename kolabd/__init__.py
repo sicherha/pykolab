@@ -275,7 +275,7 @@ class KolabDaemon(object):
                 domain_base_dn = primary_auth.domain_naming_context(primary_domain)
 
                 if not domain_base_dn == None:
-                    if not domain_base_dn in primary_domains):
+                    if not domain_base_dn in primary_domains:
                         primary_domains.append(domain_base_dn)
 
             # Now we can check if any changes happened.
