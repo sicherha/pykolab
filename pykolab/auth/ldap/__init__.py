@@ -1325,7 +1325,11 @@ class LDAP(pykolab.base.Base):
 
             for acl_entry in entry[folderacl_entry_attribute]:
                 acl_access = acl_entry.split()[-1]
-                aci_subject = ', '.join(acl_entry.split(', ')[:-1])
+
+                if len(acl_entry.split(', ')) > 0:
+                    aci_subject = ', '.join(acl_entry.split(', ')[:-1])
+                else:
+                    aci_subject = acl_entry.split()[0]
 
                 log.debug(_("Found a subject %r with access %r") % (aci_subject, acl_access), level=8)
 
@@ -1715,7 +1719,11 @@ class LDAP(pykolab.base.Base):
 
             for acl_entry in entry[folderacl_entry_attribute]:
                 acl_access = acl_entry.split()[-1]
-                aci_subject = ', '.join(acl_entry.split(', ')[:-1])
+
+                if len(acl_entry.split(', ')) > 0:
+                    aci_subject = ', '.join(acl_entry.split(', ')[:-1])
+                else:
+                    aci_subject = acl_entry.split()[0]
 
                 log.debug(_("Found a subject %r with access %r") % (aci_subject, acl_access), level=8)
 
