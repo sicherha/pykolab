@@ -51,5 +51,10 @@ def execute(*args, **kw):
         print >> sys.stderr, _("No such user %s") % (user)
         sys.exit(0)
 
+    unic_attrs = ['displayname', 'givenname', 'cn', 'sn', 'ou', 'entrydn']
+
     for (k,v) in user_info.iteritems():
-        print "%s: %r" % (k,v)
+        if k in unic_attrs:
+            print "%s: %s" % (k,v)
+        else:
+            print "%s: %r" % (k,v)
