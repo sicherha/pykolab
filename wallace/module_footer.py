@@ -85,11 +85,11 @@ def execute(*args, **kw):
         footer['plain'] = open(footer_text_file, 'r').read()
 
     if not os.path.isfile(footer_html_file):
-        footer['html'] = '<p>' + self.footer['plain'] + '</p>'
+        footer['html'] = '<p>' + footer['plain'] + '</p>'
     else:
         footer['html'] = open(footer_html_file, 'r').read()
         if footer['html'] == "":
-            footer['html'] = '<p>' + self.footer['plain'] + '</p>'
+            footer['html'] = '<p>' + footer['plain'] + '</p>'
 
     if footer['plain'] == "" and footer['html'] == "<p></p>":
         exec('modules.cb_action_%s(%r, %r)' % ('ACCEPT','footer', filepath))
