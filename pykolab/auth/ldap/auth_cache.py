@@ -26,6 +26,7 @@ from sqlalchemy import Integer
 from sqlalchemy import MetaData
 from sqlalchemy import String
 from sqlalchemy import Table
+from sqlalchemy import Text
 
 from sqlalchemy import desc
 from sqlalchemy import create_engine
@@ -70,9 +71,9 @@ class Entry(object):
 entry_table = Table(
         'entries', metadata,
         Column('id', Integer, primary_key=True),
-        Column('domain', String(128), index=True, nullable=True),
-        Column('key', String(512), index=True, nullable=False),
-        Column('value', String(128), nullable=False),
+        Column('domain', String(256), index=True, nullable=True),
+        Column('key', Text, index=True, nullable=False),
+        Column('value', Text, nullable=False),
         Column('last_change', DateTime, nullable=False, default=datetime.datetime.now())
     )
 
