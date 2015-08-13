@@ -1767,7 +1767,7 @@ class LDAP(pykolab.base.Base):
 
         if entry.has_key(delivery_address_attribute) and \
                 not entry[delivery_address_attribute] == None:
-            self.imap.set_acl(folder_path, 'anyone', 'p')
+            self.imap.set_acl(folder_path, 'anyone', '+p')
 
     def _change_modify_user(self, entry, change):
         """
