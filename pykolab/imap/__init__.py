@@ -240,6 +240,8 @@ class IMAP(object):
                     )
 
         else:
+            self.connect()
+
             try:
                 self.imap.cm(folder_path, partition=partition)
                 return True
