@@ -30,6 +30,7 @@ from sqlalchemy import Text
 
 from sqlalchemy import desc
 from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import mapper
 
 try:
@@ -59,29 +60,23 @@ db = None
 ## Classes
 ##
 
-class Entry(object):
+DeclarativeBase = declarative_base()
+
+class Entry(DeclarativeBase):
+    __tablename__ = 'entries'
+
+    id = Column(Integer, primary_key=True)
+    domain = Column(String(256), index=True, nullable=True)
+    key = Column(Text, index=True, nullable=False)
+    value = Column(Text, nullable=False)
+    last_change = Column(DateTime, nullable=False, default=datetime.datetime.now())
+
     def __init__(self, key, value):
         self.key = key
-        self.value = value
-
-##
-## Tables
-##
-
-entry_table = Table(
-        'entries', metadata,
-        Column('id', Integer, primary_key=True),
-        Column('domain', String(256), index=True, nullable=True),
-        Column('key', Text, index=True, nullable=False),
-        Column('value', Text, nullable=False),
-        Column('last_change', DateTime, nullable=False, default=datetime.datetime.now())
-    )
-
-##
-## Table <-> Class Mappers
-##
-
-mapper(Entry, entry_table)
+        if not isinstance(value, unicode):
+            self.value = unicode(value, 'utf-8')
+        else:
+            self.value = value
 
 ##
 ## Functions
@@ -121,7 +116,7 @@ def get_entry(key):
     log.debug("Entry found: %r" % (_entries[0].__dict__))
     log.debug("Returning: %r" % (_entries[0].value))
 
-    return _entries[0].value
+    return _entries[0].value.encode('utf-8', 'latin1')
 
 def set_entry(key, value):
     db = init_db()
