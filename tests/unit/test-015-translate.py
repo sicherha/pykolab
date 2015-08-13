@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import unittest
 import gettext
 from pykolab import translate
@@ -17,7 +19,12 @@ class TestTranslate(unittest.TestCase):
         translate.setUserLanguage('de_DE')
         self.assertEqual(_("Folder name"), "Ordnername", "German Translation found")
         translate.setUserLanguage('foo_bar')
-        self.assertEqual(_("Folder name"), "Folder name", "Unkonwn language falls back to NullTranslations")
+        self.assertEqual(_("Folder name"), "Folder name", "Unknown language falls back to NullTranslations")
+
+    def test_004_unicode(self):
+        from pykolab.translate import _
+        translate.setUserLanguage('de_DE')
+        self.assertEqual(_("recipients: %r"), "Empfänger: %r")
 
 if __name__ == '__main__':
     unittest.main()

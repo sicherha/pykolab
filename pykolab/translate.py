@@ -26,9 +26,17 @@ import gettext
 import os
 
 N_ = lambda x: x
-_ = lambda x: current.lgettext(x)
+
+# This function as such may, at times, cause tracebacks.
+#_ = lambda x: current.lgettext(x)
 
 current = gettext.translation(domain, fallback=True)
+
+def _(x):
+    try:
+        return current.lgettext(x)
+    except Exception, errmsg:
+        return x
 
 def getDefaultLangs():
     languages = []
@@ -46,10 +54,14 @@ def getDefaultLangs():
         for nelang in gettext._expand_lang(lang):
             if nelang not in nelangs:
                 nelangs.append(nelang)
+
     return nelangs
 
 def setUserLanguage(lang):
     global current
+
+    if not len(lang.split('.')) > 1 and not lang.endswith('.UTF-8'):
+        lang = "%s.UTF-8" % (lang)
 
     langs = []
     for l in gettext._expand_lang(lang):
