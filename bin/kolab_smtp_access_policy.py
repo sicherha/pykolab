@@ -580,6 +580,7 @@ class PolicyRequest(object):
             Verify whether the authenticated user is a delegate of the envelope
             sender.
         """
+        sender_is_delegate = False
 
         if self.sender_domain == None:
             if len(self.sender.split('@')) > 1:
@@ -646,6 +647,17 @@ class PolicyRequest(object):
         self.sender_user = utils.normalize(user_attrs)
 
         if not self.sender_user.has_key('kolabdelegate'):
+            # Got a final answer here, do the caching thing.
+            if not cache == False:
+                record_id = cache_update(
+                        function='verify_sender',
+                        sender=self.sender,
+                        recipients=self.recipients,
+                        result=(int)(False),
+                        sasl_username=self.sasl_username,
+                        sasl_sender=self.sasl_sender
+                    )
+
             reject(
                     _("%s is unauthorized to send on behalf of %s") % (
                             self.sasl_user['dn'],
@@ -674,7 +686,12 @@ class PolicyRequest(object):
                         sasl_sender=self.sasl_sender
                     )
 
-            sender_is_delegate = False
+            reject(
+                    _("%s is unauthorized to send on behalf of %s") % (
+                            self.sasl_user['dn'],
+                            self.sender_user['dn']
+                        )
+                )
 
         else:
             # See if we can match the value of the envelope sender delegates to
@@ -703,6 +720,7 @@ class PolicyRequest(object):
                         'uid'
                     )
 
+
             sender_delegates = self.sender_user['kolabdelegate']
 
             if not type(sender_delegates) == list:
@@ -730,10 +748,6 @@ class PolicyRequest(object):
                         )
 
                     sender_is_delegate = True
-
-            # If nothing matches sender_is_delegate is still None.
-            if not sender_is_delegate == True:
-                sender_is_delegate = False
 
         return sender_is_delegate
 
