@@ -240,8 +240,6 @@ class IMAP(object):
                     )
 
         else:
-            self.connect()
-
             try:
                 self.imap.cm(folder_path, partition=partition)
                 return True
@@ -453,6 +451,7 @@ class IMAP(object):
         """
             Create a shared folder.
         """
+        self.connect()
 
         folder_name = "shared%s%s" % (self.get_separator(), mailbox_base_name)
 
@@ -467,6 +466,8 @@ class IMAP(object):
         """
             Check if a shared mailbox exists.
         """
+        self.connect()
+
         folder_name = "shared%s%s" % (self.get_separator(), mailbox_base_name)
 
         # Correct folder_path being supplied with "shared/shared/" for example
@@ -483,6 +484,8 @@ class IMAP(object):
         """
         # TODO: Whether or not to lowercase the mailbox name is really up to the
         # IMAP server setting username_tolower (normalize_uid, lmtp_downcase_rcpt).
+
+        self.connect()
 
         if not mailbox_base_name == mailbox_base_name.lower():
             log.warning(_("Downcasing mailbox name %r") % (mailbox_base_name))
@@ -737,6 +740,8 @@ class IMAP(object):
         """
             Check if a user mailbox exists.
         """
+        self.connect()
+
         if not mailbox_base_name == mailbox_base_name.lower():
             log.warning(_("Downcasing mailbox name %r") % (mailbox_base_name))
             mailbox_base_name = mailbox_base_name.lower()
@@ -747,6 +752,8 @@ class IMAP(object):
         pass
 
     def user_mailbox_rename(self, old_name, new_name, partition=None):
+        self.connect()
+
         old_name = "user%s%s" % (self.get_separator(),old_name)
         new_name = "user%s%s" % (self.get_separator(),new_name)
 
