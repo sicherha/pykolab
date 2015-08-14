@@ -169,7 +169,7 @@ def init_db(reinit=False):
 
     echo = conf.debuglevel > 8
     engine = create_engine(db_uri, echo=echo)
-    metadata.create_all(engine)
+    DeclarativeBase.metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)
     db = Session()
