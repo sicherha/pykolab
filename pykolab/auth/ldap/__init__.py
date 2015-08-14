@@ -2100,44 +2100,9 @@ class LDAP(pykolab.base.Base):
             )
 
         # If we have a 1:1 match, continue as planned
-        if self.domain_rootdns.has_key(domain):
-            if self.domain_rootdns[domain] in naming_contexts:
-                log.debug(
-                        _("Domain '%s' has a root dn all by itself, namely '%s'") % (
-                                domain,
-                                self.domain_rootdns[domain]
-                            ),
-                        level=8
-                    )
-
-                return domain
-
-            else:
-                naming_context = ''.join(
-                        [x for x in self.domain_rootdns.keys() \
-                            if self.domain_rootdns[x] in \
-                            [y for y in naming_contexts \
-                                    if self.domain_rootdns[domain].endswith(y) \
-                            ] \
-                        ]
-                    )
-
-                log.debug(
-                        _("Domain '%s' has a base dn residing inside root dn '%s'") % (
-                                domain,
-                                naming_context
-                            ),
-                        level=8
-                    )
-
+        for naming_context in naming_contexts:
+            if self.domain_rootdns[domain].endswith(naming_context):
                 return naming_context
-        else:
-            # Should not end up here
-            log.error(
-                    _("Could not find a naming context for domain '%s'") % (domain)
-                )
-
-            return None        
 
     def _entry_dict(self, value):
         """
@@ -2278,10 +2243,12 @@ class LDAP(pykolab.base.Base):
         return _user_dn
 
     def _kolab_domain_root_dn(self, domain):
+        log.debug(_("Searching root dn for domain %r") % (domain), level=8)
         if not hasattr(self, 'domain_rootdns'):
             self.domain_rootdns = {}
 
         if self.domain_rootdns.has_key(domain):
+            log.debug(_("Returning from cache: %r") % (self.domain_rootdns[domain]), level=8)
             return self.domain_rootdns[domain]
 
         self._bind()
@@ -2316,8 +2283,11 @@ class LDAP(pykolab.base.Base):
                             'ldap',
                             'domain_rootdn_attribute'
                         )
+
                     _domain_attrs = utils.normalize(_domain_attrs)
+
                     if _domain_attrs.has_key(domain_rootdn_attribute):
+                        log.debug(_("Setting domain root dn from LDAP for domain %r: %r") % (domain, _domain_attrs[domain_rootdn_attribute]), level=8)
                         self.domain_rootdns[domain] = _domain_attrs[domain_rootdn_attribute]
                         return _domain_attrs[domain_rootdn_attribute]
 
@@ -2336,6 +2306,7 @@ class LDAP(pykolab.base.Base):
                     return conf.get('ldap', 'base_dn')
 
         self.domain_rootdns[domain] = utils.standard_root_dn(domain)
+
         return self.domain_rootdns[domain]
 
     def _kolab_filter(self):

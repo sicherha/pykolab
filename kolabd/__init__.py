@@ -270,13 +270,18 @@ class KolabDaemon(object):
 
             # domains now is a list of tuples in the format of
             # ('primary',[secondaries]), we want the primary_domains
+            domain_base_dns = []
             primary_domains = []
-            for primary_domain, secondaries in domains:
+            for primary_domain, secondaries in domains.iteritems():
                 domain_base_dn = primary_auth.domain_naming_context(primary_domain)
+                log.debug(_("Domain Base DN for domain %r is %r") % (primary_domain, domain_base_dn), level=8)
 
                 if not domain_base_dn == None:
-                    if not domain_base_dn in primary_domains:
-                        primary_domains.append(domain_base_dn)
+                    if not domain_base_dn in domain_base_dns:
+                        domain_base_dns.append(domain_base_dn)
+                        primary_domains.append(primary_domain)
+
+            log.debug(_("Naming contexts to synchronize: %r") % (primary_domains), level=8)
 
             # Now we can check if any changes happened.
             added_domains = []
@@ -284,18 +289,27 @@ class KolabDaemon(object):
 
             # Combine the domains from LDAP with the domain processes
             # accounted for locally.
-            all_domains = set(primary_domains + domain_auth.keys())
+            all_domains = list(set(primary_domains + domain_auth.keys()))
+
+            log.debug(_("All naming contexts: %r") % (all_domains), level=8)
 
             for domain in all_domains:
+                log.debug(_("Checking for domain %s") % (domain), level=8)
+
                 if domain in domain_auth.keys() and domain in primary_domains:
                     if not domain_auth[domain].is_alive():
+                        log.debug(_("Domain %s isn't alive anymore.") % (domain), level=8)
                         domain_auth[domain].terminate()
                         added_domains.append(domain)
                     else:
+                        log.debug(_("Domain %s already there and alive.") % (domain), level=8)
                         continue
+
                 elif domain in domain_auth.keys():
+                    log.debug(_("Domain %s should not exist any longer.") % (domain), level=8)
                     removed_domains.append(domain)
                 else:
+                    log.debug(_("Domain %s does not have a process yet.") % (domain), level=8)
                     added_domains.append(domain)
 
             if len(removed_domains) == 0 and len(added_domains) == 0:
