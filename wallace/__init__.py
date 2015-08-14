@@ -451,7 +451,6 @@ class WallaceDaemon(object):
                 os.close(1)
                 os.close(2)
 
-                self.thread_count += 1
                 log.remove_stdout_handler()
                 self.set_signal_handlers()
                 self.write_pid()
