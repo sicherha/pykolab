@@ -279,6 +279,7 @@ class KolabDaemon(object):
                 if not domain_base_dn == None:
                     if not domain_base_dn in domain_base_dns:
                         domain_base_dns.append(domain_base_dn)
+                        primary_domain = primary_auth.primary_domain_for_naming_context(domain_base_dn)
                         primary_domains.append(primary_domain)
 
             log.debug(_("Naming contexts to synchronize: %r") % (primary_domains), level=8)

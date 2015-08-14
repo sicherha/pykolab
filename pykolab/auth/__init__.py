@@ -274,6 +274,9 @@ class Auth(pykolab.base.Base):
     def domain_naming_context(self, domain):
         return self._auth._domain_naming_context(domain)
 
+    def primary_domain_for_naming_context(self, domain):
+        return self._auth._primary_domain_for_naming_context(domain)
+
     def get_entry_attribute(self, domain, entry, attribute):
         return self._auth.get_entry_attribute(entry, attribute)
 

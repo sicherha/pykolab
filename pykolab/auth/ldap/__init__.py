@@ -2104,6 +2104,16 @@ class LDAP(pykolab.base.Base):
             if self.domain_rootdns[domain].endswith(naming_context):
                 return naming_context
 
+    def _primary_domain_for_naming_context(self, naming_context):
+        self._bind()
+
+        _domain = '.'.join(naming_context.split(',dc='))[3:]
+
+        _naming_context = self._kolab_domain_root_dn(_domain)
+
+        if naming_context == _naming_context:
+            return _domain
+
     def _entry_dict(self, value):
         """
             Tests if 'value' is a valid entry dictionary with a DN contained
