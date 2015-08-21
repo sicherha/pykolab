@@ -241,7 +241,7 @@ password='%s'
 
     for webserver_group in [ 'apache', 'www-data' ]:
         try:
-            (a,b,webserver_gid,c) = grp.getgrnam('apache')
+            (a,b,webserver_gid,c) = grp.getgrnam(webserver_group)
             break
         except Exception, errmsg:
             pass
