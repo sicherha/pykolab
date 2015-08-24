@@ -50,6 +50,16 @@
                 )
         );
 
+    // ManageSieve Settings
+    // ManageSieve Connection TLS settings, adjust for Production
+    \$config['managesieve_conn_options'] = Array(
+            'ssl' => Array(
+                    'verify_peer_name' => false,
+                    'verify_peer' => false,
+                    'allow_self_signed' => true
+                )
+        );
+
     // LDAP Settings
     \$config['ldap_cache'] = 'db';
     \$config['ldap_cache_ttl'] = '1h';
