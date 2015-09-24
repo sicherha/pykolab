@@ -1326,7 +1326,7 @@ class LDAP(pykolab.base.Base):
             for acl_entry in entry[folderacl_entry_attribute]:
                 acl_access = acl_entry.split()[-1]
 
-                if len(acl_entry.split(', ')) > 0:
+                if len(acl_entry.split(', ')) > 1:
                     aci_subject = ', '.join(acl_entry.split(', ')[:-1])
                 else:
                     aci_subject = acl_entry.split()[0]
@@ -1723,7 +1723,7 @@ class LDAP(pykolab.base.Base):
             for acl_entry in entry[folderacl_entry_attribute]:
                 acl_access = acl_entry.split()[-1]
 
-                if len(acl_entry.split(', ')) > 0:
+                if len(acl_entry.split(', ')) > 1:
                     aci_subject = ', '.join(acl_entry.split(', ')[:-1])
                 else:
                     aci_subject = acl_entry.split()[0]
