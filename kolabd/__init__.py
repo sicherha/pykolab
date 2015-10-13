@@ -272,7 +272,7 @@ class KolabDaemon(object):
             # ('primary',[secondaries]), we want the primary_domains
             domain_base_dns = []
             primary_domains = []
-            for primary_domain, secondaries in domains.iteritems():
+            for primary_domain in list(set(domains.values())):
                 domain_base_dn = primary_auth.domain_naming_context(primary_domain)
                 log.debug(_("Domain Base DN for domain %r is %r") % (primary_domain, domain_base_dn), level=8)
 
