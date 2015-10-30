@@ -300,8 +300,9 @@ def generate_password():
     return output
 
 def multiline_message(message):
-    if conf.cli_keywords.quiet:
-        return ""
+    if hasattr(conf, 'cli_keywords') and hasattr(conf.cli_keywords, 'quiet'):
+        if conf.cli_keywords.quiet:
+            return ""
 
     column_width = 80
 
