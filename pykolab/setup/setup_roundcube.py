@@ -89,9 +89,26 @@ def execute(*args, **kw):
             'conf': conf
         }
 
-    if os.access('/usr/share/roundcubemail/skins/enterprise/', os.R_OK):
+    rc_paths = [
+            "/usr/share/roundcubemail/",
+            "/usr/share/roundcube/",
+            "/srv/www/roundcubemail/",
+            "/var/www/roundcubemail/"
+        ]
+
+    rcpath = ''
+    for rc_path in rc_paths:
+        if os.path.isdir(rc_path):
+            rcpath = rc_path
+            break
+
+    if not os.path.isdir(rcpath):
+        log.error(_("Roundcube installation path not found."))
+        return
+
+    if os.access(rcpath + 'skins/enterprise/', os.R_OK):
         rc_settings['skin'] = 'enterprise'
-    elif os.access('/usr/share/roundcubemail/skins/chameleon/', os.R_OK):
+    elif os.access(rcpath + 'skins/chameleon/', os.R_OK):
         rc_settings['skin'] = 'chameleon'
     else:
         rc_settings['skin'] = 'larry'
@@ -160,14 +177,6 @@ def execute(*args, **kw):
                 if len(schema_files) > 0:
                     break
         break
-
-    if os.path.isdir('/usr/share/roundcubemail'):
-        rcpath = '/usr/share/roundcubemail/'
-    elif os.path.isdir('/usr/share/roundcube'):
-        rcpath = '/usr/share/roundcube/'
-    else:
-        log.error(_("Roundcube installation path not found."))
-        return
 
     for root, directories, filenames in os.walk(rcpath + 'plugins/calendar/drivers/kolab/'):
         for filename in filenames:
@@ -239,7 +248,7 @@ password='%s'
 
     root_uid = 0
 
-    for webserver_group in [ 'apache', 'www-data' ]:
+    for webserver_group in [ 'apache', 'www-data', 'www' ]:
         try:
             (a,b,webserver_gid,c) = grp.getgrnam(webserver_group)
             break
@@ -251,11 +260,12 @@ password='%s'
             for filename in filenames:
                 os.chown(os.path.join(root, filename), root_uid, webserver_gid)
 
+    httpservice = 'httpd.service'
+    if os.path.isfile('/usr/lib/systemd/system/apache2.service'):
+        httpservice = 'apache2.service'
+
     if os.path.isfile('/bin/systemctl'):
-        if os.path.isfile('/etc/debian_version'):
-            subprocess.call(['/bin/systemctl', 'restart', 'apache2.service'])
-        else:
-            subprocess.call(['/bin/systemctl', 'restart', 'httpd.service'])
+        subprocess.call(['/bin/systemctl', 'restart', httpservice])
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'httpd', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
@@ -264,10 +274,7 @@ password='%s'
         log.error(_("Could not start the webserver server service."))
 
     if os.path.isfile('/bin/systemctl'):
-        if os.path.isfile('/etc/debian_version'):
-            subprocess.call(['/bin/systemctl', 'enable', 'apache2.service'])
-        else:
-            subprocess.call(['/bin/systemctl', 'enable', 'httpd.service'])
+        subprocess.call(['/bin/systemctl', 'enable', httpservice])
     elif os.path.isfile('/sbin/chkconfig'):
         subprocess.call(['/sbin/chkconfig', 'httpd', 'on'])
     elif os.path.isfile('/usr/sbin/update-rc.d'):

@@ -86,11 +86,12 @@ password='%s'
 
     time.sleep(2)
 
+    httpservice = 'httpd.service'
+    if os.path.isfile('/usr/lib/systemd/system/apache2.service'):
+        httpservice = 'apache2.service'
+
     if os.path.isfile('/bin/systemctl'):
-        if os.path.isfile('/etc/debian_version'):
-            subprocess.call(['/bin/systemctl', 'restart', 'apache2.service'])
-        else:
-            subprocess.call(['/bin/systemctl', 'restart', 'httpd.service'])
+        subprocess.call(['/bin/systemctl', 'restart', httpservice])
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'httpd', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
@@ -99,10 +100,7 @@ password='%s'
         log.error(_("Could not start the webserver server service."))
 
     if os.path.isfile('/bin/systemctl'):
-        if os.path.isfile('/etc/debian_version'):
-            subprocess.call(['/bin/systemctl', 'enable', 'apache2.service'])
-        else:
-            subprocess.call(['/bin/systemctl', 'enable', 'httpd.service'])
+        subprocess.call(['/bin/systemctl', 'enable', httpservice])
     elif os.path.isfile('/sbin/chkconfig'):
         subprocess.call(['/sbin/chkconfig', 'httpd', 'on'])
     elif os.path.isfile('/usr/sbin/update-rc.d'):

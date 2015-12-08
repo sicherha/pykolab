@@ -142,10 +142,14 @@ def execute(*args, **kw):
 
         myaugeas.close()
 
+    imapservice = 'cyrus-imapd.service'
+    if os.path.isfile('/usr/lib/systemd/system/cyrus.service'):
+        imapservice = 'cyrus.service'
+
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'stop', 'saslauthd.service'])
         subprocess.call(['systemctl', 'restart', 'kolab-saslauthd.service'])
-        subprocess.call(['systemctl', 'restart', 'cyrus-imapd.service'])
+        subprocess.call(['systemctl', 'restart', imapservice])
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['service', 'saslauthd', 'stop'])
         subprocess.call(['service', 'kolab-saslauthd', 'restart'])
@@ -160,7 +164,7 @@ def execute(*args, **kw):
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'disable', 'saslauthd.service'])
         subprocess.call(['systemctl', 'enable', 'kolab-saslauthd.service'])
-        subprocess.call(['systemctl', 'enable', 'cyrus-imapd.service'])
+        subprocess.call(['systemctl', 'enable', imapservice])
     elif os.path.isfile('/sbin/chkconfig'):
         subprocess.call(['chkconfig', 'saslauthd', 'off'])
         subprocess.call(['chkconfig', 'kolab-saslauthd', 'on'])

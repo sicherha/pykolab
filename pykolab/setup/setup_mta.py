@@ -369,7 +369,19 @@ result_format = "shared+%%s"
     template_file = None
 
     # On RPM installations, Amavis configuration is contained within a single file.
-    if os.path.isfile("/etc/amavisd/amavisd.conf"):
+    amavisconf_paths = [
+            "/etc/amavisd.conf",
+            "/etc/amavis/amavisd.conf",
+            "/etc/amavisd/amavisd.conf"
+        ]
+
+    amavis_conf = ''
+    for amavisconf_path in amavisconf_paths:
+        if os.path.isfile(amavisconf_path):
+            amavis_conf = amavisconf_path
+            break
+
+    if os.path.isfile(amavis_conf):
         if os.path.isfile('/etc/kolab/templates/amavisd.conf.tpl'):
             template_file = '/etc/kolab/templates/amavisd.conf.tpl'
         elif os.path.isfile('/usr/share/kolab/templates/amavisd.conf.tpl'):
@@ -391,12 +403,7 @@ result_format = "shared+%%s"
             t = Template(template_definition, searchList=[amavisd_settings])
 
         fp = None
-        if os.path.isdir('/etc/amavisd'):
-            fp = open('/etc/amavisd/amavisd.conf', 'w')
-        elif os.path.isdir('/etc/amavis'):
-            fp = open('/etc/amavis/amavisd.conf', 'w')
-        elif os.path.isfile('/etc/amavisd.conf'):
-            fp = open('/etc/amavisd.conf', 'w')
+        fp = open(amavis_conf, 'w')
 
         if not fp == None:
             fp.write(t.__str__())
@@ -435,10 +442,17 @@ result_format = "shared+%%s"
             myaugeas.save()
         myaugeas.close()
 
+    amavisservice = 'amavisd.service'
+    clamavservice = 'clamd@amavisd.service'
+    if os.path.isfile('/usr/lib/systemd/system/amavis.service'):
+        amavisservice = 'amavis.service'
+    if os.path.isfile('/usr/lib/systemd/system/clamd.service'):
+        clamavservice = 'clamd.service'
+
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'postfix.service'])
-        subprocess.call(['systemctl', 'restart', 'amavisd.service'])
-        subprocess.call(['systemctl', 'restart', 'clamd@amavisd.service'])
+        subprocess.call(['systemctl', 'restart', amavisservice])
+        subprocess.call(['systemctl', 'restart', clamavservice])
         subprocess.call(['systemctl', 'restart', 'wallace.service'])
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['service', 'postfix', 'restart'])
@@ -455,8 +469,8 @@ result_format = "shared+%%s"
 
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'enable', 'postfix.service'])
-        subprocess.call(['systemctl', 'enable', 'amavisd.service'])
-        subprocess.call(['systemctl', 'enable', 'clamd@amavisd.service'])
+        subprocess.call(['systemctl', 'enable', amavisservice])
+        subprocess.call(['systemctl', 'enable', clamavservice])
         subprocess.call(['systemctl', 'enable', 'wallace.service'])
     elif os.path.isfile('/sbin/chkconfig'):
         subprocess.call(['chkconfig', 'postfix', 'on'])

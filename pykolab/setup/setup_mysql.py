@@ -62,7 +62,9 @@ def execute(*args, **kw):
     mysqlservice = 'mysqld.service'
     if os.path.isfile('/usr/lib/systemd/system/mariadb.service'):
         mysqlservice = 'mariadb.service'
-    if os.path.isfile('/bin/systemctl') and not os.path.isfile('/usr/lib/systemd/system/' + mysqlservice):
+    elif os.path.isfile('/usr/lib/systemd/system/mysql.service'):
+        mysqlservice = 'mysql.service'
+    if not os.path.isfile('/usr/lib/systemd/system/' + mysqlservice):
         # on Debian Jessie, systemctl restart mysql
         mysqlservice = 'mysql'
 
