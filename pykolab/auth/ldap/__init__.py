@@ -2085,6 +2085,9 @@ class LDAP(pykolab.base.Base):
 
         naming_contexts = attrs['namingcontexts']
 
+        if isinstance(naming_contexts, basestring):
+            naming_contexts = [ naming_contexts ]
+
         log.debug(
                 _("Naming contexts found: %r") % (naming_contexts),
                 level=8
