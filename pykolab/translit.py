@@ -98,24 +98,33 @@ translit_map = {
     }
 
 def transliterate(_input, lang, _output_expected=None):
-    _translit_name = locale_translit_map[lang]
+    if locale_translit_map.has_key(lang):
+        _translit_name = locale_translit_map[lang]
+    else:
+        _translit_name = lang
 
     _output = ''
 
     if not isinstance(_input, unicode):
         for char in _input.decode('utf-8'):
-            if translit_map[_translit_name].has_key(char):
-                _output += translit_map[_translit_name][char]
-            elif char in [repr(x) for x in translit_map[_translit_name].keys()]:
-                _output += translit_map[_translit_name][[char in [raw(x) for x in translit_map[_translit_name].keys()]][0]]
+            if translit_map.has_key(_translit_name):
+                if translit_map[_translit_name].has_key(char):
+                    _output += translit_map[_translit_name][char]
+                elif char in [repr(x) for x in translit_map[_translit_name].keys()]:
+                    _output += translit_map[_translit_name][[char in [raw(x) for x in translit_map[_translit_name].keys()]][0]]
+                else:
+                    _output += char
             else:
                 _output += char
     else:
         for char in _input:
-            if translit_map[_translit_name].has_key(char):
-                _output += translit_map[_translit_name][char]
-            elif char in [repr(x) for x in translit_map[_translit_name].keys()]:
-                _output += translit_map[_translit_name][[char in [raw(x) for x in translit_map[_translit_name].keys()]][0]]
+            if translit_map.has_key(_translit_name):
+                if translit_map[_translit_name].has_key(char):
+                    _output += translit_map[_translit_name][char]
+                elif char in [repr(x) for x in translit_map[_translit_name].keys()]:
+                    _output += translit_map[_translit_name][[char in [raw(x) for x in translit_map[_translit_name].keys()]][0]]
+                else:
+                    _output += char
             else:
                 _output += char
 
