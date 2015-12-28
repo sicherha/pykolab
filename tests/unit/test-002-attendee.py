@@ -32,7 +32,7 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(self.attendee.get_participant_status(), 0)
 
     def test_005_participant_status_map_length(self):
-        self.assertEqual(len(self.attendee.participant_status_map.keys()), 5)
+        self.assertEqual(len(self.attendee.participant_status_map.keys()), 7)
 
     def test_006_participant_status_map_forward_lookup(self):
         # Forward lookups
@@ -41,6 +41,8 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(self.attendee.participant_status_map["DECLINED"], 2)
         self.assertEqual(self.attendee.participant_status_map["TENTATIVE"], 3)
         self.assertEqual(self.attendee.participant_status_map["DELEGATED"], 4)
+        self.assertEqual(self.attendee.participant_status_map["IN-PROCESS"], 5)
+        self.assertEqual(self.attendee.participant_status_map["COMPLETED"], 6)
 
     def test_007_participant_status_map_reverse_lookup(self):
         # Reverse lookups
@@ -49,6 +51,8 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual([k for k,v in self.attendee.participant_status_map.iteritems() if v == 2][0], "DECLINED")
         self.assertEqual([k for k,v in self.attendee.participant_status_map.iteritems() if v == 3][0], "TENTATIVE")
         self.assertEqual([k for k,v in self.attendee.participant_status_map.iteritems() if v == 4][0], "DELEGATED")
+        self.assertEqual([k for k,v in self.attendee.participant_status_map.iteritems() if v == 5][0], "IN-PROCESS")
+        self.assertEqual([k for k,v in self.attendee.participant_status_map.iteritems() if v == 6][0], "COMPLETED")
 
     def test_008_default_rsvp(self):
         self.assertEqual(self.attendee.get_rsvp(), 0)
