@@ -23,12 +23,14 @@ class TestTimezone(unittest.TestCase):
         london = Event()
         london.set_organizer("john.doe@example.org", "Doe, John")
         london.add_attendee("resource-car-vw@example.org", cutype="RESOURCE")
+        london.set_dtstamp(datetime.datetime.now(pytz.timezone("UTC")))
         london.set_start(event_start.replace(tzinfo=pytz.timezone("Europe/London")))
         london.set_end(event_end.replace(tzinfo=pytz.timezone("Europe/London")))
 
         zurich = Event()
         zurich.set_organizer("john.doe@example.org", "Doe, John")
         zurich.add_attendee("resource-car-vw@example.org", cutype="RESOURCE")
+        zurich.set_dtstamp(datetime.datetime.now(pytz.timezone("Europe/Zurich")))
         zurich.set_start(event_start.replace(tzinfo=pytz.timezone("Europe/Zurich")))
         zurich.set_end(event_end.replace(tzinfo=pytz.timezone("Europe/Zurich")))
 
