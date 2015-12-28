@@ -14,7 +14,7 @@ from twisted.trial import unittest
 itip_multipart = """MIME-Version: 1.0
 Content-Type: multipart/mixed;
  boundary="=_c8894dbdb8baeedacae836230e3436fd"
-From: "Doe, John" <john.doe@example.org>
+From: "Doe, John" <doe@example.org>
 Date: Fri, 13 Jul 2012 13:54:14 +0100
 Message-ID: <240fe7ae7e139129e9eb95213c1016d7@example.org>
 User-Agent: Roundcube Webmail/0.9-0.3.el6.kolab_3.0
@@ -46,7 +46,7 @@ DTSTART;TZID=3DEurope/London:20120713T100000
 DTEND;TZID=3DEurope/London:20120713T110000
 SUMMARY:test
 DESCRIPTION:test
-ORGANIZER;CN=3D"Doe, John":mailto:john.doe@example.org
+ORGANIZER;CN=3D"Doe, John":mailto:doe@example.org
 ATTENDEE;ROLE=3DREQ-PARTICIPANT;PARTSTAT=3DNEEDS-ACTION;RSVP=3DTRUE:mailt=
 o:resource-collection-car@example.org
 ATTENDEE;ROLE=3DOPT-PARTICIPANT;PARTSTAT=3DNEEDS-ACTION;RSVP=3DTRUE:mailto:anoth=
@@ -58,12 +58,12 @@ END:VCALENDAR
 --=_c8894dbdb8baeedacae836230e3436fd--
 """
 
-itip_non_multipart = """Return-Path: <john.doe@example.org>
-Sender: john.doe@example.org
+itip_non_multipart = """Return-Path: <doe@example.org>
+Sender: doe@example.org
 Content-Type: text/calendar; method=REQUEST; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 To: resource-collection-car@example.org
-From: john.doe@example.org
+From: doe@example.org
 Date: Mon, 24 Feb 2014 11:27:28 +0100
 Message-ID: <1a3aa8995e83dd24cf9247e538ac913a@example.org>
 Subject: test
@@ -80,7 +80,7 @@ DTSTART;TZID=3DEurope/London:20120713T100000
 DTEND;TZID=3DEurope/London:20120713T110000
 SUMMARY:test
 DESCRIPTION:test
-ORGANIZER;CN=3D"Doe, John":mailto:john.doe@example.org
+ORGANIZER;CN=3D"Doe, John":mailto:doe@example.org
 ATTENDEE;ROLE=3DREQ-PARTICIPANT;PARTSTAT=3DACCEPTED;RSVP=3DTRUE:mailt=
 o:resource-collection-car@example.org
 TRANSP:OPAQUE
@@ -116,8 +116,11 @@ class TestWallaceResources(unittest.TestCase):
         pass
 
     def _mock_find_resource(self, address):
+        if not 'resource' in address:
+            return None
+
         (prefix, domain) = address.split('@')
-        entry_dn = "uid=" + prefix + ",dc=" + ",dc=".join(domain.split('.'))
+        entry_dn = "cn=" + prefix + ",ou=Resources,dc=" + ",dc=".join(domain.split('.'))
         return [ entry_dn ];
 
     def _mock_get_entry_attributes(self, domain, entry, attributes):
@@ -159,21 +162,18 @@ class TestWallaceResources(unittest.TestCase):
 
     def test_002_resource_record_from_email_address(self):
         res = module_resources.resource_record_from_email_address("doe@example.org")
-        # assert call to (patched) pykolab.auth.Auth.find_resource()
-        self.assertEqual(len(res), 1);
-        self.assertEqual("uid=doe,dc=example,dc=org", res[0]);
-
+        self.assertEqual(len(res), 0);
 
     def test_003_resource_records_from_itip_events(self):
         message = message_from_string(itip_multipart)
         itips = itip.events_from_message(message)
 
         res = module_resources.resource_records_from_itip_events(itips)
-        self.assertEqual(len(res), 2, "Return all attendee resources");
+        self.assertEqual(len(res), 2, "Return resources: %r" % (res));
 
         res = module_resources.resource_records_from_itip_events(itips, message['To'])
-        self.assertEqual(len(res), 1, "Return only recipient resource");
-        self.assertEqual("uid=resource-collection-car,dc=example,dc=org", res[0]);
+        self.assertEqual(len(res), 1, "Return target resource: %r" % (res));
+        self.assertEqual("cn=resource-collection-car,ou=Resources,dc=example,dc=org", res[0]);
 
 
     def test_004_get_resource_owner(self):
@@ -186,7 +186,7 @@ class TestWallaceResources(unittest.TestCase):
         self.assertIsInstance(owner2, dict)
         self.assertEqual("john@example.org", owner2['mail'])
 
-        owner3 = module_resources.get_resource_owner({ 'dn': "uid=cars,ou=Resources,cd=example,dc=org" })
+        owner3 = module_resources.get_resource_owner({ 'dn': "cn=cars,ou=Resources,cd=example,dc=org" })
         self.assertEqual(owner3, None)
 
         owner4 = module_resources.get_resource_owner({ 'dn': "cn=Room 101,ou=Resources,dc=example,dc=org" })
@@ -199,10 +199,10 @@ class TestWallaceResources(unittest.TestCase):
 
         self.assertEqual(len(self.smtplog), 1);
         self.assertEqual("resource-collection-car@example.org", self.smtplog[0][0])
-        self.assertEqual("john.doe@example.org", self.smtplog[0][1])
+        self.assertEqual("doe@example.org", self.smtplog[0][1])
 
         response = message_from_string(self.smtplog[0][2])
-        self.assertIn("ACCEPTED", response['subject'], "Participant status in message subject")
+        self.assertIn("ACCEPTED".lower(), response['subject'].lower(), "Participant status in message subject: %r" % (response['subject']))
         self.assertTrue(response.is_multipart())
 
         # find ics part of the response
@@ -220,20 +220,20 @@ class TestWallaceResources(unittest.TestCase):
         module_resources.send_response("resource-collection-car@example.org", itip_event)
 
         self.assertEqual(len(self.smtplog), 2);
-        self.assertEqual("resource-car-audi-a4@example.org", self.smtplog[0][0])
-        self.assertEqual("resource-collection-car@example.org", self.smtplog[1][0])
+        self.assertEqual("resource-collection-car@example.org", self.smtplog[0][0])
+        self.assertEqual("resource-car-audi-a4@example.org", self.smtplog[1][0])
 
         # delegated resource responds ACCEPTED
         response1 = message_from_string(self.smtplog[0][2])
         ical1 = self._get_ical(self._get_ics_part(response1).get_payload(decode=True))
-        self.assertIn("ACCEPTED", response1['subject'], "Participant status in message subject")
-        self.assertEqual(ical1['attendee'], "MAILTO:resource-car-audi-a4@example.org")
+        self.assertIn("DELEGATED".lower(), response1['subject'].lower(), "Participant status in message subject: %r" % (response1['subject']))
+        self.assertEqual(ical1['attendee'][1].__str__(), "MAILTO:resource-car-audi-a4@example.org")
 
         # resource collection responds DELEGATED
         response2 = message_from_string(self.smtplog[1][2])
         ical2 = self._get_ical(self._get_ics_part(response2).get_payload(decode=True))
-        self.assertIn("DELEGATED", response2['subject'], "Delegation message subject")
-        self.assertEqual(ical2['attendee'], "MAILTO:resource-collection-car@example.org")
-        self.assertEqual(ical2['attendee'].params['PARTSTAT'], "DELEGATED")
+        self.assertIn("ACCEPTED".lower(), response2['subject'].lower(), "Delegation message subject: %r" % (response2['subject']))
+        self.assertEqual(ical2['attendee'].__str__(), "MAILTO:resource-car-audi-a4@example.org")
+        self.assertEqual(ical2['attendee'].params['PARTSTAT'], u"ACCEPTED")
 
 
