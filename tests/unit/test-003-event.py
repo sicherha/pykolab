@@ -346,14 +346,17 @@ class TestEventXML(unittest.TestCase):
         # set language to default
         pykolab.translate.setUserLanguage('en_US')
 
-    def assertIsInstance(self, _value, _type):
+    def assertIsInstance(self, _value, _type, _msg=None):
         if hasattr(unittest.TestCase, 'assertIsInstance'):
-            return unittest.TestCase.assertIsInstance(self, _value, _type)
+            return unittest.TestCase.assertIsInstance(self, _value, _type, _msg)
         else:
             if (type(_value)) == _type:
                 return True
             else:
-                raise AssertionError, "%s != %s" % (type(_value), _type)
+                if not _msg == None:
+                    raise AssertionError, "%s != %s: %r" % (type(_value), _type, _msg)
+                else:
+                    raise AssertionError, "%s != %s" % (type(_value), _type)
 
     def test_000_no_start_date(self):
         self.assertRaises(EventIntegrityError, self.event.__str__)
@@ -839,7 +842,7 @@ END:VEVENT
         self.assertEqual(parts[3]['Content-ID'].strip('<>'), attachments[0].uri()[4:])
         self.assertEqual(parts[4].get_content_type(), 'text/plain')
         self.assertEqual(parts[4]['Content-ID'].strip('<>'), attachments[1].uri()[4:])
-        self.assertEqual(event.get_attachment_data(1), 'This is a text file')
+        self.assertEqual(event.get_attachment_data(1), 'This is a text file\n')
 
     def test_024_bogus_itip_data(self):
         # DTSTAMP contains an invalid date/time value
