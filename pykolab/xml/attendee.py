@@ -11,16 +11,16 @@ participant_status_labels = {
         "DECLINED": N_("Declined"),
         "TENTATIVE": N_("Tentatively Accepted"),
         "DELEGATED": N_("Delegated"),
-        "COMPLETED": N_("Completed"),
         "IN-PROCESS": N_("Started"),
+        "COMPLETED": N_("Completed"),
         # support integer values, too
         kolabformat.PartNeedsAction: N_("Needs Action"),
         kolabformat.PartAccepted: N_("Accepted"),
         kolabformat.PartDeclined: N_("Declined"),
         kolabformat.PartTentative: N_("Tentatively Accepted"),
         kolabformat.PartDelegated: N_("Delegated"),
-        kolabformat.PartCompleted: N_("Completed"),
         kolabformat.PartInProcess: N_("Started"),
+        kolabformat.PartCompleted: N_("Completed"),
     }
 
 def participant_status_label(status):
@@ -40,8 +40,8 @@ class Attendee(kolabformat.Attendee):
             "DECLINED": kolabformat.PartDeclined,
             "TENTATIVE": kolabformat.PartTentative,
             "DELEGATED": kolabformat.PartDelegated,
-            "COMPLETED": kolabformat.PartCompleted,
             "IN-PROCESS": kolabformat.PartInProcess,
+            "COMPLETED": kolabformat.PartCompleted,
         }
 
     # See RFC 2445, 5445
