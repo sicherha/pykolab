@@ -68,9 +68,10 @@ class TestNoteXML(unittest.TestCase):
 
     def test_011_to_xml(self):
         note = Note()
-        note.setClassification(-1)
-        self.assertRaises(NoteIntegrityError, note.__str__)
+        with self.assertRaises(ValueError):
+            note.set_classification(-1)
 
+    def test_012_to_xml(self):
         # minimal
         note = Note()
         xml = str(note)

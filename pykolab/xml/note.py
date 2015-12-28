@@ -1,6 +1,8 @@
 import pytz
 import datetime
 import kolabformat
+
+from pykolab.translate import _
 from pykolab.xml import utils as xmlutils
 from pykolab.xml.utils import ustr
 
