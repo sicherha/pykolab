@@ -232,4 +232,23 @@
             'ssl_verify_peer' => false,
         );
 
+    # Required for PHP 5.6
+    \$config['imap_conn_options'] = Array(
+            'ssl' => Array(
+                    'verify_peer_name'  => false,
+                    'verify_peer'       => false,
+                    'allow_self_signed' => true
+                )
+        );
+
+    \$config['smtp_conn_options'] = Array(
+            'ssl' => Array(
+                    'verify_peer_name'  => false,
+                    'verify_peer'       => false,
+                    'allow_self_signed' => true
+                )
+        );
+
+    \$config['fileapi_manticore'] = 'http://' . \$_SERVER['HTTP_HOST'] . ':8080';
+
 ?>
