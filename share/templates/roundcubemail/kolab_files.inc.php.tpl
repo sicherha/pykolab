@@ -16,7 +16,7 @@
 \$config['kolab_files_search_threads'] = 1;
 
 // LDAP addressbook that would be searched for user names autocomplete.
-// That should be an array refering to the $config['ldap_public'] array key
+// That should be an array refering to the \$config['ldap_public'] array key
 // or complete addressbook configuration array.
 \$config['kolab_files_users_source'] = 'kolab_addressbook';
 
