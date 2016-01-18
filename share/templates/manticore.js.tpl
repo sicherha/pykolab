@@ -7,10 +7,7 @@
 
 module.exports = {
   DOMAIN:           'http://$fqdn:8080',
-  SESSION_SECRET:   'manticore-secret',
-
-  // Control debug level for modules using visionmedia/debug
-  DEBUG: '',
+  SESSION_SECRET:   '$secret',
 
   DEFAULT_ACCESS: 'deny',
 
@@ -20,7 +17,7 @@ module.exports = {
   CHWALA_SERVER: 'http://$fqdn/chwala/api/document',
   ROUNDCUBE_SERVER: 'http://$fqdn/roundcubemail',
 
-  AUTH_ENCRYPTION_KEY: 'suchauth123muchkey456',
+  AUTH_ENCRYPTION_KEY: '$auth_secret',
 
   LDAP_SERVER: 'ldap://$server_host:389',
   LDAP_BASE: '$user_base_dn',
