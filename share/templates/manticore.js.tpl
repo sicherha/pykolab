@@ -17,7 +17,7 @@ module.exports = {
   CHWALA_SERVER: 'http://$fqdn/chwala/api/document',
   ROUNDCUBE_SERVER: 'http://$fqdn/roundcubemail',
 
-  AUTH_ENCRYPTION_KEY: '$auth_secret',
+  AUTH_ENCRYPTION_KEY: '$auth_key',
 
   LDAP_SERVER: 'ldap://$server_host:389',
   LDAP_BASE: '$user_base_dn',
