@@ -2,33 +2,22 @@
 
 START {
     # do not delete this entry!
-    recover	cmd="ctl_cyrusdb -r"
+    recover	    cmd="ctl_cyrusdb -r"
 
-    # this is only necessary if using idled for IMAP IDLE
-    idled		cmd="idled"
+    idled       cmd="idled"
 }
 
 # UNIX sockets start with a slash and are put into /var/lib/imap/sockets
 SERVICES {
-    # add or remove based on preferences
-    imap		cmd="imapd" listen="imap" prefork=5
-    imaps		cmd="imapd -s" listen="imaps" prefork=1
-    pop3		cmd="pop3d" listen="pop3" prefork=3
-    pop3s		cmd="pop3d -s" listen="pop3s" prefork=1
-    sieve		cmd="timsieved" listen="sieve" prefork=0
+    imaps       cmd="imapd -s"  listen="127.0.0.1:9993"                 prefork=5
 
-    ptloader    cmd="ptloader" listen="/var/lib/imap/ptclient/ptsock" prefork=0
+    sieve       cmd="timsieved" listen="sieve"                          prefork=0
 
-    # these are only necessary if receiving/exporting usenet via NNTP
-    #nntp		cmd="nntpd" listen="nntp" prefork=3
-    #nntps		cmd="nntpd -s" listen="nntps" prefork=1
+    ptloader    cmd="ptloader"  listen="/var/lib/imap/ptclient/ptsock"  prefork=0
 
-    # at least one LMTP is required for delivery
-    #lmtp		cmd="lmtpd" listen="lmtp" prefork=0
-    lmtpunix	cmd="lmtpd" listen="/var/lib/imap/socket/lmtp" prefork=1
+    lmtpunix    cmd="lmtpd"     listen="/var/lib/imap/socket/lmtp"      prefork=1
 
-    # this is only necessary if using notifications
-    notify	cmd="notifyd" listen="/var/lib/imap/socket/notify" proto="udp" prefork=1
+    notify      cmd="notifyd"   listen="/var/lib/imap/socket/notify"    proto="udp" prefork=1
 }
 
 EVENTS {

@@ -71,6 +71,7 @@ pykolab_setupdir = $(pythondir)/$(PACKAGE)/setup
 pykolab_setup_PYTHON = \
 	setup/components.py \
 	setup/setup_freebusy.py \
+	setup/setup_guam.py \
 	setup/setup_imap.py \
 	setup/setup_kolabd.py \
 	setup/setup_ldap.py \
