@@ -8,6 +8,7 @@ Makefile.in
 *.pyo
 *.rej
 *.spec
+*.swp
 *.tar.gz
 *.tar.gz.gpg
 aclocal.m4
