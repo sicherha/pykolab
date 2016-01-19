@@ -814,7 +814,7 @@ class IMAP(object):
                             "%s") % (rights,subject,folder), level=8)
 
                 self.set_acl(
-                        self.folder_utf7(folder),
+                        folder,
                         "%s" % (subject),
                         "%s" % (rights)
                     )
@@ -825,7 +825,7 @@ class IMAP(object):
                             "%s") % (rights,subject,folder), level=8)
 
                 self.set_acl(
-                        self.folder_utf7(folder),
+                        folder,
                         "%s" % (subject),
                         ""
                     )
