@@ -74,6 +74,7 @@ pykolab_setup_PYTHON = \
 	setup/setup_imap.py \
 	setup/setup_kolabd.py \
 	setup/setup_ldap.py \
+	setup/setup_manticore.py \
 	setup/setup_mta.py \
 	setup/setup_mysql.py \
 	setup/setup_php.py \
