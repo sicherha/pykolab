@@ -18,7 +18,7 @@
                     {
                         imap, [
                             { port, 143 },
-                            { imap_server, imap },
+                            { imap_server, imaps },
                             {
                                 rules, [
                                     { filter_groupware, [] }
