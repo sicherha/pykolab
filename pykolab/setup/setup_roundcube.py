@@ -176,7 +176,8 @@ def execute(*args, **kw):
 
                 if len(schema_files) > 0:
                     break
-        break
+        if len(schema_files) > 0:
+            break
 
     for root, directories, filenames in os.walk(rcpath + 'plugins/calendar/drivers/kolab/'):
         for filename in filenames:
