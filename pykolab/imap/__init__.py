@@ -522,12 +522,28 @@ class IMAP(object):
         if not hasattr(self, 'domain'):
             self.domain == None
 
+        if self.domain == None and len(mailbox_base_name.split('@')) > 1:
+            self.domain = mailbox_base_name.split('@')[1]
+
         if not self.domain == None:
             if conf.has_option(self.domain, "autocreate_folders"):
                 _additional_folders = conf.get_raw(
                         self.domain,
                         "autocreate_folders"
                     )
+
+            else:
+                auth = Auth()
+                auth.connect()
+                domains = auth._list_domains(self.domain)
+                auth.disconnect()
+                if len(domains) > 0:
+                    (primary,secondaries) = domains[1]
+                    if conf.has_option(primary, "autocreate_folders"):
+                        _additional_folders = conf.get_raw(
+                                primary,
+                                "autocreate_folders"
+                            )
 
         if _additional_folders == None:
             if conf.has_option('kolab', "autocreate_folders"):
