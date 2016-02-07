@@ -27,6 +27,7 @@ from urlparse import urlparse
 
 import pykolab
 from pykolab import utils
+from pykolab.auth import Auth
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.imap')
