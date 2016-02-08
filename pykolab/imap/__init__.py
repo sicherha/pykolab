@@ -27,7 +27,6 @@ from urlparse import urlparse
 
 import pykolab
 from pykolab import utils
-from pykolab.auth import Auth
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.imap')
@@ -534,6 +533,7 @@ class IMAP(object):
                     )
 
             else:
+                from pykolab.auth import Auth
                 auth = Auth()
                 auth.connect()
                 domains = auth._list_domains(self.domain)
