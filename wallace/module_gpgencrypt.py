@@ -28,6 +28,12 @@ from email.parser import Parser
 from email.utils import formataddr
 from email.utils import getaddresses
 
+import email.mime.application
+import email.mime.multipart
+import email.mime.text
+import email.encoders
+import gnupg
+
 import modules
 
 import pykolab
@@ -44,6 +50,40 @@ def __init__():
 
 def description():
     return """Encrypt messages to the recipient(s)."""
+
+def pgp_mime(msg, recepients):
+    gpg = gnupg.GPG(gnupghome='/var/lib/kolab/.gnupg', verbose=conf.debuglevel > 8)
+    gpg.encoding = 'utf-8'
+
+    msg = msg
+
+    msg_boundary = str(msg.get_boundary())
+    msg_content_type = str(msg.get_content_type())
+    payload = msg.get_payload()
+
+    content = "Content-Type: " + msg_content_type + ";" + "\n boundary=\"" + msg_boundary + "\"\n\n" + payload
+    encrypted_content = gpg.encrypt(content, recepients, always_trust=True)
+    msg.set_type("multipart/encrypted")
+    msg.set_param("protocol","application/pgp-encrypted")
+
+    msg_boundary_gpg = "--boundary-gpg-encryption-42"
+
+    msg_preamble = "This is an OpenPGP/MIME encrypted message (RFC 4880 and 3156)\n\
+" + msg_boundary_gpg + "\n\
+Content-Type: application/pgp-encrypted\n\
+Content-Description: PGP/MIME version identification\n\
+\n\
+Version: 1\n\
+\n\
+" + msg_boundary_gpg + "\n\
+Content-Type: application/octet-stream; name=\"encrypted.asc\"\n\
+Content-Description: OpenPGP encrypted message\n\
+Content-Disposition: inline; filename=\"encrypted.asc\"\n\n"
+
+    msg.set_boundary(msg_boundary_gpg)
+    msg.set_payload(msg_preamble + str(encrypted_content) + "\n" + msg_boundary_gpg)
+
+    return msg
 
 def execute(*args, **kw):
     if not os.path.isdir(mybasepath):
@@ -175,7 +215,6 @@ def execute(*args, **kw):
         nocrypt_rcpts = []
 
 
-        import gnupg
         gpg = gnupg.GPG(gnupghome='/var/lib/kolab/.gnupg', verbose=conf.debuglevel > 8)
         gpg.encoding = 'utf-8'
 
@@ -211,16 +250,29 @@ def execute(*args, **kw):
                 encrypt_rcpts.append(key_local)
 
         payload = message.get_payload()
-        print "payload:", payload
+        #print "payload:", payload
         if len(encrypt_rcpts) < 1:
             return filepath
 
-        encrypted_data = gpg.encrypt(payload, encrypt_rcpts, always_trust=True)
-        encrypted_string = str(encrypted_data)
+        if "multipart" in message.get_content_type():
 
-        print "encrypted string:", encrypted_string
+            log.debug(_("Mime Message - we need to build multipart/encrypted structure"), level=8)
 
-        message.set_payload(encrypted_string)
+            msg = message
+            enc_mime_message = pgp_mime(msg, encrypt_rcpts)
+
+            message = enc_mime_message
+
+        else:
+
+            log.debug(_("No Mime Message - encypt plain"), level=8)
+
+            encrypted_data = gpg.encrypt(payload, encrypt_rcpts, always_trust=True)
+            encrypted_string = str(encrypted_data)
+
+            message.set_payload(encrypted_string)
+
+            message.add_header('X-wallace-gpg-encrypted', 'true')
 
         (fp, new_filepath) = tempfile.mkstemp(dir="/var/spool/pykolab/wallace/gpgencrypt/ACCEPT")
         os.write(fp, message.as_string())
