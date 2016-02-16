@@ -1195,7 +1195,7 @@ class LDAP(pykolab.base.Base):
             try:
                 self.ldap.simple_bind_s(bind_dn, bind_pw)
                 self.bind = True
-            except ldap.SERVER_DOWN:
+            except ldap.SERVER_DOWN, errmsg:
                 log.error(_("LDAP server unavailable: %r") % (errmsg))
                 log.error(_("%s") % (traceback.format_exc()))
             except ldap.INVALID_CREDENTIALS:
