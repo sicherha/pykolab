@@ -442,6 +442,20 @@ result_format = "shared+%%s"
             myaugeas.save()
         myaugeas.close()
 
+    if os.path.isfile('/usr/lib/systemd/system/clamd@.service'):
+        from ConfigParser import SafeConfigParser
+        unitfile = SafeConfigParser()
+        unitfile.optionxform = str
+        unitfile.read('/usr/lib/systemd/system/clamd@.service')
+        if not unitfile.has_section('Install'):
+            unitfile.add_section('Install')
+
+        if not unitfile.has_option('Install', 'WantedBy'):
+            unitfile.set('Install', 'WantedBy', 'multi-user.target')
+
+        with open('/etc/systemd/system/clamd@.service', 'wb') as f:
+            unitfile.write(f)
+
     amavisservice = 'amavisd.service'
     clamavservice = 'clamd@amavisd.service'
     if os.path.isfile('/usr/lib/systemd/system/amavis.service'):
