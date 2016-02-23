@@ -29,6 +29,7 @@ sys.path = ['.'] + sys.path
 import pykolab
 
 from pykolab.setup import Setup
+from pykolab.translate import _
 
 try:
     from pykolab.constants import *

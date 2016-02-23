@@ -21,6 +21,7 @@ import os
 import sys
 
 import pykolab
+from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.setup')
 conf = pykolab.getConf()
@@ -40,6 +41,36 @@ class Setup(object):
                     to_execute.append(sys.argv[arg_num].replace('-','_'))
 
     def run(self):
+        if os.path.isfile('/sys/fs/selinux/enforce'):
+            if os.access('/sys/fs/selinux/enforce', os.R_OK):
+                # Set a gentle default because strictly speaking,
+                # setup won't fail (run-time does)
+                enforce = "0"
+
+                with open('/sys/fs/selinux/enforce', 'r') as f:
+                    enforce = f.read()
+
+                if enforce.strip() == "1":
+                    log.fatal(
+                            _("SELinux currently enforcing. Read " + \
+                            "https://git.kolab.org/u/1")
+                        )
+
+                    sys.exit(1)
+
+        if os.path.isfile('/etc/selinux/config'):
+            if os.access('/etc/selinux/config', os.R_OK):
+                with open('/etc/selinux/config', 'r') as f:
+                    for line in f:
+                        if line.strip() == "SELINUX=enforcing":
+                            log.fatal(
+                                    _("SELinux configured to enforce a " + \
+                                    "policy on startup. Read " + \
+                                    "https://git.kolab.org/u/1")
+                                )
+
+                            sys.exit(1)
+
         components.execute('_'.join(to_execute))
 
         if os.path.exists('/tmp/kolab-setup-my.cnf'):
