@@ -218,7 +218,7 @@ class KolabDaemon(object):
             exitcode = 1
             traceback.print_exc()
             print >> sys.stderr, _("Traceback occurred, please report a " + \
-                "bug at http://bugzilla.kolabsys.com")
+                "bug at https://issues.kolab.org")
 
         except TypeError, errmsg:
             exitcode = 1
@@ -229,7 +229,7 @@ class KolabDaemon(object):
             exitcode = 2
             traceback.print_exc()
             print >> sys.stderr, _("Traceback occurred, please report a " + \
-                "bug at http://bugzilla.kolabsys.com")
+                "bug at https://issues.kolab.org")
 
         sys.exit(exitcode)
 
