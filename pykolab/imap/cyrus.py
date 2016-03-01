@@ -372,11 +372,11 @@ class Cyrus(cyruslib.CYRUS):
         self.xfer(mailfolder, new_server)
 
     def undelete_mailfolder(
-            self,
-            mailfolder,
-            to_mailfolder=None,
-            recursive=True
-        ):
+                self,
+                mailfolder,
+                to_mailfolder=None,
+                recursive=True
+            ):
         """
             Login to the actual backend server, then "undelete" the mailfolder.
 
@@ -458,7 +458,7 @@ class Cyrus(cyruslib.CYRUS):
             target_server = self.find_mailfolder_server(target_folder)
 
             if hasattr(conf, 'dry_run') and not conf.dry_run:
-                if not target_server == self.server:
+                if target_server is not self.server:
                     self.xfer(undelete_folder, target_server)
 
                 self.rename(undelete_folder, target_folder)
