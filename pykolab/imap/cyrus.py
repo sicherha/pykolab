@@ -31,6 +31,7 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.imap')
 conf = pykolab.getConf()
 
+
 class Cyrus(cyruslib.CYRUS):
     """
         Abstraction class for some common actions to do exclusively in Cyrus.
@@ -169,7 +170,7 @@ class Cyrus(cyruslib.CYRUS):
 
         prefix = _mailfolder['path_parts'].pop(0)
         mbox = _mailfolder['path_parts'].pop(0)
-        if not _mailfolder['domain'] == None:
+        if _mailfolder['domain'] is not None:
             mailfolder = "%s%s%s@%s" % (
                     prefix,
                     self.separator,
@@ -275,7 +276,7 @@ class Cyrus(cyruslib.CYRUS):
             Login to the actual backend server.
         """
         server = self.find_mailfolder_server(mailfolder)
-        self.connect(self.uri.replace(self.server,server))
+        self.connect(self.uri.replace(self.server, server))
 
         log.debug(
                 _("Setting quota for folder %s to %s") % (
@@ -299,9 +300,9 @@ class Cyrus(cyruslib.CYRUS):
             Login to the actual backend server, then rename.
         """
         server = self.find_mailfolder_server(from_mailfolder)
-        self.connect(self.uri.replace(self.server,server))
+        self.connect(self.uri.replace(self.server, server))
 
-        if not partition == None:
+        if partition is not None:
             log.debug(
                     _("Moving INBOX folder %s to %s on partition %s") % (
                             from_mailfolder,
@@ -358,7 +359,7 @@ class Cyrus(cyruslib.CYRUS):
                 )
 
     def _xfer(self, mailfolder, current_server, new_server):
-        self.connect(self.uri.replace(self.server,current_server))
+        self.connect(self.uri.replace(self.server, current_server))
         log.debug(
                 _("Transferring folder %s from %s to %s") % (
                         mailfolder,
@@ -370,12 +371,17 @@ class Cyrus(cyruslib.CYRUS):
 
         self.xfer(mailfolder, new_server)
 
-    def undelete_mailfolder(self, mailfolder, to_mailfolder=None, recursive=True):
+    def undelete_mailfolder(
+            self,
+            mailfolder,
+            to_mailfolder=None,
+            recursive=True
+        ):
         """
             Login to the actual backend server, then "undelete" the mailfolder.
 
-            'mailfolder' may be a string representing either of the following two
-            options;
+            'mailfolder' may be a string representing either of the following
+            two options;
 
             - the fully qualified pathof the deleted folder in its current
               location, such as, for a deleted INBOX folder originally known as
@@ -397,7 +403,7 @@ class Cyrus(cyruslib.CYRUS):
 
         undelete_folders = self._find_deleted_folder(mailfolder)
 
-        if not to_mailfolder == None:
+        if to_mailfolder is not None:
             target_mbox = self.parse_mailfolder(to_mailfolder)
         else:
             target_mbox = mailfolder
@@ -408,12 +414,12 @@ class Cyrus(cyruslib.CYRUS):
             prefix = undelete_mbox['path_parts'].pop(0)
             mbox = undelete_mbox['path_parts'].pop(0)
 
-            if to_mailfolder == None:
+            if to_mailfolder is None:
                 target_folder = self.separator.join([prefix, mbox])
             else:
                 target_folder = self.separator.join(target_mbox['path_parts'])
 
-            if not to_mailfolder == None:
+            if to_mailfolder is not None:
                 target_folder = "%s%s%s" % (
                         target_folder,
                         self.separator,
@@ -436,8 +442,11 @@ class Cyrus(cyruslib.CYRUS):
 
             target_folders.append(target_folder)
 
-            if not target_mbox['domain'] == None:
-                target_folder = "%s@%s" % (target_folder,target_mbox['domain'])
+            if target_mbox['domain'] is not None:
+                target_folder = "%s@%s" % (
+                        target_folder,
+                        target_mbox['domain']
+                    )
 
             log.info(
                     _("Undeleting %s to %s") % (
@@ -448,11 +457,11 @@ class Cyrus(cyruslib.CYRUS):
 
             target_server = self.find_mailfolder_server(target_folder)
 
-            if hasattr(conf,'dry_run') and not conf.dry_run:
+            if hasattr(conf, 'dry_run') and not conf.dry_run:
                 if not target_server == self.server:
-                    self.xfer(undelete_folder,target_server)
+                    self.xfer(undelete_folder, target_server)
 
-                self.rename(undelete_folder,target_folder)
+                self.rename(undelete_folder, target_folder)
             else:
                 if not target_server == self.server:
                     print >> sys.stdout, \
@@ -489,9 +498,9 @@ class Cyrus(cyruslib.CYRUS):
             mbox['path_parts'] = mailfolder.split(self.separator)
 
         # See if the path that has been specified is the current location for
-        # the deleted folder, or the original location, we have to find the deleted
-        # folder for.
-        if not mbox['path_parts'][0] in [ 'user', 'shared' ]:
+        # the deleted folder, or the original location, we have to find the
+        # deleted folder for.
+        if not mbox['path_parts'][0] in ['user', 'shared']:
             deleted_prefix = mbox['path_parts'].pop(0)
             # See if the hexadecimal timestamp is actually hexadecimal.
             # This prevents "DELETED/user/userid/Sent", but not
@@ -514,7 +523,7 @@ class Cyrus(cyruslib.CYRUS):
                     'mailfolder': self.separator.join(mbox['path_parts'])
                 }
 
-            if not mbox['domain'] == None:
+            if mbox['domain'] is not None:
                 verify_folder_search = "%s@%s" % (
                         verify_folder_search,
                         mbox['domain']
@@ -555,14 +564,14 @@ class Cyrus(cyruslib.CYRUS):
             TODO: It finds virtdomain folders for non-virtdomain searches.
         """
         deleted_folder_search = "%(deleted_prefix)s%(separator)s" + \
-                "%(mailfolder)s%(separator)s*" % {
-                        # TODO: The prefix used is configurable
-                        'deleted_prefix': "DELETED",
-                        'mailfolder': self.separator.join(mbox['path_parts']),
-                        'separator': self.separator,
-                    }
+            "%(mailfolder)s%(separator)s*" % {
+                # TODO: The prefix used is configurable
+                'deleted_prefix': "DELETED",
+                'mailfolder': self.separator.join(mbox['path_parts']),
+                'separator': self.separator,
+            }
 
-        if not mbox['domain'] == None:
+        if mbox['domain'] is not None:
             deleted_folder_search = "%s@%s" % (
                     deleted_folder_search,
                     mbox['domain']
@@ -577,7 +586,7 @@ class Cyrus(cyruslib.CYRUS):
         #
 
         # Here, we explicitly remove any virtdomain folders.
-        if mbox['domain'] == None:
+        if mbox['domain'] is None:
             _folders = []
             for folder in folders:
                 if len(folder.split('@')) < 2:
