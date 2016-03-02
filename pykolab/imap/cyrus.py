@@ -25,6 +25,7 @@ from urlparse import urlparse
 
 import pykolab
 
+from pykolab.constants import *
 from pykolab.imap import IMAP
 from pykolab.translate import _
 
@@ -140,6 +141,10 @@ class Cyrus(cyruslib.CYRUS):
         """
         cyruslib.CYRUS.login(self, *args, **kw)
         self.separator = self.SEP
+        try:
+            self._id()
+        except Exception, errmsg:
+            pass
 
         log.debug(
                 _("Continuing with separator: %r") % (self.separator),
@@ -270,6 +275,13 @@ class Cyrus(cyruslib.CYRUS):
     def folder_utf8(self, folder):
         from pykolab import imap_utf7
         return imap_utf7.decode(folder)
+
+    def _id(self, identity=None):
+        if identity is None:
+            identity = '("name" "Python/Kolab" "version" "%s")' % (__version__)
+
+        typ, dat = self.m._simple_command('ID', identity)
+        res, dat = self.m._untagged_response(typ, dat, 'ID')
 
     def _setquota(self, mailfolder, quota):
         """
