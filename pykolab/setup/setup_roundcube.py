@@ -193,7 +193,6 @@ def execute(*args, **kw):
                 if not schema_filepath in schema_files:
                     schema_files.append(schema_filepath)
 
-    schema_files = []
     for root, directories, filenames in os.walk('/usr/share/doc/'):
         directories.sort()
         for directory in directories:
