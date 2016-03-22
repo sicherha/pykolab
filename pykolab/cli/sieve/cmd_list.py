@@ -23,6 +23,7 @@ from urlparse import urlparse
 
 import pykolab
 
+from pykolab import utils
 from pykolab.auth import Auth
 from pykolab.cli import commands
 from pykolab.translate import _
@@ -31,7 +32,12 @@ log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
 def __init__():
-    commands.register('list', execute, group='sieve', description=description())
+    commands.register(
+            'list',
+            execute,
+            group='sieve',
+            description=description()
+        )
 
 def description():
     return """List a user's sieve scripts."""
@@ -82,16 +88,27 @@ def execute(*args, **kw):
 
     import sievelib.managesieve
 
-    sieveclient = sievelib.managesieve.Client(hostname, port, conf.debuglevel > 8)
+    sieveclient = sievelib.managesieve.Client(
+            hostname,
+            port,
+            conf.debuglevel > 8
+        )
+
     sieveclient.connect(None, None, True)
-    result = sieveclient._plain_authentication(admin_login, admin_password, address)
+
+    result = sieveclient._plain_authentication(
+            admin_login,
+            admin_password,
+            address
+        )
+
     if not result:
         print "LOGIN FAILED??"
-    
+
     sieveclient.authenticated = True
 
     result = sieveclient.listscripts()
-    
+
     if result == None:
         print "No scripts"
         sys.exit(0)
