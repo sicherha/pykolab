@@ -336,7 +336,7 @@ class Cyrus(cyruslib.CYRUS):
         self.m.rename(
                 self.folder_utf7(from_mailfolder),
                 self.folder_utf7(to_mailfolder),
-                '"%s"' % (partition)
+                partition
             )
 
     def _getannotation(self, *args, **kw):
