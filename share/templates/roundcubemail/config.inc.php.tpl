@@ -197,7 +197,6 @@
                             'surname'           => 'sn',
                             'firstname'         => 'givenName',
                             'middlename'        => 'initials',
-                            'prefix'            => 'title',
                             'email:primary'     => 'mail',
                             'email:alias'       => 'alias',
                             'email:personal'    => 'mailalternateaddress',
