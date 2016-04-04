@@ -1109,9 +1109,10 @@ def send_update_notification(object, receiving_user, old=None, reply=True):
     import smtplib
     from email.MIMEText import MIMEText
     from email.Utils import formatdate
+    from email.header import Header
+    from email import charset
 
     # encode unicode strings with quoted-printable
-    from email import charset
     charset.add_charset('utf-8', charset.SHORTEST, charset.QP)
 
     organizer = object.get_organizer()
@@ -1205,7 +1206,8 @@ def send_update_notification(object, receiving_user, old=None, reply=True):
     msg['To'] = receiving_user['mail']
     msg['Date'] = formatdate(localtime=True)
     msg['Subject'] = utils.str2unicode(_('"%s" has been updated') % (object.get_summary()))
-    msg['From'] = utils.str2unicode('"%s" <%s>' % (orgname, orgemail) if orgname else orgemail)
+    msg['From'] = Header(utils.str2unicode('%s' % orgname) if orgname else '')
+    msg['From'].append("<%s>" % orgemail)
 
     smtp = smtplib.SMTP("localhost", 10027)
 
@@ -1237,9 +1239,10 @@ def send_cancel_notification(object, receiving_user, deleted=False):
     import smtplib
     from email.MIMEText import MIMEText
     from email.Utils import formatdate
+    from email.header import Header
+    from email import charset
 
     # encode unicode strings with quoted-printable
-    from email import charset
     charset.add_charset('utf-8', charset.SHORTEST, charset.QP)
 
     log.debug(_("Send cancellation notification for %s %r to user %r") % (
@@ -1279,7 +1282,8 @@ def send_cancel_notification(object, receiving_user, deleted=False):
     msg['To'] = receiving_user['mail']
     msg['Date'] = formatdate(localtime=True)
     msg['Subject'] = utils.str2unicode(_('"%s" has been cancelled') % (object.get_summary()))
-    msg['From'] = utils.str2unicode('"%s" <%s>' % (orgname, orgemail) if orgname else orgemail)
+    msg['From'] = Header(utils.str2unicode('%s' % orgname) if orgname else '')
+    msg['From'].append("<%s>" % orgemail)
 
     smtp = smtplib.SMTP("localhost", 10027)
 
