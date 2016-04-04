@@ -78,8 +78,6 @@
             'kolab_folders',
             'kolab_notes',
             'kolab_tags',
-            'libkolab',
-            'libcalendaring',
             'managesieve',
             'newmail_notifier',
             'odfviewer',
