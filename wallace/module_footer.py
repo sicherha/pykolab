@@ -125,14 +125,14 @@ def execute(*args, **kw):
             continue
 
         if content_type == "text/plain":
-            content = part.get_payload()
+            content = part.get_payload(decode=True)
             content += "\n\n-- \n%s" % (footer['plain'])
             part.set_payload(content)
             footer_added = True
             log.debug("Text footer attached.", level=6)
 
         elif content_type == "text/html":
-            content = part.get_payload()
+            content = part.get_payload(decode=True)
             append = "\n<!-- footer appended by Wallace -->\n" + footer['html']
             if "</body>" in content:
                 part.set_payload(content.replace("</body>", append + "</body>"))
