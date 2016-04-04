@@ -1260,9 +1260,9 @@ def send_cancel_notification(object, receiving_user, deleted=False):
             'organizer': orgname if orgname else orgemail
         }
         if deleted:
-            message_text += " " + _("The copy in your tasklist as been removed accordingly.")
+            message_text += " " + _("The copy in your tasklist has been removed accordingly.")
         else:
-            message_text += " " + _("The copy in your tasklist as been marked as cancelled accordingly.")
+            message_text += " " + _("The copy in your tasklist has been marked as cancelled accordingly.")
     else:
         message_text = _("The event '%(summary)s' at %(start)s has been cancelled by %(organizer)s.") % {
             'summary': object.get_summary(),
@@ -1270,9 +1270,9 @@ def send_cancel_notification(object, receiving_user, deleted=False):
             'organizer': orgname if orgname else orgemail
         }
         if deleted:
-            message_text += " " + _("The copy in your calendar as been removed accordingly.")
+            message_text += " " + _("The copy in your calendar has been removed accordingly.")
         else:
-            message_text += " " + _("The copy in your calendar as been marked as cancelled accordingly.")
+            message_text += " " + _("The copy in your calendar has been marked as cancelled accordingly.")
 
     message_text += "\n\n" + _("*** This is an automated message. Please do not reply. ***")
 
