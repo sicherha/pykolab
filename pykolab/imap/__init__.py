@@ -374,8 +374,8 @@ class IMAP(object):
                     mode = 'subtract'
                     continue
                 if char == '+':
-                    continue
                     mode = 'add'
+                    continue
 
                 acl_map[mode] += char
 
@@ -520,7 +520,7 @@ class IMAP(object):
         _additional_folders = None
 
         if not hasattr(self, 'domain'):
-            self.domain == None
+            self.domain = None
 
         if self.domain == None and len(mailbox_base_name.split('@')) > 1:
             self.domain = mailbox_base_name.split('@')[1]
