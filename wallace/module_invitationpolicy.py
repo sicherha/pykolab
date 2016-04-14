@@ -1274,6 +1274,9 @@ def send_cancel_notification(object, receiving_user, deleted=False):
         else:
             message_text += " " + _("The copy in your calendar has been marked as cancelled accordingly.")
 
+    if object.get_recurrence_id():
+        message_text += "\n" + _("NOTE: This cancellation only refers to this single occurrence!")
+
     message_text += "\n\n" + _("*** This is an automated message. Please do not reply. ***")
 
     # compose mime message
