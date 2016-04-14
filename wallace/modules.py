@@ -114,7 +114,11 @@ def execute(name, *args, **kw):
         log.error(_("No such module %r in modules %r (2).") %(name, modules))
         sys.exit(1)
 
-    return modules[name]['function'](*args, **kw)
+    try:
+        return modules[name]['function'](*args, **kw)
+    except Exception, errmsg:
+        log.error(_("Unknown error occurred; %r") % (errmsg))
+        log.error("%r" % (traceback.format_exc()))
 
 def heartbeat(name, *args, **kw):
     if not modules.has_key(name):
