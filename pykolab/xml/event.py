@@ -122,6 +122,7 @@ class Event(object):
         else:
             self.from_ical(from_ical, from_string)
 
+        self.set_created(self.get_created())
         self.uid = self.get_uid()
 
     def _load_attendees(self):

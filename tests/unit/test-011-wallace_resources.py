@@ -117,7 +117,7 @@ class TestWallaceResources(unittest.TestCase):
 
     def _mock_find_resource(self, address):
         if not 'resource' in address:
-            return None
+            return [];
 
         (prefix, domain) = address.split('@')
         entry_dn = "cn=" + prefix + ",ou=Resources,dc=" + ",dc=".join(domain.split('.'))
