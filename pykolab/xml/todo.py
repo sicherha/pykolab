@@ -95,6 +95,8 @@ class Todo(Event):
 
         for attr in list(set(ical_todo.singletons)):
             if ical_todo.has_key(attr):
+                if isinstance(ical_todo[attr], list):
+                    ical_todo[attr] = ical_todo[attr][0];
                 self.set_from_ical(attr.lower(), ical_todo[attr])
 
         for attr in list(set(ical_todo.multiple)):

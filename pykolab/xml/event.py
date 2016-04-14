@@ -351,6 +351,8 @@ class Event(object):
         # NOTE: Make sure to list(set()) or duplicates may arise
         for attr in list(set(ical_event.singletons)):
             if ical_event.has_key(attr):
+                if isinstance(ical_event[attr], list):
+                    ical_event[attr] = ical_event[attr][0];
                 self.set_from_ical(attr.lower(), ical_event[attr])
 
         # NOTE: Make sure to list(set()) or duplicates may arise
