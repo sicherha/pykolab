@@ -116,7 +116,8 @@ class LDAP(pykolab.base.Base):
         pykolab.base.Base.__init__(self, domain=domain)
 
         self.ldap = None
-        self.bind = False
+        self.bind = None
+
         if domain == None:
             self.domain = conf.get('kolab', 'primary_domain')
         else:
@@ -230,8 +231,7 @@ class LDAP(pykolab.base.Base):
 
                 # Needs to be synchronous or succeeds and continues setting retval
                 # to True!!
-                self.ldap.simple_bind_s(entry_dn, login[1])
-                retval = True
+                retval = self._bind(entry_dn, login[1])
                 try:
                     auth_cache.set_entry(_filter, entry_dn)
                 except Exception, errmsg:
@@ -260,13 +260,12 @@ class LDAP(pykolab.base.Base):
 
                 # Needs to be synchronous or succeeds and continues setting retval
                 # to True!!
-                self.ldap.simple_bind_s(entry_dn, login[1])
+                retval = self._bind(entry_dn, login[1])
                 auth_cache.set_entry(_filter, entry_dn)
-                retval = True
 
             except ldap.NO_SUCH_OBJECT, errmsg:
                 log.debug(_("Error occured, there is no such object: %r") % (errmsg), level=8)
-                self.bind = False
+                self.bind = None
                 try:
                     auth_cache.del_entry(_filter)
                 except:
@@ -981,8 +980,11 @@ class LDAP(pykolab.base.Base):
         return entry_modifications
 
     def reconnect(self):
+        bind = self.bind
         self._disconnect()
         self.connect()
+        if bind is not None:
+            self._bind(bind['dn'], bind['pw'])
 
     def search_entry_by_attribute(self, attr, value, **kw):
         self._bind()
@@ -1183,26 +1185,32 @@ class LDAP(pykolab.base.Base):
     ### API depth level increasing!
     ###
 
-    def _bind(self):
+    def _bind(self, bind_dn=None, bind_pw=None):
         if self.ldap == None:
             self.connect()
 
-        if not self.bind:
-            bind_dn = self.config_get('bind_dn')
-            bind_pw = self.config_get('bind_pw')
+        if self.bind is None or bind_dn is None:
+            if bind_dn is None:
+                bind_dn = self.config_get('bind_dn')
+            if bind_pw is None:
+                bind_pw = self.config_get('bind_pw')
 
             # TODO: Binding errors control
             try:
                 self.ldap.simple_bind_s(bind_dn, bind_pw)
-                self.bind = True
+                self.bind = {'dn': bind_dn, 'pw': bind_pw}
             except ldap.SERVER_DOWN, errmsg:
                 log.error(_("LDAP server unavailable: %r") % (errmsg))
                 log.error(_("%s") % (traceback.format_exc()))
+                return False
             except ldap.INVALID_CREDENTIALS:
                 log.error(_("Invalid DN, username and/or password."))
+                return False
 
         else:
             log.debug(_("_bind called, but already bound"), level=9)
+
+        return True
 
     def _change_add_group(self, entry, change):
         """
@@ -2075,7 +2083,7 @@ class LDAP(pykolab.base.Base):
         self._unbind()
         del self.ldap
         self.ldap = None
-        self.bind = False
+        self.bind = None
 
     def _domain_naming_context(self, domain):
         self._bind()
@@ -2268,11 +2276,7 @@ class LDAP(pykolab.base.Base):
 
         log.debug(_("Finding domain root dn for domain %s") % (domain), level=8)
 
-        bind_dn = conf.get('ldap', 'bind_dn')
-        bind_pw = conf.get('ldap', 'bind_pw')
-
         domain_base_dn = conf.get('ldap', 'domain_base_dn', quiet=True)
-
         domain_filter = conf.get('ldap', 'domain_filter')
 
         if not domain_filter == None:
@@ -2353,9 +2357,7 @@ class LDAP(pykolab.base.Base):
         log.debug(_("Listing domains..."), level=8)
 
         self.connect()
-
-        bind_dn = conf.get('ldap', 'bind_dn')
-        bind_pw = conf.get('ldap', 'bind_pw')
+        self._bind()
 
         domain_base_dn = conf.get('ldap', 'domain_base_dn', quiet=True)
 
@@ -2372,12 +2374,6 @@ class LDAP(pykolab.base.Base):
 
         if domain_base_dn == None or domain_filter == None:
             return []
-
-        # TODO: this function should be wrapped for error handling
-        try:
-            self.ldap.simple_bind_s(bind_dn, bind_pw)
-        except ldap.SERVER_DOWN, e:
-            raise AuthBackendError, _("Authentication database DOWN")
 
         dna = self.config_get('domain_name_attribute')
         if dna == None:
@@ -2414,13 +2410,6 @@ class LDAP(pykolab.base.Base):
             domains.append((primary_domain,secondary_domains))
 
         return domains
-
-    def _reconnect(self):
-        """
-            Reconnect to LDAP
-        """
-        self._disconnect()
-        self.connect()
 
     def _synchronize_callback(self, *args, **kw):
         """
@@ -2542,7 +2531,7 @@ class LDAP(pykolab.base.Base):
         """
 
         self.ldap.unbind()
-        self.bind = False
+        self.bind = None
 
     ###
     ### Backend search functions
