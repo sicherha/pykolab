@@ -675,7 +675,7 @@ def user_dn_from_email_address(email_address):
 
     local_domains = auth.list_domains()
 
-    if not local_domains == None:
+    if local_domains is not None:
         local_domains = list(set(local_domains.keys()))
 
     if not email_address.split('@')[1] in local_domains:
@@ -739,7 +739,7 @@ def imap_proxy_auth(user_rec):
     global imap
 
     mail_attribute = conf.get('cyrus-sasl', 'result_attribute')
-    if mail_attribute == None:
+    if mail_attribute is None:
         mail_attribute = 'mail'
 
     mail_attribute = mail_attribute.lower()
@@ -1012,25 +1012,25 @@ def store_object(object, user_rec, targetfolder=None, master=None):
     """
         Append the given object to the user's default calendar/tasklist
     """
-    
-    # find default calendar folder to save object to if no target folder
-    # has already been specified.
+
+    # find calendar folder to save object to if not specified
     if targetfolder is None:
         targetfolders = list_user_folders(user_rec, object.type)
+        oc = object.get_classification()
 
-        if not targetfolders == None and len(targetfolders) > 0:
+        # use *.confidential/private folder for confidential/private invitations
+        if oc == kolabformat.ClassConfidential and user_rec.has_key('_confidential_folder'):
+            targetfolder = user_rec['_confidential_folder']
+        elif oc == kolabformat.ClassPrivate and user_rec.has_key('_private_folder'):
+            targetfolder = user_rec['_private_folder']
+        # use *.default folder if exists
+        elif user_rec.has_key('_default_folder'):
+            targetfolder = user_rec['_default_folder']
+        # fallback to any existing folder of specified type
+        elif targetfolders is not None and len(targetfolders) > 0:
             targetfolder = targetfolders[0]
 
     if targetfolder is None:
-        if user_rec.has_key('_default_folder'):
-            targetfolder = user_rec['_default_folder']
-        # use *.confidential folder for invitations classified as confidential
-        if object.get_classification() == kolabformat.ClassConfidential and user_rec.has_key('_confidential_folder'):
-            targetfolder = user_rec['_confidential_folder']
-        elif object.get_classification() == kolabformat.ClassPrivate and user_rec.has_key('_private_folder'):
-            targetfolder = user_rec['_private_folder']
-
-    if targetfolder == None:
         log.error(_("Failed to save %s: no target folder found for user %r") % (object.type, user_rec['mail']))
         return False
 
