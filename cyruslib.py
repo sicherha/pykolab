@@ -382,7 +382,7 @@ class CYRUS:
             if ok(res):
                 return res, msg
         except Exception, info:
-            error = info.args[0].split(':').pop().strip()
+            error = str(info).split(':').pop().strip()
             if error.upper().startswith('BAD'):
                 error = error.split('BAD', 1).pop().strip()
                 error = unquote(error[1:-1], '\'')
@@ -411,7 +411,7 @@ class CYRUS:
             res, msg = self.m.login(username, password)
             admin = self.m.isadmin()
         except Exception, info:
-            error = info.args[0].split(':').pop().strip()
+            error = str(info).split(':').pop().strip()
             self.__doexception("LOGIN", error)
 
         if admin:
@@ -443,7 +443,7 @@ class CYRUS:
         try:
             res, msg = self.m.logout()
         except Exception, info:
-            error = info.args[0].split(':').pop().strip()
+            error = str(info).split(':').pop().strip()
             self.__doexception("LOGOUT", error)
         self.AUTH = False
         self.ADMIN = None
