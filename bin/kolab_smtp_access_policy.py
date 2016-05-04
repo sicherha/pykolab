@@ -88,7 +88,7 @@ policy_result_table = Table(
         Column('id', Integer, Sequence('seq_id_result'), primary_key=True),
         Column('key', String(16), nullable=False),
         Column('value', Boolean, nullable=False),
-        Column('sender', String(64), nullable=False),
+        Column('sender', String(64), nullable=True),
         Column('recipient', String(64), nullable=False),
         Column('sasl_username', String(64)),
         Column('sasl_sender', String(64)),
@@ -377,7 +377,7 @@ class PolicyRequest(object):
         for rule in rules['allow']:
             deny_override = False
 
-            if _object.endswith(rule):
+            if _object is not None and _object.endswith(rule):
                 for deny_rule in rules['deny']:
                     if deny_rule.endswith(rule):
                         deny_override = True
@@ -389,7 +389,7 @@ class PolicyRequest(object):
 
         for rule in rules['deny']:
             allow_override = False
-            if _object.endswith(rule):
+            if _object is not None and _object.endswith(rule):
                 if not allowed:
                     denied = True
                     continue
