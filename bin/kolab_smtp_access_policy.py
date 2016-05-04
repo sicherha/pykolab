@@ -38,6 +38,7 @@ from sqlalchemy import MetaData
 from sqlalchemy import String
 from sqlalchemy import Table
 from sqlalchemy import Sequence
+from sqlalchemy import PickleType
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import mapper
@@ -93,6 +94,7 @@ policy_result_table = Table(
         Column('sasl_username', String(64)),
         Column('sasl_sender', String(64)),
         Column('created', Integer, nullable=False),
+        Column('data', PickleType, nullable=True),
     )
 
 Index(
@@ -113,7 +115,8 @@ class PolicyResult(object):
             sender=None,
             recipient=None,
             sasl_username=None,
-            sasl_sender=None
+            sasl_sender=None,
+            data=None
         ):
 
         self.key = key
@@ -123,6 +126,7 @@ class PolicyResult(object):
         self.sasl_sender = sasl_sender
         self.recipient = recipient
         self.created = (int)(time.time())
+        self.data = data
 
 mapper(PolicyResult, policy_result_table)
 
@@ -1061,8 +1065,11 @@ class PolicyRequest(object):
                         if recipient == record.recipient:
                             recipient_found = True
 
-                    if recipient_found and not record.value:
-                        reject(_("Sender %s is not allowed to send to recipient %s") % (self.sender,recipient))
+                    if recipient_found:
+                        if not record.value:
+                            reject(_("Sender %s is not allowed to send to recipient %s") % (self.sender,recipient))
+                        if record.data is not None:
+                            self.__dict__.update(record.data)
 
                 return True
 
@@ -1152,13 +1159,20 @@ class PolicyRequest(object):
             sender_verified = True
 
         if not cache == False:
+            data = {
+                    'sasl_user_uses_alias': self.sasl_user_uses_alias,
+                    'sasl_user_is_delegate': self.sasl_user_is_delegate,
+                    'sender_domain': self.sender_domain,
+                }
+
             record_id = cache_update(
                     function='verify_sender',
                     sender=self.sender,
                     recipients=self.recipients,
                     result=(int)(sender_verified),
                     sasl_username=self.sasl_username,
-                    sasl_sender=self.sasl_sender
+                    sasl_sender=self.sasl_sender,
+                    data=data
                 )
 
         return sender_verified
@@ -1251,7 +1265,8 @@ def cache_insert(
         recipients=[],
         result=None,
         sasl_username='',
-        sasl_sender=''
+        sasl_sender='',
+        data=None
     ):
 
     if not cache == True:
@@ -1275,7 +1290,8 @@ def cache_insert(
                         sender=sender,
                         recipient=recipient,
                         sasl_username=sasl_username,
-                        sasl_sender=sasl_sender
+                        sasl_sender=sasl_sender,
+                        data=data
                     )
             )
 
@@ -1288,7 +1304,8 @@ def cache_update(
         recipients=[],
         result=None,
         sasl_username='',
-        sasl_sender=''
+        sasl_sender='',
+        data=None
     ):
 
     """
@@ -1328,7 +1345,8 @@ def cache_update(
                     recipient=recipient,
                     result=result,
                     sasl_username=sasl_username,
-                    sasl_sender=sasl_sender
+                    sasl_sender=sasl_sender,
+                    data=data
                 )
 
 def defer_if_permit(message, policy_request=None):
@@ -1412,8 +1430,11 @@ def permit(message, policy_request=None):
     # Note that using an encryption key voids the actual use of proper Sender
     # and X-Sender headers such as they could be interpreted by a client
     # application.
-    enc_key = conf.get(policy_request.sender_domain, 'sender_header_enc_key')
-    if enc_key == None:
+    enc_key = None
+    if policy_request.sender_domain is not None:
+        enc_key = conf.get(policy_request.sender_domain, 'sender_header_enc_key')
+
+    if enc_key is None:
         enc_key = conf.get('kolab_smtp_access_policy', 'sender_header_enc_key')
 
     sender_header = None
@@ -1623,12 +1644,6 @@ if __name__ == "__main__":
             )
 
         if not protocol_state == 'data':
-            log.debug(
-                    _("Request instance %s is not yet in DATA state") % (
-                            instance
-                        )
-                )
-
             print "action=DUNNO\n\n"
             sys.stdout.flush()
 
@@ -1636,8 +1651,6 @@ if __name__ == "__main__":
         # set to a non-zero value and the protocol_state being set to 'data'.
         # Note that the input we're getting is a string, not an integer.
         else:
-            log.debug(_("Request instance %s reached DATA state") % (instance))
-
             sender_allowed = False
             recipient_allowed = False
 
