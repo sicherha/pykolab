@@ -99,7 +99,7 @@
 
     \$config['session_lifetime'] = 180;
     \$config['password_charset'] = 'UTF-8';
-    \$config['useragent'] = 'Kolab 3.4/Roundcube ' . RCUBE_VERSION;
+    \$config['useragent'] = 'Kolab 16/Roundcube ' . RCUBE_VERSION;
 
     \$config['message_sort_col'] = 'date';
 
