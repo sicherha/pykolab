@@ -139,6 +139,9 @@ def set_entry(key, value):
 
         db.commit()
     elif len(_entries) == 1:
+        if not isinstance(value, unicode):
+            value = unicode(value, 'utf-8')
+
         if not _entries[0].value == value:
             _entries[0].value = value
 

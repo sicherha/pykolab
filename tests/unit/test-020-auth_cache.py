@@ -111,3 +111,49 @@ class TestAuthCache(unittest.TestCase):
 
         result = auth_cache.get_entry('v' + 'e'*512 + 'rylongkey')
         self.assertEqual(result, 'v' + 'e'*512 + 'rylongvalue')
+
+    def test_006_plain_update(self):
+        auth_cache.set_entry(
+                'somekey',
+                'ou=People,dc=example,dc=org2'
+            )
+
+        result = auth_cache.get_entry('somekey')
+        self.assertEqual(result, 'ou=People,dc=example,dc=org2')
+
+    def test_007_plain_encoding_update(self):
+        auth_cache.set_entry(
+                'somekey2',
+                'ou=Geschäftsbereich,ou=People,dc=example,dc=org2'
+            )
+
+        result = auth_cache.get_entry('somekey2')
+        self.assertEqual(result, 'ou=Gesch\xc3\xa4ftsbereich,ou=People,dc=example,dc=org2')
+
+    def test_008_unicode_update(self):
+        auth_cache.set_entry(
+                'somekey3',
+                u'ou=Geschäftsbereich,ou=People,dc=example,dc=org2'
+            )
+
+        result = auth_cache.get_entry('somekey3')
+        self.assertEqual(result, 'ou=Gesch\xc3\xa4ftsbereich,ou=People,dc=example,dc=org2')
+
+    @unittest.skip("Double encoding or decoding")
+    def test_009_unicode_escape_update(self):
+        auth_cache.set_entry(
+                'somekey4',
+                u'ou=Gesch\xc3\xa4ftsbereich,ou=People,dc=example,dc=org2'
+            )
+
+        result = auth_cache.get_entry('somekey4')
+        self.assertEqual(result, u'ou=Gesch\xc3\xa4ftsbereich,ou=People,dc=example,dc=org2')
+
+    def test_010_longkey_update(self):
+        auth_cache.set_entry(
+                'v' + 'e'*512 + 'rylongkey',
+                'v' + 'e'*512 + 'rylongvalue2'
+            )
+
+        result = auth_cache.get_entry('v' + 'e'*512 + 'rylongkey')
+        self.assertEqual(result, 'v' + 'e'*512 + 'rylongvalue2')
