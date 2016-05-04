@@ -1317,44 +1317,8 @@ class LDAP(pykolab.base.Base):
                     folderacl_entry_attribute
                 )
 
-        if not entry[folderacl_entry_attribute] == None:
-            # Parse it before assigning it
-            entry['kolabfolderaclentry'] = []
-            if not isinstance(entry[folderacl_entry_attribute], list):
-                entry[folderacl_entry_attribute] = [ entry[folderacl_entry_attribute] ]
-
-            for acl_entry in entry[folderacl_entry_attribute]:
-                acl_access = acl_entry.split()[-1]
-
-                if len(acl_entry.split(', ')) > 1:
-                    aci_subject = ', '.join(acl_entry.split(', ')[:-1])
-                else:
-                    aci_subject = acl_entry.split()[0]
-
-                log.debug(_("Found a subject %r with access %r") % (aci_subject, acl_access), level=8)
-
-                access_lookup_dict = {
-                        'all': 'lrsedntxakcpiw',
-                        'append': 'wip',
-                        'full': 'lrswipkxtecdn',
-                        'read': 'lrs',
-                        'read-only': 'lrs',
-                        'read-write': 'lrswitedn',
-                        'post': 'p',
-                        'semi-full': 'lrswit',
-                        'write': 'lrswite',
-                    }
-
-                if access_lookup_dict.has_key(acl_access):
-                    acl_access = access_lookup_dict[acl_access]
-
-                log.debug(_("Found a subject %r with access %r") % (aci_subject, acl_access), level=8)
-
-                entry['kolabfolderaclentry'].append("(%r, %r, %r)" % (folder_path, aci_subject, acl_access))
-
         if not self.imap.shared_folder_exists(folder_path):
             self.imap.shared_folder_create(folder_path, server)
-            self.imap.set_acl(folder_path, 'anyone', '')
 
         if entry.has_key('kolabfoldertype') and \
                 not entry['kolabfoldertype'] == None:
@@ -1364,12 +1328,11 @@ class LDAP(pykolab.base.Base):
                     entry['kolabfoldertype']
                 )
 
-        if entry.has_key('kolabfolderaclentry') and \
-                not entry['kolabfolderaclentry'] == None:
+        entry['kolabfolderaclentry'] = self._parse_acl(entry[folderacl_entry_attribute])
 
-            self.imap._set_kolab_mailfolder_acls(
-                    entry['kolabfolderaclentry']
-                )
+        self.imap._set_kolab_mailfolder_acls(
+                entry['kolabfolderaclentry'], folder_path
+            )
 
         if entry.has_key(delivery_address_attribute) and \
                 not entry[delivery_address_attribute] == None:
@@ -1714,44 +1677,8 @@ class LDAP(pykolab.base.Base):
                     folderacl_entry_attribute
                 )
 
-        if not entry[folderacl_entry_attribute] == None:
-            # Parse it before assigning it
-            entry['kolabfolderaclentry'] = []
-            if not isinstance(entry[folderacl_entry_attribute], list):
-                entry[folderacl_entry_attribute] = [ entry[folderacl_entry_attribute] ]
-
-            for acl_entry in entry[folderacl_entry_attribute]:
-                acl_access = acl_entry.split()[-1]
-
-                if len(acl_entry.split(', ')) > 1:
-                    aci_subject = ', '.join(acl_entry.split(', ')[:-1])
-                else:
-                    aci_subject = acl_entry.split()[0]
-
-                log.debug(_("Found a subject %r with access %r") % (aci_subject, acl_access), level=8)
-
-                access_lookup_dict = {
-                        'all': 'lrsedntxakcpiw',
-                        'append': 'wip',
-                        'full': 'lrswipkxtecdn',
-                        'read': 'lrs',
-                        'read-only': 'lrs',
-                        'read-write': 'lrswitedn',
-                        'post': 'p',
-                        'semi-full': 'lrswit',
-                        'write': 'lrswite',
-                    }
-
-                if access_lookup_dict.has_key(acl_access):
-                    acl_access = access_lookup_dict[acl_access]
-
-                log.debug(_("Found a subject %r with access %r") % (aci_subject, acl_access), level=8)
-
-                entry['kolabfolderaclentry'].append("(%r, %r, %r)" % (folder_path, aci_subject, acl_access))
-
         if not self.imap.shared_folder_exists(folder_path):
             self.imap.shared_folder_create(folder_path, server)
-            self.imap.set_acl(folder_path, 'anyone', '')
 
         if entry.has_key('kolabfoldertype') and \
                 not entry['kolabfoldertype'] == None:
@@ -1761,12 +1688,11 @@ class LDAP(pykolab.base.Base):
                     entry['kolabfoldertype']
                 )
 
-        if entry.has_key('kolabfolderaclentry') and \
-                not entry['kolabfolderaclentry'] == None:
+        entry['kolabfolderaclentry'] = self._parse_acl(entry[folderacl_entry_attribute])
 
-            self.imap._set_kolab_mailfolder_acls(
-                    entry['kolabfolderaclentry']
-                )
+        self.imap._set_kolab_mailfolder_acls(
+                entry['kolabfolderaclentry'], folder_path, True
+            )
 
         if entry.has_key(delivery_address_attribute) and \
                 not entry[delivery_address_attribute] == None:
@@ -1944,33 +1870,11 @@ class LDAP(pykolab.base.Base):
                     entry['kolabfoldertype']
                 )
 
-        if entry.has_key('kolabfolderaclentry') and \
-                not entry['kolabfolderaclentry'] == None:
+        entry['kolabfolderaclentry'] = self._parse_acl(entry['kolabfolderaclentry'])
 
-            if isinstance(entry['kolabfolderaclentry'], basestring):
-                entry['kolabfolderaclentry'] = [ entry['kolabfolderaclentry'] ]
-
-            import copy
-            _acls = copy.deepcopy(entry['kolabfolderaclentry'])
-            entry['kolabfolderaclentry'] = []
-
-            for _entry in _acls:
-                if _entry[0] == "(":
-                    entry['kolabfolderaclentry'].append(_entry)
-                    continue
-
-                s,r = [x.strip() for x in _entry.split(',')]
-
-                entry['kolabfolderaclentry'].append("('%s', '%s', '%s')" % (folder_path, s, r))
-
-            self.imap._set_kolab_mailfolder_acls(
-                    entry['kolabfolderaclentry']
-                )
-
-        elif entry['kolabfolderaclentry'] in [None,[]]:
-            for ace in self.imap.list_acls(folder_path):
-                aci_subject = ace.split()[0]
-                self.imap.set_acl(folder_path, aci_subject, '')
+        self.imap._set_kolab_mailfolder_acls(
+                entry['kolabfolderaclentry'], folder_path, True
+            )
 
         delivery_address_attribute = self.config_get('sharedfolder_delivery_address_attribute')
         if entry.has_key(delivery_address_attribute) and \
@@ -2934,3 +2838,32 @@ class LDAP(pykolab.base.Base):
                     continue
 
         return _results
+
+    def _parse_acl(self, acl):
+        """
+            Parse LDAP ACL specification for use in IMAP
+        """
+
+        results = []
+
+        if acl is not None:
+            if not isinstance(acl, list):
+                acl = [ acl ]
+
+            for acl_entry in acl:
+                # entry already converted to IMAP format?
+                if acl_entry[0] == "(":
+                    results.append(acl_entry)
+                    continue
+
+                acl_access = acl_entry.split()[-1]
+                acl_subject = acl_entry.split(', ')
+
+                if len(acl_subject) > 1:
+                    acl_subject = ', '.join(acl_subject[:-1])
+                else:
+                    acl_subject = acl_entry.split()[0]
+
+                results.append("(%r, %r)" % (acl_subject, acl_access))
+
+        return results

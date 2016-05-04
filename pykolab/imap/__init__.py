@@ -816,19 +816,42 @@ class IMAP(object):
         else:
             return False
 
-    def _set_kolab_mailfolder_acls(self, acls):
+    def _set_kolab_mailfolder_acls(self, acls, folder=None, update=False):
+        # special case, folder has no ACLs assigned and update was requested,
+        # remove all existing ACL entries
+        if update is True and isinstance(acls, list) and len(acls) == 0:
+            acls = self.list_acls(folder)
+            for subject in acls:
+                log.debug(
+                        _("Removing ACL rights %s for subject %s on folder " + \
+                            "%s") % (acls[subject], subject, folder), level=8)
+                self.set_acl(folder, subject, '')
+
+            return
+
         if isinstance(acls, basestring):
             acls = [ acls ]
 
+        old_acls = None
+
         for acl in acls:
             exec("acl = %s" % (acl))
-            folder = acl[0]
-            subject = acl[1]
-            rights = acl[2]
-            if len(acl) == 4:
-                epoch = acl[3]
+            subject = acl[0]
+            rights = acl[1]
+            if len(acl) == 3:
+                epoch = acl[2]
             else:
                 epoch = (int)(time.time()) + 3600
+
+            # update mode, check existing entries
+            if update is True:
+                if old_acls is None:
+                    old_acls = self.list_acls(folder)
+                    for old_subject in old_acls:
+                        old_acls[old_subject] = old_acls[old_subject]
+
+                if subject in old_acls:
+                    old_acls[subject] = None
 
             if epoch > (int)(time.time()):
                 log.debug(
@@ -851,6 +874,15 @@ class IMAP(object):
                         "%s" % (subject),
                         ""
                     )
+
+        # update mode, unset removed ACL entries
+        if old_acls is not None:
+            for subject in old_acls:
+                if old_acls[subject] is not None:
+                    log.debug(
+                        _("Removing ACL rights %s for subject %s on folder " + \
+                            "%s") % (old_acls[subject], subject, folder), level=8)
+                    self.set_acl(folder, subject, '')
 
         pass
 
