@@ -19,6 +19,7 @@ from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
 
+
 class TestWallaceNonASCIISubject(unittest.TestCase):
 
     @classmethod
@@ -83,10 +84,10 @@ class TestWallaceNonASCIISubject(unittest.TestCase):
     def send_message(self, msg, _to=None, _from=None):
         smtp = smtplib.SMTP('localhost', 10026)
 
-        if _to == None:
+        if _to is None:
             _to = self.send_to
 
-        if _from == None:
+        if _from is None:
             _from = self.send_from
 
         smtp.sendmail(_from, _to, msg.as_string())
@@ -97,7 +98,7 @@ class TestWallaceNonASCIISubject(unittest.TestCase):
 
         folders = imap.lm('user/%(local)s@%(domain)s' % (self.user))
         self.assertEqual(len(folders), 1)
-        
+
     def test_002_send_nonascii_subject(self):
         subject = Header(u"test_002_nonascii_subject chwała")
         body = "This is a test message"
@@ -123,4 +124,3 @@ class TestWallaceNonASCIISubject(unittest.TestCase):
 
         if not self.check_message_delivered(subject):
             raise Exception
-

@@ -7,6 +7,7 @@ from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
 
+
 def purge_imap():
     time.sleep(2)
 

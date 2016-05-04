@@ -10,6 +10,7 @@ from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
 
+
 class TestUserAddDeCH(unittest.TestCase):
     @classmethod
     def setup_class(self, *args, **kw):
@@ -53,5 +54,3 @@ class TestUserAddDeCH(unittest.TestCase):
 
         self.assertEqual(result['mail'], 'thomas.bruederli@example.org')
         self.assertEqual(sorted(result['alias']), ['bruederli@example.org', 't.bruederli@example.org'])
-
-

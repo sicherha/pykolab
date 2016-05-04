@@ -3,6 +3,7 @@ import unittest
 
 from pykolab.xml import ContactReference
 
+
 class TestEventXML(unittest.TestCase):
     contact_reference = ContactReference("jane@doe.org")
 
@@ -13,7 +14,7 @@ class TestEventXML(unittest.TestCase):
             if (type(_value)) == _type:
                 return True
             else:
-                raise AssertionError, "%s != %s" % (type(_value), _type)
+                raise AssertionError("%s != %s" % (type(_value), _type))
 
     def test_001_minimal(self):
         self.assertIsInstance(self.contact_reference.__str__(), str)

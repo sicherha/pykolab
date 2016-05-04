@@ -4,11 +4,12 @@ from pykolab import wap_client
 
 conf = pykolab.getConf()
 
+
 def resource_add(type, cn, members=None, owner=None, **kw):
-    if type == None or type == '':
+    if type is None or type == '':
         raise Exception
 
-    if cn == None or cn == '':
+    if cn is None or cn == '':
         raise Exception
 
     resource_details = {
@@ -21,7 +22,10 @@ def resource_add(type, cn, members=None, owner=None, **kw):
 
     resource_details.update(kw)
 
-    result = wap_client.authenticate(conf.get('ldap', 'bind_dn'), conf.get('ldap', 'bind_pw'), conf.get('kolab', 'primary_domain'))
+    bind_dn = conf.get('ldap', 'bind_dn')
+    bind_pw = conf.get('ldap', 'bind_pw')
+    domain = conf.get('kolab', 'primary_domain')
+    result = wap_client.authenticate(bind_dn, bind_pw, domain)
 
     type_id = 0
     resource_types = wap_client.resource_types_list()
@@ -41,7 +45,7 @@ def resource_add(type, cn, members=None, owner=None, **kw):
         attr_details = resource_type_info['form_fields'][attribute]
 
         if isinstance(attr_details, dict):
-            if not attr_details.has_key('optional') or attr_details['optional'] == False or resource_details.has_key(attribute):
+            if 'optional' not in attr_details or attr_details['optional'] is False or attribute in resource_details:
                 params[attribute] = resource_details[attribute]
         elif isinstance(attr_details, list):
             params[attribute] = resource_details[attribute]
@@ -49,7 +53,7 @@ def resource_add(type, cn, members=None, owner=None, **kw):
     fvg_params = params
     fvg_params['object_type'] = 'resource'
     fvg_params['type_id'] = type_id
-    fvg_params['attributes'] = [attr for attr in resource_type_info['auto_form_fields'].keys() if not attr in params.keys()]
+    fvg_params['attributes'] = [attr for attr in resource_type_info['auto_form_fields'].keys() if attr not in params]
 
     result = wap_client.resource_add(params)
     result['dn'] = "cn=" + result['cn'] + ",ou=Resources,dc=example,dc=org"
@@ -57,13 +61,15 @@ def resource_add(type, cn, members=None, owner=None, **kw):
 
 
 def purge_resources():
-    wap_client.authenticate(conf.get("ldap", "bind_dn"), conf.get("ldap", "bind_pw"), conf.get('kolab', 'primary_domain'))
+    bind_dn = conf.get('ldap', 'bind_dn')
+    bind_pw = conf.get('ldap', 'bind_pw')
+    domain = conf.get('kolab', 'primary_domain')
+    result = wap_client.authenticate(bind_dn, bind_pw, domain)
 
     resources = wap_client.resources_list()
 
     for resource in resources['list']:
         wap_client.resource_delete({'id': resource})
 
-    #from tests.functional.purge_imap import purge_imap
-    #purge_imap()
-
+    # from tests.functional.purge_imap import purge_imap
+    # purge_imap()

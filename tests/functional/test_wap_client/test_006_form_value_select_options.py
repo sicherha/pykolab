@@ -6,6 +6,7 @@ from pykolab import wap_client
 
 conf = pykolab.getConf()
 
+
 class TestFormValueListOptions(unittest.TestCase):
 
     def test_001_list_options_user_preferredlanguage(self):
@@ -24,8 +25,7 @@ class TestFormValueListOptions(unittest.TestCase):
                 'preferredlanguage'
             )
 
-        self.assertTrue(attribute_values['preferredlanguage'].has_key('default'))
-        self.assertTrue(attribute_values['preferredlanguage'].has_key('list'))
+        self.assertTrue('default' in attribute_values['preferredlanguage'])
+        self.assertTrue('list' in attribute_values['preferredlanguage'])
         self.assertTrue(len(attribute_values['preferredlanguage']['list']) > 1)
         self.assertTrue(attribute_values['preferredlanguage']['default'] in attribute_values['preferredlanguage']['list'])
-

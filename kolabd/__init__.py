@@ -1,4 +1,4 @@
-# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2016 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -39,6 +39,7 @@ from process import KolabdProcess as Process
 
 log = pykolab.getLogger('pykolab.daemon')
 conf = pykolab.getConf()
+
 
 class KolabDaemon(object):
     def __init__(self):
@@ -156,7 +157,6 @@ class KolabDaemon(object):
 
                         sys.exit(1)
 
-
                     # Set real and effective user if not the same as current.
                     if not user_uid == ruid:
                         log.debug(
@@ -217,8 +217,8 @@ class KolabDaemon(object):
         except AttributeError, errmsg:
             exitcode = 1
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a " + \
-                "bug at https://issues.kolab.org")
+            print >> sys.stderr, _("Traceback occurred, please report a " +
+                                   "bug at https://issues.kolab.org")
 
         except TypeError, errmsg:
             exitcode = 1
@@ -228,8 +228,8 @@ class KolabDaemon(object):
         except:
             exitcode = 2
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a " + \
-                "bug at https://issues.kolab.org")
+            print >> sys.stderr, _("Traceback occurred, please report a " +
+                                   "bug at https://issues.kolab.org")
 
         sys.exit(exitcode)
 
@@ -276,8 +276,8 @@ class KolabDaemon(object):
                 domain_base_dn = primary_auth.domain_naming_context(primary_domain)
                 log.debug(_("Domain Base DN for domain %r is %r") % (primary_domain, domain_base_dn), level=8)
 
-                if not domain_base_dn == None:
-                    if not domain_base_dn in domain_base_dns:
+                if domain_base_dn is not None:
+                    if domain_base_dn not in domain_base_dns:
                         domain_base_dns.append(domain_base_dn)
                         primary_domain = primary_auth.primary_domain_for_naming_context(domain_base_dn)
                         primary_domains.append(primary_domain)
@@ -366,6 +366,6 @@ class KolabDaemon(object):
 
     def write_pid(self):
         pid = os.getpid()
-        fp = open(conf.pidfile,'w')
+        fp = open(conf.pidfile, 'w')
         fp.write("%d\n" % (pid))
         fp.close()

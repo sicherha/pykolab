@@ -22,7 +22,6 @@
     Kolab configuration utility.
 """
 
-
 import logging
 import os
 import sys
@@ -44,4 +43,3 @@ if __name__ == "__main__":
     pykolab = pykolab.Conf()
     pykolab.finalize_conf()
     pykolab.run()
-

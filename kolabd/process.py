@@ -27,6 +27,7 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.daemon')
 conf = pykolab.getConf()
 
+
 class KolabdProcess(multiprocessing.Process):
     def __init__(self, domain):
         self.domain = domain
@@ -42,7 +43,7 @@ class KolabdProcess(multiprocessing.Process):
         log.debug(_("Synchronizing for domain %s") % (domain), level=8)
         sync_interval = conf.get('kolab', 'sync_interval')
 
-        if sync_interval == None or sync_interval == 0:
+        if sync_interval is None or sync_interval == 0:
             sync_interval = 300
         else:
             sync_interval = (int)(sync_interval)

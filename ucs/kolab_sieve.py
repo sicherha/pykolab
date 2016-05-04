@@ -36,7 +36,7 @@ sys.path = [
                             ),
                         '..'
                     )
-            ) ] + sys.path
+            )] + sys.path
 
 sys.stderr = open('/dev/null', 'a')
 
@@ -63,6 +63,7 @@ conf.debuglevel = 9
 
 from pykolab.auth import Auth
 
+
 def handler(*args, **kw):
     auth = Auth()
     auth.connect()
@@ -84,7 +85,7 @@ def handler(*args, **kw):
 
                 result_attr = conf.get('cyrus-sasl', 'result_attribute')
 
-                if not new.has_key(result_attr):
+                if result_attr not in new:
                     log.error(
                             "Entry %r does not have attribute %r" % (
                                     dn,
@@ -97,13 +98,13 @@ def handler(*args, **kw):
                 # See if the mailserver_attribute exists
                 mailserver_attribute = conf.get('ldap', 'mailserver_attribute').lower()
 
-                if mailserver_attribute == None:
+                if mailserver_attribute is None:
                     log.error("Mail server attribute is not set")
                     # TODO: Perhaps, query for IMAP servers. If there is only one,
                     #       we know what to do.
                     return
 
-                if new.has_key(mailserver_attribute):
+                if mailserver_attribute in new:
                     if not new[mailserver_attribute] == constants.fqdn:
                         log.info(
                                 "The mail server for user %r is set, and it is not me (%r)" % (
@@ -119,9 +120,7 @@ def handler(*args, **kw):
 
                 conf.plugins.exec_hook(
                         'sieve_mgmt_refresh',
-                        kw = {
-                                'user': new[result_attr]
-                            }
+                        kw={'user': new[result_attr]}
                     )
 
             else:
@@ -136,24 +135,21 @@ def handler(*args, **kw):
             mailserver_attribute = conf.get('ldap', 'mailserver_attribute').lower()
             result_attr = conf.get('cyrus-sasl', 'result_attribute').lower()
 
-            if mailserver_attribute == None:
+            if mailserver_attribute is None:
                 log.error("Mail server attribute is not set")
                 # TODO: Perhaps, query for IMAP servers. If there is only one,
                 #       we know what to do.
                 return
 
-            if new.has_key(mailserver_attribute):
+            if mailserver_attribute in new:
                 if not new[mailserver_attribute] == constants.fqdn:
                     log.info("The mail server for user %r is set, and it is not me (%r)" % (dn, new[mailserver_attribute]))
                     return
 
                 conf.plugins.exec_hook(
                         'sieve_mgmt_refresh',
-                        kw = {
-                                'user': new[result_attr]
-                            }
+                        kw={'user': new[result_attr]}
                     )
 
         else:
             log.info("entry %r changed, but no new or old attributes" % (dn))
-

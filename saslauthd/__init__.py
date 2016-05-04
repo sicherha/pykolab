@@ -1,4 +1,4 @@
-# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2016 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -45,6 +45,7 @@ from pykolab.translate import _
 
 log = pykolab.getLogger('saslauthd')
 conf = pykolab.getConf()
+
 
 class SASLAuthDaemon(object):
     def __init__(self):
@@ -166,7 +167,8 @@ class SASLAuthDaemon(object):
         except AttributeError, e:
             exitcode = 1
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a bug at https://issues.kolab.org")
+            print >> sys.stderr, _("Traceback occurred, please report a " +
+                                   "bug at https://issues.kolab.org")
         except TypeError, e:
             exitcode = 1
             traceback.print_exc()
@@ -174,7 +176,8 @@ class SASLAuthDaemon(object):
         except:
             exitcode = 2
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a bug at https://issues.kolab.org")
+            print >> sys.stderr, _("Traceback occurred, please report a " +
+                                   "bug at https://issues.kolab.org")
 
         sys.exit(exitcode)
 
@@ -214,8 +217,8 @@ class SASLAuthDaemon(object):
                     bound = True
                 except Exception, errmsg:
                     log.error(
-                            _("kolab-saslauthd could not accept " + \
-                            "connections on socket: %r") % (errmsg)
+                            _("kolab-saslauthd could not accept " +
+                              "connections on socket: %r") % (errmsg)
                         )
 
                     if cur_tries >= max_tries:
@@ -288,7 +291,7 @@ class SASLAuthDaemon(object):
 
     def write_pid(self):
         pid = os.getpid()
-        fp = open(conf.pidfile,'w')
+        fp = open(conf.pidfile, 'w')
         fp.write("%d\n" % (pid))
         fp.close()
 
@@ -357,7 +360,6 @@ class SASLAuthDaemon(object):
                             )
 
                         sys.exit(1)
-
 
                     # Set real and effective user if not the same as current.
                     if not user_uid == ruid:

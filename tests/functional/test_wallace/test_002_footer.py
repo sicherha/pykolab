@@ -17,6 +17,7 @@ from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
 
+
 class TestWallaceFooter(unittest.TestCase):
     user = None
 
@@ -115,10 +116,10 @@ class TestWallaceFooter(unittest.TestCase):
     def send_message(self, msg, _to=None, _from=None):
         smtp = smtplib.SMTP('localhost', 10026)
 
-        if _to == None:
+        if _to is None:
             _to = self.send_to
 
-        if _from == None:
+        if _from is None:
             _from = self.send_from
 
         smtp.sendmail(_from, _to, msg.as_string())

@@ -6,6 +6,7 @@ from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
 
+
 def purge_users():
     wap_client.authenticate(conf.get("ldap", "bind_dn"), conf.get("ldap", "bind_pw"))
 

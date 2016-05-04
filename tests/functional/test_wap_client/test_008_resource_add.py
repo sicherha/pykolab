@@ -10,6 +10,7 @@ import tests.functional.resource_func as funcs
 
 conf = pykolab.getConf()
 
+
 class TestResourceAdd(unittest.TestCase):
 
     @classmethod
@@ -29,7 +30,7 @@ class TestResourceAdd(unittest.TestCase):
         self.audi = funcs.resource_add("car", "Audi A4")
         self.passat = funcs.resource_add("car", "VW Passat")
         self.boxter = funcs.resource_add("car", "Porsche Boxter S")
-        self.cars = funcs.resource_add("collection", "Company Cars", [ self.audi['dn'], self.passat['dn'], self.boxter['dn'] ])
+        self.cars = funcs.resource_add("collection", "Company Cars", [self.audi['dn'], self.passat['dn'], self.boxter['dn']])
 
         from tests.functional.synchronize import synchronize_once
         synchronize_once()

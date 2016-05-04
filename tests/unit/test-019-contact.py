@@ -280,6 +280,7 @@ Content-Disposition: attachment;
 --=_4ff5155d75dc1328b7f5fe10ddce8d24--
 """
 
+
 class TestContactXML(unittest.TestCase):
     contact = Contact()
 
@@ -290,7 +291,7 @@ class TestContactXML(unittest.TestCase):
             if (type(_value)) == _type:
                 return True
             else:
-                raise AssertionError, "%s != %s" % (type(_value), _type)
+                raise AssertionError("%s != %s" % (type(_value), _type))
 
     def test_001_minimal(self):
         self.contact.set_name("test")
@@ -345,7 +346,6 @@ class TestContactXML(unittest.TestCase):
         self.assertEqual(data['key'][0]['type'], 'pgp')
         self.assertIsInstance(data['photo'], dict)
         self.assertEqual(data['photo']['mimetype'], 'image/gif')
-
 
 if __name__ == '__main__':
     unittest.main()

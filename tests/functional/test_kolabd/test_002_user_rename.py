@@ -8,6 +8,7 @@ from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
 
+
 class TestKolabDaemon(unittest.TestCase):
     @classmethod
     def setup_class(self, *args, **kw):
@@ -39,7 +40,7 @@ class TestKolabDaemon(unittest.TestCase):
         recipient = auth.find_recipient('john.doe@example.org')
         user_info = wap_client.user_info(recipient)
 
-        if not user_info.has_key('mailhost'):
+        if 'mailhost' not in user_info:
             from tests.functional.synchronize import synchronize_once
             synchronize_once()
 
@@ -77,4 +78,3 @@ class TestKolabDaemon(unittest.TestCase):
 
         folders = imap.lm('user/joe.sixpack@example.org')
         self.assertEqual(len(folders), 1, "INBOX for joe.sixpack does not exist")
-

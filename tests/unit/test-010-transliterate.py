@@ -2,6 +2,7 @@
 
 import unittest
 
+
 class TestTransliteration(unittest.TestCase):
     def test_001_raw_fr_FR(self):
         """

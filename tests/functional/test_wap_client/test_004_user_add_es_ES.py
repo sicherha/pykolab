@@ -10,6 +10,7 @@ from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
 
+
 class TestUserAddEsES(unittest.TestCase):
 
     @classmethod
@@ -33,7 +34,6 @@ class TestUserAddEsES(unittest.TestCase):
         purge_users()
 
     def test_001_inbox_created(self):
-
         time.sleep(2)
         imap = IMAP()
         imap.connect()
@@ -54,5 +54,3 @@ class TestUserAddEsES(unittest.TestCase):
 
         self.assertEqual(result['mail'], 'alvaro.fuentes@example.org')
         self.assertEqual(sorted(result['alias']), ['a.fuentes@example.org', 'fuentes@example.org'])
-
-

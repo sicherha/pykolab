@@ -38,6 +38,7 @@ if allof (header :contains "X-Mailer" "OTRS", header :contains "X-Powered-By" "O
 
     ]
 
+
 class TestSievelib(unittest.TestCase):
 
     def test_001_import_sievelib(self):
@@ -53,4 +54,4 @@ class TestSievelib(unittest.TestCase):
             result = sieve_parser.parse(sieve_str)
             if not result:
                 print "Sieve line: %r" % (sieve_parser.lexer.text.split('\n')[(sieve_parser.lexer.text[:sieve_parser.lexer.pos].count('\n'))])
-                raise Exception, "Failed parsing Sieve script #%d: %s" % (i, sieve_parser.error)
+                raise Exception("Failed parsing Sieve script #%d: %s" % (i, sieve_parser.error))

@@ -69,6 +69,7 @@ conf = pykolab.getConf()
 if not hasattr(conf, 'defaults'):
     conf.finalize_conf()
 
+
 class TestWallaceInvitationpolicy(unittest.TestCase):
 
     def setUp(self):
@@ -86,7 +87,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.patch(smtplib.SMTP, "quit", self._mock_nop)
         self.patch(smtplib.SMTP, "sendmail", self._mock_smtp_sendmail)
 
-        self.smtplog = [];
+        self.smtplog = []
 
     def _mock_find_user_dn(self, value, kolabuser=False):
         (prefix, domain) = value.split('@')
@@ -94,7 +95,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
     def _mock_get_entry_attributes(self, domain, entry, attributes):
         (_, uid) = entry.split(',')[0].split('=')
-        return { 'cn': uid, 'mail': uid + "@example.org", '_attrib': attributes }
+        return {'cn': uid, 'mail': uid + "@example.org", '_attrib': attributes}
 
     def _mock_list_domains(self):
         return {'example.org': 'example.org'}
@@ -121,19 +122,19 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertEqual("uid=doe,ou=People,dc=example,dc=org", res)
 
     def test_003_get_matching_invitation_policy(self):
-        user = { 'kolabinvitationpolicy': [
+        user = {'kolabinvitationpolicy': [
             'TASK_REJECT:*',
             'EVENT_ACCEPT:example.org',
             'EVENT_REJECT:gmail.com',
             'ALL_UPDATE:outlook:com',
             'ALL_MANUAL:*'
-        ] }
+        ]}
         self.assertEqual(MIP.get_matching_invitation_policies(user, 'a@fastmail.net',   MIP.COND_TYPE_EVENT), [MIP.ACT_MANUAL])
         self.assertEqual(MIP.get_matching_invitation_policies(user, 'b@example.org',    MIP.COND_TYPE_EVENT), [MIP.ACT_ACCEPT, MIP.ACT_MANUAL])
         self.assertEqual(MIP.get_matching_invitation_policies(user, 'c@gmail.com',      MIP.COND_TYPE_EVENT), [MIP.ACT_REJECT, MIP.ACT_MANUAL])
         self.assertEqual(MIP.get_matching_invitation_policies(user, 'd@somedomain.net', MIP.COND_TYPE_TASK),  [MIP.ACT_REJECT, MIP.ACT_MANUAL])
 
-        user = { 'kolabinvitationpolicy': ['ALL_SAVE_TO_FOLDER:maya.foo@example.org', 'ACT_REJECT:others'] }
+        user = {'kolabinvitationpolicy': ['ALL_SAVE_TO_FOLDER:maya.foo@example.org', 'ACT_REJECT:others']}
         self.assertEqual(MIP.get_matching_invitation_policies(user, 'maya.foo@example.org', MIP.COND_TYPE_ALL), [MIP.ACT_SAVE_TO_FOLDER])
         self.assertEqual(MIP.get_matching_invitation_policies(user, 'd@somedomain.net',     MIP.COND_TYPE_ALL), [MIP.ACT_MANUAL])
 
@@ -152,27 +153,26 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 #        self.assertFalse(os.path.isfile(lock_file))
 
     def test_005_is_auto_reply(self):
-        all_manual  = [ 'ACT_MANUAL' ]
-        accept_none = [ 'ACT_REJECT' ]
-        accept_all  = [ 'ACT_ACCEPT', 'ACT_UPDATE' ]
-        accept_cond = [ 'ACT_ACCEPT_IF_NO_CONFLICT', 'ACT_REJECT_IF_CONFLICT' ]
-        accept_some = [ 'ACT_ACCEPT_IF_NO_CONFLICT', 'ACT_SAVE_TO_CALENDAR:example.org', 'ACT_REJECT_IF_CONFLICT' ]
-        accept_avail = [ 'ACT_ACCEPT_IF_NO_CONFLICT', 'ACT_REJECT_IF_CONFLICT:example.org' ]
+        all_manual  = ['ACT_MANUAL']
+        accept_none = ['ACT_REJECT']
+        accept_all  = ['ACT_ACCEPT', 'ACT_UPDATE']
+        accept_cond = ['ACT_ACCEPT_IF_NO_CONFLICT', 'ACT_REJECT_IF_CONFLICT']
+        accept_some = ['ACT_ACCEPT_IF_NO_CONFLICT', 'ACT_SAVE_TO_CALENDAR:example.org', 'ACT_REJECT_IF_CONFLICT']
+        accept_avail = ['ACT_ACCEPT_IF_NO_CONFLICT', 'ACT_REJECT_IF_CONFLICT:example.org']
 
-        self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':all_manual },   'user@domain.org', 'event'))
-        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_none },  'user@domain.org', 'event'))
-        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_all },   'user@domain.com', 'event'))
-        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_cond },  'user@domain.com', 'event'))
-        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_some },  'user@domain.com', 'event'))
-        self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_some },  'sam@example.org', 'event'))
-        self.assertFalse( MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_avail }, 'user@domain.com', 'event'))
-        self.assertTrue(  MIP.is_auto_reply({ 'kolabinvitationpolicy':accept_avail }, 'john@example.org', 'event'))
+        self.assertFalse( MIP.is_auto_reply({'kolabinvitationpolicy': all_manual},   'user@domain.org', 'event'))
+        self.assertTrue(  MIP.is_auto_reply({'kolabinvitationpolicy': accept_none},  'user@domain.org', 'event'))
+        self.assertTrue(  MIP.is_auto_reply({'kolabinvitationpolicy': accept_all},   'user@domain.com', 'event'))
+        self.assertTrue(  MIP.is_auto_reply({'kolabinvitationpolicy': accept_cond},  'user@domain.com', 'event'))
+        self.assertTrue(  MIP.is_auto_reply({'kolabinvitationpolicy': accept_some},  'user@domain.com', 'event'))
+        self.assertFalse( MIP.is_auto_reply({'kolabinvitationpolicy': accept_some},  'sam@example.org', 'event'))
+        self.assertFalse( MIP.is_auto_reply({'kolabinvitationpolicy': accept_avail}, 'user@domain.com', 'event'))
+        self.assertTrue(  MIP.is_auto_reply({'kolabinvitationpolicy': accept_avail}, 'john@example.org', 'event'))
 
     def test_006_send_update_notification(self):
         itips = pykolab.itip.events_from_message(message_from_string(itip_multipart.replace('SUMMARY:test', 'SUMMARY:with äöü')))
-        MIP.send_update_notification(itips[0]['xml'], { 'mail': 'sender@example.org' }, old=None, reply=True)
+        MIP.send_update_notification(itips[0]['xml'], {'mail': 'sender@example.org'}, old=None, reply=True)
 
         self.assertEqual(len(self.smtplog), 1)
         self.assertIn("Subject: =?utf-8?", self.smtplog[0][2])
         self.assertIn("The event 'with =C3=A4=C3=B6=C3=BC' at", self.smtplog[0][2])
-

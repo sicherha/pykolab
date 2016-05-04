@@ -93,6 +93,7 @@ conf = pykolab.getConf()
 if not hasattr(conf, 'defaults'):
     conf.finalize_conf()
 
+
 class TestWallaceResources(unittest.TestCase):
 
     def setUp(self):
@@ -110,27 +111,27 @@ class TestWallaceResources(unittest.TestCase):
         self.patch(smtplib.SMTP, "quit", self._mock_nop)
         self.patch(smtplib.SMTP, "sendmail", self._mock_smtp_sendmail)
 
-        self.smtplog = [];
+        self.smtplog = []
 
     def _mock_nop(self, domain=None):
         pass
 
     def _mock_find_resource(self, address):
-        if not 'resource' in address:
-            return [];
+        if 'resource' not in address:
+            return []
 
         (prefix, domain) = address.split('@')
         entry_dn = "cn=" + prefix + ",ou=Resources,dc=" + ",dc=".join(domain.split('.'))
-        return [ entry_dn ];
+        return [entry_dn]
 
     def _mock_get_entry_attributes(self, domain, entry, attributes):
         (_, uid) = entry.split(',')[0].split('=')
-        return { 'cn': uid, 'mail': uid + "@example.org", '_attrib': attributes }
+        return {'cn': uid, 'mail': uid + "@example.org", '_attrib': attributes}
 
     def _mock_search_entry_by_attribute(self, attr, value, **kw):
         results = []
         if value == "cn=Room 101,ou=Resources,dc=example,dc=org":
-            results.append(('cn=Rooms,ou=Resources,dc=example,dc=org', { attr: value, 'owner': 'uid=doe,ou=People,dc=example,dc=org' }))
+            results.append(('cn=Rooms,ou=Resources,dc=example,dc=org', {attr: value, 'owner': 'uid=doe,ou=People,dc=example,dc=org'}))
         return results
 
     def _mock_smtp_init(self, host=None, port=None, local_hostname=None, timeout=0):
@@ -159,45 +160,42 @@ class TestWallaceResources(unittest.TestCase):
 
         return None
 
-
     def test_002_resource_record_from_email_address(self):
         res = module_resources.resource_record_from_email_address("doe@example.org")
-        self.assertEqual(len(res), 0);
+        self.assertEqual(len(res), 0)
 
     def test_003_resource_records_from_itip_events(self):
         message = message_from_string(itip_multipart)
         itips = itip.events_from_message(message)
 
         res = module_resources.resource_records_from_itip_events(itips)
-        self.assertEqual(len(res), 2, "Return resources: %r" % (res));
+        self.assertEqual(len(res), 2, "Return resources: %r" % (res))
 
         res = module_resources.resource_records_from_itip_events(itips, message['To'])
-        self.assertEqual(len(res), 1, "Return target resource: %r" % (res));
-        self.assertEqual("cn=resource-collection-car,ou=Resources,dc=example,dc=org", res[0]);
-
+        self.assertEqual(len(res), 1, "Return target resource: %r" % (res))
+        self.assertEqual("cn=resource-collection-car,ou=Resources,dc=example,dc=org", res[0])
 
     def test_004_get_resource_owner(self):
-        owner1 = module_resources.get_resource_owner({ 'owner': "uid=foo,ou=People,cd=example,dc=org" })
+        owner1 = module_resources.get_resource_owner({'owner': "uid=foo,ou=People,cd=example,dc=org"})
         self.assertIsInstance(owner1, dict)
         self.assertEqual("foo@example.org", owner1['mail'])
         self.assertIn("telephoneNumber", owner1['_attrib'])
 
-        owner2 = module_resources.get_resource_owner({ 'owner': ["uid=john,ou=People,cd=example,dc=org", "uid=jane,ou=People,cd=example,dc=org"] })
+        owner2 = module_resources.get_resource_owner({'owner': ["uid=john,ou=People,cd=example,dc=org", "uid=jane,ou=People,cd=example,dc=org"]})
         self.assertIsInstance(owner2, dict)
         self.assertEqual("john@example.org", owner2['mail'])
 
-        owner3 = module_resources.get_resource_owner({ 'dn': "cn=cars,ou=Resources,cd=example,dc=org" })
+        owner3 = module_resources.get_resource_owner({'dn': "cn=cars,ou=Resources,cd=example,dc=org"})
         self.assertEqual(owner3, None)
 
-        owner4 = module_resources.get_resource_owner({ 'dn': "cn=Room 101,ou=Resources,dc=example,dc=org" })
+        owner4 = module_resources.get_resource_owner({'dn': "cn=Room 101,ou=Resources,dc=example,dc=org"})
         self.assertEqual("doe@example.org", owner4['mail'])
-
 
     def test_005_send_response_accept(self):
         itip_event = itip.events_from_message(message_from_string(itip_non_multipart))
         module_resources.send_response("resource-collection-car@example.org", itip_event)
 
-        self.assertEqual(len(self.smtplog), 1);
+        self.assertEqual(len(self.smtplog), 1)
         self.assertEqual("resource-collection-car@example.org", self.smtplog[0][0])
         self.assertEqual("doe@example.org", self.smtplog[0][1])
 
@@ -210,7 +208,6 @@ class TestWallaceResources(unittest.TestCase):
         self.assertIsInstance(ics_part, message.Message)
         self.assertEqual(ics_part.get_param('method'), "REPLY")
 
-
     def test_006_send_response_delegate(self):
         # delegate resource-collection-car@example.org => resource-car-audi-a4@example.org
         itip_event = itip.events_from_message(message_from_string(itip_non_multipart))[0]
@@ -219,7 +216,7 @@ class TestWallaceResources(unittest.TestCase):
 
         module_resources.send_response("resource-collection-car@example.org", itip_event)
 
-        self.assertEqual(len(self.smtplog), 2);
+        self.assertEqual(len(self.smtplog), 2)
         self.assertEqual("resource-collection-car@example.org", self.smtplog[0][0])
         self.assertEqual("resource-car-audi-a4@example.org", self.smtplog[1][0])
 
@@ -235,5 +232,3 @@ class TestWallaceResources(unittest.TestCase):
         self.assertIn("ACCEPTED".lower(), response2['subject'].lower(), "Delegation message subject: %r" % (response2['subject']))
         self.assertEqual(ical2['attendee'].__str__(), "MAILTO:resource-car-audi-a4@example.org")
         self.assertEqual(ical2['attendee'].params['PARTSTAT'], u"ACCEPTED")
-
-

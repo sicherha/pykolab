@@ -37,11 +37,8 @@ except:
 
 metadata = MetaData()
 
-##
-## Classes
-##
-
 DeclarativeBase = declarative_base()
+
 
 class Entry(DeclarativeBase):
     __tablename__ = 'entries'
@@ -66,6 +63,7 @@ Session = sessionmaker(bind=engine)
 db = Session()
 
 auth_cache.db = db
+
 
 class TestAuthCache(unittest.TestCase):
     def test_001_plain_insert(self):

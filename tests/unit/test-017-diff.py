@@ -140,8 +140,9 @@ xml_todo_02 = """<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 </icalendar>
 """
 
+
 class TestComputeDiff(unittest.TestCase):
-    
+
     def test_000_order_proplists(self):
         one = {
             "uri": "cid:one",
@@ -201,7 +202,6 @@ class TestComputeDiff(unittest.TestCase):
         self.assertEqual(diff[3]['old']['uri'], "cid:silhouette.1427297477.7514.png")
 
         self.assertEqual(diff[4]['property'], 'lastmodified-date')
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -8,6 +8,7 @@ from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
 
+
 class TestKolabDaemon(unittest.TestCase):
     @classmethod
     def setup_class(self, *args, **kw):
@@ -61,7 +62,7 @@ class TestKolabDaemon(unittest.TestCase):
 
         result = wap_client.user_info(recipient)
 
-        if not result.has_key('mailhost'):
+        if 'mailhost' not in result:
             from tests.functional.synchronize import synchronize_once
             synchronize_once()
 
@@ -106,14 +107,14 @@ class TestKolabDaemon(unittest.TestCase):
             print metadata
 
             folder_name = '/'.join(folder.split('/')[2:]).split('@')[0]
-            if ac_folders.has_key(folder_name):
-                if ac_folders[folder_name].has_key('annotations'):
+            if folder_name in ac_folders:
+                if 'annotations' in ac_folders[folder_name]:
                     for _annotation in ac_folders[folder_name]['annotations'].keys():
                         if _annotation.startswith('/private'):
                             continue
 
                         _annotation_value = ac_folders[folder_name]['annotations'][_annotation]
-                        self.assertTrue(metadata[metadata.keys().pop()].has_key(_annotation))
+                        self.assertTrue(_annotation in metadata[metadata.keys().pop()])
                         self.assertEqual(_annotation_value, metadata[metadata.keys().pop()][_annotation])
 
     def test_006_user_subscriptions(self):
@@ -137,4 +138,3 @@ class TestKolabDaemon(unittest.TestCase):
 
     def test_013_resource_mailbox_annotation(self):
         pass
-

@@ -37,4 +37,3 @@ import wallace
 if __name__ == "__main__":
     wallace = wallace.WallaceDaemon()
     wallace.run()
-

@@ -4,17 +4,12 @@ from pykolab import wap_client
 
 conf = pykolab.getConf()
 
+
 def user_add(givenname, sn, preferredlanguage='en_US', **kw):
-    if givenname == None:
+    if givenname is None or givenname == '':
         raise Exception
 
-    if givenname == '':
-        raise Exception
-
-    if sn == None:
-        raise Exception
-
-    if sn == '':
+    if sn is None or sn == '':
         raise Exception
 
     user_details = {
@@ -51,7 +46,7 @@ def user_add(givenname, sn, preferredlanguage='en_US', **kw):
         attr_details = user_type_info['form_fields'][attribute]
 
         if isinstance(attr_details, dict):
-            if not attr_details.has_key('optional') or attr_details['optional'] == False or user_details.has_key(attribute):
+            if 'optional' not in attr_details or attr_details['optional'] is False or attribute in user_details:
                 params[attribute] = user_details[attribute]
         elif isinstance(attr_details, list):
             params[attribute] = user_details[attribute]
@@ -59,7 +54,6 @@ def user_add(givenname, sn, preferredlanguage='en_US', **kw):
     fvg_params = params
     fvg_params['object_type'] = 'user'
     fvg_params['type_id'] = user_type_id
-    fvg_params['attributes'] = [attr for attr in user_type_info['auto_form_fields'].keys() if not attr in params.keys()]
+    fvg_params['attributes'] = [attr for attr in user_type_info['auto_form_fields'].keys() if attr not in params]
 
     result = wap_client.user_add(params)
-

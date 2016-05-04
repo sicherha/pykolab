@@ -11,12 +11,13 @@ import tests.functional.resource_func as funcs
 
 conf = pykolab.getConf()
 
+
 class TestResourceAdd(unittest.TestCase):
 
     @classmethod
     def setUp(self):
         from tests.functional.purge_users import purge_users
-        #purge_users()
+        # purge_users()
 
         self.john = {
             'local': 'john.doe',
@@ -24,13 +25,13 @@ class TestResourceAdd(unittest.TestCase):
         }
 
         from tests.functional.user_add import user_add
-        #user_add("John", "Doe")
+        # user_add("John", "Doe")
 
         funcs.purge_resources()
         self.audi = funcs.resource_add("car", "Audi A4")
         self.passat = funcs.resource_add("car", "VW Passat")
         self.boxter = funcs.resource_add("car", "Porsche Boxter S", kolabinvitationpolicy='ACT_ACCEPT_AND_NOTIFY')
-        self.cars = funcs.resource_add("collection", "Company Cars", [ self.audi['dn'], self.passat['dn'], self.boxter['dn'] ], kolabinvitationpolicy='ACT_ACCEPT')
+        self.cars = funcs.resource_add("collection", "Company Cars", [self.audi['dn'], self.passat['dn'], self.boxter['dn']], kolabinvitationpolicy='ACT_ACCEPT')
 
         from tests.functional.synchronize import synchronize_once
         synchronize_once()
@@ -38,8 +39,8 @@ class TestResourceAdd(unittest.TestCase):
     @classmethod
     def tearDown(self):
         from tests.functional.purge_users import purge_users
-        #funcs.purge_resources()
-        #purge_users()
+        # funcs.purge_resources()
+        # purge_users()
 
     def test_001_resource_created(self):
         resource = module_resources.resource_record_from_email_address(self.audi['mail'])

@@ -36,7 +36,7 @@ sys.path = [
                             ),
                         '..'
                     )
-            ) ] + sys.path
+            )] + sys.path
 
 #sys.stderr = open('/dev/null', 'a')
 
@@ -46,14 +46,14 @@ description = "Kolab Groupware Listener for UCS"
 # The filter has to be composed to make sure only Kolab Groupware
 # related objects are passed along to this listener module.
 filter = '(|(objectClass=kolabInetOrgPerson)(objectClass=univentionMailSharedFolder))'
-#attributes = [ '*' ]
+# attributes = ['*']
 
 import pykolab
 from pykolab import constants
 from pykolab import utils
 
 log = pykolab.getLogger('pykolab.listener')
-#log.remove_stdout_handler()
+# log.remove_stdout_handler()
 log.setLevel(logging.DEBUG)
 log.debuglevel = 9
 
@@ -62,6 +62,7 @@ conf.finalize_conf(fatal=False)
 conf.debuglevel = 9
 
 from pykolab.auth import Auth
+
 
 def handler(*args, **kw):
     log.info("kolab.handler(args(%d): %r, kw: %r)" % (len(args), args, kw))
@@ -93,11 +94,11 @@ def handler(*args, **kw):
 
                 mailserver_attribute = conf.get('ldap', 'mailserver_attribute').lower()
 
-                if mailserver_attribute == None:
+                if mailserver_attribute is None:
                     log.error("Mail server attribute is not set")
                     return
 
-                if old.has_key(mailserver_attribute):
+                if mailserver_attribute in old:
                     log.info("Modified entry %r has mail server attribute %s: %r" % (dn, mailserver_attribute, new[mailserver_attribute]))
 
                     if not old[mailserver_attribute] == constants.fqdn:
@@ -109,7 +110,7 @@ def handler(*args, **kw):
                 else:
                     # If old has no mailserver attribute, but new does, we need to create
                     # the user locally.
-                    if new.has_key(mailserver_attribute):
+                    if mailserver_attribute in new:
                         if not new[mailserver_attribute] == constants.fqdn:
                             log.info("The mail server for user %r is set (in new, not old), but it is not me (%r)" % (dn, new[mailserver_attribute]))
                             return
@@ -118,11 +119,11 @@ def handler(*args, **kw):
                         return
 
                 auth._auth._synchronize_callback(
-                        change_type = 'modify',
-                        previous_dn = None,
-                        change_number = None,
-                        dn = dn,
-                        entry = new
+                        change_type='modify',
+                        previous_dn=None,
+                        change_number=None,
+                        dn=dn,
+                        entry=new
                     )
 
             else:
@@ -131,13 +132,13 @@ def handler(*args, **kw):
                 # See if the mailserver_attribute exists
                 mailserver_attribute = conf.get('ldap', 'mailserver_attribute').lower()
 
-                if mailserver_attribute == None:
+                if mailserver_attribute is None:
                     log.error("Mail server attribute is not set")
                     # TODO: Perhaps, query for IMAP servers. If there is only one,
                     #       we know what to do.
                     return
 
-                if old.has_key(mailserver_attribute):
+                if mailserver_attribute in old:
                     log.info("Deleted entry %r has mail server attribute %s: %r" % (dn, mailserver_attribute, old[mailserver_attribute]))
 
                     if not old[mailserver_attribute] == constants.fqdn:
@@ -152,11 +153,11 @@ def handler(*args, **kw):
 
                 if cfg.is_true('mail/cyrus/mailbox/delete', True):
                     auth._auth._synchronize_callback(
-                            change_type = 'delete',
-                            previous_dn = None,
-                            change_number = None,
-                            dn = dn,
-                            entry = old
+                            change_type='delete',
+                            previous_dn=None,
+                            change_number=None,
+                            dn=dn,
+                            entry=old
                         )
 
         elif isinstance(new, dict) and len(new.keys()) > 0:
@@ -166,13 +167,13 @@ def handler(*args, **kw):
             # See if the mailserver_attribute exists
             mailserver_attribute = conf.get('ldap', 'mailserver_attribute').lower()
 
-            if mailserver_attribute == None:
+            if mailserver_attribute is None:
                 log.error("Mail server attribute is not set")
                 # TODO: Perhaps, query for IMAP servers. If there is only one,
                 #       we know what to do.
                 return
 
-            if new.has_key(mailserver_attribute):
+            if mailserver_attribute in new:
                 log.info("Added entry %r has mail server attribute %s: %r" % (dn, mailserver_attribute, new[mailserver_attribute]))
 
                 if not new[mailserver_attribute] == constants.fqdn:
@@ -184,15 +185,16 @@ def handler(*args, **kw):
                 return
 
             auth._auth._synchronize_callback(
-                    change_type = 'add',
-                    previous_dn = None,
-                    change_number = None,
-                    dn = dn,
-                    entry = new
+                    change_type='add',
+                    previous_dn=None,
+                    change_number=None,
+                    dn=dn,
+                    entry=new
                 )
 
         else:
             log.info("entry %r changed, but no new or old attributes" % (dn))
+
 
 def initialize():
     log.info("kolab.initialize()")

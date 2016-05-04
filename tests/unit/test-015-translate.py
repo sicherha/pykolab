@@ -4,6 +4,7 @@ import unittest
 import gettext
 from pykolab import translate
 
+
 class TestTranslate(unittest.TestCase):
 
     def test_001_default_langs(self):

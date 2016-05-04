@@ -31,6 +31,7 @@ from email.MIMEText import MIMEText
 from email.Utils import COMMASPACE, formatdate
 from email import Encoders
 
+
 def send_mail(send_from, send_to, send_with=None):
     smtp = smtplib.SMTP("localhost", 10026)
     smtp.set_debuglevel(True)
@@ -57,7 +58,7 @@ Lucy Meier.
 
     msg.attach( MIMEText(text) )
 
-    #msg.attach( MIMEBase('application', open('/boot/initrd-plymouth.img').read()) )
+    # msg.attach( MIMEBase('application', open('/boot/initrd-plymouth.img').read()) )
 
     smtp.sendmail(send_from, send_to, msg.as_string())
 

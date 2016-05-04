@@ -332,6 +332,7 @@ xml_event = """
 </icalendar>
 """
 
+
 class TestEventXML(unittest.TestCase):
     event = Event()
 
@@ -353,10 +354,10 @@ class TestEventXML(unittest.TestCase):
             if (type(_value)) == _type:
                 return True
             else:
-                if not _msg == None:
-                    raise AssertionError, "%s != %s: %r" % (type(_value), _type, _msg)
+                if _msg is not None:
+                    raise AssertionError("%s != %s: %r" % (type(_value), _type, _msg))
                 else:
-                    raise AssertionError, "%s != %s" % (type(_value), _type)
+                    raise AssertionError("%s != %s" % (type(_value), _type))
 
     def test_000_no_start_date(self):
         self.assertRaises(EventIntegrityError, self.event.__str__)
@@ -442,8 +443,8 @@ class TestEventXML(unittest.TestCase):
     def test_016_start_with_timezone(self):
         _start = datetime.datetime(2012, 05, 23, 11, 58, 00, tzinfo=pytz.timezone("Europe/Zurich"))
         _start_utc = _start.astimezone(pytz.utc)
-        #self.assertEqual(_start.__str__(), "2012-05-23 11:58:00+01:00")
-        #self.assertEqual(_start_utc.__str__(), "2012-05-23 10:58:00+00:00")
+        # self.assertEqual(_start.__str__(), "2012-05-23 11:58:00+01:00")
+        # self.assertEqual(_start_utc.__str__(), "2012-05-23 10:58:00+00:00")
         self.event.set_start(_start)
         self.assertIsInstance(_start.tzinfo, datetime.tzinfo)
         self.assertEqual(_start.tzinfo, pytz.timezone("Europe/Zurich"))
@@ -452,7 +453,7 @@ class TestEventXML(unittest.TestCase):
         _start = datetime.date(2012, 05, 23)
         self.assertEqual(_start.__str__(), "2012-05-23")
         self.event.set_start(_start)
-        self.assertEqual(hasattr(_start,'tzinfo'), False)
+        self.assertEqual(hasattr(_start, 'tzinfo'), False)
         self.assertEqual(self.event.get_start().__str__(), "2012-05-23")
 
     def test_018_load_from_ical(self):
@@ -501,7 +502,7 @@ METHOD:REQUEST
         self.assertEqual(message['X-Kolab-Type'], 'application/x-vnd.kolab.event')
 
         parts = [p for p in message.walk()]
-        attachments = event.get_attachments();
+        attachments = event.get_attachments()
 
         self.assertEqual(len(parts), 5)
         self.assertEqual(parts[1].get_content_type(), 'text/plain')
@@ -542,11 +543,11 @@ END:VEVENT
 
         rrule = RecurrenceRule()
         rrule.set_frequency(kolabformat.RecurrenceRule.Weekly)
-        rrule.set_byday(['2WE','-1SU'])
+        rrule.set_byday(['2WE', '-1SU'])
         rrule.setBymonth([2])
         rrule.set_count(10)
-        rrule.set_until(datetime.datetime(2014,7,23, 11,0,0, tzinfo=pytz.timezone("Europe/London")))
-        self.event.set_recurrence(rrule);
+        rrule.set_until(datetime.datetime(2014, 7, 23, 11, 0, 0, tzinfo=pytz.timezone("Europe/London")))
+        self.event.set_recurrence(rrule)
 
         ical = icalendar.Calendar.from_ical(self.event.as_string_itip())
         event = ical.walk('VEVENT')[0]
@@ -560,12 +561,12 @@ END:VEVENT
         self.assertIsInstance(event['recurrence-id'].dt, datetime.datetime)
         self.assertEqual(event['recurrence-id'].params.get('RANGE'), 'THISANDFUTURE')
 
-        self.assertTrue(event.has_key('rrule'))
+        self.assertTrue('rrule' in event)
         self.assertEqual(event['rrule']['FREQ'][0], 'WEEKLY')
         self.assertEqual(event['rrule']['INTERVAL'][0], 1)
         self.assertEqual(event['rrule']['COUNT'][0], 10)
         self.assertEqual(event['rrule']['BYMONTH'][0], 2)
-        self.assertEqual(event['rrule']['BYDAY'], ['2WE','-1SU'])
+        self.assertEqual(event['rrule']['BYDAY'], ['2WE', '-1SU'])
         self.assertIsInstance(event['rrule']['UNTIL'][0], datetime.datetime)
         self.assertEquals(event['rrule']['UNTIL'][0].tzinfo, pytz.utc)
 
@@ -606,14 +607,13 @@ END:VEVENT
         self.assertEqual(itip_event['attendee'][0].params['delegated-to'], 'jack@ripper.com')
         self.assertEqual(itip_event['attendee'][1].params['delegated-from'], 'jane@doe.org')
 
-
     def test_020_calendaring_recurrence(self):
         rrule = kolabformat.RecurrenceRule()
         rrule.setFrequency(kolabformat.RecurrenceRule.Monthly)
         rrule.setCount(10)
 
         self.event = Event()
-        self.event.set_recurrence(rrule);
+        self.event.set_recurrence(rrule)
 
         _start = datetime.datetime(2014, 5, 1, 11, 30, 00, tzinfo=pytz.timezone("Europe/London"))
         self.event.set_start(_start)
@@ -643,7 +643,7 @@ END:VEVENT
         # check infinite recurrence
         rrule = kolabformat.RecurrenceRule()
         rrule.setFrequency(kolabformat.RecurrenceRule.Monthly)
-        self.event.set_recurrence(rrule);
+        self.event.set_recurrence(rrule)
 
         self.assertEqual(self.event.get_last_occurrence(), None)
         self.assertIsInstance(self.event.get_last_occurrence(force=True), datetime.datetime)
@@ -659,7 +659,7 @@ END:VEVENT
         # check get_next_occurence() with an infinitely recurring all-day event
         rrule = kolabformat.RecurrenceRule()
         rrule.setFrequency(kolabformat.RecurrenceRule.Yearly)
-        self.event.set_recurrence(rrule);
+        self.event.set_recurrence(rrule)
 
         self.event.set_start(datetime.date(2014, 5, 1))
         self.event.set_end(datetime.date(2014, 5, 1))
@@ -701,13 +701,13 @@ END:VEVENT
 
         self.event = Event()
         self.event.set_summary('alldays')
-        self.event.set_recurrence(rrule);
+        self.event.set_recurrence(rrule)
 
-        _start = datetime.date(2015,1,1)
+        _start = datetime.date(2015, 1, 1)
         self.event.set_start(_start)
         self.event.set_end(_start)
 
-        exdate = datetime.date(2015,1,5)
+        exdate = datetime.date(2015, 1, 5)
         xmlexception = Event(from_string=str(self.event))
         xmlexception.set_start(exdate)
         xmlexception.set_end(exdate)
@@ -715,8 +715,8 @@ END:VEVENT
         xmlexception.set_status('CANCELLED')
         self.event.add_exception(xmlexception)
 
-        inst3 = self.event.get_instance(datetime.date(2015,1,3))
-        self.assertEqual(inst3.get_start(), datetime.date(2015,1,3))
+        inst3 = self.event.get_instance(datetime.date(2015, 1, 3))
+        self.assertEqual(inst3.get_start(), datetime.date(2015, 1, 3))
 
         inst5 = self.event.get_instance(exdate)
         self.assertEqual(inst5.get_status(True), 'CANCELLED')
@@ -752,12 +752,12 @@ END:VEVENT
         self.event = Event()
         self.event.set_summary('singles')
 
-        _start = datetime.datetime(2015,3,1, 14,0,0, tzinfo=pytz.timezone("Europe/London"))
+        _start = datetime.datetime(2015, 3, 1, 14, 0, 0, tzinfo=pytz.timezone("Europe/London"))
         self.event.set_start(_start)
         self.event.set_end(_start + datetime.timedelta(hours=1))
         self.event.set_recurrence_id(_start)
 
-        _start2 = datetime.datetime(2015,3,5, 15,0,0, tzinfo=pytz.timezone("Europe/London"))
+        _start2 = datetime.datetime(2015, 3, 5, 15, 0, 0, tzinfo=pytz.timezone("Europe/London"))
         xmlexception = Event(from_string=str(self.event))
         xmlexception.set_start(_start2)
         xmlexception.set_end(_start2 + datetime.timedelta(hours=1))
@@ -784,7 +784,6 @@ END:VEVENT
         self.assertEqual(self.event.has_exceptions(), True)
         self.assertEqual(event.get_status(True), 'CANCELLED')
         self.assertEqual(event.get_summary(), "singles #1")
-
 
     def test_022_load_from_xml(self):
         event = event_from_string(xml_event)
@@ -820,10 +819,10 @@ END:VEVENT
         self.assertEqual(str(occurrence.get_recurrence_id()), "2014-08-15 10:00:00+01:00")
 
         # set invalid date-only recurrence-id
-        exception.set_recurrence_id(datetime.date(2014,8,16))
+        exception.set_recurrence_id(datetime.date(2014, 8, 16))
         event.add_exception(exception)
 
-        inst = event.get_next_instance(_recurrence_id);
+        inst = event.get_next_instance(_recurrence_id)
         self.assertIsInstance(inst, Event)
         self.assertIsInstance(inst.get_recurrence_id(), datetime.datetime)
 
@@ -836,7 +835,7 @@ END:VEVENT
 
         # check attachment MIME parts are kept
         parts = [p for p in message.walk()]
-        attachments = event.get_attachments();
+        attachments = event.get_attachments()
 
         self.assertEqual(len(parts), 5)
         self.assertEqual(parts[3].get_content_type(), 'image/png')
@@ -871,7 +870,7 @@ END:VEVENT
 
         self.assertIsInstance(data, dict)
         self.assertIsInstance(data['start'], datetime.datetime)
-        #self.assertIsInstance(data['end'], datetime.datetime)
+        # self.assertIsInstance(data['end'], datetime.datetime)
         self.assertIsInstance(data['created'], datetime.datetime)
         self.assertIsInstance(data['lastmodified-date'], datetime.datetime)
         self.assertEqual(data['uid'], '75c740bb-b3c6-442c-8021-ecbaeb0a025e')
@@ -929,7 +928,6 @@ END:VEVENT
         self.assertEqual(pa['index'], 0)
         self.assertEqual(pa['new'], dict(partstat='DECLINED'))
 
-
     def test_026_property_to_string(self):
         data = event_from_string(xml_event).to_dict()
         self.assertEqual(property_to_string('sequence', data['sequence']), "1")
@@ -941,7 +939,6 @@ END:VEVENT
         self.assertEqual(property_to_string('alarm', data['alarm'][0]), "Display message 2 hour(s) before")
         self.assertEqual(property_to_string('attach', data['attach'][0]), "noname.1395223627.5555")
 
-
     def test_027_merge_attendee_data(self):
         event = event_from_string(xml_event)
 
@@ -951,7 +948,7 @@ END:VEVENT
         some = event.set_attendee_participant_status("somebody@else.com", 'ACCEPTED')
 
         # update jane + add jack
-        event.update_attendees([jane,jack])
+        event.update_attendees([jane, jack])
         self.assertEqual(len(event.get_attendees()), 3)
         self.assertEqual(event.get_attendee("jane@example.org").get_participant_status(), kolabformat.PartTentative)
         self.assertEqual(event.get_attendee("somebody@else.com").get_participant_status(), kolabformat.PartAccepted)
@@ -963,7 +960,6 @@ END:VEVENT
         self.assertEqual(event.get_attendee("jane@example.org").get_participant_status(), kolabformat.PartTentative)
         self.assertEqual(event.get_attendee("jack@example.org").get_name(), "Jack")
         self.assertRaises(ValueError, exception.get_attendee, "somebody@else.com")  # not addded to exception
-
 
     def _find_prop_in_list(self, diff, name):
         for prop in diff:

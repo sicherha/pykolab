@@ -8,6 +8,7 @@ from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
 
+
 class TestUserAdd(unittest.TestCase):
 
     @classmethod
@@ -31,7 +32,6 @@ class TestUserAdd(unittest.TestCase):
         purge_users()
 
     def test_001_inbox_created(self):
-
         time.sleep(2)
         imap = IMAP()
         imap.connect()
@@ -67,14 +67,12 @@ class TestUserAdd(unittest.TestCase):
             metadata = imap.get_metadata(folder)
 
             folder_name = '/'.join(folder.split('/')[2:]).split('@')[0]
-            if ac_folders.has_key(folder_name):
-                if ac_folders[folder_name].has_key('annotations'):
-                    for _annotation in ac_folders[folder_name]['annotations'].keys():
+            if folder_name in ac_folders:
+                if 'annotations' in ac_folders[folder_name]:
+                    for _annotation in ac_folders[folder_name]['annotations']:
                         if _annotation.startswith('/private/'):
                             continue
 
                         _annotation_value = ac_folders[folder_name]['annotations'][_annotation]
-                        self.assertTrue(metadata[metadata.keys().pop()].has_key(_annotation))
+                        self.assertTrue(_annotation in metadata[metadata.keys().pop()])
                         self.assertEqual(_annotation_value, metadata[metadata.keys().pop()][_annotation])
-
-

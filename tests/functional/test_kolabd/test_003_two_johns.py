@@ -8,6 +8,7 @@ from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
 
+
 class TestKolabDaemon(unittest.TestCase):
     @classmethod
     def setup_class(self, *args, **kw):
@@ -48,4 +49,3 @@ class TestKolabDaemon(unittest.TestCase):
 
         folders = imap.lm('user/john.doe2@example.org')
         self.assertEqual(len(folders), 1, "No INBOX found for second John")
-

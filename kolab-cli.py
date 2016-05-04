@@ -38,4 +38,3 @@ except ImportError, e:
 if __name__ == "__main__":
     kolab = Cli()
     kolab.run()
-

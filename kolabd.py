@@ -37,4 +37,3 @@ import kolabd
 if __name__ == "__main__":
     kolabd = kolabd.KolabDaemon()
     kolabd.run()
-

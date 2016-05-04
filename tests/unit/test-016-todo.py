@@ -188,6 +188,7 @@ Due Time: 13:30 AM</text>
 </icalendar>
 """
 
+
 class TestTodoXML(unittest.TestCase):
     todo = Todo()
 
@@ -198,7 +199,7 @@ class TestTodoXML(unittest.TestCase):
             if (type(_value)) == _type:
                 return True
             else:
-                raise AssertionError, "%s != %s" % (type(_value), _type)
+                raise AssertionError("%s != %s" % (type(_value), _type))
 
     def test_001_minimal(self):
         self.todo.set_summary("test")
@@ -227,7 +228,6 @@ class TestTodoXML(unittest.TestCase):
         self.assertEqual(todo.get_status(True), "IN-PROCESS")
         self.assertEqual(todo.get_related_to(), "9F3E68BED4A94DA2A51EE589F7FDC6C8-A4BF5BBB9FEAA271")
 
-
     def test_020_load_from_ical(self):
         ical_str = """BEGIN:VCALENDAR
 VERSION:2.0
@@ -239,12 +239,12 @@ METHOD:REQUEST
 
         ical = icalendar.Calendar.from_ical(ical_str)
         vtodo = ical.walk('VTODO')[0]
-        #print vtodo
+        # print vtodo
         todo = todo_from_ical(ical.walk('VTODO')[0].to_ical())
         self.assertEqual(todo.get_summary(), "Sample Task assignment")
         self.assertIsInstance(todo.get_start(), datetime.datetime)
         self.assertEqual(todo.get_percentcomplete(), 20)
-        #print str(todo)
+        # print str(todo)
 
         data = todo.to_dict()
         self.assertIsInstance(data['rrule'], dict)
@@ -270,7 +270,6 @@ METHOD:REQUEST
         self.assertEqual(vtodo['X-CUSTOM'], "check")
         self.assertIsInstance(vtodo['due'].dt, datetime.datetime)
         self.assertIsInstance(vtodo['dtstamp'].dt, datetime.datetime)
-
 
     def test_022_ical_with_attachment(self):
         todo = todo_from_ical(ical_todo_attachment)
@@ -298,7 +297,6 @@ METHOD:REQUEST
         self.assertIsInstance(data['alarm'], list)
         self.assertEqual(len(data['alarm']), 1)
         self.assertEqual(data['alarm'][0]['action'], 'DISPLAY')
-
 
 if __name__ == '__main__':
     unittest.main()

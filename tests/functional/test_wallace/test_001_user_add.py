@@ -1,4 +1,3 @@
-
 from email import message_from_string
 
 import time
@@ -10,6 +9,7 @@ from pykolab.auth import Auth
 from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
+
 
 class TestUserAdd(unittest.TestCase):
 
@@ -45,7 +45,7 @@ class TestUserAdd(unittest.TestCase):
 
         folders = imap.lm('user/%(local)s@%(domain)s' % (self.john))
         self.assertEqual(len(folders), 1)
-        
+
         folders = imap.lm('user/%(local)s@%(domain)s' % (self.jane))
         self.assertEqual(len(folders), 1)
 

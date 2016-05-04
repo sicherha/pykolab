@@ -35,7 +35,7 @@ class TestWallacePerformance(unittest.TestCase):
         funcs.purge_resources()
         self.room1 = funcs.resource_add("confroom", "Room 101")
         self.room2 = funcs.resource_add("confroom", "Conference Room B-222")
-        self.rooms = funcs.resource_add("collection", "Rooms", [ self.room1['dn'], self.room2['dn'] ])
+        self.rooms = funcs.resource_add("collection", "Rooms", [self.room1['dn'], self.room2['dn']])
 
         time.sleep(1)
         synchronize_once()
@@ -74,7 +74,6 @@ class TestWallacePerformance(unittest.TestCase):
             saved = module_resources.save_resource_event(dict(xml=event), resource)
             i += 1
 
-
     def test_001_save_resource_event(self):
         event = Event()
         event.set_summary("test")
@@ -86,23 +85,22 @@ class TestWallacePerformance(unittest.TestCase):
         saved = module_resources.save_resource_event(dict(xml=event), self.room1)
         self.assertTrue(saved)
 
-
     def test_002_read_resource_calendar(self):
         self.purge_mailbox(self.room1['kolabtargetfolder'])
 
         event = Event()
         event.set_summary("test")
-        event.set_start(datetime.datetime(2014,4,1, 12,0,0, tzinfo=pytz.timezone("Europe/London")))
-        event.set_end(datetime.datetime(2014,4,1, 14,0,0, tzinfo=pytz.timezone("Europe/London")))
+        event.set_start(datetime.datetime(2014, 4, 1, 12, 0, 0, tzinfo=pytz.timezone("Europe/London")))
+        event.set_end(datetime.datetime(2014, 4, 1, 14, 0, 0, tzinfo=pytz.timezone("Europe/London")))
         saved = module_resources.save_resource_event(dict(xml=event), self.room1)
         self.assertTrue(saved)
         uid = event.get_uid()
 
         itip = dict(
-            uid = str(uuid.uuid4()),
-            sequence = 0,
-            start = datetime.datetime(2014,4,1, 13,0,0, tzinfo=pytz.timezone("Europe/London")),
-            end = datetime.datetime(2014,4,1, 14,30,0, tzinfo=pytz.timezone("Europe/London"))
+            uid=str(uuid.uuid4()),
+            sequence=0,
+            start=datetime.datetime(2014, 4, 1, 13, 0, 0, tzinfo=pytz.timezone("Europe/London")),
+            end=datetime.datetime(2014, 4, 1, 14, 30, 0, tzinfo=pytz.timezone("Europe/London"))
         )
 
         event.set_uid(itip['uid'])
@@ -110,11 +108,10 @@ class TestWallacePerformance(unittest.TestCase):
         event.set_end(itip['end'])
         itip['xml'] = event
 
-        res = module_resources.read_resource_calendar(self.room1, [ itip ])
+        res = module_resources.read_resource_calendar(self.room1, [itip])
         self.assertEqual(res, 1)
         self.assertTrue(self.room1['conflict'])
         self.assertIn(uid, self.room1['conflicting_events'])
-
 
     def test_003_read_time(self):
         self.purge_mailbox(self.room1['kolabtargetfolder'])
@@ -125,10 +122,10 @@ class TestWallacePerformance(unittest.TestCase):
         self.populate_calendar(self.room1, num, date)
 
         itip = dict(
-            uid = str(uuid.uuid4()),
-            sequence = 0,
-            start = date,
-            end = date + datetime.timedelta(minutes=90)
+            uid=str(uuid.uuid4()),
+            sequence=0,
+            start=date,
+            end=date + datetime.timedelta(minutes=90)
         )
 
         event = Event()
@@ -138,7 +135,7 @@ class TestWallacePerformance(unittest.TestCase):
         itip['xml'] = event
 
         start = time.time()
-        res = module_resources.read_resource_calendar(self.room1, [ itip ])
+        res = module_resources.read_resource_calendar(self.room1, [itip])
         self.assertEqual(res, num)
 
         print "\nREAD TIME:", time.time() - start

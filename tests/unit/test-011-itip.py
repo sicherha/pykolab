@@ -99,7 +99,7 @@ itip_google_multipart = """MIME-Version: 1.0
 Message-ID: <001a11c2ad84243e0604f3246bae@google.com>
 Date: Mon, 24 Feb 2014 10:27:28 +0000
 Subject: =?ISO-8859-1?Q?Invitation=3A_iTip_from_Apple_=40_Mon_Feb_24=2C_2014_12pm_?=
-	=?ISO-8859-1?Q?=2D_1pm_=28Tom_=26_T=E4m=29?=
+ =?ISO-8859-1?Q?=2D_1pm_=28Tom_=26_T=E4m=29?=
 From: "john.doe" <john.doe@gmail.com>
 To: <john.sample@example.org>
 Content-Type: multipart/mixed; boundary=001a11c2ad84243df004f3246bad
@@ -321,6 +321,7 @@ conf = pykolab.getConf()
 if not hasattr(conf, 'defaults'):
     conf.finalize_conf()
 
+
 class TestITip(unittest.TestCase):
 
     def setUp(self):
@@ -330,7 +331,7 @@ class TestITip(unittest.TestCase):
         self.patch(smtplib.SMTP, "quit", self._mock_nop)
         self.patch(smtplib.SMTP, "sendmail", self._mock_smtp_sendmail)
 
-        self.smtplog = [];
+        self.smtplog = []
 
     def _mock_nop(self, domain=None):
         pass
@@ -340,7 +341,6 @@ class TestITip(unittest.TestCase):
 
     def _mock_smtp_sendmail(self, from_addr, to_addr, message, mail_options=None, rcpt_options=None):
         self.smtplog.append((from_addr, to_addr, message))
-
 
     def test_001_itip_events_from_message(self):
         itips1 = itip.events_from_message(message_from_string(itip_multipart))
@@ -375,42 +375,40 @@ class TestITip(unittest.TestCase):
         self.assertEqual(xml.get_summary(), "Testing Ümlauts")
         self.assertEqual(xml.get_location(), "Rue the Genève")
 
-
     def test_002_check_date_conflict(self):
-        astart = datetime.datetime(2014,7,13, 10,0,0)
-        aend   = astart + datetime.timedelta(hours=2)
+        astart = datetime.datetime(2014, 7, 13, 10, 0, 0)
+        aend = astart + datetime.timedelta(hours=2)
 
-        bstart = datetime.datetime(2014,7,13, 10,0,0)
-        bend   = astart + datetime.timedelta(hours=1)
+        bstart = datetime.datetime(2014, 7, 13, 10, 0, 0)
+        bend = astart + datetime.timedelta(hours=1)
         self.assertTrue(itip.check_date_conflict(astart, aend, bstart, bend))
 
-        bstart = datetime.datetime(2014,7,13, 11,0,0)
-        bend   = astart + datetime.timedelta(minutes=30)
+        bstart = datetime.datetime(2014, 7, 13, 11, 0, 0)
+        bend = astart + datetime.timedelta(minutes=30)
         self.assertTrue(itip.check_date_conflict(astart, aend, bstart, bend))
 
-        bend   = astart + datetime.timedelta(hours=2)
+        bend = astart + datetime.timedelta(hours=2)
         self.assertTrue(itip.check_date_conflict(astart, aend, bstart, bend))
 
-        bstart = datetime.datetime(2014,7,13, 12,0,0)
-        bend   = astart + datetime.timedelta(hours=1)
+        bstart = datetime.datetime(2014, 7, 13, 12, 0, 0)
+        bend = astart + datetime.timedelta(hours=1)
         self.assertFalse(itip.check_date_conflict(astart, aend, bstart, bend))
         self.assertFalse(itip.check_date_conflict(bstart, bend, astart, aend))
 
-        bstart = datetime.datetime(2014,6,13, 10,0,0)
-        bend   = datetime.datetime(2014,6,14, 12,0,0)
+        bstart = datetime.datetime(2014, 6, 13, 10, 0, 0)
+        bend = datetime.datetime(2014, 6, 14, 12, 0, 0)
         self.assertFalse(itip.check_date_conflict(astart, aend, bstart, bend))
 
-        bstart = datetime.datetime(2014,7,10, 12,0,0)
-        bend   = datetime.datetime(2014,7,14, 14,0,0)
+        bstart = datetime.datetime(2014, 7, 10, 12, 0, 0)
+        bend = datetime.datetime(2014, 7, 14, 14, 0, 0)
         self.assertTrue(itip.check_date_conflict(astart, aend, bstart, bend))
-
 
     def test_002_check_event_conflict(self):
         itip_event = itip.events_from_message(message_from_string(itip_non_multipart))[0]
 
         event = Event()
-        event.set_start(datetime.datetime(2012,7,13, 9,30,0, tzinfo=itip_event['start'].tzinfo))
-        event.set_end(datetime.datetime(2012,7,13, 10,30,0, tzinfo=itip_event['start'].tzinfo))
+        event.set_start(datetime.datetime(2012, 7, 13, 9, 30, 0, tzinfo=itip_event['start'].tzinfo))
+        event.set_end(datetime.datetime(2012, 7, 13, 10, 30, 0, tzinfo=itip_event['start'].tzinfo))
 
         self.assertTrue(itip.check_event_conflict(event, itip_event), "Conflicting dates")
 
@@ -418,8 +416,8 @@ class TestITip(unittest.TestCase):
         self.assertFalse(itip.check_event_conflict(event, itip_event), "No conflict for same UID")
 
         allday = Event()
-        allday.set_start(datetime.date(2012,7,13))
-        allday.set_end(datetime.date(2012,7,13))
+        allday.set_start(datetime.date(2012, 7, 13))
+        allday.set_end(datetime.date(2012, 7, 13))
 
         self.assertTrue(itip.check_event_conflict(allday, itip_event), "Conflicting allday event")
 
@@ -427,8 +425,8 @@ class TestITip(unittest.TestCase):
         self.assertFalse(itip.check_event_conflict(allday, itip_event), "No conflict if event is set to transparent")
 
         event2 = Event()
-        event2.set_start(datetime.datetime(2012,7,13, 10,0,0, tzinfo=pytz.timezone("US/Central")))
-        event2.set_end(datetime.datetime(2012,7,13, 11,0,0, tzinfo=pytz.timezone("US/Central")))
+        event2.set_start(datetime.datetime(2012, 7, 13, 10, 0, 0, tzinfo=pytz.timezone("US/Central")))
+        event2.set_end(datetime.datetime(2012, 7, 13, 11, 0, 0, tzinfo=pytz.timezone("US/Central")))
 
         self.assertFalse(itip.check_event_conflict(event, itip_event), "No conflict with timezone shift")
 
@@ -437,9 +435,9 @@ class TestITip(unittest.TestCase):
         rrule.setCount(10)
 
         event3 = Event()
-        event3.set_recurrence(rrule);
-        event3.set_start(datetime.datetime(2012,6,29, 9,30,0, tzinfo=pytz.utc))
-        event3.set_end(datetime.datetime(2012,6,29, 10,30,0, tzinfo=pytz.utc))
+        event3.set_recurrence(rrule)
+        event3.set_start(datetime.datetime(2012, 6, 29, 9, 30, 0, tzinfo=pytz.utc))
+        event3.set_end(datetime.datetime(2012, 6, 29, 10, 30, 0, tzinfo=pytz.utc))
 
         self.assertTrue(itip.check_event_conflict(event3, itip_event), "Conflict in (3rd) recurring event instance")
 
@@ -447,9 +445,9 @@ class TestITip(unittest.TestCase):
         self.assertTrue(itip.check_event_conflict(event3, itip_event), "Conflict in two recurring events")
 
         event4 = Event()
-        event4.set_recurrence(rrule);
-        event4.set_start(datetime.datetime(2012,7,1, 9,30,0, tzinfo=pytz.utc))
-        event4.set_end(datetime.datetime(2012,7,1, 10,30,0, tzinfo=pytz.utc))
+        event4.set_recurrence(rrule)
+        event4.set_start(datetime.datetime(2012, 7, 1, 9, 30, 0, tzinfo=pytz.utc))
+        event4.set_end(datetime.datetime(2012, 7, 1, 10, 30, 0, tzinfo=pytz.utc))
         self.assertFalse(itip.check_event_conflict(event4, itip_event), "No conflict in two recurring events")
 
         itip_event = itip.events_from_message(message_from_string(itip_non_multipart))[0]
@@ -458,23 +456,23 @@ class TestITip(unittest.TestCase):
         rrule.setCount(10)
 
         event5 = Event()
-        event5.set_recurrence(rrule);
-        event5.set_start(datetime.datetime(2012,7,9, 10,0,0, tzinfo=pytz.timezone("Europe/London")))
-        event5.set_end(datetime.datetime(2012,7,9, 11,0,0, tzinfo=pytz.timezone("Europe/London")))
+        event5.set_recurrence(rrule)
+        event5.set_start(datetime.datetime(2012, 7, 9, 10, 0, 0, tzinfo=pytz.timezone("Europe/London")))
+        event5.set_end(datetime.datetime(2012, 7, 9, 11, 0, 0, tzinfo=pytz.timezone("Europe/London")))
 
         event_xml = str(event5)
         exception = Event(from_string=event_xml)
-        exception.set_start(datetime.datetime(2012,7,13, 14,0,0, tzinfo=pytz.timezone("Europe/London")))
-        exception.set_end(datetime.datetime(2012,7,13, 16,0,0, tzinfo=pytz.timezone("Europe/London")))
-        exception.set_recurrence_id(datetime.datetime(2012,7,13, 10,0,0, tzinfo=pytz.timezone("Europe/London")), False)
+        exception.set_start(datetime.datetime(2012, 7, 13, 14, 0, 0, tzinfo=pytz.timezone("Europe/London")))
+        exception.set_end(datetime.datetime(2012, 7, 13, 16, 0, 0, tzinfo=pytz.timezone("Europe/London")))
+        exception.set_recurrence_id(datetime.datetime(2012, 7, 13, 10, 0, 0, tzinfo=pytz.timezone("Europe/London")), False)
         event5.add_exception(exception)
         self.assertFalse(itip.check_event_conflict(event5, itip_event), "No conflict with exception date")
 
         exception = Event(from_string=event_xml)
-        exception.set_start(datetime.datetime(2012,7,13, 10,0,0, tzinfo=pytz.timezone("Europe/London")))
-        exception.set_end(datetime.datetime(2012,7,13, 11,0,0, tzinfo=pytz.timezone("Europe/London")))
+        exception.set_start(datetime.datetime(2012, 7, 13, 10, 0, 0, tzinfo=pytz.timezone("Europe/London")))
+        exception.set_end(datetime.datetime(2012, 7, 13, 11, 0, 0, tzinfo=pytz.timezone("Europe/London")))
         exception.set_status('CANCELLED')
-        exception.set_recurrence_id(datetime.datetime(2012,7,13, 10,0,0, tzinfo=pytz.timezone("Europe/London")), False)
+        exception.set_recurrence_id(datetime.datetime(2012, 7, 13, 10, 0, 0, tzinfo=pytz.timezone("Europe/London")), False)
         event5.add_exception(exception)
         self.assertFalse(itip.check_event_conflict(event5, itip_event), "No conflict with cancelled exception")
 
@@ -482,11 +480,11 @@ class TestITip(unittest.TestCase):
         itip_event = itip.events_from_message(message_from_string(itip_non_multipart))[0]
 
         event = Event()
-        event.set_start(datetime.datetime(2012,7,10, 9,30,0, tzinfo=itip_event['start'].tzinfo))
-        event.set_end(datetime.datetime(2012,7,10, 10,30,0, tzinfo=itip_event['start'].tzinfo))
+        event.set_start(datetime.datetime(2012, 7, 10, 9, 30, 0, tzinfo=itip_event['start'].tzinfo))
+        event.set_end(datetime.datetime(2012, 7, 10, 10, 30, 0, tzinfo=itip_event['start'].tzinfo))
         event.set_recurrence_id(event.get_start())
 
-        dtstart = datetime.datetime(2012,7,13, 9,30,0, tzinfo=itip_event['start'].tzinfo)
+        dtstart = datetime.datetime(2012, 7, 13, 9, 30, 0, tzinfo=itip_event['start'].tzinfo)
         second = Event(from_string=str(event))
         second.set_start(dtstart)
         second.set_end(dtstart + datetime.timedelta(hours=1))
@@ -497,7 +495,7 @@ class TestITip(unittest.TestCase):
 
         itip_event = itip.events_from_message(message_from_string(itip_non_multipart))[0]
 
-        dtstart = datetime.datetime(2012,7,15, 10,0,0, tzinfo=itip_event['start'].tzinfo)
+        dtstart = datetime.datetime(2012, 7, 15, 10, 0, 0, tzinfo=itip_event['start'].tzinfo)
         second = Event(from_string=str(itip_event['xml']))
         second.set_start(dtstart + datetime.timedelta(hours=1))
         second.set_end(dtstart + datetime.timedelta(hours=2))
@@ -507,17 +505,16 @@ class TestITip(unittest.TestCase):
         self.assertEqual(len(itip_event['xml'].get_exceptions()), 1)
 
         event = Event()
-        event.set_start(datetime.datetime(2012,7,11, 9,30,0, tzinfo=itip_event['start'].tzinfo))
-        event.set_end(datetime.datetime(2012,7,11, 10,30,0, tzinfo=itip_event['start'].tzinfo))
+        event.set_start(datetime.datetime(2012, 7, 11, 9, 30, 0, tzinfo=itip_event['start'].tzinfo))
+        event.set_end(datetime.datetime(2012, 7, 11, 10, 30, 0, tzinfo=itip_event['start'].tzinfo))
 
         self.assertFalse(itip.check_event_conflict(event, itip_event), "Conflicting dates (no)")
 
         event = Event()
-        event.set_start(datetime.datetime(2012,7,15, 11,0,0, tzinfo=itip_event['start'].tzinfo))
-        event.set_end(datetime.datetime(2012,7,15, 11,30,0, tzinfo=itip_event['start'].tzinfo))
+        event.set_start(datetime.datetime(2012, 7, 15, 11, 0, 0, tzinfo=itip_event['start'].tzinfo))
+        event.set_end(datetime.datetime(2012, 7, 15, 11, 30, 0, tzinfo=itip_event['start'].tzinfo))
 
         self.assertFalse(itip.check_event_conflict(event, itip_event), "Conflicting dates (exception)")
-
 
     def test_003_send_reply(self):
         itip_events = itip.events_from_message(message_from_string(itip_non_multipart))
@@ -529,9 +526,9 @@ class TestITip(unittest.TestCase):
 
         _accepted = participant_status_label('ACCEPTED')
         message = message_from_string(self.smtplog[0][2])
-        self.assertEqual(message.get('Subject'), _("Invitation for %(summary)s was %(status)s") % { 'summary':'test', 'status':_accepted })
+        self.assertEqual(message.get('Subject'), _("Invitation for %(summary)s was %(status)s") % {'summary': 'test', 'status': _accepted})
 
-        text = str(message.get_payload(0));
+        text = str(message.get_payload(0))
         self.assertIn('SUMMARY=3Dtest', text)
         self.assertIn('STATUS=3D' + _accepted, text)
 

@@ -10,6 +10,7 @@ from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
 
+
 class TestUserAddFrFR(unittest.TestCase):
     @classmethod
     def setup_class(self, *args, **kw):
@@ -32,7 +33,6 @@ class TestUserAddFrFR(unittest.TestCase):
         purge_users()
 
     def test_001_inbox_created(self):
-
         time.sleep(2)
         imap = IMAP()
         imap.connect()
@@ -54,5 +54,3 @@ class TestUserAddFrFR(unittest.TestCase):
 
         self.assertEqual(result['mail'], 'etienne-nicolas.mehul@example.org')
         self.assertEqual(sorted(result['alias']), ['e.mehul@example.org', 'mehul@example.org'])
-
-

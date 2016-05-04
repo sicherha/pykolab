@@ -25,7 +25,9 @@ xml_note = """
 </note>
 """
 
+
 class TestNoteXML(unittest.TestCase):
+
     def assertIsInstance(self, _value, _type):
         if hasattr(unittest.TestCase, 'assertIsInstance'):
             return unittest.TestCase.assertIsInstance(self, _value, _type)
@@ -33,7 +35,7 @@ class TestNoteXML(unittest.TestCase):
             if (type(_value)) == _type:
                 return True
             else:
-                raise AssertionError, "%s != %s" % (type(_value), _type)
+                raise AssertionError("%s != %s" % (type(_value), _type))
 
     def test_001_minimal(self):
         note = Note()
@@ -82,7 +84,7 @@ class TestNoteXML(unittest.TestCase):
         data = note_from_string(xml_note).to_dict()
 
         self.assertIsInstance(data, dict)
-        self.assertTrue(data.has_key('uid'))
+        self.assertTrue('uid' in data)
         self.assertIsInstance(data.get('created', None), datetime.datetime)
         self.assertIsInstance(data.get('lastmodified-date', None), datetime.datetime)
         self.assertEqual(data.get('summary', None), "Kolab Note")
@@ -90,7 +92,6 @@ class TestNoteXML(unittest.TestCase):
         self.assertIsInstance(data.get('categories', None), list)
         self.assertEqual(len(data.get('categories', None)), 2)
         self.assertTrue('<p>This is a HTML note</p>' in data.get('description', None))
-
 
 if __name__ == '__main__':
     unittest.main()

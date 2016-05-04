@@ -2,6 +2,7 @@ from email import message_from_string
 import icalendar
 import unittest
 
+
 class TestICalendar(unittest.TestCase):
 
     def test_001_from_message_recurrence(self):
@@ -89,16 +90,15 @@ END:VCALENDAR
 
         self.assertTrue(message.is_multipart())
 
-        itip_methods = [ "REQUEST" ]
+        itip_methods = ["REQUEST"]
 
         # Check each part
         for part in message.walk():
-
             # The iTip part MUST be Content-Type: text/calendar (RFC 6047,
             # section 2.4)
             if part.get_content_type() == "text/calendar":
                 if not part.get_param('method') in itip_methods:
-                    raise Exception, "method not interesting"
+                    raise Exception("method not interesting")
 
                 # Get the itip_payload
                 itip_payload = part.get_payload(decode=True)
@@ -196,16 +196,15 @@ END:VCALENDAR
 
         self.assertTrue(message.is_multipart())
 
-        itip_methods = [ "REQUEST" ]
+        itip_methods = ["REQUEST"]
 
         # Check each part
         for part in message.walk():
-
             # The iTip part MUST be Content-Type: text/calendar (RFC 6047,
             # section 2.4)
             if part.get_content_type() == "text/calendar":
                 if not part.get_param('method') in itip_methods:
-                    raise Exception, "method not interesting"
+                    raise Exception("method not interesting")
 
                 # Get the itip_payload
                 itip_payload = part.get_payload(decode=True)

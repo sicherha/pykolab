@@ -9,6 +9,7 @@ from pykolab.imap import IMAP
 
 conf = pykolab.getConf()
 
+
 class TestPolicyUid(unittest.TestCase):
 
     def remove_option(self, section, option):
@@ -172,5 +173,3 @@ class TestPolicyUid(unittest.TestCase):
 
         from tests.functional.purge_users import purge_users
         purge_users()
-
-

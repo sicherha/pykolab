@@ -39,4 +39,3 @@ import saslauthd
 if __name__ == "__main__":
     saslauthd = saslauthd.SASLAuthDaemon()
     saslauthd.run()
-

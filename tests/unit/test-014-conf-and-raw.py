@@ -8,6 +8,7 @@ import unittest
 conf = pykolab.getConf()
 conf.finalize_conf(fatal=False)
 
+
 class TestConfRaw(unittest.TestCase):
     config_file = None
 
@@ -25,7 +26,7 @@ class TestConfRaw(unittest.TestCase):
     def test_001_set(self):
         password = '$%something'
         conf.command_set('kolab', 'test_password', password)
-        
+
     def test_002_get(self):
         password = conf.get('kolab', 'test_password')
         self.assertEqual('$%something', password)
