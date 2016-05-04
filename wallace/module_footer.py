@@ -22,9 +22,9 @@ import tempfile
 import time
 
 from email import message_from_file
+from email.encoders import encode_quopri
 
 import modules
-
 import pykolab
 
 from pykolab.translate import _
@@ -40,18 +40,26 @@ def __init__():
 def description():
     return """Append a footer to messages."""
 
+def set_part_content(part, content):
+    # Reset old encoding and use quoted-printable (#5414)
+    del part['Content-Transfer-Encoding']
+    part.set_payload(content)
+    encode_quopri(part)
+
+    return True
+
 def execute(*args, **kw):
     if not os.path.isdir(mybasepath):
         os.makedirs(mybasepath)
 
-    for stage in ['incoming', 'ACCEPT' ]:
+    for stage in ['incoming', 'ACCEPT']:
         if not os.path.isdir(os.path.join(mybasepath, stage)):
             os.makedirs(os.path.join(mybasepath, stage))
 
     # TODO: Test for correct call.
     filepath = args[0]
 
-    if kw.has_key('stage'):
+    if 'stage' in kw:
         log.debug(_("Issuing callback after processing to stage %s") % (kw['stage']), level=8)
         log.debug(_("Testing cb_action_%s()") % (kw['stage']), level=8)
         if hasattr(modules, 'cb_action_%s' % (kw['stage'])):
@@ -80,7 +88,7 @@ def execute(*args, **kw):
         log.warning(_("No contents configured for footer module"))
         exec('modules.cb_action_%s(%r, %r)' % ('ACCEPT','footer', filepath))
         return
-        
+
     if os.path.isfile(footer_text_file):
         footer['plain'] = open(footer_text_file, 'r').read()
 
@@ -94,7 +102,7 @@ def execute(*args, **kw):
     if footer['plain'] == "" and footer['html'] == "<p></p>":
         exec('modules.cb_action_%s(%r, %r)' % ('ACCEPT','footer', filepath))
         return
-        
+
     footer_added = False
 
     try:
@@ -121,26 +129,22 @@ def execute(*args, **kw):
 
         log.debug("Walking message part: %s; disposition = %r" % (content_type, disposition), level=8)
 
-        if not disposition == None:
+        if disposition is not None:
             continue
 
         if content_type == "text/plain":
             content = part.get_payload(decode=True)
             content += "\n\n-- \n%s" % (footer['plain'])
-            part.set_payload(content)
-            footer_added = True
-            log.debug("Text footer attached.", level=6)
+            footer_added = set_part_content(part, content)
 
         elif content_type == "text/html":
             content = part.get_payload(decode=True)
             append = "\n<!-- footer appended by Wallace -->\n" + footer['html']
             if "</body>" in content:
-                part.set_payload(content.replace("</body>", append + "</body>"))
+                content = content.replace("</body>", append + "</body>")
             else:
-                part.set_payload("<html><body>" + content + append + "</body></html>")
-
-            footer_added = True
-            log.debug("HTML footer attached.", level=6)
+                content = "<html><body>" + content + append + "</body></html>"
+            footer_added = set_part_content(part, content)
 
     if footer_added:
         log.debug("Footer attached.")
