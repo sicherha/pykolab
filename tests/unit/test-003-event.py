@@ -89,6 +89,25 @@ ORGANIZER;CN=Doe\, John:mailto:john.doe@example.org
 END:VEVENT
 """
 
+ical_event_rdate = """
+BEGIN:VEVENT
+UID:7a35527d-f783-4b58-b404-b1389bd2fc57
+DTSTAMP;VALUE=DATE-TIME:20140407T122311Z
+CREATED;VALUE=DATE-TIME:20140407T122245Z
+LAST-MODIFIED;VALUE=DATE-TIME:20140407T122311Z
+DTSTART;TZID=Europe/Zurich;VALUE=DATE-TIME:20140523T110000
+DURATION:PT1H30M0S
+RDATE;TZID=Europe/Zurich;VALUE=DATE-TIME:20140530T110000
+RDATE;TZID=Europe/Zurich;VALUE=DATE-TIME:20140620T110000
+SUMMARY:Summary
+LOCATION:Location
+DESCRIPTION:Description
+SEQUENCE:2
+CLASS:PUBLIC
+ORGANIZER;CN=Doe\, John:mailto:john.doe@example.org
+END:VEVENT
+"""
+
 xml_event = """
 <icalendar xmlns="urn:ietf:params:xml:ns:icalendar-2.0">
   <vcalendar>
@@ -960,6 +979,31 @@ END:VEVENT
         self.assertEqual(event.get_attendee("jane@example.org").get_participant_status(), kolabformat.PartTentative)
         self.assertEqual(event.get_attendee("jack@example.org").get_name(), "Jack")
         self.assertRaises(ValueError, exception.get_attendee, "somebody@else.com")  # not addded to exception
+
+    def test_028_rdate(self):
+        event = event_from_ical(ical_event_rdate)
+
+        self.assertTrue(event.is_recurring())
+        self.assertEqual(len(event.get_recurrence_dates()), 2)
+        self.assertIsInstance(event.get_recurrence_dates()[0], datetime.datetime)
+
+        rdates = event.get_recurrence_dates()
+        self.assertEqual(str(rdates[0]), "2014-05-30 11:00:00+02:00")
+        self.assertEqual(str(rdates[1]), "2014-06-20 11:00:00+02:00")
+
+        dt = datetime.datetime(2014, 8, 15, 10, 0, 0, tzinfo=pytz.timezone("Europe/Zurich"))
+        event.add_recurrence_date(dt)
+        rdates = event.get_recurrence_dates()
+        self.assertEqual(str(rdates[2]), "2014-08-15 10:00:00+02:00")
+
+        itip = event.as_string_itip()
+        rdates = []
+        for line in itip.split("\n"):
+            if re.match('^RDATE', line):
+                rdates.append(line.strip().split(':')[1])
+                self.assertEqual("TZID=Europe/Zurich", line.split(':')[0].split(';')[1])
+
+        self.assertEqual(rdates, ["20140530T110000", "20140620T110000", "20140815T100000"])
 
     def _find_prop_in_list(self, diff, name):
         for prop in diff:

@@ -152,6 +152,23 @@ class Event(object):
         self._categories.append(ustr(category))
         self.event.setCategories(self._categories)
 
+    def add_recurrence_date(self, _datetime):
+        valid_datetime = False
+        if isinstance(_datetime, datetime.date):
+            valid_datetime = True
+
+        if isinstance(_datetime, datetime.datetime):
+            # If no timezone information is passed on, make it UTC
+            if _datetime.tzinfo is None:
+                _datetime = _datetime.replace(tzinfo=pytz.utc)
+
+            valid_datetime = True
+
+        if not valid_datetime:
+            raise InvalidEventDateError, _("Rdate needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime))
+
+        self.event.addRecurrenceDate(xmlutils.to_cdatetime(_datetime, True))
+
     def add_exception_date(self, _datetime):
         valid_datetime = False
         if isinstance(_datetime, datetime.date):
@@ -481,6 +498,9 @@ class Event(object):
 
         return "%s - %s" % (start.strftime(date_format + " " + time_format), end.strftime(end_format))
 
+    def get_recurrence_dates(self):
+        return map(lambda _: xmlutils.from_cdatetime(_, True), self.event.recurrenceDates())
+
     def get_exception_dates(self):
         return map(lambda _: xmlutils.from_cdatetime(_, True), self.event.exceptionDates())
 
@@ -665,6 +685,13 @@ class Event(object):
             result.append(rrule.to_ical())
         return result
 
+    def get_ical_rdate(self):
+        rdates = self.get_recurrence_dates()
+        for i in range(len(rdates)):
+            rdates[i] = icalendar.prop.vDDDLists(rdates[i])
+
+        return rdates
+
     def get_location(self):
         return self.event.location()
 
@@ -829,6 +856,10 @@ class Event(object):
         for _datetime in _datetimes:
             self.add_exception_date(_datetime)
 
+    def set_recurrence_dates(self, _datetimes):
+        for _datetime in _datetimes:
+            self.add_recurrence_date(_datetime)
+
     def add_custom_property(self, name, value):
         if not name.upper().startswith('X-'):
             raise ValueError, _("Invalid custom property name %r") % (name)
@@ -945,6 +976,23 @@ class Event(object):
 
     def set_ical_uid(self, uid):
         self.set_uid(str(uid))
+
+    def set_ical_rdate(self, rdate):
+        rdates = []
+        # rdate here can be vDDDLists or a list of vDDDLists, why?!
+        if isinstance(rdate, icalendar.prop.vDDDLists):
+            rdate = [rdate]
+
+        for _rdate in rdate:
+            if isinstance(_rdate, icalendar.prop.vDDDLists):
+                tzid = None
+                if hasattr(_rdate, 'params') and 'TZID' in _rdate.params:
+                    tzid = _rdate.params['TZID']
+                dts = icalendar.prop.vDDDLists.from_ical(_rdate.to_ical(), tzid)
+                for datetime in dts:
+                    rdates.append(datetime)
+
+        self.set_recurrence_dates(rdates)
 
     def set_ical_recurrenceid(self, value, params):
         try:
@@ -1316,7 +1364,7 @@ class Event(object):
         return msg
 
     def is_recurring(self):
-        return self.event.recurrenceRule().isValid()
+        return self.event.recurrenceRule().isValid() or len(self.get_recurrence_dates()) > 0
 
     def to_event_cal(self):
         from kolab.calendaring import EventCal
