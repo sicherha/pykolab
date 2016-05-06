@@ -468,18 +468,22 @@ class Cyrus(cyruslib.CYRUS):
                 )
 
             target_server = self.find_mailfolder_server(target_folder)
+            source_server = self.find_mailfolder_server(undelete_folder)
 
             if hasattr(conf, 'dry_run') and not conf.dry_run:
-                if target_server is not self.server:
+                undelete_folder = self.folder_utf7(undelete_folder)
+                target_folder = self.folder_utf7(target_folder)
+
+                if not target_server == source_server:
                     self.xfer(undelete_folder, target_server)
 
                 self.rename(undelete_folder, target_folder)
             else:
-                if not target_server == self.server:
+                if not target_server == source_server:
                     print >> sys.stdout, \
                         _("Would have transferred %s from %s to %s") % (
                                 undelete_folder,
-                                self.server,
+                                source_server,
                                 target_server
                             )
 
@@ -589,7 +593,7 @@ class Cyrus(cyruslib.CYRUS):
                     mbox['domain']
                 )
 
-        folders = self.lm(deleted_folder_search)
+        folders = self.lm(self.folder_utf7(deleted_folder_search))
 
         # The folders we have found at this stage include virtdomain folders.
         #
@@ -606,4 +610,4 @@ class Cyrus(cyruslib.CYRUS):
 
             folders = _folders
 
-        return folders
+        return [self.folder_utf8(x) for x in folders]
