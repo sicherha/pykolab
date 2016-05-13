@@ -14,10 +14,15 @@
                 "E126": "disabled",
                 "E201": "disabled",
                 "E202": "disabled",
+                "E231": "disabled",
+                "E251": "disabled",
                 "E302": "disabled",
+                "E303": "disabled",
                 "E402": "disabled",
                 "E501": "disabled",
-                "E711": "disabled"
+                "E711": "disabled",
+                "E712": "disabled",
+                "E713": "disabled"
             }
         },
         "spelling" : {
