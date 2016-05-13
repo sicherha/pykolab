@@ -70,10 +70,11 @@ def execute(*args, **kw):
     print "Deleted folders:"
 
     for folder in folders:
-        mbox_parts = imap.parse_mailfolder(folder)
+        utf8_folder = imap_utf7.decode(folder).encode('utf-8')
+        mbox_parts = imap.parse_mailfolder(utf8_folder)
+        ts = datetime.datetime.fromtimestamp(int(mbox_parts['hex_timestamp'], 16))
 
         if not conf.raw:
-            print "%s (Deleted at %s)" % (imap_utf7.decode(folder).encode('utf-8'), datetime.datetime.fromtimestamp(int(mbox_parts['hex_timestamp'], 16)))
+            print "%s (Deleted at %s)" % (utf8_folder, ts)
         else:
-            print "%s (Deleted at %s)" % (folder, datetime.datetime.fromtimestamp(int(mbox_parts['hex_timestamp'], 16)))
-
+            print "%s (Deleted at %s)" % (folder, ts)
