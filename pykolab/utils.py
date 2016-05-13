@@ -353,22 +353,29 @@ def normalize(_object):
         return result
 
     elif type(_object) == dict:
-        for key in _object.keys():
+        def _strip(value):
+            try:
+                return value.strip()
+            except:
+                return value
+
+        for key in _object:
             if type(_object[key]) == list:
-                if _object[key] == None:
+                if _object[key] is None:
                     continue
 
-                if len(_object[key]) == 1:
-                    result[key.lower()] = ''.join(_object[key])
+                val = map(_strip, _object[key])
+
+                if len(val) == 1:
+                    result[key.lower()] = ''.join(val)
                 else:
-                    result[key.lower()] = _object[key]
+                    result[key.lower()] = val
 
             else:
-                if _object[key] == None:
+                if _object[key] is None:
                     continue
 
-                # What the heck?
-                result[key.lower()] = _object[key]
+                result[key.lower()] = _strip(_object[key])
 
         if result.has_key('objectsid') and not result['objectsid'][0] == "S":
             result['objectsid'] = sid_to_string(result['objectsid'])

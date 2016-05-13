@@ -26,4 +26,4 @@ po/POTFILES
 pykolab/constants.py
 pykolab-[0-9]*.*/
 src/
-test-*
+./test-*
