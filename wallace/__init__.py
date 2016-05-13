@@ -103,6 +103,7 @@ class WallaceDaemon(object):
     def __init__(self):
         self.current_connections = 0
         self.max_connections = 24
+        self.pool = None
 
         daemon_group = conf.add_cli_parser_option_group(_("Daemon Options"))
 
@@ -335,8 +336,9 @@ class WallaceDaemon(object):
         if os.access(conf.pidfile, os.R_OK):
             os.remove(conf.pidfile)
 
-        self.pool.close()
-        self.pool.join()
+        if self.pool is not None:
+            self.pool.close()
+            self.pool.join()
 
         raise SystemExit
 
