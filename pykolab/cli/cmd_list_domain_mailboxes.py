@@ -21,6 +21,7 @@ import commands
 
 import pykolab
 
+from pykolab import utils
 from pykolab import imap_utf7
 from pykolab.auth import Auth
 from pykolab.imap import IMAP
