@@ -394,6 +394,17 @@ def normalize(_object):
         if not result.has_key('domain') and result.has_key('standard_domain'):
             result['domain'] = result['standard_domain']
 
+        if 'objectclass' not in result:
+            result['objectclass'] = []
+
+        if result['objectclass'] is None:
+            result['objectclass'] = []
+
+        if not isinstance(result['objectclass'], list):
+            result['objectclass'] = [result['objectclass']]
+
+        result['objectclass'] = [x.lower() for x in result['objectclass']]
+
         return result
 
 def parse_input(_input, splitchars= [ ' ' ]):
