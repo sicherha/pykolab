@@ -179,6 +179,20 @@ class Auth(pykolab.base.Base):
         del self._auth
         self._auth = None
 
+    def find_folder_resource(self, folder):
+        """
+            Find one or more resources corresponding to the shared folder name.
+        """
+        if not self._auth or self._auth == None:
+            self.connect()
+
+        result = self._auth.find_folder_resource(folder)
+
+        if isinstance(result, list) and len(result) == 1:
+            return result[0]
+        else:
+            return result
+
     def find_recipient(self, address, domain=None):
         """
             Find one or more entries corresponding to the recipient address.

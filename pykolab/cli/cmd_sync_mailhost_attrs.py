@@ -95,14 +95,18 @@ def execute(*args, **kw):
             folders.extend(imap.lm('user/%%@%s' % (domain)))
 
             for folder in folders:
+                r_folder = folder
+                if not folder.startswith('shared/'):
+                    r_folder = '/'.join(folder.split('/')[1:])
+
                 if conf.delete:
                     if conf.dry_run:
-                        if not folder.split('/')[0] == 'shared':
-                            log.warning(_("No recipients for '%s' (would have deleted the mailbox if not for --dry-run)!") % ('/'.join(folder.split('/')[1:])))
+                        if not folder.startswith('shared/'):
+                            log.warning(_("No recipients for '%s' (would have deleted the mailbox if not for --dry-run)!") % (r_folder))
                         else:
                             continue
                     else:
-                        if not '/'.join(folder.split('/')[0]) == 'shared':
+                        if not folder.startswith('shared/'):
                             log.info(_("Deleting mailbox '%s' because it has no recipients") % (folder))
                             try:
                                 imap.dm(folder)
@@ -111,7 +115,7 @@ def execute(*args, **kw):
                         else:
                             log.info(_("Not automatically deleting shared folder '%s'") % (folder))
                 else:
-                    log.warning(_("No recipients for '%s' (use --delete to delete)!") % ('/'.join(folder.split('/')[1:])))
+                    log.warning(_("No recipients for '%s' (use --delete to delete)!") % (r_folder))
 
     for primary in list(set(domains.values())):
         secondaries = [x for x in domains.keys() if domains[x] == primary]
@@ -130,20 +134,27 @@ def execute(*args, **kw):
 
         for folder in folders:
             server = imap.user_mailbox_server(folder)
-            recipient = auth.find_recipient('/'.join(folder.split('/')[1:]))
+            r_folder = folder
+
+            if folder.startswith('shared/'):
+                recipient = auth.find_folder_resource(folder)
+            else:
+                r_folder = '/'.join(folder.split('/')[1:])
+                recipient = auth.find_recipient(r_folder)
+
             if (isinstance(recipient, list)):
                 if len(recipient) > 1:
-                    log.warning(_("Multiple recipients for '%s'!") % ('/'.join(folder.split('/')[1:])))
+                    log.warning(_("Multiple recipients for '%s'!") % (r_folder))
                     continue
                 elif len(recipient) == 0:
                     if conf.delete:
                         if conf.dry_run:
-                            if not folder.split('/')[0] == 'shared':
-                                log.warning(_("No recipients for '%s' (would have deleted the mailbox if not for --dry-run)!") % ('/'.join(folder.split('/')[1:])))
+                            if not folder.startswith('shared/'):
+                                log.warning(_("No recipients for '%s' (would have deleted the mailbox if not for --dry-run)!") % (r_folder))
                             else:
                                 continue
                         else:
-                            if not '/'.join(folder.split('/')[0]) == 'shared':
+                            if not folder.startswith('shared/'):
                                 log.info(_("Deleting mailbox '%s' because it has no recipients") % (folder))
                                 try:
                                     imap.dm(folder)
@@ -152,7 +163,7 @@ def execute(*args, **kw):
                             else:
                                 log.info(_("Not automatically deleting shared folder '%s'") % (folder))
                     else:
-                        log.warning(_("No recipients for '%s' (use --delete to delete)!") % ('/'.join(folder.split('/')[1:])))
+                        log.warning(_("No recipients for '%s' (use --delete to delete)!") % (r_folder))
 
                     continue
             else:
@@ -173,6 +184,10 @@ def execute(*args, **kw):
 
     for folder in folders:
         server = imap.user_mailbox_server(folder)
-        recipient = auth.find_recipient('/'.join(folder.split('/')[1:]))
+
+        if folder.startswith('shared/'):
+            recipient = auth.find_folder_resource(folder)
+        else:
+            recipient = auth.find_recipient('/'.join(folder.split('/')[1:]))
 
         print folder, server, recipient

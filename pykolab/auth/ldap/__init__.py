@@ -461,6 +461,78 @@ class LDAP(pykolab.base.Base):
 
         return delegators
 
+    def find_folder_resource(self, folder="*", exclude_entry_id=None):
+        """
+            Given a shared folder name or list of folder names, find one or more valid
+            resources.
+
+            Specify an additional entry_id to exclude to exclude matches.
+        """
+
+        self._bind()
+
+        if not exclude_entry_id == None:
+            __filter_prefix = "(&"
+            __filter_suffix = "(!(%s=%s)))" % (
+                    self.config_get('unique_attribute'),
+                    exclude_entry_id
+                )
+        else:
+            __filter_prefix = ""
+            __filter_suffix = ""
+
+        resource_filter = self.config_get('resource_filter')
+        if not resource_filter == None:
+            __filter_prefix = "(&%s" % resource_filter
+            __filter_suffix = ")"
+
+        recipient_address_attrs = self.config_get_list("mail_attributes")
+
+        result_attributes = recipient_address_attrs
+        result_attributes.append(self.config_get('unique_attribute'))
+        result_attributes.append('kolabTargetFolder')
+
+        _filter = "(|"
+
+        if isinstance(folder, basestring):
+            _filter += "(kolabTargetFolder=%s)" % (folder)
+        else:
+            for _folder in folder:
+                _filter += "(kolabTargetFolder=%s)" % (_folder)
+
+        _filter += ")"
+
+        _filter = "%s%s%s" % (__filter_prefix,_filter,__filter_suffix)
+
+        log.debug(_("Finding resource with filter %r") % (_filter), level=8)
+
+        if len(_filter) <= 6:
+            return None
+
+        config_base_dn = self.config_get('resource_base_dn')
+        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
+
+        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+            resource_base_dn = ldap_base_dn
+        else:
+            resource_base_dn = config_base_dn
+
+        _results = self.ldap.search_s(
+                resource_base_dn,
+                scope=ldap.SCOPE_SUBTREE,
+                filterstr=_filter,
+                attrlist=result_attributes,
+                attrsonly=True
+            )
+
+        _entry_dns = []
+
+        for _result in _results:
+            (_entry_id, _entry_attrs) = _result
+            _entry_dns.append(_entry_id)
+
+        return _entry_dns
+
     def find_recipient(self, address="*", exclude_entry_id=None):
         """
             Given an address string or list of addresses, find one or more valid
