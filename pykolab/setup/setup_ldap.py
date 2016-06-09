@@ -496,7 +496,7 @@ ServerAdminPwd = %(admin_pass)s
     auth = Auth(_input['domain'])
     auth.connect()
     auth._auth.connect()
-    auth._auth._bind()
+    auth._auth._bind(bind_dn='cn=Directory Manager', bind_pw=_input['dirmgr_pass'])
 
     dn = 'uid=%s,ou=Special Users,%s' % (conf.get('cyrus-imap', 'admin_login'), _input['rootdn'])
 
