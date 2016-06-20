@@ -1229,6 +1229,10 @@ class LDAP(pykolab.base.Base):
         except:
             current_ldap_quota = None
 
+        # If the new quota is zero, get out
+        if new_quota == 0:
+            return
+
         if not current_ldap_quota == None:
             if not new_quota == (int)(current_ldap_quota):
                 self.set_entry_attribute(
