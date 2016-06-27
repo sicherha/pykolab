@@ -116,6 +116,7 @@ class LDAP(pykolab.base.Base):
         pykolab.base.Base.__init__(self, domain=domain)
 
         self.ldap = None
+        self.ldap_priv = None
         self.bind = None
 
         if domain == None:
@@ -282,11 +283,13 @@ class LDAP(pykolab.base.Base):
 
         return retval
 
-    def connect(self):
+    def connect(self, priv=None):
         """
             Connect to the LDAP server through the uri configured.
         """
-        if not self.ldap == None:
+        if priv is None and self.ldap is not None:
+            return
+        if priv is not None and self.ldap_priv is not None:
             return
 
         log.debug(_("Connecting to LDAP..."), level=8)
@@ -300,15 +303,20 @@ class LDAP(pykolab.base.Base):
         if conf.debuglevel > 8:
             trace_level = 1
 
-        self.ldap = ldap.ldapobject.ReconnectLDAPObject(
+        conn = ldap.ldapobject.ReconnectLDAPObject(
                 uri,
                 trace_level=trace_level,
                 retry_max=200,
                 retry_delay=3.0
             )
 
-        self.ldap.protocol_version = 3
-        self.ldap.supported_controls = []
+        conn.protocol_version = 3
+        conn.supported_controls = []
+
+        if priv is None:
+            self.ldap = conn
+        else:
+            self.ldap_priv = conn
 
     def entry_dn(self, entry_id):
         """
@@ -1079,10 +1087,7 @@ class LDAP(pykolab.base.Base):
         self.set_entry_attributes(entry_id, { attribute: value })
 
     def set_entry_attributes(self, entry_id, attributes):
-        bind_dn = self.config_get('bind_dn')
-        bind_pw = self.config_get('bind_pw')
-
-        self._bind(bind_dn, bind_pw)
+        self._bind()
 
         entry_dn = self.entry_dn(entry_id)
 
@@ -1110,14 +1115,11 @@ class LDAP(pykolab.base.Base):
 
         dn = entry_dn
 
-        if len(modlist) > 0:
+        if len(modlist) > 0 and self._bind_priv() is True:
             try:
-                self.ldap.modify_s(dn, modlist)
+                self.ldap_priv.modify_s(dn, modlist)
             except:
                 log.error(_("Could not update dn %r:\n%r") % (dn, modlist))
-
-        # Drop the privileges
-        self._unbind()
 
     def synchronize(self, mode=0, callback=None):
         """
@@ -1298,6 +1300,27 @@ class LDAP(pykolab.base.Base):
                 return False
         else:
             log.debug(_("bind() called but already bound"), level=8)
+            return True
+
+    def _bind_priv(self):
+        if self.ldap_priv is None:
+            self.connect(True)
+
+            bind_dn = self.config_get('bind_dn')
+            bind_pw = self.config_get('bind_pw')
+
+            try:
+                self.ldap_priv.simple_bind_s(bind_dn, bind_pw)
+                return True
+            except ldap.SERVER_DOWN, errmsg:
+                log.error(_("LDAP server unavailable: %r") % (errmsg))
+                log.error(_("%s") % (traceback.format_exc()))
+                return False
+            except ldap.INVALID_CREDENTIALS:
+                log.error(_("Invalid DN, username and/or password."))
+                return False
+        else:
+            log.debug(_("bind_priv() called but already bound"), level=8)
             return True
 
     def _change_add_group(self, entry, change):
@@ -2072,9 +2095,10 @@ class LDAP(pykolab.base.Base):
                 )
 
     def _disconnect(self):
-        self._unbind()
         del self.ldap
+        del self.ldap_priv
         self.ldap = None
+        self.ldap_priv = None
         self.bind = None
 
     def _domain_naming_context(self, domain):
@@ -2513,17 +2537,6 @@ class LDAP(pykolab.base.Base):
 #                        )
 #
 #                    server = self.imap.user_mailbox_server(folder)
-
-    def _unbind(self):
-        """
-            Discard the current set of bind credentials.
-
-            Virtually disconnects the LDAP connection, and should be followed by
-            a call to _bind() afterwards.
-        """
-
-        self.ldap.unbind()
-        self.bind = None
 
     ###
     ### Backend search functions
