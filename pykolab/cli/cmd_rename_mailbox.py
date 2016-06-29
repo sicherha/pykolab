@@ -70,5 +70,5 @@ def execute(*args, **kw):
         print >> sys.stderr, _("Target folder %r already exists") % (target_folder)
         sys.exit(1)
 
-    imap.imap.rename(source_folder, target_folder, partition)
+    imap.imap.rename(imap.folder_utf7(source_folder), imap.folder_utf7(target_folder), partition)
 
