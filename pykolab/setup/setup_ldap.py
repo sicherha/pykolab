@@ -121,7 +121,7 @@ def execute(*args, **kw):
         conf.command_set('ldap', 'auth_attributes', 'samaccountname')
         conf.command_set('ldap', 'modifytimestamp_format', '%%Y%%m%%d%%H%%M%%S.0Z')
         conf.command_set('ldap', 'unique_attribute', 'userprincipalname')
-        
+
         # TODO: These attributes need to be checked
         conf.command_set('ldap', 'mail_attributes', 'mail')
         conf.command_set('ldap', 'mailserver_attributes', 'mailhost')
@@ -572,21 +572,13 @@ ServerAdminPwd = %(admin_pass)s
     attrs = {}
     attrs['objectclass'] = ['top','extensibleobject']
     attrs['cn'] = "kolab"
+    attrs['aci'] = '(targetattr = "*") (version 3.0;acl "Kolab Services";allow (read,compare,search)(userdn = "ldap:///uid=kolab-service,ou=Special Users,%s");)' % (_input['rootdn'])
 
     # Convert our dict to nice syntax for the add-function using modlist-module
     ldif = ldap.modlist.addModlist(attrs)
 
     # Do the actual synchronous add-operation to the ldapserver
     auth._auth.ldap.add_s(dn, ldif)
-
-    auth._auth.set_entry_attribute(
-            dn,
-            'aci',
-            '(targetattr = "*") (version 3.0;acl "Kolab Services";allow (read,compare,search)(userdn = "ldap:///%s");)' % ('uid=kolab-service,ou=Special Users,%s' % (_input['rootdn']))
-        )
-
-    # TODO: Add kolab-admin role
-    # TODO: Assign kolab-admin admin ACLs
 
     log.info(_("Adding domain %s to list of domains for this deployment") % (_input['domain']))
     dn = "associateddomain=%s,cn=kolab,cn=config" % (_input['domain'])
@@ -650,7 +642,7 @@ ServerAdminPwd = %(admin_pass)s
     modlist.append((ldap.MOD_ADD, "altstateattrname", "createTimestamp"))
     auth._auth.ldap.modify_s(dn, modlist)
 
-    # TODO: Add kolab-admin role
+    # Add kolab-admin role
     log.info(_("Adding the kolab-admin role"))
     dn = "cn=kolab-admin,%s" % (_input['rootdn'])
     attrs = {}
@@ -661,7 +653,7 @@ ServerAdminPwd = %(admin_pass)s
 
     auth._auth.ldap.add_s(dn, ldif)
 
-    # TODO: User writeable attributes on root_dn
+    # User writeable attributes on root_dn
     log.info(_("Setting access control to %s") % (_input['rootdn']))
     dn = _input['rootdn']
     aci = []
@@ -671,11 +663,10 @@ ServerAdminPwd = %(admin_pass)s
     else:
         aci.append('(targetattr = "carLicense || description || displayName || facsimileTelephoneNumber || homePhone || homePostalAddress || initials || jpegPhoto || l || labeledURI || mobile || o || pager || photo || postOfficeBox || postalAddress || postalCode || preferredDeliveryMethod || preferredLanguage || registeredAddress || roomNumber || secretary || seeAlso || st || street || telephoneNumber || telexNumber || title || userCertificate || userPassword || userSMIMECertificate || x500UniqueIdentifier || kolabDelegate || kolabInvitationPolicy || kolabAllowSMTPSender") (version 3.0; acl "Enable self write for common attributes"; allow (read,compare,search,write)(userdn = "ldap:///self");)')
 
-
     aci.append('(targetattr = "*") (version 3.0;acl "Directory Administrators Group";allow (all)(groupdn = "ldap:///cn=Directory Administrators,%(rootdn)s" or roledn = "ldap:///cn=kolab-admin,%(rootdn)s");)' % (_input))
     aci.append('(targetattr="*")(version 3.0; acl "Configuration Administrators Group"; allow (all) groupdn="ldap:///cn=Configuration Administrators,ou=Groups,ou=TopologyManagement,o=NetscapeRoot";)')
     aci.append('(targetattr="*")(version 3.0; acl "Configuration Administrator"; allow (all) userdn="ldap:///uid=admin,ou=Administrators,ou=TopologyManagement,o=NetscapeRoot";)')
-    aci.append('(targetattr = "*")(version 3.0; acl "SIE Group"; allow (all) groupdn = "ldap:///cn=slapd-%(hostname)s,cn=389 Directory Server,cn=Server Group,cn=%(fqdn)s,ou=%(domain)s,o=NetscapeRoot";)' %(_input))
+    aci.append('(targetattr = "*")(version 3.0; acl "SIE Group"; allow (all) groupdn = "ldap:///cn=slapd-%(hostname)s,cn=389 Directory Server,cn=Server Group,cn=%(fqdn)s,ou=%(domain)s,o=NetscapeRoot";)' % (_input))
     aci.append('(targetattr != "userPassword") (version 3.0;acl "Search Access";allow (read,compare,search)(userdn = "ldap:///all");)')
     modlist = []
     modlist.append((ldap.MOD_REPLACE, "aci", aci))
@@ -693,4 +684,3 @@ ServerAdminPwd = %(admin_pass)s
     else:
         log.error(_("Could not start and configure to start on boot, the " + \
                 "directory server admin service."))
-
