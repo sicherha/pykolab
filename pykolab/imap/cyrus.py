@@ -25,7 +25,7 @@ from urlparse import urlparse
 
 import pykolab
 
-from pykolab.constants import *
+from pykolab import constants
 from pykolab.imap import IMAP
 from pykolab.translate import _
 
@@ -278,7 +278,7 @@ class Cyrus(cyruslib.CYRUS):
 
     def _id(self, identity=None):
         if identity is None:
-            identity = '("name" "Python/Kolab" "version" "%s")' % (__version__)
+            identity = '("name" "Python/Kolab" "version" "%s")' % (constants.__version__)
 
         typ, dat = self.m._simple_command('ID', identity)
         res, dat = self.m._untagged_response(typ, dat, 'ID')
