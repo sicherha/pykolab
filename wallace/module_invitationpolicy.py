@@ -461,7 +461,10 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
             itip_event['xml'].set_percentcomplete(existing.get_percentcomplete())
 
         if policy & COND_NOTIFY:
-            send_update_notification(itip_event['xml'], receiving_user, existing, False)
+            sender = itip_event['xml'].get_organizer()
+            comment = itip_event['xml'].get_comment()
+            send_update_notification(itip_event['xml'], receiving_user, existing, False,
+                                     sender, comment)
 
     # if RSVP, send an iTip REPLY
     if rsvp or scheduling_required:
@@ -584,7 +587,8 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
             # update the organizer's copy of the object
             if update_object(existing, receiving_user, master):
                 if policy & COND_NOTIFY:
-                    send_update_notification(existing, receiving_user, existing, True)
+                    send_update_notification(existing, receiving_user, existing, True,
+                                             sender_attendee, itip_event['xml'].get_comment())
 
                 # update all other attendee's copies
                 if conf.get('wallace','invitationpolicy_autoupdate_other_attendees_on_reply'):
@@ -648,7 +652,9 @@ def process_itip_cancel(itip_event, policy, recipient_email, sender_email, recei
             if success:
                 # send cancellation notification
                 if policy & COND_NOTIFY:
-                    send_cancel_notification(existing, receiving_user, remove_object)
+                    sender = itip_event['xml'].get_organizer()
+                    comment = itip_event['xml'].get_comment()
+                    send_cancel_notification(existing, receiving_user, remove_object, sender, comment)
 
                 return MESSAGE_PROCESSED
 
@@ -772,7 +778,7 @@ def list_user_folders(user_rec, type):
 
     # return cached list
     if user_rec.has_key('_imap_folders'):
-        return user_rec['_imap_folders'];
+        return user_rec['_imap_folders']
 
     result = []
 
@@ -786,13 +792,13 @@ def list_user_folders(user_rec, type):
 
     for folder in folders:
         # exclude shared and other user's namespace
-        if not ns_other is None and folder.startswith(ns_other) and user_rec.has_key('_delegated_mailboxes'):
+        if ns_other is not None and folder.startswith(ns_other) and '_delegated_mailboxes' in user_rec:
             # allow shared folders from delegators
             if len([_mailbox for _mailbox in user_rec['_delegated_mailboxes'] if folder.startswith(ns_other + _mailbox + '/')]) == 0:
-                continue;
+                continue
         # TODO: list shared folders the user has write privileges ?
-        if not ns_shared is None and len([_ns for _ns in ns_shared if folder.startswith(_ns)]) > 0:
-            continue;
+        if ns_shared is not None and len([_ns for _ns in ns_shared if folder.startswith(_ns)]) > 0:
+            continue
 
         metadata = imap.get_metadata(folder)
         log.debug(_("IMAP metadata for %r: %r") % (folder, metadata), level=9)
@@ -1100,7 +1106,7 @@ def delete_object(existing):
     return False
 
 
-def send_update_notification(object, receiving_user, old=None, reply=True):
+def send_update_notification(object, receiving_user, old=None, reply=True, sender=None, comment=None):
     """
         Send a (consolidated) notification about the current participant status to organizer
     """
@@ -1119,6 +1125,10 @@ def send_update_notification(object, receiving_user, old=None, reply=True):
     orgemail = organizer.email()
     orgname = organizer.name()
 
+    itip_comment = None
+    if sender is not None and not comment == '':
+        itip_comment = _("%s commented: %s") % (_attendee_name(sender), comment)
+
     if reply:
         log.debug(_("Compose participation status summary for %s %r to user %r") % (
             object.type, object.uid, receiving_user['mail']
@@ -1126,7 +1136,9 @@ def send_update_notification(object, receiving_user, old=None, reply=True):
 
         auto_replies_expected = 0
         auto_replies_received = 0
-        partstats = { 'ACCEPTED':[], 'TENTATIVE':[], 'DECLINED':[], 'DELEGATED':[], 'IN-PROCESS':[], 'COMPLETED':[], 'PENDING':[] }
+        is_manual_reply = True
+        partstats = {'ACCEPTED': [], 'TENTATIVE': [], 'DECLINED': [], 'DELEGATED': [], 'IN-PROCESS': [], 'COMPLETED': [], 'PENDING': []}
+
         for attendee in object.get_attendees():
             parstat = attendee.get_participant_status(True)
             if partstats.has_key(parstat):
@@ -1151,19 +1163,33 @@ def send_update_notification(object, receiving_user, old=None, reply=True):
                     if not parstat == 'NEEDS-ACTION':
                         auto_replies_received += 1
 
+                    if sender is not None and sender.get_email() == attendee.get_email():
+                        is_manual_reply = False
+
         # skip notification until we got replies from all automatically responding attendees
-        if auto_replies_received < auto_replies_expected:
+        if not is_manual_reply and auto_replies_received < auto_replies_expected:
             log.debug(_("Waiting for more automated replies (got %d of %d); skipping notification") % (
                 auto_replies_received, auto_replies_expected
             ), level=8)
             return
 
+        # build notification message body
         roundup = ''
+
+        if itip_comment is not None:
+            roundup += "\n" + itip_comment
+
         for status,attendees in partstats.iteritems():
             if len(attendees) > 0:
-                roundup += "\n" + participant_status_label(status) + ":\n" + "\n".join(attendees) + "\n"
+                roundup += "\n" + participant_status_label(status) + ":\n\t" + "\n\t".join(attendees) + "\n"
     else:
-        roundup = "\n" + _("Changes submitted by %s have been automatically applied.") % (orgname if orgname else orgemail)
+        # build notification message body
+        roundup = ''
+
+        if itip_comment is not None:
+            roundup += "\n" + itip_comment
+
+        roundup += "\n" + _("Changes submitted by %s have been automatically applied.") % (orgname if orgname else orgemail)
 
         # list properties changed from previous version
         if old:
@@ -1232,7 +1258,7 @@ def send_update_notification(object, receiving_user, old=None, reply=True):
     return success
 
 
-def send_cancel_notification(object, receiving_user, deleted=False):
+def send_cancel_notification(object, receiving_user, deleted=False, sender=None, comment=None):
     """
         Send a notification about event/task cancellation
     """
@@ -1273,6 +1299,9 @@ def send_cancel_notification(object, receiving_user, deleted=False):
             message_text += " " + _("The copy in your calendar has been removed accordingly.")
         else:
             message_text += " " + _("The copy in your calendar has been marked as cancelled accordingly.")
+
+    if sender is not None and not comment == '':
+        message_text += "\n" + _("%s commented: %s") % (_attendee_name(sender), comment)
 
     if object.get_recurrence_id():
         message_text += "\n" + _("NOTE: This cancellation only refers to this single occurrence!")
@@ -1354,7 +1383,7 @@ def propagate_changes_to_attendees_accounts(object, updated_attendees=None):
                         break
 
                 # copy all attendees from master object (covers additions and removals)
-                new_attendees = [];
+                new_attendees = []
                 for a in object.get_attendees():
                     # keep my own entry intact
                     if attendee_entry is not None and attendee_entry.get_email() == a.get_email():
@@ -1385,3 +1414,19 @@ def invitation_response_text(type):
         return _("%(name)s has %(status)s your assignment for %(summary)s.") + footer
     else:
         return _("%(name)s has %(status)s your invitation for %(summary)s.") + footer
+
+
+def _attendee_name(attendee):
+    # attendee here can be Attendee or ContactReference
+    try:
+        name = attendee.get_name()
+    except Exception:
+        name = attendee.name()
+
+    if name == '':
+        try:
+            name = attendee.get_email()
+        except Exception:
+            name = attendee.email()
+
+    return name
