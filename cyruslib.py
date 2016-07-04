@@ -130,7 +130,7 @@ class IMAP4(imaplib.IMAP4):
 
     def id(self):
         try:
-            typ, dat = self._simple_command('ID', 'NIL')
+            typ, dat = self._simple_command('ID', '("name" "PyKolab/Kolab")')
             res, dat = self._untagged_response(typ, dat, 'ID')
         except:
             return False, dat[0]
@@ -211,7 +211,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     def id(self):
         try:
-            typ, dat = self._simple_command('ID', 'NIL')
+            typ, dat = self._simple_command('ID', '("name" "PyKolab/Kolab")')
             res, dat = self._untagged_response(typ, dat, 'ID')
         except:
             return False, dat[0]
@@ -275,6 +275,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             encoded = b2a_base64("%s\0%s\0%s" % (admin, admin, password)).strip()
 
         res, data = self._simple_command('AUTHENTICATE', 'PLAIN', encoded)
+        self.AUTH = True
         if ok(res):
             self.state = 'AUTH'
         return res, data
@@ -409,8 +410,11 @@ class CYRUS:
             self.__doexception("LOGIN", self.ERROR.get("AUTH")[1])
         try:
             res, msg = self.m.login(username, password)
+            self.AUTH = True
+            self.id()
             admin = self.m.isadmin()
         except Exception, info:
+            self.AUTH = False
             error = str(info).split(':').pop().strip()
             self.__doexception("LOGIN", error)
 
@@ -418,7 +422,6 @@ class CYRUS:
             self.ADMIN = username
 
         self.SEP = self.m.getsep()
-        self.AUTH = True
         self.__verbose( '[LOGIN %s] %s: %s' % (username, res, msg[0]) )
 
     def login_plain(self, username, password, asUser = None):
@@ -430,6 +433,8 @@ class CYRUS:
         self.__verbose( '[AUTHENTICATE PLAIN %s] %s: %s' % (username, res, msg[0]) )
 
         if ok(res):
+            self.AUTH = True
+            self.id()
             if asUser is None:
                 if self.m.isadmin():
                     self.ADMIN = admin
@@ -437,7 +442,6 @@ class CYRUS:
                 self.ADMIN = asUser
                 self.AUSER = asUser
             self.SEP = self.m.getsep()
-            self.AUTH = True
 
     def logout(self):
         try:
