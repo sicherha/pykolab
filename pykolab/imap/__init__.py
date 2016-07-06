@@ -741,10 +741,13 @@ class IMAP(object):
                 )
 
             if additional_folders[additional_folder].has_key("quota"):
-                self.imap.sq(
-                        folder_name,
-                        additional_folders[additional_folder]['quota']
-                    )
+                try:
+                    self.imap.sq(
+                            folder_name,
+                            additional_folders[additional_folder]['quota']
+                        )
+                except Exception, errmsg:
+                    log.error(_("Could not set quota on %s") % (additional_folder))
 
             if additional_folders[additional_folder].has_key("partition"):
                 partition = additional_folders[additional_folder]["partition"]
