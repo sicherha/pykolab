@@ -268,21 +268,47 @@ class KolabDaemon(object):
                 time.sleep(5)
                 continue
 
-            # domains now is a list of tuples in the format of
-            # ('primary',[secondaries]), we want the primary_domains
-            domain_base_dns = []
-            primary_domains = []
-            for primary_domain in list(set(domains.values())):
-                domain_base_dn = primary_auth.domain_naming_context(primary_domain)
-                log.debug(_("Domain Base DN for domain %r is %r") % (primary_domain, domain_base_dn), level=8)
+            # domains now is a list of key-valye pairs in the format of
+            # {'secondary': 'primary'}, we want the primaries
+            primaries = list(set(domains.values()))
 
-                if domain_base_dn is not None:
-                    if domain_base_dn not in domain_base_dns:
-                        domain_base_dns.append(domain_base_dn)
-                        primary_domain = primary_auth.primary_domain_for_naming_context(domain_base_dn)
-                        primary_domains.append(primary_domain)
+            # Store the naming contexts for the domains as
+            #
+            #   {'domain': 'naming context'}
+            #
+            # and the domain root dns as
+            #
+            #   {'domain': 'domain root dn'}
+            #
+            domain_root_dns = {}
+            naming_contexts = {}
 
-            log.debug(_("Naming contexts to synchronize: %r") % (primary_domains), level=8)
+            for primary in primaries:
+                naming_context = primary_auth.domain_naming_context(primary)
+                domain_root_dn = primary_auth.domain_root_dn(primary)
+                log.debug(
+                        _("Domain %r naming context: %r, root dn: %r") % (
+                                primary,
+                                naming_context,
+                                domain_root_dn
+                            ),
+                        level=8
+                    )
+
+                domain_root_dns[primary] = domain_root_dn
+                naming_contexts[primary] = naming_context
+
+            log.debug(
+                    _("Naming contexts to synchronize: %r") % (
+                            list(set(naming_contexts.values()))
+                        ),
+                    level=8
+                )
+
+            # Find however many naming contexts we have, and what the
+            # corresponding domain name is for them.
+            naming_contexts = list(set(naming_contexts.values()))
+            primary_domains = [x for x,y in naming_contexts.iteritems() if domain_root_dns[x] == y]
 
             # Now we can check if any changes happened.
             added_domains = []
@@ -292,7 +318,7 @@ class KolabDaemon(object):
             # accounted for locally.
             all_domains = list(set(primary_domains + domain_auth.keys()))
 
-            log.debug(_("All naming contexts: %r") % (all_domains), level=8)
+            log.debug(_("Result set of domains: %r") % (all_domains), level=8)
 
             for domain in all_domains:
                 log.debug(_("Checking for domain %s") % (domain), level=8)
