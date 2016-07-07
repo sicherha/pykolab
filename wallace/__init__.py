@@ -327,7 +327,7 @@ class WallaceDaemon(object):
 
         self.current_connections -= 1
 
-        return
+        return "250 OK Message %s queued" % (filename)
 
     def reload_config(self, *args, **kw):
         pass
