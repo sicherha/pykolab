@@ -285,7 +285,7 @@ class KolabDaemon(object):
 
             for primary in primaries:
                 naming_context = primary_auth.domain_naming_context(primary)
-                domain_root_dn = primary_auth.domain_root_dn(primary)
+                domain_root_dn = primary_auth._auth._kolab_domain_root_dn(primary)
                 log.debug(
                         _("Domain %r naming context: %r, root dn: %r") % (
                                 primary,
@@ -307,7 +307,6 @@ class KolabDaemon(object):
 
             # Find however many naming contexts we have, and what the
             # corresponding domain name is for them.
-            naming_contexts = list(set(naming_contexts.values()))
             primary_domains = [x for x,y in naming_contexts.iteritems() if domain_root_dns[x] == y]
 
             # Now we can check if any changes happened.
