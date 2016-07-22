@@ -27,6 +27,7 @@ pykolab/cli/cmd_add_alias.py
 pykolab/cli/cmd_add_domain.py
 pykolab/cli/cmd_add_user.py
 pykolab/cli/cmd_add_user_subscription.py
+pykolab/cli/cmd_check_quota.py
 pykolab/cli/cmd_count_domain_mailboxes.py
 pykolab/cli/cmd_create_mailbox.py
 pykolab/cli/cmd_delete_domain.py
@@ -82,6 +83,7 @@ pykolab/conf/__init__.py
 pykolab/constants.py.in
 pykolab/errors.py
 pykolab/imap/cyrus.py
+pykolab/imap/dovecot.py
 pykolab/imap/__init__.py
 pykolab/imap_utf7.py
 pykolab/__init__.py
@@ -96,9 +98,11 @@ pykolab/plugins/sievemgmt/__init__.py
 pykolab/setup/components.py
 pykolab/setup/__init__.py
 pykolab/setup/setup_freebusy.py
+pykolab/setup/setup_guam.py
 pykolab/setup/setup_imap.py
 pykolab/setup/setup_kolabd.py
 pykolab/setup/setup_ldap.py
+pykolab/setup/setup_manticore.py
 pykolab/setup/setup_mta.py
 pykolab/setup/setup_mysql.py
 pykolab/setup/setup_php.py
@@ -114,6 +118,7 @@ pykolab/xml/contact.py
 pykolab/xml/contact_reference.py
 pykolab/xml/event.py
 pykolab/xml/__init__.py
+pykolab/xml/note.py
 pykolab/xml/recurrence_rule.py
 pykolab/xml/todo.py
 pykolab/xml/utils.py
@@ -173,6 +178,12 @@ tests/unit/test-012-wallace_invitationpolicy.py
 tests/unit/test-014-conf-and-raw.py
 tests/unit/test-015-translate.py
 tests/unit/test-016-todo.py
+tests/unit/test-017-diff.py
+tests/unit/test-018-note.py
+tests/unit/test-019-contact.py
+tests/unit/test-020-auth_cache.py
+tests/unit/test-022-utils.py
+tests/unit/test-030-recipientpolicy.py
 test-wallace.py
 ucs/kolab_sieve.py
 ucs/listener.py
