@@ -153,7 +153,7 @@ class LDAP(pykolab.base.Base):
         except:
             pass
 
-        self.connect()
+        self.connect(immediate=True)
         self._bind()
 
         # See if we know a base_dn for the domain
@@ -161,7 +161,8 @@ class LDAP(pykolab.base.Base):
 
         try:
             base_dn = auth_cache.get_entry(self.domain)
-        except:
+        except Exception, errmsg:
+            log.error(_("Authentication cache failed: %r") % (errmsg))
             pass
 
         if base_dn == None:
@@ -180,7 +181,10 @@ class LDAP(pykolab.base.Base):
                 pass
 
         try:
-            user_filter = self.config_get_raw('user_filter') % ({'base_dn':base_dn})
+            user_filter = self.config_get_raw('user_filter') % (
+                    {'base_dn': base_dn}
+                )
+
         except TypeError, errmsg:
             user_filter = self.config_get_raw('user_filter')
 
@@ -196,12 +200,16 @@ class LDAP(pykolab.base.Base):
 
         entry_dn = None
 
+        # Attempt to obtain an entry_dn from cache.
         try:
             entry_dn = auth_cache.get_entry(_filter)
-        except:
+        except Exception, errmsg:
+            log.error(_("Authentication cache failed: %r") % (errmsg))
             pass
 
-        if entry_dn == None:
+        retval = False
+
+        if entry_dn is None:
             _search = self.ldap.search_ext(
                     base_dn,
                     ldap.SCOPE_SUBTREE,
@@ -221,15 +229,95 @@ class LDAP(pykolab.base.Base):
                 log.error(_("LDAP server unavailable: %r") % (errmsg))
                 log.error(_("%s") % (traceback.format_exc()))
                 self._disconnect()
+
                 return False
 
-            if len(_result_data) >= 1:
+            except Exception, errmsg:
+                log.error(_("Exception occurred: %r") % (errmsg))
+                log.error(_("%s") % (traceback.format_exc()))
+                self._disconnect()
+
+                return False
+
+            log.debug(
+                    _("Length of entries found: %r") % (
+                            len(_result_data)
+                        ),
+                    level=8
+                )
+
+            if len(_result_data) == 1:
                 (entry_dn, entry_attrs) = _result_data[0]
 
+            elif len(_result_data) > 1:
+                try:
+                    log.info(
+                            _("Authentication for %r failed " +
+                                "(multiple entries)") % (
+                                    login[0]
+                                )
+                        )
+                except:
+                    pass
+
+                self._disconnect()
+                return False
+
+            else:
+                try:
+                    log.info(
+                            _("Authentication for %r failed (no entry)") % (
+                                    login[0]
+                                )
+                        )
+                except:
+                    pass
+
+                self._disconnect()
+                return False
+
+            if entry_dn is None:
+                try:
+                    log.info(
+                            _("Authentication for %r failed (LDAP error?)") % (
+                                    login[0]
+                                )
+                        )
+                except:
+                    pass
+
+                self._disconnect()
+                return False
+
             try:
-                # Needs to be synchronous or succeeds and continues setting retval
-                # to True!!
+                # Needs to be synchronous or succeeds and continues setting
+                # retval to True!!
                 retval = self._bind(entry_dn, login[1])
+
+                if retval:
+                    try:
+                        log.info(
+                                _("Authentication for %r succeeded") % (
+                                        login[0]
+                                    )
+                            )
+
+                    except:
+                        pass
+
+                else:
+                    try:
+                        log.info(
+                                _("Authentication for %r failed (error)") % (
+                                        login[0]
+                                    )
+                            )
+                    except:
+                        pass
+
+                    self._disconnect()
+                    return False
+
                 try:
                     auth_cache.set_entry(_filter, entry_dn)
                 except Exception, errmsg:
@@ -239,56 +327,92 @@ class LDAP(pykolab.base.Base):
             except ldap.SERVER_DOWN, errmsg:
                 log.error(_("Authentication failed, LDAP server unavailable"))
                 self._disconnect()
-                pass
 
-            except:
+                return False
+
+            except Exception, errmsg:
                 try:
                     log.debug(
-                            _("Failed to authenticate as user %s") % (login[0]),
+                            _("Failed to authenticate as user %r") % (
+                                    login[0]
+                                ),
                             level=8
                         )
                 except:
                     pass
 
-                retval = False
+                self._disconnect()
+                return False
+
         else:
             try:
-                # Needs to be synchronous or succeeds and continues setting retval
-                # to True!!
+                # Needs to be synchronous or succeeds and continues setting
+                # retval to True!!
                 retval = self._bind(entry_dn, login[1])
+
+                if retval:
+                    log.info(_("Authentication for %r succeeded") % (login[0]))
+                else:
+                    log.info(
+                            _("Authentication for %r failed (password)") % (
+                                    login[0]
+                                )
+                        )
+
+                    self._disconnect()
+                    return False
+
                 auth_cache.set_entry(_filter, entry_dn)
 
             except ldap.NO_SUCH_OBJECT, errmsg:
-                log.debug(_("Error occured, there is no such object: %r") % (errmsg), level=8)
+                log.debug(
+                        _("Error occured, there is no such object: %r") % (
+                                errmsg
+                            ),
+                        level=8
+                    )
+
                 self.bind = None
+
                 try:
                     auth_cache.del_entry(_filter)
+
                 except:
                     log.error(_("Authentication cache failed to clear entry"))
                     pass
 
-                return self.authenticate(login, realm)
+                retval = self.authenticate(login, realm)
 
             except Exception, errmsg:
                 log.debug(_("Exception occured: %r") %(errmsg))
+
                 try:
                     log.debug(
-                            _("Failed to authenticate as user %s") % (login[0]),
+                            _("Failed to authenticate as user %r") % (
+                                    login[0]
+                                ),
                             level=8
                         )
+
                 except:
                     pass
 
-                retval = False
+                self._disconnect()
+                return False
+
+        self._disconnect()
 
         return retval
 
-    def connect(self, priv=None):
+    def connect(self, priv=None, immediate=True):
         """
             Connect to the LDAP server through the uri configured.
         """
+        # Already connected
         if priv is None and self.ldap is not None:
             return
+
+        # Already connected
         if priv is not None and self.ldap_priv is not None:
             return
 
@@ -303,12 +427,21 @@ class LDAP(pykolab.base.Base):
         if conf.debuglevel > 8:
             trace_level = 1
 
+        if immediate:
+            retry_max = 1
+            retry_delay = 1.0
+        else:
+            retry_max = 200
+            retry_delay = 3.0
+
         conn = ldap.ldapobject.ReconnectLDAPObject(
                 uri,
                 trace_level=trace_level,
-                retry_max=200,
-                retry_delay=3.0
+                retry_max=retry_max,
+                retry_delay=retry_delay
             )
+
+        conn.set_option(ldap.OPT_TIMEOUT, 10)
 
         conn.protocol_version = 3
         conn.supported_controls = []
@@ -1268,6 +1401,16 @@ class LDAP(pykolab.base.Base):
             self.bind = None
             self.connect()
 
+        # If the bind_dn is None and the bind_pw is not... fail
+        if bind_dn is None and bind_pw is not None:
+            log.error(_("Attempting to bind without a DN but with a password"))
+            return False
+
+        # and the same vice-versa
+        if bind_dn is not None and bind_pw is None:
+            log.error(_("Attempting to bind with a DN but without a password"))
+            return False
+
         # If we are to bind as foo, we have no state.
         if bind_dn is not None:
             self.bind = None
@@ -1288,18 +1431,26 @@ class LDAP(pykolab.base.Base):
 
             # TODO: Binding errors control
             try:
+                # Must be synchronous
                 self.ldap.simple_bind_s(bind_dn, bind_pw)
                 self.bind = {'dn': bind_dn, 'pw': bind_pw}
+
                 return True
+
             except ldap.SERVER_DOWN, errmsg:
                 log.error(_("LDAP server unavailable: %r") % (errmsg))
                 log.error(_("%s") % (traceback.format_exc()))
+
                 return False
+
             except ldap.INVALID_CREDENTIALS:
                 log.error(_("Invalid DN, username and/or password."))
+
                 return False
+
         else:
             log.debug(_("bind() called but already bound"), level=8)
+
             return True
 
     def _bind_priv(self):
