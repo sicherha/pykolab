@@ -911,7 +911,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
         notification_text = str(notification.get_payload())
         self.assertIn(self.jane['mail'], notification_text)
-        self.assertIn(_("PENDING"), notification_text)
+        self.assertIn(_("Pending"), notification_text)
 
         self.purge_mailbox(self.john['mailbox'])
 
@@ -923,7 +923,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         self.assertIsInstance(notification, email.message.Message)
 
         notification_text = str(notification.get_payload())
-        self.assertNotIn(_("PENDING"), notification_text)
+        self.assertNotIn(_("Pending"), notification_text)
 
     def test_008_notify_translated(self):
         self.purge_mailbox(self.mark['mailbox'])

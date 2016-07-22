@@ -13,6 +13,7 @@ participant_status_labels = {
         "DELEGATED": N_("Delegated"),
         "IN-PROCESS": N_("Started"),
         "COMPLETED": N_("Completed"),
+        "PENDING": N_("Pending"),
         # support integer values, too
         kolabformat.PartNeedsAction: N_("Needs Action"),
         kolabformat.PartAccepted: N_("Accepted"),
