@@ -265,6 +265,8 @@ password='%s'
 
     root_uid = 0
 
+    webserver_gid = None
+
     for webserver_group in [ 'apache', 'www-data', 'www' ]:
         try:
             (a,b,webserver_gid,c) = grp.getgrnam(webserver_group)
@@ -272,10 +274,18 @@ password='%s'
         except Exception, errmsg:
             pass
 
-    if not rccpath == None:
-        for root, directories, filenames in os.walk(rccpath):
-            for filename in filenames:
-                os.chown(os.path.join(root, filename), root_uid, webserver_gid)
+    if webserver_gid is not None:
+        if rccpath is not None:
+            for root, directories, filenames in os.walk(rccpath):
+                for filename in filenames:
+                    try:
+                        os.chown(
+                                os.path.join(root, filename),
+                                root_uid,
+                                webserver_gid
+                            )
+                    except Exception, errmsg:
+                        pass
 
     httpservice = 'httpd.service'
     if os.path.isfile('/usr/lib/systemd/system/apache2.service'):
