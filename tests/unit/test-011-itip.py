@@ -286,7 +286,7 @@ METHOD:REQUEST
 BEGIN:VEVENT
 UID:eea25142-fb1c-4831-a02d-ac9fb4c16b70
 DTSTAMP:20140213T125414Z
-DTSTART;TZID=3DEurope/London:20140713T100000
+DTSTART;TZID=3D"W. Europe Standard Time":20140713T100000
 DTEND;TZID=3DEurope/London:20140713T140000
 SUMMARY:Testing =C3=9Cmlauts
 DESCRIPTION:Testing =C3=9Cmlauts
@@ -374,6 +374,11 @@ class TestITip(unittest.TestCase):
         xml = itips8[0]['xml']
         self.assertEqual(xml.get_summary(), "Testing Ümlauts")
         self.assertEqual(xml.get_location(), "Rue the Genève")
+
+        # Timezone conversion
+        itips = itip.events_from_message(message_from_string(itip_unicode))
+        xml = itips[0]['xml']
+        self.assertEqual(xml.get_start().tzinfo.__str__(), "Europe/Berlin")
 
     def test_002_check_date_conflict(self):
         astart = datetime.datetime(2014, 7, 13, 10, 0, 0)

@@ -2,12 +2,14 @@ import icalendar
 import pykolab
 import traceback
 import kolabformat
+import re
 
 from pykolab.xml import to_dt
 from pykolab.xml import event_from_ical
 from pykolab.xml import todo_from_ical
 from pykolab.xml import participant_status_label
 from pykolab.translate import _
+from tzlocal import windows_tz
 
 log = pykolab.getLogger('pykolab.wallace')
 
@@ -17,7 +19,6 @@ def events_from_message(message, methods=None):
 
 def todos_from_message(message, methods=None):
     return objects_from_message(message, ["VTODO"], methods)
-
 
 def objects_from_message(message, objnames, methods=None):
     """
@@ -50,6 +51,9 @@ def objects_from_message(message, objnames, methods=None):
             itip_payload = part.get_payload(decode=True)
 
             log.debug(_("Raw iTip payload (%r): %r") % (part.get_param('charset'), itip_payload), level=9)
+
+            # Convert unsupported timezones, etc.
+            itip_payload = _convert_itip_payload(itip_payload)
 
             # Python iCalendar prior to 3.0 uses "from_string".
             if hasattr(icalendar.Calendar, 'from_ical'):
@@ -141,7 +145,6 @@ def objects_from_message(message, objnames, methods=None):
 
     return itip_objects
 
-
 def check_event_conflict(kolab_event, itip_event):
     """
         Determine whether the given kolab event conflicts with the given itip event
@@ -210,10 +213,35 @@ def check_event_conflict(kolab_event, itip_event):
 
     return conflict
 
-
 def _is_transparent(event):
     return event.get_transparency() or event.get_status() == kolabformat.StatusCancelled
 
+def _convert_itip_payload(itip):
+    matchlist = re.findall("^((DTSTART|DTEND|DUE|EXDATE|COMPLETED)[:;][^\n]+)$", itip, re.MULTILINE)
+
+    for match in matchlist:
+        match = match[0]
+        search = re.search(";TZID=([^:;]+)", match)
+
+        if search:
+            tzorig = tzdest = search.group(1).replace('"', '')
+
+            # timezone in Olson-database format, nothing to convert
+            if re.match("[a-zA-Z]+/[a-zA-Z0-9_+-]+", tzorig):
+                continue
+
+            # convert timezone from windows format to Olson
+            if tzorig in windows_tz.win_tz:
+                tzdest = windows_tz.win_tz[tzorig]
+
+                # @TODO: Should be prefer server time if it has the same offset?
+
+            # replace old with new timezone name
+            if tzorig != tzdest:
+                replace = match.replace(search.group(0), ";TZID=" + tzdest)
+                itip = itip.replace("\n" + match, "\n" + replace)
+
+    return itip
 
 def check_date_conflict(_es, _ee, _is, _ie):
     """
@@ -238,7 +266,7 @@ def check_date_conflict(_es, _ee, _is, _ie):
             conflict = True
         else:
             conflict = False
-    
+
     return conflict
 
 
