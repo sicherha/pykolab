@@ -5,6 +5,7 @@
 # Translators:
 # Christoph Wickert <christoph.wickert@gmail.com>, 2015
 # Christoph Wickert <christoph.wickert@gmail.com>, 2011
+# Colja Vendel <vendel.colja@googlemail.com>, 2016
 # Dirk Marschner <info@marschner.cx>, 2015
 # Dirk Marschner <info@marschner.cx>, 2015
 # Ettore Atalan <atalanttore@googlemail.com>, 2014-2016
@@ -22,8 +23,8 @@ msgstr ""
 "Project-Id-Version: Kolab Groupware Solution\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-07-22 15:31+0200\n"
-"PO-Revision-Date: 2016-07-22 13:31+0000\n"
-"Last-Translator: Jeroen van Meeuwen <vanmeeuwen@kolabsys.com>\n"
+"PO-Revision-Date: 2016-09-27 07:33+0000\n"
+"Last-Translator: Mads <mads@batmads.com>\n"
 "Language-Team: German (http://www.transifex.com/kolab/kolab/language/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -364,7 +365,7 @@ msgstr "Vom Benutzer unterbrochen"
 #: ../saslauthd/__init__.py:170 ../saslauthd/__init__.py:179
 #: ../wallace/__init__.py:469 ../wallace/__init__.py:478
 msgid "Traceback occurred, please report a bug at https://issues.kolab.org"
-msgstr ""
+msgstr "Traceback Softwarefehler aufgetreten, bitte auf https://issues.kolab.org einen Fehlerreport erstellen."
 
 #: ../kolabd/__init__.py:226 ../saslauthd/__init__.py:175
 #: ../wallace/__init__.py:474
@@ -514,7 +515,7 @@ msgstr "Authentifizierungscache fehlgeschlagen: %r"
 #: ../pykolab/auth/ldap/__init__.py:1467 ../pykolab/auth/ldap/__init__.py:3066
 #, python-format
 msgid "LDAP server unavailable: %r"
-msgstr ""
+msgstr "LDAP-Server nicht erreichbar: %r"
 
 #: ../pykolab/auth/ldap/__init__.py:230 ../pykolab/auth/ldap/__init__.py:237
 #: ../pykolab/auth/ldap/__init__.py:1316 ../pykolab/auth/ldap/__init__.py:1442
@@ -527,41 +528,41 @@ msgstr "%s"
 #: ../pykolab/auth/ldap/__init__.py:236
 #, python-format
 msgid "Exception occurred: %r"
-msgstr ""
+msgstr "Ausnahme aufgetreten: %r"
 
 #: ../pykolab/auth/ldap/__init__.py:243
 #, python-format
 msgid "Length of entries found: %r"
-msgstr ""
+msgstr "Länge der gefundenen Einträge: %r"
 
 #: ../pykolab/auth/ldap/__init__.py:255
 #, python-format
 msgid "Authentication for %r failed (multiple entries)"
-msgstr ""
+msgstr "Authentifizierung für %r fehlgeschlagen (mehrfache Einträge)"
 
 #: ../pykolab/auth/ldap/__init__.py:269
 #, python-format
 msgid "Authentication for %r failed (no entry)"
-msgstr ""
+msgstr "Authentifizierung für %r fehlgeschlagen (kein Eintrag)"
 
 #: ../pykolab/auth/ldap/__init__.py:282
 #, python-format
 msgid "Authentication for %r failed (LDAP error?)"
-msgstr ""
+msgstr "Authentifizierung für %r fehlgeschlagen (LDAP-Fehler?)"
 
 #: ../pykolab/auth/ldap/__init__.py:300 ../pykolab/auth/ldap/__init__.py:354
 #, python-format
 msgid "Authentication for %r succeeded"
-msgstr ""
+msgstr "Authentifizierung für %r erfolgreich"
 
 #: ../pykolab/auth/ldap/__init__.py:311
 #, python-format
 msgid "Authentication for %r failed (error)"
-msgstr ""
+msgstr "Authentifizierung für %r fehlgeschlagen (Fehler)"
 
 #: ../pykolab/auth/ldap/__init__.py:328
 msgid "Authentication failed, LDAP server unavailable"
-msgstr ""
+msgstr "Authentifizierung fehlgeschlagen, LDAP-Server nicht erreichbar"
 
 #: ../pykolab/auth/ldap/__init__.py:336 ../pykolab/auth/ldap/__init__.py:391
 #, python-format
@@ -571,7 +572,7 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:357
 #, python-format
 msgid "Authentication for %r failed (password)"
-msgstr ""
+msgstr "Authentifizierung für %r fehlgeschlagen (Passwort)"
 
 #: ../pykolab/auth/ldap/__init__.py:369
 #, python-format
@@ -697,7 +698,7 @@ msgstr "Keine Ergebnisse für Adresse %s gefunden"
 #: ../pykolab/auth/ldap/__init__.py:1071
 #, python-format
 msgid "1 result for address %s found, verifying..."
-msgstr ""
+msgstr "1 Ergebnis für Adresse %s gefunden, wird überprüft..."
 
 #: ../pykolab/auth/ldap/__init__.py:1082
 #, python-format
@@ -804,7 +805,7 @@ msgstr ""
 #: ../pykolab/auth/ldap/__init__.py:1686
 #, python-format
 msgid "Entry %s attribute value: %r"
-msgstr ""
+msgstr "Eintrag %s Attributwert: %r"
 
 #: ../pykolab/auth/ldap/__init__.py:1694
 #, python-format
@@ -814,7 +815,7 @@ msgstr "imap.user_mailbox_server(%r)-Ergebnis: %r"
 #: ../pykolab/auth/ldap/__init__.py:1755
 #, python-format
 msgid "An error occured: %r"
-msgstr ""
+msgstr "Ein Fehler ist aufgetreten: %r"
 
 #: ../pykolab/auth/ldap/__init__.py:1993 ../pykolab/auth/ldap/__init__.py:2187
 #, python-format
@@ -906,7 +907,7 @@ msgstr "Unterstützung für %s gefunden"
 
 #: ../pykolab/auth/ldap/__init__.py:3068
 msgid "-- reconnecting in 10 seconds."
-msgstr ""
+msgstr "-- erneuter Verbindungsaufbau in 10 Sekunden."
 
 #: ../pykolab/auth/ldap/__init__.py:3076
 #, python-format
@@ -1052,7 +1053,7 @@ msgstr ""
 
 #: ../pykolab/cli/cmd_check_quota.py:57
 msgid "Compare existing IMAP quota with LDAP quota."
-msgstr ""
+msgstr "Vorhandenes IMAP-Kontingent mit LDAP-Kontingent vergleichen."
 
 #: ../pykolab/cli/cmd_check_quota.py:84 ../pykolab/cli/cmd_user_info.py:51
 #, python-format
@@ -1062,7 +1063,7 @@ msgstr "Kein solcher Benutzer %s"
 #: ../pykolab/cli/cmd_check_quota.py:98
 #, python-format
 msgid "No quota for user %s"
-msgstr ""
+msgstr "Kein Kontingent für Benutzer %s"
 
 #: ../pykolab/cli/cmd_check_quota.py:105
 #, python-format
@@ -1153,7 +1154,7 @@ msgstr "Geben Sie einen Ordner an"
 
 #: ../pykolab/cli/cmd_export_mailbox.py:38
 msgid "All folders this user has access to"
-msgstr ""
+msgstr "Alle Ordner auf die der Benutzer zugriff hat"
 
 #: ../pykolab/cli/cmd_export_mailbox.py:108
 #, python-format
@@ -1319,7 +1320,7 @@ msgstr "Entferne einen Benutzer-Abonement von einem Ordner."
 #: ../pykolab/cli/cmd_remove_user_subscription.py:86
 #, python-format
 msgid "Successfully unsubscribed user %s from the following folders:"
-msgstr ""
+msgstr "Für Benutzer %s wurde das Abonnement folgender Ordner erfolgreich beendet:"
 
 #: ../pykolab/cli/cmd_remove_user_subscription.py:92
 #, python-format
@@ -1866,12 +1867,12 @@ msgstr "Server für EINGANGS-Ordner %s ist %s"
 #: ../pykolab/imap/cyrus.py:294 ../pykolab/imap/dovecot.py:311
 #, python-format
 msgid "Setting quota for folder %s to %s"
-msgstr "Setze Quota für Verzeichnis %s auf %s"
+msgstr "Kontingent für Ordner %s auf %s wird festgelegt"
 
 #: ../pykolab/imap/cyrus.py:305 ../pykolab/imap/dovecot.py:315
 #, python-format
 msgid "Could not set quota for mailfolder %s"
-msgstr "Konnte Quota für Verzeichnis %s nicht setzen"
+msgstr "Kontingent für Mailordner %s konnte nicht festgelegt werden"
 
 #: ../pykolab/imap/cyrus.py:319 ../pykolab/imap/dovecot.py:320
 #, python-format
@@ -2081,7 +2082,7 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:750
 #, python-format
 msgid "Could not set quota on %s"
-msgstr ""
+msgstr "Kontingent auf %s konnte nicht festgelegt werden"
 
 #: ../pykolab/imap/__init__.py:757
 #, python-format
@@ -2148,7 +2149,7 @@ msgstr "Der Wert für user ist kein dictionary"
 #: ../pykolab/imap/__init__.py:981
 #, python-format
 msgid "Cannot get current IMAP quota for folder %s"
-msgstr "Kann aktuelles IMAP Kontingent für den Ordner %s nicht bekommen"
+msgstr "Kann aktuelles IMAP-Kontingent für den Ordner %s nicht holen"
 
 #: ../pykolab/imap/__init__.py:994
 #, python-format
@@ -2163,7 +2164,7 @@ msgstr ""
 #: ../pykolab/imap/__init__.py:1005
 #, python-format
 msgid "Correcting quota for %s to %s (currently %s)"
-msgstr ""
+msgstr "Kontingent für %s wird zu %s korrigiert (aktuell %s)"
 
 #: ../pykolab/imap/__init__.py:1082
 #, python-format
@@ -2271,7 +2272,7 @@ msgstr ""
 #: ../pykolab/plugins/dynamicquota/__init__.py:70
 #, python-format
 msgid "Quota '%s' not an integer!"
-msgstr ""
+msgstr "Kontingent '%s' ist keine Ganzzahl!"
 
 #: ../pykolab/plugins/__init__.py:70
 #, python-format
@@ -3094,7 +3095,7 @@ msgstr "Erledigt"
 #: ../tests/functional/test_wallace/test_007_invitationpolicy.py:914
 #: ../tests/functional/test_wallace/test_007_invitationpolicy.py:926
 msgid "Pending"
-msgstr ""
+msgstr "Ausstehend"
 
 #: ../pykolab/xml/attendee.py:133 ../pykolab/xml/attendee.py:155
 msgid "Not a valid attendee"
@@ -3938,7 +3939,7 @@ msgstr "Benachrichtigung über die Absage von %s %r an Nutzer %r senden"
 #: ../wallace/module_invitationpolicy.py:1284
 #, python-format
 msgid "The assignment for '%(summary)s' has been cancelled by %(organizer)s."
-msgstr ""
+msgstr "Die Zuweisung für '%(summary)s' wurde von %(organizer)s zurückgezogen."
 
 #: ../wallace/module_invitationpolicy.py:1289
 msgid "The copy in your tasklist has been removed accordingly."
@@ -3946,13 +3947,13 @@ msgstr ""
 
 #: ../wallace/module_invitationpolicy.py:1291
 msgid "The copy in your tasklist has been marked as cancelled accordingly."
-msgstr ""
+msgstr "Daher wurde die Aufgabe aus Iher Aufgabenliste storniert."
 
 #: ../wallace/module_invitationpolicy.py:1293
 #, python-format
 msgid ""
 "The event '%(summary)s' at %(start)s has been cancelled by %(organizer)s."
-msgstr ""
+msgstr "Der Termin '%(summary)s' am/um %(start)s wurde von %(organizer)s abgesagt."
 
 #: ../wallace/module_invitationpolicy.py:1299
 msgid "The copy in your calendar has been removed accordingly."
@@ -3960,7 +3961,7 @@ msgstr ""
 
 #: ../wallace/module_invitationpolicy.py:1301
 msgid "The copy in your calendar has been marked as cancelled accordingly."
-msgstr ""
+msgstr "Der Eintrag in Ihrem Kalender wurde als abgesagt gekennzeichnet."
 
 #: ../wallace/module_invitationpolicy.py:1307
 msgid "NOTE: This cancellation only refers to this single occurrence!"
@@ -4429,7 +4430,7 @@ msgstr "Zurückgestellte Nachricht in %s (durch Modul %s)"
 #: ../wallace/modules.py:193
 #, python-format
 msgid "The time when the message was sent: %r"
-msgstr "Zeitpunkt des Versandts: %r"
+msgstr "Zeitpunkt des Versands: %r"
 
 #: ../wallace/modules.py:194
 #, python-format

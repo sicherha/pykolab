@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Kolab Groupware Solution\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-07-22 15:31+0200\n"
-"PO-Revision-Date: 2016-07-22 13:31+0000\n"
+"PO-Revision-Date: 2016-07-22 13:51+0000\n"
 "Last-Translator: Jeroen van Meeuwen <vanmeeuwen@kolabsys.com>\n"
 "Language-Team: French (http://www.transifex.com/kolab/kolab/language/fr/)\n"
 "MIME-Version: 1.0\n"
@@ -621,7 +621,7 @@ msgstr "Utilisation de horodatage %r"
 #: ../pykolab/auth/ldap/__init__.py:869
 #, python-format
 msgid "Not applying recipient policy for %s (disabled through configuration)"
-msgstr ""
+msgstr "La politique de récepteur n'applique pas pour %s (désactivé à travers la configuration)"
 
 #: ../pykolab/auth/ldap/__init__.py:879
 #, python-format
@@ -674,7 +674,7 @@ msgstr "1 résultat trouvé pour l'adresse %s, vérification en cours"
 #: ../pykolab/auth/ldap/__init__.py:994
 #, python-format
 msgid "Too bad, primary email address %s already in use for %s (we are %s)"
-msgstr ""
+msgstr "Désolé, l'adresse e-mail principale %s déjà utilisé pour %s (nous sommes %s)"
 
 #: ../pykolab/auth/ldap/__init__.py:1005 ../pykolab/auth/ldap/__init__.py:1094
 msgid "Address assigned to us"
@@ -688,12 +688,12 @@ msgstr "Aucun résultat pour l'adresse %s"
 #: ../pykolab/auth/ldap/__init__.py:1071
 #, python-format
 msgid "1 result for address %s found, verifying..."
-msgstr ""
+msgstr "1 résultat trouvé pour l'adresse %s, en vérification..."
 
 #: ../pykolab/auth/ldap/__init__.py:1082
 #, python-format
 msgid "Too bad, secondary email address %s already in use for %s (we are %s)"
-msgstr ""
+msgstr "Désolé, l'adresse e-mail secondaire %s déjà utilisé pour %s (nous sommes %s)"
 
 #: ../pykolab/auth/ldap/__init__.py:1109
 #, python-format
@@ -711,7 +711,7 @@ msgstr "Les adresses e-mail secondaire que nous avons besoin n'est aucune: %r"
 msgid ""
 "Avoiding the duplication of the primary mail address %r in the list of "
 "secondary mail addresses"
-msgstr ""
+msgstr "Évitant la duplication d'adresse mail principal %r dans la liste d'adresses mail secondaire"
 
 #: ../pykolab/auth/ldap/__init__.py:1142
 #, python-format
@@ -721,7 +721,7 @@ msgstr "L'entré reçois des adresses mail secondaire:"
 #: ../pykolab/auth/ldap/__init__.py:1150
 #, python-format
 msgid "Entry did not have any secondary mail addresses in %r"
-msgstr ""
+msgstr "Entré n'as aucune adresses mail secondaire dans %r"
 
 #: ../pykolab/auth/ldap/__init__.py:1167 ../pykolab/auth/ldap/__init__.py:1173
 #, python-format
@@ -950,7 +950,7 @@ msgstr "Destinateur pour alias %r existe déjà"
 #: ../pykolab/cli/cmd_add_alias.py:97
 msgid ""
 "Environment is not configured for users to hold secondary mail attributes"
-msgstr ""
+msgstr "Environnement n'est pas configuré pour supporter des attribues de mail secondaire pour utilisateurs"
 
 #: ../pykolab/cli/cmd_add_alias.py:105
 #, python-format
@@ -989,7 +989,7 @@ msgstr "Ajouter un nouvel domaine"
 msgid ""
 "Could not find credentials with sufficient permissionsto add a domain name "
 "space."
-msgstr ""
+msgstr "Impossible de trouver les références avec les autorisations suffisantes pour ajouter un espace de nom de domaine. "
 
 #: ../pykolab/cli/cmd_add_domain.py:67 ../pykolab/cli/cmd_delete_domain.py:67
 #: ../pykolab/cli/cmd_find_domain.py:56
@@ -1599,7 +1599,7 @@ msgstr "La session pour l'utilisateur %s a débuté à %s avec l'ID %s"
 #: ../pykolab/conf/entitlement.py:262
 #, python-format
 msgid "Invalid entitlement verification certificate at %s"
-msgstr ""
+msgstr "Licence de vérification invalide au %s"
 
 #: ../pykolab/conf/entitlement.py:120 ../pykolab/conf/entitlement.py:123
 msgid "Invalid entitlement certificate"
@@ -2976,7 +2976,7 @@ msgstr "Confirmer %s:"
 
 #: ../pykolab/utils.py:74
 msgid "Incorrect confirmation. Please try again."
-msgstr ""
+msgstr "Confirmation incorrecte. Veuillez réessayer."
 
 #: ../pykolab/utils.py:79 ../pykolab/utils.py:84
 #, python-format
@@ -3085,7 +3085,7 @@ msgstr "terminé"
 #: ../tests/functional/test_wallace/test_007_invitationpolicy.py:914
 #: ../tests/functional/test_wallace/test_007_invitationpolicy.py:926
 msgid "Pending"
-msgstr ""
+msgstr "En attente"
 
 #: ../pykolab/xml/attendee.py:133 ../pykolab/xml/attendee.py:155
 msgid "Not a valid attendee"
@@ -4298,7 +4298,7 @@ msgstr "Contrôle si la ressource %r est une ressource (collection)"
 #: ../wallace/module_resources.py:1092
 #, python-format
 msgid "The following resources are being referred to in the iTip: %r"
-msgstr ""
+msgstr "Les ressources suivantes sont mentionnées dans le iTip: %"
 
 #: ../wallace/module_resources.py:1219
 #, python-format
