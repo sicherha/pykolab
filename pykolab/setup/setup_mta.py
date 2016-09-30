@@ -456,6 +456,28 @@ result_format = "shared+%%s"
         with open('/etc/systemd/system/clamd@.service', 'wb') as f:
             unitfile.write(f)
 
+    log.info(_("Configuring and refreshing Anti-Virus..."))
+
+    if os.path.isfile('/etc/kolab/templates/freshclam.conf.tpl'):
+        shutil.copy(
+                '/etc/kolab/templates/freshclam.conf.tpl',
+                '/etc/freshclam.conf'
+            )
+    elif os.path.isfile('/usr/share/kolab/templates/freshclam.conf.tpl'):
+        shutil.copy(
+                '/usr/share/kolab/templates/freshclam.conf.tpl',
+                '/etc/freshclam.conf'
+            )
+    else:
+        log.error(_("Could not find a ClamAV update configuration file"))
+
+    if os.path.isfile('/etc/freshclam.conf'):
+        subprocess.call(
+                '/usr/bin/freshclam',
+                '--quiet',
+                '--datadir="/var/lib/clamav"'
+            )
+
     amavisservice = 'amavisd.service'
     clamavservice = 'clamd@amavisd.service'
     if os.path.isfile('/usr/lib/systemd/system/amavis.service'):
