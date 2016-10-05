@@ -472,11 +472,11 @@ result_format = "shared+%%s"
         log.error(_("Could not find a ClamAV update configuration file"))
 
     if os.path.isfile('/etc/freshclam.conf'):
-        subprocess.call(
+        subprocess.call([
                 '/usr/bin/freshclam',
                 '--quiet',
                 '--datadir="/var/lib/clamav"'
-            )
+            ])
 
     amavisservice = 'amavisd.service'
     clamavservice = 'clamd@amavisd.service'
