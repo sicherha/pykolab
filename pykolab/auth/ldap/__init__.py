@@ -675,7 +675,7 @@ class LDAP(pykolab.base.Base):
 
         return _entry_dns
 
-    def find_recipient(self, address="*", exclude_entry_id=None):
+    def find_recipient(self, address="*", exclude_entry_id=None, search_attrs=None):
         """
             Given an address string or list of addresses, find one or more valid
             recipients.
@@ -685,6 +685,9 @@ class LDAP(pykolab.base.Base):
 
             Specify an additional entry_id to exclude to exclude matches against
             the current entry.
+
+            In search_attrs you can specify list of search attributes. By default
+            mail_attributes are used.
         """
 
         self._bind()
@@ -701,13 +704,13 @@ class LDAP(pykolab.base.Base):
             __filter_suffix = ""
 
         kolab_filter = self._kolab_filter()
-        recipient_address_attrs = self.config_get_list("mail_attributes")
 
-        result_attributes = []
+        if search_attrs is not None:
+            recipient_address_attrs = search_attrs
+        else:
+            recipient_address_attrs = self.config_get_list("mail_attributes")
 
-        for recipient_address_attr in recipient_address_attrs:
-            result_attributes.append(recipient_address_attr)
-
+        result_attributes = recipient_address_attrs
         result_attributes.append(self.config_get('unique_attribute'))
 
         _filter = "(|"

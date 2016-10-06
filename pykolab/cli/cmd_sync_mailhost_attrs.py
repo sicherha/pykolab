@@ -71,8 +71,11 @@ def execute(*args, **kw):
     auth = Auth()
     auth.connect()
 
-    domains = auth.list_domains()
+    result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+    if result_attribute is None:
+        result_attribute = 'mail'
 
+    domains = auth.list_domains()
     folders = imap.lm()
 
     imap_domains_not_domains = []
@@ -140,7 +143,7 @@ def execute(*args, **kw):
                 recipient = auth.find_folder_resource(folder)
             else:
                 r_folder = '/'.join(folder.split('/')[1:])
-                recipient = auth.find_recipient(r_folder)
+                recipient = auth.find_recipient(r_folder, search_attrs=[result_attribute])
 
             if (isinstance(recipient, list)):
                 if len(recipient) > 1:
@@ -188,6 +191,6 @@ def execute(*args, **kw):
         if folder.startswith('shared/'):
             recipient = auth.find_folder_resource(folder)
         else:
-            recipient = auth.find_recipient('/'.join(folder.split('/')[1:]))
+            recipient = auth.find_recipient('/'.join(folder.split('/')[1:]), search_attrs=[result_attribute])
 
         print folder, server, recipient

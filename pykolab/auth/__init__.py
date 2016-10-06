@@ -193,7 +193,7 @@ class Auth(pykolab.base.Base):
         else:
             return result
 
-    def find_recipient(self, address, domain=None):
+    def find_recipient(self, address, domain=None, search_attrs=None):
         """
             Find one or more entries corresponding to the recipient address.
         """
@@ -203,7 +203,7 @@ class Auth(pykolab.base.Base):
         if not self._auth or self._auth == None:
             self.connect(domain=domain)
 
-        result = self._auth.find_recipient(address)
+        result = self._auth.find_recipient(address, search_attrs=search_attrs)
 
         if isinstance(result, list) and len(result) == 1:
             return result[0]
