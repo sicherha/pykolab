@@ -19,6 +19,7 @@
     \$config['imap_force_lsub'] = true;
 
     // IMAP Connection TLS settings, adjust for Production
+    // Required for PHP >= 5.6
     \$config['imap_conn_options'] = Array(
             'ssl' => Array(
                     'verify_peer_name' => false,
@@ -42,6 +43,7 @@
     \$config['smtp_helo_host'] = \$_SERVER["HTTP_HOST"];
 
     // SMTP Connection TLS settings, adjust for Production
+    // Required for PHP >= 5.6
     \$config['smtp_conn_options'] = Array(
             'ssl' => Array(
                     'verify_peer_name' => false,
@@ -227,23 +229,6 @@
     \$config['kolab_http_request'] = Array(
             'ssl_verify_host' => false,
             'ssl_verify_peer' => false,
-        );
-
-    # Required for PHP 5.6
-    \$config['imap_conn_options'] = Array(
-            'ssl' => Array(
-                    'verify_peer_name'  => false,
-                    'verify_peer'       => false,
-                    'allow_self_signed' => true
-                )
-        );
-
-    \$config['smtp_conn_options'] = Array(
-            'ssl' => Array(
-                    'verify_peer_name'  => false,
-                    'verify_peer'       => false,
-                    'allow_self_signed' => true
-                )
         );
 
     \$config['fileapi_manticore'] = 'http://' . \$_SERVER['HTTP_HOST'] . ':8080';
