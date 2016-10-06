@@ -190,18 +190,19 @@ class TestComputeDiff(unittest.TestCase):
         self.assertEqual(diff[0]['old'], 0)
         self.assertEqual(diff[0]['new'], 1)
 
-        self.assertEqual(diff[1]['property'], 'description')
-        self.assertEqual(diff[1]['old'], '')
+        self.assertEqual(diff[1]['property'], 'summary')
+        self.assertEqual(diff[1]['old'], 'Old attachments')
+        self.assertEqual(diff[1]['new'], 'New attachments')
 
-        self.assertEqual(diff[2]['property'], 'summary')
-        self.assertEqual(diff[2]['old'], 'Old attachments')
-        self.assertEqual(diff[2]['new'], 'New attachments')
+        self.assertEqual(diff[2]['property'], 'attach')
+        self.assertEqual(diff[2]['new'], None)
+        self.assertEqual(diff[2]['old']['uri'], "cid:silhouette.1427297477.7514.png")
 
-        self.assertEqual(diff[3]['property'], 'attach')
-        self.assertEqual(diff[3]['new'], None)
-        self.assertEqual(diff[3]['old']['uri'], "cid:silhouette.1427297477.7514.png")
+        self.assertEqual(diff[3]['property'], 'lastmodified-date')
 
-        self.assertEqual(diff[4]['property'], 'lastmodified-date')
+        self.assertEqual(diff[4]['property'], 'description')
+        self.assertEqual(diff[4]['old'], '')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -38,6 +38,9 @@ def todo_from_message(message):
 class Todo(Event):
     type = 'task'
 
+    # This have to be a copy (see T1221)
+    properties_map = Event.properties_map.copy()
+
     def __init__(self, from_ical="", from_string=""):
         self._attendees = []
         self._categories = []

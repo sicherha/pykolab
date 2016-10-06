@@ -889,7 +889,7 @@ END:VEVENT
 
         self.assertIsInstance(data, dict)
         self.assertIsInstance(data['start'], datetime.datetime)
-        # self.assertIsInstance(data['end'], datetime.datetime)
+        self.assertIsInstance(data['end'], datetime.datetime)
         self.assertIsInstance(data['created'], datetime.datetime)
         self.assertIsInstance(data['lastmodified-date'], datetime.datetime)
         self.assertEqual(data['uid'], '75c740bb-b3c6-442c-8021-ecbaeb0a025e')
@@ -936,7 +936,7 @@ END:VEVENT
         e2.set_lastmodified()
 
         diff = compute_diff(e1.to_dict(), e2.to_dict(), True)
-        self.assertEqual(len(diff), 4, "Diff: (length: %d):\r\n%r\r\n%r" % (len(diff), diff, e2.__str__()))
+        self.assertEqual(len(diff), 5, "Diff: (length: %d):\r\n%r\r\n%r" % (len(diff), diff, e2.__str__()))
 
         ps = self._find_prop_in_list(diff, 'summary')
         self.assertIsInstance(ps, OrderedDict)
