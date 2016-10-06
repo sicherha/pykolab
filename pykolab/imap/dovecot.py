@@ -78,20 +78,22 @@ def imap_getmetadata(self, mailbox, pattern='*', shared=None):
         entries = " /private%s" % pattern
 
     typ, dat = self._simple_command('GETMETADATA', options, mailbox, entries)
+
     return self._untagged_response(typ, dat, 'METADATA')
 
 def imap_setmetadata(self, mailbox, desc, value, shared=False):
     if value:
-        value = quote(value)
+        value = value.join(['"', '"'])
     else:
         value = "NIL"
 
     if shared:
         typ, dat = self._simple_command('SETMETADATA', mailbox, 
-                                        "(/shared/%s %s)" % (desc,value))
+                                        "(/shared%s %s)" % (desc,value))
     else:
         typ, dat = self._simple_command('SETMETADATA', mailbox,
-                                        "(/private/%s %s)" % (desc,value))
+                                        "(/private%s %s)" % (desc,value))
+
     return self._untagged_response(typ, dat, 'METADATA')
 
 # Bind the new methods to the cyruslib IMAP4 and IMAP4_SSL objects

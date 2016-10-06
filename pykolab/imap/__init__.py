@@ -408,8 +408,6 @@ class IMAP(object):
 
         if metadata_path.startswith('/shared/'):
             shared = True
-
-        if metadata_path.startswith('/shared/'):
             metadata_path = metadata_path.replace('/shared/', '/')
         elif metadata_path.startswith('/private/'):
             shared = False
