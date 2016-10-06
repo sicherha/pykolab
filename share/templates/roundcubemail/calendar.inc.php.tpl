@@ -13,6 +13,13 @@
     \$config['calendar_itip_smtp_user'] = '';
     \$config['calendar_itip_smtp_pass'] = '';
 
+    \$config['calendar_itip_send_option'] = 3;
+    \$config['calendar_itip_after_action'] = 0;
+
+    \$config['calendar_freebusy_trigger'] = false;
+
+    \$config['kolab_invitation_calendars'] = false;
+
     \$config['calendar_contact_birthdays'] = true;
 
     \$config['calendar_resources_driver'] = 'ldap';
