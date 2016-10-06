@@ -404,7 +404,7 @@ class LDAP(pykolab.base.Base):
 
         return retval
 
-    def connect(self, priv=None, immediate=True):
+    def connect(self, priv=None, immediate=False):
         """
             Connect to the LDAP server through the uri configured.
         """
@@ -441,7 +441,8 @@ class LDAP(pykolab.base.Base):
                 retry_delay=retry_delay
             )
 
-        conn.set_option(ldap.OPT_TIMEOUT, 10)
+        if immediate:
+            conn.set_option(ldap.OPT_TIMEOUT, 10)
 
         conn.protocol_version = 3
         conn.supported_controls = []
