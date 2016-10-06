@@ -53,13 +53,15 @@ from pykolab.translate import _
 
 # define some contstants used in the code below
 COND_NOTIFY = 256
-ACT_MANUAL  = 1
-ACT_ACCEPT  = 2
+ACT_MANUAL = 1
+ACT_ACCEPT = 2
+ACT_REJECT = 8
 ACT_ACCEPT_AND_NOTIFY = ACT_ACCEPT + COND_NOTIFY
 
 policy_name_map = {
     'ACT_MANUAL':            ACT_MANUAL,
     'ACT_ACCEPT':            ACT_ACCEPT,
+    'ACT_REJECT':            ACT_REJECT,
     'ACT_ACCEPT_AND_NOTIFY': ACT_ACCEPT_AND_NOTIFY
 }
 
@@ -355,18 +357,18 @@ def execute(*args, **kw):
     # do the magic for the receiving attendee
     (available_resource, itip_event) = check_availability(itip_events, resource_dns, resources, receiving_attendee)
 
+    reject = False
+    resource = None
+    original_resource = None
+
     # accept reservation
     if available_resource is not None:
         if available_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
-            log.debug(_("Accept invitation for individual resource %r / %r") % (available_resource['dn'], available_resource['mail']), level=8)
-
             # check if reservation was delegated
-            original_resource = None
             if available_resource['mail'] != receiving_resource['mail'] and receiving_attendee.get_participant_status() == kolabformat.PartDelegated:
                 original_resource = receiving_resource
 
-            accept_reservation_request(itip_event, available_resource, original_resource)
-
+            resource = available_resource
         else:
             # This must have been a resource collection originally.
             # We have inserted the reference to the original resource
@@ -388,11 +390,25 @@ def execute(*args, **kw):
                     delegator.set_rsvp(False)
 
                     log.debug(_("Delegate invitation for resource collection %r to %r") % (original_resource['mail'], available_resource['mail']), level=8)
-                    accept_reservation_request(itip_event, available_resource, original_resource)
+                    resource = available_resource
 
-    # decline reservation
+    # Look for ACT_REJECT policy
+    if resource is not None:
+        invitationpolicy = get_resource_invitationpolicy(resource)
+        log.debug(_("Apply invitation policies %r") % (invitationpolicy), level=9)
+
+        if invitationpolicy is not None:
+            for policy in invitationpolicy:
+                if policy & ACT_REJECT:
+                    reject = True
+                    break
+
+    if resource is not None and not reject:
+        log.debug(_("Accept invitation for individual resource %r / %r") % (resource['dn'], resource['mail']), level=8)
+        accept_reservation_request(itip_event, resource, original_resource, False, invitationpolicy)
     else:
         resource = resources[resource_dns[0]]  # this is the receiving resource record
+        log.debug(_("Decline invitation for individual resource %r / %r") % (resource['dn'], resource['mail']), level=8)
         decline_reservation_request(itip_event, resource)
 
     cleanup()
@@ -771,7 +787,7 @@ def find_existing_event(uid, recurrence_id, resource_rec):
     return (event, master)
 
 
-def accept_reservation_request(itip_event, resource, delegator=None, confirmed=False):
+def accept_reservation_request(itip_event, resource, delegator=None, confirmed=False, invitationpolicy=None):
     """
         Accepts the given iTip event by booking it into the resource's
         calendar. Then set the attendee status of the given resource to
@@ -781,7 +797,8 @@ def accept_reservation_request(itip_event, resource, delegator=None, confirmed=F
     confirmation_required = False
 
     if not confirmed and owner:
-        invitationpolicy = get_resource_invitationpolicy(resource)
+        if invitationpolicy is None:
+            invitationpolicy = get_resource_invitationpolicy(resource)
         log.debug(_("Apply invitation policies %r") % (invitationpolicy), level=9)
 
         if invitationpolicy is not None:
@@ -840,7 +857,7 @@ def decline_reservation_request(itip_event, resource):
 
     # send response and notification
     owner = get_resource_owner(resource)
-    send_response(resource['mail'], itip_event, get_resource_owner(resource))
+    send_response(resource['mail'], itip_event, owner)
 
     if owner:
         send_owner_notification(resource, owner, itip_event, True)
