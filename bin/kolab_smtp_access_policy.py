@@ -1076,16 +1076,18 @@ class PolicyRequest(object):
         if self.verify_authenticity() == False:
             reject(_("Unverifiable sender."))
 
-        self.sasl_user_uses_alias = self.verify_alias()
+        if not self.sasl_user == None:
+            self.sasl_user_uses_alias = self.verify_alias()
 
-        if not self.sasl_user_uses_alias:
-            log.debug(_("Sender is not using an alias"), level=8)
-            self.sasl_user_is_delegate = self.verify_delegate()
+            if not self.sasl_user_uses_alias:
+                log.debug(_("Sender is not using an alias"), level=8)
+                self.sasl_user_is_delegate = self.verify_delegate()
 
         # If the authenticated user is using delegate functionality, apply the
         # recipient policy attribute for the envelope sender.
         if self.sasl_user_is_delegate == False and \
-            self.sasl_user_uses_alias == False:
+            self.sasl_user_uses_alias == False and \
+            not conf.allow_unauthenticated:
 
             reject(_("Sender uses unauthorized envelope sender address"))
 
