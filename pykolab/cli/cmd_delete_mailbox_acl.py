@@ -60,7 +60,7 @@ def execute(*args, **kw):
         print >> sys.stderr, _("No such folder %r") % (folder)
 
     else:
-        folders = imap.lm(folder)
+        folders = imap.list_folders(folder)
         for folder in folders:
             try:
                 imap.set_acl(folder, identifier, '')
