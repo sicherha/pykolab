@@ -480,9 +480,17 @@ result_format = "shared+%%s"
 
     amavisservice = 'amavisd.service'
     clamavservice = 'clamd@amavisd.service'
+
     if os.path.isfile('/usr/lib/systemd/system/amavis.service'):
         amavisservice = 'amavis.service'
+
+    if os.path.isfile('/lib/systemd/system/amavis.service'):
+        amavisservice = 'amavis.service'
+
     if os.path.isfile('/usr/lib/systemd/system/clamd.service'):
+        clamavservice = 'clamd.service'
+
+    if os.path.isfile('/lib/systemd/system/clamd.service'):
         clamavservice = 'clamd.service'
 
     if os.path.isfile('/bin/systemctl'):
