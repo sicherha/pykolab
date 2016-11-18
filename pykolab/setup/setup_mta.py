@@ -493,6 +493,9 @@ result_format = "shared+%%s"
     if os.path.isfile('/lib/systemd/system/clamd.service'):
         clamavservice = 'clamd.service'
 
+    if os.path.isfile('/lib/systemd/system/clamav-daemon.service'):
+        clamavservice = 'clamav-daemon.service'
+
     if os.path.isfile('/bin/systemctl'):
         subprocess.call(['systemctl', 'restart', 'postfix.service'])
         subprocess.call(['systemctl', 'restart', amavisservice])
