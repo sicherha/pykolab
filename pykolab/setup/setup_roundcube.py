@@ -288,7 +288,11 @@ password='%s'
                         pass
 
     httpservice = 'httpd.service'
+
     if os.path.isfile('/usr/lib/systemd/system/apache2.service'):
+        httpservice = 'apache2.service'
+
+    if os.path.isdir('/lib/systemd/system/apache2.service.d'):
         httpservice = 'apache2.service'
 
     if os.path.isfile('/bin/systemctl'):
