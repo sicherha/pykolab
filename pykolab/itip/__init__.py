@@ -159,6 +159,9 @@ def check_event_conflict(kolab_event, itip_event):
     if _is_transparent(kolab_event):
         return conflict
 
+    if _is_transparent(itip_event['xml']):
+        return conflict
+
     _es = to_dt(kolab_event.get_start())
     _ee = to_dt(kolab_event.get_ical_dtend())  # use iCal style end date: next day for all-day events
     _ev = kolab_event
