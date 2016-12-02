@@ -1255,8 +1255,10 @@ class LDAP(pykolab.base.Base):
         if len(modlist) > 0 and self._bind_priv() is True:
             try:
                 self.ldap_priv.modify_s(dn, modlist)
-            except:
-                log.error(_("Could not update dn %r:\n%r") % (dn, modlist))
+            except Exception, errmsg:
+                log.error(_("Could not update dn:\nDN: %r\nModlist: %r\nError Message: %r") % (dn, modlist, errmsg))
+                import traceback
+                log.error("%s" % (traceback.format_exc()))
 
     def synchronize(self, mode=0, callback=None):
         """
