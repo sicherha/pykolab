@@ -167,56 +167,70 @@ def check_event_conflict(kolab_event, itip_event):
     _ev = kolab_event
     _ei = 0
 
+    _is = to_dt(itip_event['start'])
+    _ie = to_dt(itip_event['end'])
+    _iv = itip_event['xml']
+    _ii = 0
+
     # Escape looping through anything if neither of the events is recurring.
     if not itip_event['xml'].is_recurring() and not kolab_event.is_recurring():
-        return check_date_conflict(_es, _ee, to_dt(itip_event['start']), to_dt(itip_event['end']))
+        return check_date_conflict(_es, _ee, _is, _ie)
+
+    loop = 0
+
+    done = False
 
     # naive loops to check for collisions in (recurring) events
     # TODO: compare recurrence rules directly (e.g. matching time slot or weekday or monthday)
-    while not conflict and _es is not None:
-        _is = to_dt(itip_event['start'])
-        _ie = to_dt(itip_event['end'])
-        _iv = itip_event['xml']
-        _ii = 0
+    while not conflict and not done:
+        loop += 1
 
-        while not conflict and _is is not None:
-            # log.debug("* Comparing event dates at %s/%s with %s/%s" % (_es, _ee, _is, _ie), level=9)
-            conflict = not _is_transparent(_ev) and not _is_transparent(_iv) and check_date_conflict(_es, _ee, _is, _ie)
-            _is = to_dt(itip_event['xml'].get_next_occurence(_is)) if itip_event['xml'].is_recurring() else None
-            _ie = to_dt(itip_event['xml'].get_occurence_end_date(_is))
+        # Scroll forward the kolab event recurrence until we're in the prime
+        # spot. We choose to start with the Kolab event because that is likely
+        # the older one.
+        if _ee < _is:
+            while _ee < _is and _es is not None and kolab_event.is_recurring():
+                log.debug("Attempt to move forward kolab event recurrence from %s closer to %s" % (_ee, _is), level=8)
+                __es = to_dt(kolab_event.get_next_occurence(_es))
 
-            # get full occurrence to compare the dates from a possible exception
-            if _is is not None and itip_event['xml'].has_exceptions():
-                _ix = itip_event['xml'].get_instance(_is)
-                if _ix is not None:
-                    _is = to_dt(_ix.get_start())
-                    _ie = to_dt(_ix.get_end())
-                    _iv = _ix
+                if not __es is None:
+                    _es = __es
+                    _ee = to_dt(kolab_event.get_occurence_end_date(_es))
+                else:
+                    done = True
+                    break
 
-            # iterate through all exceptions (non-recurring)
-            elif _is is None and not itip_event['xml'].is_recurring() and len(itip_event['xml'].get_exceptions()) > _ii:
-                _iv = itip_event['xml'].get_exceptions()[_ii]
-                _is = to_dt(_iv.get_start())
-                _ie = to_dt(_iv.get_end())
-                _ii += 1
+        # Scroll forward the itip event recurrence until we're in the
+        # prime spot, this time with the iTip event.
+        elif _ie < _es:
+            while _ie < _es and _is is not None and itip_event['xml'].is_recurring():
+                log.debug("Attempt to move forward itip event recurrence from %s closer to %s" % (_ie, _es), level=8)
+                __is = to_dt(itip_event['xml'].get_next_occurence(_is))
 
-        _es = to_dt(kolab_event.get_next_occurence(_es)) if kolab_event.is_recurring() else None
-        _ee = to_dt(kolab_event.get_occurence_end_date(_es))
+                if not __is is None:
+                    _is = __is
+                    _ie = to_dt(itip_event['xml'].get_occurence_end_date(_is))
+                else:
+                    done = True
+                    break
 
-        # get full instance to compare the dates from a possible exception
-        if _es is not None and kolab_event.has_exceptions():
-            _ex = kolab_event.get_instance(_es)
-            if _ex is not None:
-                _es = to_dt(_ex.get_start())
-                _ee = to_dt(_ex.get_end())
-                _ev = _ex
+        # Now that we have some events somewhere in the same neighborhood...
+        conflict = check_date_conflict(_es, _ee, _is, _ie)
+        log.debug("* Comparing itip at %s/%s with kolab at %s/%s: %r (%d)" % (_is, _ie, _es, _ee, conflict, loop), level=8)
 
-        # iterate through all exceptions (non-recurring)
-        elif _es is None and not kolab_event.is_recurring() and len(kolab_event.get_exceptions()) > _ei:
-            _ev = kolab_event.get_exceptions()[_ei]
-            _es = to_dt(_ev.get_start())
-            _ee = to_dt(_ev.get_end())
-            _ei += 1
+        if not conflict:
+            if kolab_event.is_recurring() and itip_event['xml'].is_recurring():
+                if not kolab_event.has_exceptions() and not itip_event['xml'].has_exceptions():
+                    log.debug("No conflict, both recurring, but neither with exceptions", level=8)
+                    done = True
+                    break
+
+            _is = to_dt(itip_event['xml'].get_next_occurence(_is))
+
+            if _is is not None:
+                _ie = to_dt(itip_event['xml'].get_occurence_end_date(_is))
+            else:
+                done = True
 
     return conflict
 
