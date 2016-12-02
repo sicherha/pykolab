@@ -167,6 +167,10 @@ def check_event_conflict(kolab_event, itip_event):
     _ev = kolab_event
     _ei = 0
 
+    # Escape looping through anything if neither of the events is recurring.
+    if not itip_event['xml'].is_recurring() and not kolab_event.is_recurring():
+        return check_date_conflict(_es, _ee, to_dt(itip_event['start']), to_dt(itip_event['end']))
+
     # naive loops to check for collisions in (recurring) events
     # TODO: compare recurrence rules directly (e.g. matching time slot or weekday or monthday)
     while not conflict and _es is not None:
