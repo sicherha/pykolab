@@ -503,7 +503,7 @@ def expunge_resource_calendar(mailbox):
 
             # consider recurring events and get real end date
             if event.is_recurring():
-                dt_end = event.get_last_occurrence()
+                dt_end = to_dt(event.get_last_occurrence())
                 if dt_end is None:
                     # skip if recurring forever
                     continue
