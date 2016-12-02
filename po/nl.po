@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kolab Groupware Solution\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-22 15:31+0200\n"
-"PO-Revision-Date: 2016-07-22 13:31+0000\n"
+"POT-Creation-Date: 2016-12-02 15:22+0100\n"
+"PO-Revision-Date: 2016-12-02 14:22+0000\n"
 "Last-Translator: Jeroen van Meeuwen <vanmeeuwen@kolabsys.com>\n"
 "Language-Team: Dutch (http://www.transifex.com/kolab/kolab/language/nl/)\n"
 "MIME-Version: 1.0\n"
@@ -137,151 +137,151 @@ msgstr ""
 msgid "Unverifiable sender."
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1082
+#: ../bin/kolab_smtp_access_policy.py:1083
 msgid "Sender is not using an alias"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1090
+#: ../bin/kolab_smtp_access_policy.py:1092
 msgid "Sender uses unauthorized envelope sender address"
 msgstr "Verstuurder gebruikt een niet geauthorizeerd envelope zender adres"
 
-#: ../bin/kolab_smtp_access_policy.py:1107
+#: ../bin/kolab_smtp_access_policy.py:1109
 msgid "Could not verify sender"
 msgstr "Kan de verstuurder niet verifieren"
 
-#: ../bin/kolab_smtp_access_policy.py:1114
+#: ../bin/kolab_smtp_access_policy.py:1116
 msgid ""
 "Verifying whether sender is allowed to send to recipient using sender policy"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1127
+#: ../bin/kolab_smtp_access_policy.py:1129
 #, python-format
 msgid "Result is %r"
 msgstr "Het resultaat is %r"
 
-#: ../bin/kolab_smtp_access_policy.py:1132
+#: ../bin/kolab_smtp_access_policy.py:1134
 msgid "No recipient policy restrictions exist for this sender"
 msgstr "Er zijn geen ontvanger restricties voor deze afzender"
 
-#: ../bin/kolab_smtp_access_policy.py:1141
+#: ../bin/kolab_smtp_access_policy.py:1143
 msgid "Found a recipient policy to apply for this sender."
 msgstr "Ontvanger-beleid gevonden voor deze afzender"
 
-#: ../bin/kolab_smtp_access_policy.py:1156
+#: ../bin/kolab_smtp_access_policy.py:1158
 #, python-format
 msgid "Sender %s not allowed to send to recipient %s"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1184
+#: ../bin/kolab_smtp_access_policy.py:1186
 msgid "Cleaning up the cache"
 msgstr "Cache aan het schoonmaken"
 
-#: ../bin/kolab_smtp_access_policy.py:1207
+#: ../bin/kolab_smtp_access_policy.py:1209
 msgid ""
 "The 'uri' setting in the kolab_smtp_access_policy section is soon going to "
 "be deprecated in favor of 'cache_uri'"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1223
+#: ../bin/kolab_smtp_access_policy.py:1225
 #, python-format
 msgid "Operational Error in caching: %s"
 msgstr "Operationele fout in caching: %s"
 
-#: ../bin/kolab_smtp_access_policy.py:1276
+#: ../bin/kolab_smtp_access_policy.py:1278
 #, python-format
 msgid "Caching the policy result with timestamp %d"
 msgstr "Policy resultaat aan het cachen met tijd %d"
 
-#: ../bin/kolab_smtp_access_policy.py:1353
+#: ../bin/kolab_smtp_access_policy.py:1355
 #, python-format
 msgid "Returning action DEFER_IF_PERMIT: %s"
 msgstr "Actie DEFER_IF_PERMIT retourneren: %s"
 
-#: ../bin/kolab_smtp_access_policy.py:1358
+#: ../bin/kolab_smtp_access_policy.py:1360
 #, python-format
 msgid "Returning action DUNNO: %s"
 msgstr "Actie DUNNO retourneren: %s"
 
-#: ../bin/kolab_smtp_access_policy.py:1363
+#: ../bin/kolab_smtp_access_policy.py:1365
 #, python-format
 msgid "Returning action HOLD: %s"
 msgstr "Actie HOLD retourneren: %s"
 
-#: ../bin/kolab_smtp_access_policy.py:1368
+#: ../bin/kolab_smtp_access_policy.py:1370
 #, python-format
 msgid "Returning action PERMIT: %s"
 msgstr "Actie PERMIT retourneren: %s"
 
-#: ../bin/kolab_smtp_access_policy.py:1496
+#: ../bin/kolab_smtp_access_policy.py:1498
 #, python-format
 msgid "Returning action REJECT: %s"
 msgstr "Actie REJECT retourneren: %s"
 
-#: ../bin/kolab_smtp_access_policy.py:1542
+#: ../bin/kolab_smtp_access_policy.py:1544
 msgid "Starting to loop for new request"
 msgstr "Loop aan het starten in afwachting van nieuw verzoek"
 
-#: ../bin/kolab_smtp_access_policy.py:1549
+#: ../bin/kolab_smtp_access_policy.py:1551
 msgid "Timeout for policy request reading exceeded"
 msgstr "Maximale tijd voor het lezen van een policy verzoek verstreken"
 
-#: ../bin/kolab_smtp_access_policy.py:1555
+#: ../bin/kolab_smtp_access_policy.py:1557
 msgid "End of current request"
 msgstr "Einde van huidige verzoek"
 
-#: ../bin/kolab_smtp_access_policy.py:1559
+#: ../bin/kolab_smtp_access_policy.py:1561
 #, python-format
 msgid "Getting line: %s"
 msgstr "Gegeven regel: %s"
 
-#: ../bin/kolab_smtp_access_policy.py:1563
+#: ../bin/kolab_smtp_access_policy.py:1565
 msgid "Returning request"
 msgstr "Verzoek aan het retourneren"
 
-#: ../bin/kolab_smtp_access_policy.py:1592
+#: ../bin/kolab_smtp_access_policy.py:1594
 msgid "Access Policy Options"
 msgstr "Opties voor Toegangs-beleid"
 
-#: ../bin/kolab_smtp_access_policy.py:1599
+#: ../bin/kolab_smtp_access_policy.py:1601
 msgid "SMTP Policy request timeout."
 msgstr "Maximale tijd voor SMTP Toegangs-beleid verzoek verstreken"
 
-#: ../bin/kolab_smtp_access_policy.py:1605
+#: ../bin/kolab_smtp_access_policy.py:1607
 msgid "Verify the recipient access policy."
 msgstr "Verifieer het toegangs-beleid voor de ontvanger."
 
-#: ../bin/kolab_smtp_access_policy.py:1611
+#: ../bin/kolab_smtp_access_policy.py:1613
 msgid "Verify the sender access policy."
 msgstr "Verifieer het toegangs-beleid voor de afzender."
 
-#: ../bin/kolab_smtp_access_policy.py:1617
+#: ../bin/kolab_smtp_access_policy.py:1619
 msgid "Allow unauthenticated senders."
 msgstr "Sta niet geauthentificeerde afzenders toe."
 
-#: ../bin/kolab_smtp_access_policy.py:1631
+#: ../bin/kolab_smtp_access_policy.py:1633
 #, python-format
 msgid "Got request instance %s"
 msgstr "Verzoek %s verkregen"
 
-#: ../bin/kolab_smtp_access_policy.py:1640
+#: ../bin/kolab_smtp_access_policy.py:1642
 #, python-format
 msgid "Request instance %s is in state %s"
 msgstr "Verzoek %s is in staat %s"
 
-#: ../bin/kolab_smtp_access_policy.py:1672
+#: ../bin/kolab_smtp_access_policy.py:1674
 #, python-format
 msgid "Unhandled exception caught: %r"
 msgstr ""
 
-#: ../bin/kolab_smtp_access_policy.py:1676
+#: ../bin/kolab_smtp_access_policy.py:1678
 msgid "Sender access denied"
 msgstr "Toegang voor afzender geweigerd"
 
-#: ../bin/kolab_smtp_access_policy.py:1678
+#: ../bin/kolab_smtp_access_policy.py:1680
 msgid "Recipient access denied"
 msgstr "Toegang voor ontvanger geweigerd"
 
-#: ../bin/kolab_smtp_access_policy.py:1680
+#: ../bin/kolab_smtp_access_policy.py:1682
 msgid "No objections"
 msgstr "Geen bezwaren"
 
@@ -364,7 +364,7 @@ msgstr "Type Fout: %s"
 msgid "Could not connect to LDAP, is it running?"
 msgstr ""
 
-#: ../kolabd/__init__.py:256 ../pykolab/auth/ldap/__init__.py:2524
+#: ../kolabd/__init__.py:256 ../pykolab/auth/ldap/__init__.py:2528
 #: ../pykolab/cli/cmd_sync.py:77
 msgid "Listing domains..."
 msgstr "Lijst van domeinen verkrijgen..."
@@ -498,16 +498,16 @@ msgstr ""
 msgid "Authentication cache failed: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:229 ../pykolab/auth/ldap/__init__.py:1441
-#: ../pykolab/auth/ldap/__init__.py:1467 ../pykolab/auth/ldap/__init__.py:3066
+#: ../pykolab/auth/ldap/__init__.py:229 ../pykolab/auth/ldap/__init__.py:1445
+#: ../pykolab/auth/ldap/__init__.py:1471 ../pykolab/auth/ldap/__init__.py:3070
 #, python-format
 msgid "LDAP server unavailable: %r"
 msgstr ""
 
 #: ../pykolab/auth/ldap/__init__.py:230 ../pykolab/auth/ldap/__init__.py:237
-#: ../pykolab/auth/ldap/__init__.py:1316 ../pykolab/auth/ldap/__init__.py:1442
-#: ../pykolab/auth/ldap/__init__.py:1468 ../pykolab/auth/ldap/__init__.py:1756
-#: ../pykolab/auth/ldap/__init__.py:3067 ../pykolab/auth/ldap/__init__.py:3077
+#: ../pykolab/auth/ldap/__init__.py:1320 ../pykolab/auth/ldap/__init__.py:1446
+#: ../pykolab/auth/ldap/__init__.py:1472 ../pykolab/auth/ldap/__init__.py:1760
+#: ../pykolab/auth/ldap/__init__.py:3071 ../pykolab/auth/ldap/__init__.py:3081
 #, python-format
 msgid "%s"
 msgstr ""
@@ -584,319 +584,319 @@ msgstr "Bezig verbinding te maken met LDAP..."
 msgid "Attempting to use LDAP URI %s"
 msgstr "Bezig LDAP URI %s te gebruiken..."
 
-#: ../pykolab/auth/ldap/__init__.py:524
+#: ../pykolab/auth/ldap/__init__.py:525
 #, python-format
 msgid "Entry ID: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:526
+#: ../pykolab/auth/ldap/__init__.py:527
 #, python-format
 msgid "Entry DN: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:529
+#: ../pykolab/auth/ldap/__init__.py:530
 #, python-format
 msgid ""
 "ldap search: (%r, %r, filterstr='(objectclass=*)', attrlist=[ 'dn' ] + %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:648 ../pykolab/auth/ldap/__init__.py:801
+#: ../pykolab/auth/ldap/__init__.py:649 ../pykolab/auth/ldap/__init__.py:805
 #, python-format
 msgid "Finding resource with filter %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:725
+#: ../pykolab/auth/ldap/__init__.py:729
 #, python-format
 msgid "Finding recipient with filter %r"
 msgstr "Ontvanger vinden met filter %r"
 
-#: ../pykolab/auth/ldap/__init__.py:832
+#: ../pykolab/auth/ldap/__init__.py:836
 #, python-format
 msgid "Using timestamp %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:869
+#: ../pykolab/auth/ldap/__init__.py:873
 #, python-format
 msgid "Not applying recipient policy for %s (disabled through configuration)"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:879
+#: ../pykolab/auth/ldap/__init__.py:883
 #, python-format
 msgid "Applying recipient policy to %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:896
+#: ../pykolab/auth/ldap/__init__.py:900
 #, python-format
 msgid "Using mail attributes: %r, with primary %r and secondary %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:907
+#: ../pykolab/auth/ldap/__init__.py:911
 #, python-format
 msgid "key %r not in entry"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:909
+#: ../pykolab/auth/ldap/__init__.py:913
 #, python-format
 msgid "key %r is the prim. mail attr."
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:911
+#: ../pykolab/auth/ldap/__init__.py:915
 msgid "prim. mail pol. is not empty"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:914
+#: ../pykolab/auth/ldap/__init__.py:918
 #, python-format
 msgid "key %r is the sec. mail attr."
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:916
+#: ../pykolab/auth/ldap/__init__.py:920
 msgid "sec. mail pol. is not empty"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:920 ../pykolab/auth/ldap/__init__.py:934
+#: ../pykolab/auth/ldap/__init__.py:924 ../pykolab/auth/ldap/__init__.py:938
 #, python-format
 msgid "Attributes %r are not yet available for entry %r"
 msgstr "Attributen %r zijn nog niet beschikbaar voor entry %r"
 
-#: ../pykolab/auth/ldap/__init__.py:973
+#: ../pykolab/auth/ldap/__init__.py:977
 #, python-format
 msgid "No results for mail address %s found"
 msgstr "Geen resultaten voor email adres %s gevonden"
 
-#: ../pykolab/auth/ldap/__init__.py:984
+#: ../pykolab/auth/ldap/__init__.py:988
 #, python-format
 msgid "1 result for address %s found, verifying"
 msgstr "1 resultaat voor adres %s gevonden, aan het verifieren"
 
-#: ../pykolab/auth/ldap/__init__.py:994
+#: ../pykolab/auth/ldap/__init__.py:998
 #, python-format
 msgid "Too bad, primary email address %s already in use for %s (we are %s)"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1005 ../pykolab/auth/ldap/__init__.py:1094
+#: ../pykolab/auth/ldap/__init__.py:1009 ../pykolab/auth/ldap/__init__.py:1098
 msgid "Address assigned to us"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1060
+#: ../pykolab/auth/ldap/__init__.py:1064
 #, python-format
 msgid "No results for address %s found"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1071
+#: ../pykolab/auth/ldap/__init__.py:1075
 #, python-format
 msgid "1 result for address %s found, verifying..."
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1082
+#: ../pykolab/auth/ldap/__init__.py:1086
 #, python-format
 msgid "Too bad, secondary email address %s already in use for %s (we are %s)"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1109
+#: ../pykolab/auth/ldap/__init__.py:1113
 #, python-format
 msgid ""
 "Recipient policy composed the following set of secondary email addresses: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1120
+#: ../pykolab/auth/ldap/__init__.py:1124
 #, python-format
 msgid "Secondary mail addresses that we want is not None: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1131
+#: ../pykolab/auth/ldap/__init__.py:1135
 #, python-format
 msgid ""
 "Avoiding the duplication of the primary mail address %r in the list of "
 "secondary mail addresses"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1142
+#: ../pykolab/auth/ldap/__init__.py:1146
 #, python-format
 msgid "Entry is getting secondary mail addresses: %r"
 msgstr "Entry verkrijgt secundaire email adressen: %r"
 
-#: ../pykolab/auth/ldap/__init__.py:1150
+#: ../pykolab/auth/ldap/__init__.py:1154
 #, python-format
 msgid "Entry did not have any secondary mail addresses in %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1167 ../pykolab/auth/ldap/__init__.py:1173
+#: ../pykolab/auth/ldap/__init__.py:1171 ../pykolab/auth/ldap/__init__.py:1177
 #, python-format
 msgid "secondary_mail_addresses: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1168 ../pykolab/auth/ldap/__init__.py:1174
+#: ../pykolab/auth/ldap/__init__.py:1172 ../pykolab/auth/ldap/__init__.py:1178
 #, python-format
 msgid "entry[%s]: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1185
+#: ../pykolab/auth/ldap/__init__.py:1189
 #, python-format
 msgid "Entry modifications list: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1219
+#: ../pykolab/auth/ldap/__init__.py:1223
 #, python-format
 msgid "Setting entry attribute %r to %r for %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1255
+#: ../pykolab/auth/ldap/__init__.py:1259
 #, python-format
 msgid ""
 "Could not update dn %r:\n"
 "%r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1281
+#: ../pykolab/auth/ldap/__init__.py:1285
 #, python-format
 msgid "Using filter %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1296
+#: ../pykolab/auth/ldap/__init__.py:1300
 #, python-format
 msgid "Synchronization is searching against base DN: %s"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1343
+#: ../pykolab/auth/ldap/__init__.py:1347
 #, python-format
 msgid ""
 "About to consider the user quota for %r (used: %r, imap: %r, ldap: %r, "
 "default: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1406
+#: ../pykolab/auth/ldap/__init__.py:1410
 msgid "Attempting to bind without a DN but with a password"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1411
+#: ../pykolab/auth/ldap/__init__.py:1415
 msgid "Attempting to bind with a DN but without a password"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1429
+#: ../pykolab/auth/ldap/__init__.py:1433
 #, python-format
 msgid "Binding with bind_dn: %s and password: %s"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1447 ../pykolab/auth/ldap/__init__.py:1471
+#: ../pykolab/auth/ldap/__init__.py:1451 ../pykolab/auth/ldap/__init__.py:1475
 msgid "Invalid DN, username and/or password."
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1452
+#: ../pykolab/auth/ldap/__init__.py:1456
 msgid "bind() called but already bound"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1474
+#: ../pykolab/auth/ldap/__init__.py:1478
 msgid "bind_priv() called but already bound"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1686
+#: ../pykolab/auth/ldap/__init__.py:1690
 #, python-format
 msgid "Entry %s attribute value: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1694
+#: ../pykolab/auth/ldap/__init__.py:1698
 #, python-format
 msgid "imap.user_mailbox_server(%r) result: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1755
+#: ../pykolab/auth/ldap/__init__.py:1759
 #, python-format
 msgid "An error occured: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:1993 ../pykolab/auth/ldap/__init__.py:2187
+#: ../pykolab/auth/ldap/__init__.py:1997 ../pykolab/auth/ldap/__init__.py:2191
 #, python-format
 msgid "Result from recipient policy: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2242
+#: ../pykolab/auth/ldap/__init__.py:2246
 #, python-format
 msgid "Kolab user %s does not have a result attribute %r"
 msgstr "Kolab gebruiker %s heeft geen resultaat attribuut %r"
 
-#: ../pykolab/auth/ldap/__init__.py:2267
+#: ../pykolab/auth/ldap/__init__.py:2271
 #, python-format
 msgid "Naming contexts found: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2274
+#: ../pykolab/auth/ldap/__init__.py:2278
 #, python-format
 msgid "Domains/Root DNs found: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2434
+#: ../pykolab/auth/ldap/__init__.py:2438
 #, python-format
 msgid "Searching root dn for domain %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2439
+#: ../pykolab/auth/ldap/__init__.py:2443
 #, python-format
 msgid "Returning from cache: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2444
+#: ../pykolab/auth/ldap/__init__.py:2448
 #, python-format
 msgid "Finding domain root dn for domain %s"
 msgstr "Root DN voor domein %s aan het vinden"
 
-#: ../pykolab/auth/ldap/__init__.py:2474
+#: ../pykolab/auth/ldap/__init__.py:2478
 #, python-format
 msgid "Setting domain root dn from LDAP for domain %r: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2620 ../pykolab/auth/ldap/__init__.py:2668
+#: ../pykolab/auth/ldap/__init__.py:2624 ../pykolab/auth/ldap/__init__.py:2672
 #, python-format
 msgid "Entry type: %s"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2746
+#: ../pykolab/auth/ldap/__init__.py:2750
 msgid "LDAP Search Result Data Entry:"
 msgstr "LDAP Zoek Resultaat:"
 
-#: ../pykolab/auth/ldap/__init__.py:2762
+#: ../pykolab/auth/ldap/__init__.py:2766
 msgid "Entry Change Notification attributes:"
 msgstr "Wijzigingsnotificatie attributen:"
 
-#: ../pykolab/auth/ldap/__init__.py:2767
+#: ../pykolab/auth/ldap/__init__.py:2771
 #, python-format
 msgid "Change Type: %r (%r)"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2775
+#: ../pykolab/auth/ldap/__init__.py:2779
 #, python-format
 msgid "Previous DN: %r"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:2830
+#: ../pykolab/auth/ldap/__init__.py:2834
 #, python-format
 msgid "Object %s searched no longer exists"
 msgstr "Gezocht object %s bestaat niet meer"
 
-#: ../pykolab/auth/ldap/__init__.py:2840
+#: ../pykolab/auth/ldap/__init__.py:2844
 #, python-format
 msgid "%d results..."
 msgstr "%d resultaten..."
 
-#: ../pykolab/auth/ldap/__init__.py:2943
+#: ../pykolab/auth/ldap/__init__.py:2947
 #, python-format
 msgid "Searching with filter %r"
 msgstr "Zoeken met filter %r"
 
-#: ../pykolab/auth/ldap/__init__.py:2995
+#: ../pykolab/auth/ldap/__init__.py:2999
 #, python-format
 msgid "Checking for support for %s on %s"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:3014
+#: ../pykolab/auth/ldap/__init__.py:3018
 #, python-format
 msgid "Found support for %s"
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:3068
+#: ../pykolab/auth/ldap/__init__.py:3072
 msgid "-- reconnecting in 10 seconds."
 msgstr ""
 
-#: ../pykolab/auth/ldap/__init__.py:3076
+#: ../pykolab/auth/ldap/__init__.py:3080
 #, python-format
 msgid "An error occured using %s: %r"
 msgstr ""
@@ -1365,44 +1365,44 @@ msgstr ""
 msgid "Display changes, do not apply them."
 msgstr ""
 
-#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:88
+#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:91
 #, python-format
 msgid "Domains in IMAP not in LDAP: %r"
 msgstr ""
 
-#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:105
-#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:153
+#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:108
+#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:156
 #, python-format
 msgid ""
 "No recipients for '%s' (would have deleted the mailbox if not for --dry-"
 "run)!"
 msgstr ""
 
-#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:110
-#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:158
+#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:113
+#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:161
 #, python-format
 msgid "Deleting mailbox '%s' because it has no recipients"
 msgstr ""
 
-#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:114
-#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:162
+#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:117
+#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:165
 #, python-format
 msgid "An error occurred removing mailbox %r: %r"
 msgstr ""
 
-#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:116
-#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:164
+#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:119
+#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:167
 #, python-format
 msgid "Not automatically deleting shared folder '%s'"
 msgstr ""
 
-#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:118
-#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:166
+#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:121
+#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:169
 #, python-format
 msgid "No recipients for '%s' (use --delete to delete)!"
 msgstr ""
 
-#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:147
+#: ../pykolab/cli/cmd_sync_mailhost_attrs.py:150
 #, python-format
 msgid "Multiple recipients for '%s'!"
 msgstr ""
@@ -1810,7 +1810,7 @@ msgstr "OpenLDAP of compatible"
 msgid "Could not connect to Cyrus IMAP server %r"
 msgstr ""
 
-#: ../pykolab/imap/cyrus.py:150 ../pykolab/imap/dovecot.py:285
+#: ../pykolab/imap/cyrus.py:150 ../pykolab/imap/dovecot.py:287
 #, python-format
 msgid "Continuing with separator: %r"
 msgstr ""
@@ -1851,22 +1851,22 @@ msgid "Server for INBOX folder %s is %s"
 msgstr ""
 
 #. Removed server reconnection for dovecot, we only have one server
-#: ../pykolab/imap/cyrus.py:294 ../pykolab/imap/dovecot.py:311
+#: ../pykolab/imap/cyrus.py:294 ../pykolab/imap/dovecot.py:313
 #, python-format
 msgid "Setting quota for folder %s to %s"
 msgstr ""
 
-#: ../pykolab/imap/cyrus.py:305 ../pykolab/imap/dovecot.py:315
+#: ../pykolab/imap/cyrus.py:305 ../pykolab/imap/dovecot.py:317
 #, python-format
 msgid "Could not set quota for mailfolder %s"
 msgstr ""
 
-#: ../pykolab/imap/cyrus.py:319 ../pykolab/imap/dovecot.py:320
+#: ../pykolab/imap/cyrus.py:319 ../pykolab/imap/dovecot.py:322
 #, python-format
 msgid "Moving INBOX folder %s to %s on partition %s"
 msgstr ""
 
-#: ../pykolab/imap/cyrus.py:329 ../pykolab/imap/dovecot.py:322
+#: ../pykolab/imap/cyrus.py:329 ../pykolab/imap/dovecot.py:324
 #, python-format
 msgid "Moving INBOX folder %s to %s"
 msgstr ""
@@ -1881,12 +1881,12 @@ msgstr ""
 msgid "Could not set annotation %r on mail folder %r: %r"
 msgstr ""
 
-#: ../pykolab/imap/cyrus.py:376 ../pykolab/imap/dovecot.py:451
+#: ../pykolab/imap/cyrus.py:376 ../pykolab/imap/dovecot.py:453
 #, python-format
 msgid "Transferring folder %s from %s to %s"
 msgstr "Map %s van %s naar %s aan het verhuizen"
 
-#: ../pykolab/imap/cyrus.py:464 ../pykolab/imap/dovecot.py:511
+#: ../pykolab/imap/cyrus.py:464 ../pykolab/imap/dovecot.py:513
 #, python-format
 msgid "Undeleting %s to %s"
 msgstr ""
@@ -1896,26 +1896,26 @@ msgstr ""
 msgid "Would have transferred %s from %s to %s"
 msgstr ""
 
-#: ../pykolab/imap/cyrus.py:491 ../pykolab/imap/dovecot.py:524
+#: ../pykolab/imap/cyrus.py:491 ../pykolab/imap/dovecot.py:526
 #, python-format
 msgid "Would have renamed %s to %s"
 msgstr ""
 
-#: ../pykolab/imap/dovecot.py:220
+#: ../pykolab/imap/dovecot.py:222
 #, python-format
 msgid "Could not connect to Dovecot IMAP server %r"
 msgstr ""
 
-#: ../pykolab/imap/dovecot.py:292
+#: ../pykolab/imap/dovecot.py:294
 msgid "Detected METADATA support"
 msgstr ""
 
-#: ../pykolab/imap/dovecot.py:295
+#: ../pykolab/imap/dovecot.py:297
 #, python-format
 msgid "This system does not support METADATA: '%s'"
 msgstr ""
 
-#: ../pykolab/imap/dovecot.py:522
+#: ../pykolab/imap/dovecot.py:524
 #, python-format
 msgid "Would have transfered %s from %s to %s"
 msgstr ""
@@ -1999,181 +1999,186 @@ msgstr ""
 msgid "Could not set ACL for %s on folder %s: %r"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:431 ../pykolab/imap/__init__.py:467
+#: ../pykolab/imap/__init__.py:429 ../pykolab/imap/__init__.py:465
 #, python-format
 msgid "Creating new shared folder %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:496 ../pykolab/imap/__init__.py:776
+#: ../pykolab/imap/__init__.py:494 ../pykolab/imap/__init__.py:786
 #, python-format
 msgid "Downcasing mailbox name %r"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:500
+#: ../pykolab/imap/__init__.py:498
 #, python-format
 msgid "Creating new mailbox for user %s"
 msgstr "Nieuwe mailbox voor gebruiker %s aan het creeren"
 
-#: ../pykolab/imap/__init__.py:515 ../pykolab/imap/__init__.py:644
+#: ../pykolab/imap/__init__.py:511
+#, python-format
+msgid "Could not create the mailbox for user %s, aborting."
+msgstr ""
+
+#: ../pykolab/imap/__init__.py:525 ../pykolab/imap/__init__.py:654
 msgid "Waiting for the Cyrus IMAP Murder to settle..."
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:590
+#: ../pykolab/imap/__init__.py:600
 #, python-format
 msgid "Creating additional folders for user %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:618
+#: ../pykolab/imap/__init__.py:628
 #, python-format
 msgid "Waiting for the Cyrus murder to settle... %r"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:633
+#: ../pykolab/imap/__init__.py:643
 #, python-format
 msgid "Correcting additional folder name from %r to %r"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:649
+#: ../pykolab/imap/__init__.py:659
 #, python-format
 msgid "Mailbox already exists: %s"
 msgstr "Mailbox bestaat reeds: %s"
 
-#: ../pykolab/imap/__init__.py:689
+#: ../pykolab/imap/__init__.py:699
 msgid "Subscribing user to the additional folders"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:703
+#: ../pykolab/imap/__init__.py:713
 msgid "Using the following tests for folder subscriptions:"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:705
+#: ../pykolab/imap/__init__.py:715
 #, python-format
 msgid "    %r"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:708
+#: ../pykolab/imap/__init__.py:718
 #, python-format
 msgid "Folder %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:720
+#: ../pykolab/imap/__init__.py:730
 #, python-format
 msgid "Subscribing %s to folder %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:724
+#: ../pykolab/imap/__init__.py:734
 #, python-format
 msgid "Subscribing %s to folder %s failed: %r"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:750
+#: ../pykolab/imap/__init__.py:760
 #, python-format
 msgid "Could not set quota on %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:757
+#: ../pykolab/imap/__init__.py:767
 #, python-format
 msgid "Could not rename %s to reside on partition %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:794
+#: ../pykolab/imap/__init__.py:804
 #, python-format
 msgid "INBOX folder to rename (%s) does not exist"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:797 ../pykolab/imap/__init__.py:905
+#: ../pykolab/imap/__init__.py:807 ../pykolab/imap/__init__.py:915
 #, python-format
 msgid "Renaming INBOX from %s to %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:801
+#: ../pykolab/imap/__init__.py:811
 #, python-format
 msgid "Could not rename INBOX folder %s to %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:803 ../pykolab/imap/__init__.py:909
+#: ../pykolab/imap/__init__.py:813 ../pykolab/imap/__init__.py:919
 #, python-format
 msgid ""
 "Moving INBOX folder %s won't succeed as target folder %s already exists"
 msgstr "Het verplaatsen van INBOX map %s zal niet slagen sinds doel map %s reeds bestaat"
 
-#: ../pykolab/imap/__init__.py:807
+#: ../pykolab/imap/__init__.py:817
 #, python-format
 msgid "Server for mailbox %r is %r"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:815
+#: ../pykolab/imap/__init__.py:825
 #, python-format
 msgid "Looking for folder '%s', we found folders: %r"
 msgstr "Zoekende naar map '%s' zijn de volgende mappen gevonden: %r"
 
-#: ../pykolab/imap/__init__.py:829 ../pykolab/imap/__init__.py:872
-#: ../pykolab/imap/__init__.py:886
+#: ../pykolab/imap/__init__.py:839 ../pykolab/imap/__init__.py:882
+#: ../pykolab/imap/__init__.py:896
 #, python-format
 msgid "Removing ACL rights %s for subject %s on folder %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:861
+#: ../pykolab/imap/__init__.py:871
 #, python-format
 msgid "Setting ACL rights %s for subject %s on folder %s"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:902
+#: ../pykolab/imap/__init__.py:912
 #, python-format
 msgid "Found old INBOX folder %s"
 msgstr "Oude INBOX map %s gevonden"
 
-#: ../pykolab/imap/__init__.py:911
+#: ../pykolab/imap/__init__.py:921
 #, python-format
 msgid "Did not find old folder user/%s to rename"
 msgstr "Oude te hernoemen map user/%s niet gevonden"
 
-#: ../pykolab/imap/__init__.py:913
+#: ../pykolab/imap/__init__.py:923
 msgid "Value for user is not a dictionary"
 msgstr "Waarde voor gebruiker is niet een associatieve array"
 
 #. TODO: Go in fact correct the quota.
-#: ../pykolab/imap/__init__.py:981
+#: ../pykolab/imap/__init__.py:991
 #, python-format
 msgid "Cannot get current IMAP quota for folder %s"
 msgstr "Kan huidig IMAP quota voor map %s niet verkrijgen"
 
-#: ../pykolab/imap/__init__.py:994
+#: ../pykolab/imap/__init__.py:1004
 #, python-format
 msgid "Quota for %s currently is %s"
 msgstr "Quota voor %s is op dit moment %s"
 
-#: ../pykolab/imap/__init__.py:1000
+#: ../pykolab/imap/__init__.py:1010
 #, python-format
 msgid "Adjusting authentication database quota for folder %s to %d"
 msgstr "Bijwerken van authenticatie database quota voor map %s to %d"
 
-#: ../pykolab/imap/__init__.py:1005
+#: ../pykolab/imap/__init__.py:1015
 #, python-format
 msgid "Correcting quota for %s to %s (currently %s)"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:1082
+#: ../pykolab/imap/__init__.py:1092
 #, python-format
 msgid "Checking folder: %s"
 msgstr "Bezig met controleren van map: %s"
 
-#: ../pykolab/imap/__init__.py:1087
+#: ../pykolab/imap/__init__.py:1097
 #, python-format
 msgid "Folder has no corresponding user (1): %s"
 msgstr "Map heeft geen corresponderende gebruiker (1): %s"
 
-#: ../pykolab/imap/__init__.py:1090
+#: ../pykolab/imap/__init__.py:1100
 #, python-format
 msgid "Folder has no corresponding user (2): %s"
 msgstr "Map heeft geen corresponderende gebruiker (2): %s"
 
 #. We got user identifier only
-#: ../pykolab/imap/__init__.py:1105
+#: ../pykolab/imap/__init__.py:1115
 msgid "Please don't give us just a user identifier"
 msgstr ""
 
-#: ../pykolab/imap/__init__.py:1108
+#: ../pykolab/imap/__init__.py:1118
 #, python-format
 msgid "Deleting folder %s"
 msgstr "Map %s aan het verwijderen"
@@ -2182,52 +2187,52 @@ msgstr "Map %s aan het verwijderen"
 msgid "Returning thread local configuration"
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:46
+#: ../pykolab/itip/__init__.py:47
 #, python-format
 msgid "Method %r not really interesting for us."
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:52
+#: ../pykolab/itip/__init__.py:53
 #, python-format
 msgid "Raw iTip payload (%r): %r"
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:62
+#: ../pykolab/itip/__init__.py:66
 msgid "Could not read iTip from message."
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:70
+#: ../pykolab/itip/__init__.py:74
 #, python-format
 msgid "Duplicate iTip object: %s"
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:95
+#: ../pykolab/itip/__init__.py:99
 msgid "iTip event without a start"
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:140
+#: ../pykolab/itip/__init__.py:144
 msgid "Message is not an iTip message (non-multipart message)"
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:261
+#: ../pykolab/itip/__init__.py:310
 #, python-format
 msgid "Send iTip reply %s for %s %r"
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:277
+#: ../pykolab/itip/__init__.py:326
 #, python-format
 msgid "Failed to compose iTip reply message: %r: %s"
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:288 ../pykolab/itip/__init__.py:332
+#: ../pykolab/itip/__init__.py:337 ../pykolab/itip/__init__.py:381
 #: ../wallace/module_invitationpolicy.py:1253
 #: ../wallace/module_invitationpolicy.py:1328
-#: ../wallace/module_resources.py:1347
+#: ../wallace/module_resources.py:1364
 #, python-format
 msgid "SMTP sendmail error: %r"
 msgstr ""
 
-#: ../pykolab/itip/__init__.py:320
+#: ../pykolab/itip/__init__.py:369
 #, python-format
 msgid "Failed to compose iTip request message: %r"
 msgstr ""
@@ -2777,11 +2782,19 @@ msgstr ""
 msgid "Not writing out any configuration for Amavis."
 msgstr ""
 
-#: ../pykolab/setup/setup_mta.py:482
+#: ../pykolab/setup/setup_mta.py:459
+msgid "Configuring and refreshing Anti-Virus..."
+msgstr ""
+
+#: ../pykolab/setup/setup_mta.py:472
+msgid "Could not find a ClamAV update configuration file"
+msgstr ""
+
+#: ../pykolab/setup/setup_mta.py:515
 msgid "Could not start the postfix, clamav and amavisd services services."
 msgstr ""
 
-#: ../pykolab/setup/setup_mta.py:500
+#: ../pykolab/setup/setup_mta.py:533
 msgid ""
 "Could not configure to start on boot, the postfix, clamav and amavisd "
 "services."
@@ -2927,13 +2940,13 @@ msgstr ""
 msgid "Cannot find the configuration directory for roundcube."
 msgstr ""
 
-#: ../pykolab/setup/setup_roundcube.py:291
-#: ../pykolab/setup/setup_syncroton.py:100
+#: ../pykolab/setup/setup_roundcube.py:305
+#: ../pykolab/setup/setup_syncroton.py:104
 msgid "Could not start the webserver server service."
 msgstr ""
 
-#: ../pykolab/setup/setup_roundcube.py:300
-#: ../pykolab/setup/setup_syncroton.py:109
+#: ../pykolab/setup/setup_roundcube.py:314
+#: ../pykolab/setup/setup_syncroton.py:113
 msgid "Could not configure to start on boot, the webserver server service."
 msgstr ""
 
@@ -3237,7 +3250,7 @@ msgstr ""
 msgid "Every %d seconds"
 msgstr ""
 
-#: ../pykolab/xml/todo.py:162
+#: ../pykolab/xml/todo.py:165
 msgid "Todo due needs datetime.date or datetime.datetime instance"
 msgstr ""
 
@@ -3379,7 +3392,7 @@ msgid "Maximum tries exceeded, exiting"
 msgstr ""
 
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:196
-#: ../wallace/module_resources.py:1251
+#: ../wallace/module_resources.py:1268
 #, python-format
 msgid "Reservation Request for %(summary)s was %(status)s"
 msgstr ""
@@ -3390,7 +3403,7 @@ msgstr ""
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:715
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:771
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:785
-#: ../wallace/module_resources.py:1335
+#: ../wallace/module_resources.py:1352
 #, python-format
 msgid "Booking for %s has been %s"
 msgstr ""
@@ -3406,7 +3419,7 @@ msgstr ""
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:814
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:968
 #: ../tests/functional/test_wallace/test_005_resource_invitation.py:984
-#: ../wallace/module_resources.py:1433
+#: ../wallace/module_resources.py:1450
 #, python-format
 msgid "Booking request for %s requires confirmation"
 msgstr ""
@@ -3444,7 +3457,7 @@ msgstr ""
 msgid "\"%s\" has been updated"
 msgstr ""
 
-#: ../tests/unit/test-011-itip.py:529
+#: ../tests/unit/test-011-itip.py:534
 #, python-format
 msgid "Invitation for %(summary)s was %(status)s"
 msgstr ""
@@ -3501,21 +3514,21 @@ msgstr ""
 
 #: ../wallace/module_footer.py:63 ../wallace/module_gpgencrypt.py:100
 #: ../wallace/module_invitationpolicy.py:227 ../wallace/module_optout.py:61
-#: ../wallace/module_resources.py:127
+#: ../wallace/module_resources.py:129
 #, python-format
 msgid "Issuing callback after processing to stage %s"
 msgstr ""
 
 #: ../wallace/module_footer.py:64 ../wallace/module_gpgencrypt.py:101
 #: ../wallace/module_invitationpolicy.py:229 ../wallace/module_optout.py:62
-#: ../wallace/module_resources.py:133
+#: ../wallace/module_resources.py:135
 #, python-format
 msgid "Testing cb_action_%s()"
 msgstr ""
 
 #: ../wallace/module_footer.py:66 ../wallace/module_gpgencrypt.py:103
 #: ../wallace/module_invitationpolicy.py:231 ../wallace/module_optout.py:64
-#: ../wallace/module_resources.py:136
+#: ../wallace/module_resources.py:138
 #, python-format
 msgid "Attempting to execute cb_action_%s()"
 msgstr ""
@@ -3791,7 +3804,7 @@ msgid "Searching folder %r for %s %r"
 msgstr ""
 
 #: ../wallace/module_invitationpolicy.py:852
-#: ../wallace/module_resources.py:675 ../wallace/module_resources.py:736
+#: ../wallace/module_resources.py:691 ../wallace/module_resources.py:752
 #, python-format
 msgid "No UID found in IMAP response: %r"
 msgstr ""
@@ -3807,8 +3820,8 @@ msgid "Listing events from folder %r"
 msgstr ""
 
 #: ../wallace/module_invitationpolicy.py:919
-#: ../wallace/module_resources.py:482 ../wallace/module_resources.py:683
-#: ../wallace/module_resources.py:763
+#: ../wallace/module_resources.py:498 ../wallace/module_resources.py:699
+#: ../wallace/module_resources.py:779
 #, python-format
 msgid "Failed to parse event from message %s/%s: %r"
 msgstr ""
@@ -3819,7 +3832,7 @@ msgid "Existing event %r conflicts with invitation %r"
 msgstr ""
 
 #: ../wallace/module_invitationpolicy.py:932
-#: ../wallace/module_resources.py:526
+#: ../wallace/module_resources.py:542
 #, python-format
 msgid "start: %r, end: %r, total: %r, messages: %d"
 msgstr ""
@@ -4001,308 +4014,314 @@ msgstr ""
 msgid "Could not send request to optout_url %s"
 msgstr ""
 
-#: ../wallace/module_resources.py:117
+#: ../wallace/module_resources.py:119
 #, python-format
 msgid "Resource Management called for %r, %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:182
+#: ../wallace/module_resources.py:184
 #, python-format
 msgid "Failed to parse iTip events from message: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:187
+#: ../wallace/module_resources.py:189
 msgid "Message is not an iTip message or does not contain any (valid) iTip."
 msgstr ""
 
-#: ../wallace/module_resources.py:195
+#: ../wallace/module_resources.py:197
 #, python-format
 msgid ""
 "iTip events attached to this message contain the following information: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:226
+#: ../wallace/module_resources.py:228
 msgid "Not an iTip message, but sent to resource nonetheless. Reject message"
 msgstr ""
 
-#: ../wallace/module_resources.py:234
+#: ../wallace/module_resources.py:236
 #, python-format
 msgid "No itips, no resources, pass along %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:237
+#: ../wallace/module_resources.py:239
 #, python-format
 msgid "iTips, but no resources, pass along %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:246
+#: ../wallace/module_resources.py:248
 #, python-format
 msgid "No resource attendees matching envelope recipient %s, Reject message"
 msgstr ""
 
-#: ../wallace/module_resources.py:256
+#: ../wallace/module_resources.py:258
 #, python-format
 msgid "Resources: %r; %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:270
+#: ../wallace/module_resources.py:272
 #, python-format
 msgid "iTip REPLY to %r, %r; matches %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:276
+#: ../wallace/module_resources.py:278
 #, python-format
 msgid "Sender Attendee: %r => %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:278
+#: ../wallace/module_resources.py:280
 #, python-format
 msgid "Could not find envelope sender attendee: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:283
+#: ../wallace/module_resources.py:285
 #, python-format
 msgid ""
 "The iTip reply sequence (%r) doesn't match the referred event version (%r). "
 "Ignoring."
 msgstr ""
 
-#: ../wallace/module_resources.py:302
+#: ../wallace/module_resources.py:304
 #, python-format
 msgid "Invalid response (%r) received from resource owner for event %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:306
+#: ../wallace/module_resources.py:308
 #, python-format
 msgid "Event referenced by this REPLY (%r) not found in resource calendar"
 msgstr ""
 
-#: ../wallace/module_resources.py:309
+#: ../wallace/module_resources.py:311
 msgid "No event reference found in this REPLY. Ignoring."
-msgstr ""
-
-#: ../wallace/module_resources.py:318
-#, python-format
-msgid "Receiving Resource: %r; %r"
 msgstr ""
 
 #: ../wallace/module_resources.py:320
 #, python-format
+msgid "Receiving Resource: %r; %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:322
+#, python-format
 msgid "Could not find envelope attendee: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:326
+#: ../wallace/module_resources.py:328
 #, python-format
 msgid "Recipient %r is non-participant, ignoring message"
 msgstr ""
 
-#: ../wallace/module_resources.py:336
+#: ../wallace/module_resources.py:338
 #, python-format
 msgid "Cancellation for entire event %r: deleting"
 msgstr ""
 
-#: ../wallace/module_resources.py:340
+#: ../wallace/module_resources.py:342
 #, python-format
 msgid "Cancellation for a single occurrence %r of %r: updating..."
 msgstr ""
 
-#: ../wallace/module_resources.py:361
-#, python-format
-msgid "Accept invitation for individual resource %r / %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:390
+#: ../wallace/module_resources.py:392
 #, python-format
 msgid "Delegate invitation for resource collection %r to %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:411
-#, python-format
-msgid "module_resources.heartbeat(%d)"
-msgstr ""
-
-#: ../wallace/module_resources.py:434
-#, python-format
-msgid "Expunge resource calendar for %s (%s) failed: %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:458
-#, python-format
-msgid "Expunge events in resource folder %r older than %d days"
-msgstr ""
-
-#: ../wallace/module_resources.py:471
-#, python-format
-msgid "Fetching message ID %r from folder %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:497
-#, python-format
-msgid "Flag event %s from message %s/%s as deleted (age = %d days)"
-msgstr ""
-
-#: ../wallace/module_resources.py:522
-#, python-format
-msgid "Failed to read resource calendar for %r: %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:532
-#, python-format
-msgid "Polling for resource %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:535
-#, python-format
-msgid "Resource %r has been popped from the list"
-msgstr ""
-
-#: ../wallace/module_resources.py:539
-msgid "Resource is a collection"
-msgstr ""
-
-#: ../wallace/module_resources.py:550
-#, python-format
-msgid "Removed conflicting resources from %r: (%r) => %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:562
-#, python-format
-msgid "Conflicting events: %r for resource %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:585
-#, python-format
-msgid "Delegate to another resource collection member: %r to %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:647
-#, python-format
-msgid "Checking events in resource folder %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:666
-#, python-format
-msgid "Fetching message UID %r from folder %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:699
-#, python-format
-msgid "Event %r conflicts with event %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:721
-#, python-format
-msgid "Searching %r for event %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:727
-#, python-format
-msgid "Failed to access resource calendar:: %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:754
-#, python-format
-msgid "Recurrence-ID not matching on message %s, skipping: %r != %r"
-msgstr ""
-
-#: ../wallace/module_resources.py:785
+#: ../wallace/module_resources.py:398 ../wallace/module_resources.py:802
 #, python-format
 msgid "Apply invitation policies %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:804
+#: ../wallace/module_resources.py:407
+#, python-format
+msgid "Accept invitation for individual resource %r / %r"
+msgstr ""
+
+#. this is the receiving resource record
+#: ../wallace/module_resources.py:411
+#, python-format
+msgid "Decline invitation for individual resource %r / %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:427
+#, python-format
+msgid "module_resources.heartbeat(%d)"
+msgstr ""
+
+#: ../wallace/module_resources.py:450
+#, python-format
+msgid "Expunge resource calendar for %s (%s) failed: %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:474
+#, python-format
+msgid "Expunge events in resource folder %r older than %d days"
+msgstr ""
+
+#: ../wallace/module_resources.py:487
+#, python-format
+msgid "Fetching message ID %r from folder %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:513
+#, python-format
+msgid "Flag event %s from message %s/%s as deleted (age = %d days)"
+msgstr ""
+
+#: ../wallace/module_resources.py:538
+#, python-format
+msgid "Failed to read resource calendar for %r: %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:548
+#, python-format
+msgid "Polling for resource %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:551
+#, python-format
+msgid "Resource %r has been popped from the list"
+msgstr ""
+
+#: ../wallace/module_resources.py:555
+msgid "Resource is a collection"
+msgstr ""
+
+#: ../wallace/module_resources.py:566
+#, python-format
+msgid "Removed conflicting resources from %r: (%r) => %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:578
+#, python-format
+msgid "Conflicting events: %r for resource %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:601
+#, python-format
+msgid "Delegate to another resource collection member: %r to %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:663
+#, python-format
+msgid "Checking events in resource folder %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:682
+#, python-format
+msgid "Fetching message UID %r from folder %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:715
+#, python-format
+msgid "Event %r conflicts with event %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:737
+#, python-format
+msgid "Searching %r for event %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:743
+#, python-format
+msgid "Failed to access resource calendar:: %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:770
+#, python-format
+msgid "Recurrence-ID not matching on message %s, skipping: %r != %r"
+msgstr ""
+
+#: ../wallace/module_resources.py:821
 #, python-format
 msgid "Adding event to %r: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:888
+#: ../wallace/module_resources.py:905
 #, python-format
 msgid "Failed to save event to resource calendar at %r: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:907
+#: ../wallace/module_resources.py:924
 #, python-format
 msgid "Delete resource calendar object from %r by UID %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:915
+#: ../wallace/module_resources.py:932
 #, python-format
 msgid "Delete resource calendar object %r in %r: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:926
+#: ../wallace/module_resources.py:943
 #, python-format
 msgid "Failed to delete calendar object %r from folder %r: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:966
+#: ../wallace/module_resources.py:983
 #, python-format
 msgid "Checking if email address %r belongs to a resource (collection)"
 msgstr ""
 
-#: ../wallace/module_resources.py:974 ../wallace/module_resources.py:1046
-#: ../wallace/module_resources.py:1080
+#: ../wallace/module_resources.py:991 ../wallace/module_resources.py:1063
+#: ../wallace/module_resources.py:1097
 #, python-format
 msgid "Resource record(s): %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:976 ../wallace/module_resources.py:1048
-#: ../wallace/module_resources.py:1083
+#: ../wallace/module_resources.py:993 ../wallace/module_resources.py:1065
+#: ../wallace/module_resources.py:1100
 #, python-format
 msgid "No resource (collection) records found for %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:980 ../wallace/module_resources.py:1052
-#: ../wallace/module_resources.py:1087
+#: ../wallace/module_resources.py:997 ../wallace/module_resources.py:1069
+#: ../wallace/module_resources.py:1104
 #, python-format
 msgid "Resource record: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:998
+#: ../wallace/module_resources.py:1015
 #, python-format
 msgid "Raw itip_events: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:1006
+#: ../wallace/module_resources.py:1023
 #, python-format
 msgid "Raw set of attendees: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:1014
+#: ../wallace/module_resources.py:1031
 #, python-format
 msgid "Raw set of resources: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:1019
+#: ../wallace/module_resources.py:1036
 #, python-format
 msgid "Raw set of organizers: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:1039
+#: ../wallace/module_resources.py:1056
 #, python-format
 msgid "Checking if attendee %r is a resource (collection)"
 msgstr ""
 
-#: ../wallace/module_resources.py:1055 ../wallace/module_resources.py:1089
+#: ../wallace/module_resources.py:1072 ../wallace/module_resources.py:1106
 msgid "Resource reservation made but no resource records found"
 msgstr ""
 
-#: ../wallace/module_resources.py:1074
+#: ../wallace/module_resources.py:1091
 #, python-format
 msgid "Checking if resource %r is a resource (collection)"
 msgstr ""
 
-#: ../wallace/module_resources.py:1092
+#: ../wallace/module_resources.py:1109
 #, python-format
 msgid "The following resources are being referred to in the iTip: %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:1219
+#: ../wallace/module_resources.py:1236
 #, python-format
 msgid "Check collections %r for kolabinvitationpolicy attributes"
 msgstr ""
 
-#: ../wallace/module_resources.py:1257
+#: ../wallace/module_resources.py:1274
 #, python-format
 msgid ""
 "\n"
@@ -4312,7 +4331,7 @@ msgid ""
 "            "
 msgstr ""
 
-#: ../wallace/module_resources.py:1276
+#: ../wallace/module_resources.py:1293
 #, python-format
 msgid ""
 "\n"
@@ -4322,7 +4341,7 @@ msgid ""
 "    "
 msgstr ""
 
-#: ../wallace/module_resources.py:1283
+#: ../wallace/module_resources.py:1300
 #, python-format
 msgid ""
 "\n"
@@ -4331,16 +4350,16 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../wallace/module_resources.py:1318
+#: ../wallace/module_resources.py:1335
 #, python-format
 msgid "Sending booking notification for event %r to %r from %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:1336
+#: ../wallace/module_resources.py:1353
 msgid "failed"
 msgstr ""
 
-#: ../wallace/module_resources.py:1356
+#: ../wallace/module_resources.py:1373
 #, python-format
 msgid ""
 "\n"
@@ -4350,7 +4369,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../wallace/module_resources.py:1362
+#: ../wallace/module_resources.py:1379
 #, python-format
 msgid ""
 "\n"
@@ -4361,12 +4380,12 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../wallace/module_resources.py:1393
+#: ../wallace/module_resources.py:1410
 #, python-format
 msgid "Clone invitation for owner confirmation: %r from %r"
 msgstr ""
 
-#: ../wallace/module_resources.py:1412
+#: ../wallace/module_resources.py:1429
 #, python-format
 msgid ""
 "\n"
