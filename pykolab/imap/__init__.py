@@ -497,7 +497,19 @@ class IMAP(object):
         folder_name = "user%s%s" % (self.get_separator(), mailbox_base_name)
         log.info(_("Creating new mailbox for user %s") %(mailbox_base_name))
 
-        self.create_folder(folder_name, server)
+        max_tries = 10
+        success = False
+        while not success and max_tries > 0:
+            success = self.create_folder(folder_name, server)
+            if not success:
+                self.disconnect()
+                max_tries -= 1
+                time.sleep(1)
+                self.connect()
+
+        if not success:
+            log.error(_("Could not create the mailbox for user %s, aborting." % (mailbox_base_name)))
+            return False
 
         # In a Cyrus IMAP Murder topology, wait for the murder to have settled
         if self.imap_murder():
