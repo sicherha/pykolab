@@ -118,7 +118,7 @@ def execute(name, *args, **kw):
         return modules[name]['function'](*args, **kw)
     except Exception, errmsg:
         log.error(_("Unknown error occurred; %r") % (errmsg))
-        log.error("%r" % (traceback.format_exc()))
+        log.error("%s" % (traceback.format_exc()))
 
 def heartbeat(name, *args, **kw):
     if not modules.has_key(name):
