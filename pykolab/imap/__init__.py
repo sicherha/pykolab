@@ -216,6 +216,11 @@ class IMAP(object):
             # No server specified, but make sure self.imap is None anyways
             if hasattr(self, 'imap'):
                 del self.imap
+
+            # Empty out self._imap as well
+            for key in self._imap.keys():
+                del self._imap[key]
+
         else:
             if self._imap.has_key(server):
                 del self._imap[server]
@@ -652,6 +657,11 @@ class IMAP(object):
                     if not created:
                         if time.time() - last_log > 5:
                             log.info(_("Waiting for the Cyrus IMAP Murder to settle..."))
+                            if time.time() - last_log > 30:
+                                log.warning(_("Waited for 30 seconds, going to reconnect"))
+                                self.disconnect()
+                                self.connec()
+
                             last_log = time.time()
 
                         time.sleep(0.5)
