@@ -299,9 +299,13 @@ def execute(*args, **kw):
                 # extend with addresses from delegators
                 # (only do this lookup for REPLY messages)
                 receiving_user['_delegated_mailboxes'] = []
+
                 if itip_event['method'] == 'REPLY':
                     for _delegator in auth.list_delegators(recipient_user_dn):
-                        receiving_user['_delegated_mailboxes'].append(_delegator['_mailbox_basename'].split('@')[0])
+                        if not _delegator['_mailbox_basename'] == None:
+                            receiving_user['_delegated_mailboxes'].append(
+                                    _delegator['_mailbox_basename'].split('@')[0]
+                                )
 
                 log.debug(_("Recipient emails for %s: %r") % (recipient_user_dn, recipient_emails), level=8)
                 break
