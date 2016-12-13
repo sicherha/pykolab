@@ -21,6 +21,7 @@
 import logging
 import re
 import time
+import socket
 import sys
 
 from urlparse import urlparse
@@ -210,6 +211,11 @@ class IMAP(object):
         # Set the newly created technology specific IMAP library as the current
         # IMAP connection to be used.
         self.imap = self._imap[hostname]
+
+        if hasattr(self.imap, 'm') and hasattr(self.imap.m, 'sock'):
+            self._set_socket_keepalive(self.imap.m.sock)
+        elif hasattr(self.imap, 'sock'):
+            self._set_socket_keepalive(self.imap.sock)
 
     def disconnect(self, server=None):
         if server == None:
@@ -838,6 +844,18 @@ class IMAP(object):
             return True
         else:
             return False
+
+    def _set_socket_keepalive(self, sock):
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+
+        with open('/proc/sys/net/ipv4/tcp_keepalive_time', 'r') as f:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, (int)(f.read()))
+
+        with open('/proc/sys/net/ipv4/tcp_keepalive_intvl', 'r') as f:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, (int)(f.read()))
+
+        with open('/proc/sys/net/ipv4/tcp_keepalive_probes', 'r') as f:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, (int)(f.read()))
 
     def _set_kolab_mailfolder_acls(self, acls, folder=None, update=False):
         # special case, folder has no ACLs assigned and update was requested,
