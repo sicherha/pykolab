@@ -64,7 +64,7 @@ log = pykolab.getLogger('pykolab.smtp_access_policy')
 
 # TODO: Removing the stdout handler would mean one can no longer test by
 # means of manual execution in debug mode.
-#log.remove_stdout_handler()
+log.remove_stdout_handler()
 
 conf = pykolab.getConf()
 
