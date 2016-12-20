@@ -219,17 +219,19 @@ class Cyrus(cyruslib.CYRUS):
         max_tries = 20
         num_try = 0
 
-        annotation_path = "/shared/vendor/cmu/cyrus-imapd/server"
+        ann_path = "/vendor/cmu/cyrus-imapd/server"
+        s_ann_path = "/shared%s" % (ann_path)
 
         while 1:
             num_try += 1
             annotations = self._getannotation(
                     mailfolder,
-                    annotation_path
+                    ann_path
                 )
 
             if annotations.has_key(mailfolder):
-                break
+                if annotations[mailfolder].has_key(s_ann_path):
+                    break
 
             if max_tries <= num_try:
                 log.error(
@@ -240,7 +242,7 @@ class Cyrus(cyruslib.CYRUS):
 
                 annotations = {
                         mailfolder: {
-                                annotation_path: self.server
+                                s_ann_path: self.server
                             }
                     }
 
@@ -255,7 +257,7 @@ class Cyrus(cyruslib.CYRUS):
 
             time.sleep(1)
 
-        server = annotations[mailfolder][annotation_path]
+        server = annotations[mailfolder][s_ann_path]
         self.mbox[mailfolder] = server
 
         log.debug(
