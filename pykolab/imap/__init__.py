@@ -769,7 +769,7 @@ class IMAP(object):
                             reconnect_counter += 1
                             log.info(_("Waiting for the Cyrus IMAP Murder to settle..."))
                             if reconnect_counter == 6:
-                                log.warning(_("Waited for 30 seconds, going to reconnect"))
+                                log.warning(_("Waited for 15 seconds, going to reconnect"))
                                 reconnect_counter = 0
                                 self.disconnect()
                                 self.connect()
