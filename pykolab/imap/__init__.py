@@ -508,35 +508,11 @@ class IMAP(object):
         folder_name = "user%s%s" % (self.get_separator(), mailbox_base_name)
         log.info(_("Creating new mailbox for user %s") %(mailbox_base_name))
 
-        max_tries = 10
-        success = False
-        while not success and max_tries > 0:
-            success = self.create_folder(folder_name, server)
-            if not success:
-                self.disconnect()
-                max_tries -= 1
-                time.sleep(1)
-                self.connect()
+        success = self._create_folder_waiting(folder_name, server)
 
         if not success:
             log.error(_("Could not create the mailbox for user %s, aborting." % (mailbox_base_name)))
             return False
-
-        # In a Cyrus IMAP Murder topology, wait for the murder to have settled
-        if self.imap_murder():
-            self.disconnect()
-            self.connect()
-
-            created = False
-            last_log = time.time()
-            while not created:
-                created = self.has_folder(folder_name)
-                if not created:
-                    if time.time() - last_log > 5:
-                        log.info(_("Waiting for the Cyrus IMAP Murder to settle..."))
-                        last_log = time.time()
-
-                    time.sleep(0.5)
 
         _additional_folders = None
 
@@ -628,7 +604,6 @@ class IMAP(object):
         last_log = time.time()
         while not success:
             try:
-
                 self.disconnect()
                 self.connect(login=False, server=server)
                 self.login_plain(admin_login, admin_password, user)
@@ -654,28 +629,11 @@ class IMAP(object):
                 log.error(_("Correcting additional folder name from %r to %r") % (folder_name, "%s%s" % (personal, folder_name)))
                 folder_name = "%s%s" % (personal, folder_name)
 
-            try:
-                self.create_folder(folder_name)
-                created = False
-                last_log = time.time()
-                while not created:
-                    created = self.has_folder(folder_name)
-                    if not created:
-                        if time.time() - last_log > 5:
-                            log.info(_("Waiting for the Cyrus IMAP Murder to settle..."))
-                            if time.time() - last_log > 30:
-                                log.warning(_("Waited for 30 seconds, going to reconnect"))
-                                self.disconnect()
-                                self.connec()
 
-                            last_log = time.time()
+            success = self._create_folder_waiting(folder_name)
 
-                        time.sleep(0.5)
-            except:
-                log.warning(_("Mailbox already exists: %s") % (folder_name))
-                if conf.debuglevel > 8:
-                    import traceback
-                    traceback.print_exc()
+            if not success:
+                log.warning(_("Failed to create folder: %s") % (folder_name))
                 continue
 
             if additional_folders[additional_folder].has_key("annotations"):
@@ -781,6 +739,50 @@ class IMAP(object):
                     self.imap._rename(folder_name, folder_name, partition)
                 except:
                     log.error(_("Could not rename %s to reside on partition %s") % (folder_name, partition))
+
+    def _create_folder_waiting(self, folder_name, server=None):
+        """
+            Create a folder and wait to make sure it exists
+        """
+
+        created = False
+
+        try:
+            max_tries = 10
+            while not created and max_tries > 0:
+                created = self.create_folder(folder_name, server)
+                if not created:
+                    self.disconnect()
+                    max_tries -= 1
+                    time.sleep(1)
+                    self.connect()
+
+            # In a Cyrus IMAP Murder topology, wait for the murder to have settled
+            if created and self.imap_murder():
+                success = False
+                last_log = time.time()
+                reconnect_counter = 0
+                while not success:
+                    success = self.has_folder(folder_name)
+                    if not success:
+                        if time.time() - last_log > 5:
+                            reconnect_counter += 1
+                            log.info(_("Waiting for the Cyrus IMAP Murder to settle..."))
+                            if reconnect_counter == 6:
+                                log.warning(_("Waited for 30 seconds, going to reconnect"))
+                                reconnect_counter = 0
+                                self.disconnect()
+                                self.connect()
+
+                            last_log = time.time()
+
+                        time.sleep(0.5)
+        except:
+            if conf.debuglevel > 8:
+                import traceback
+                traceback.print_exc()
+
+        return created
 
     def user_mailbox_delete(self, mailbox_base_name):
         """
