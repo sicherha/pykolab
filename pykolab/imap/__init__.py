@@ -72,17 +72,20 @@ class IMAP(object):
 
         # ... loop through them and ...
         for folder in folders:
-            # ... list the ACL entries
-            acls = self.imap.lam(folder)
+            # ... list the ACL entries -- but only if the folder still exists
+            if self.imap.has_folder(folder):
+                acls = self.imap.lam(folder)
 
-            # For each ACL entry, see if we think it is a current, valid entry
-            for acl_entry in acls.keys():
-                # If the key 'acl_entry' does not exist in the dictionary of valid
-                # ACL entries, this ACL entry has got to go.
-                if acl_entry == aci_subject:
-                    # Set the ACL to '' (effectively deleting the ACL entry)
-                    log.debug(_("Removing acl %r for subject %r from folder %r") % (acls[acl_entry],acl_entry,folder), level=8)
-                    self.set_acl(folder, acl_entry, '')
+                # For each ACL entry, see if we think it is a current, valid entry
+                for acl_entry in acls.keys():
+                    # If the key 'acl_entry' does not exist in the dictionary of valid
+                    # ACL entries, this ACL entry has got to go.
+                    if acl_entry == aci_subject:
+                        # Set the ACL to '' (effectively deleting the ACL entry)
+                        log.debug(_("Removing acl %r for subject %r from folder %r") % (acls[acl_entry],acl_entry,folder), level=8)
+                        self.set_acl(folder, acl_entry, '')
+            else:
+                log.debug(_("Folder %r disappeared (ACL cleanup for %r") % (folder, subject), level=8)
 
     def connect(self, uri=None, server=None, domain=None, login=True):
         """
