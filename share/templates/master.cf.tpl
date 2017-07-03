@@ -85,6 +85,7 @@ smtp-amavis         unix        -       -       n       -       3       smtp
 
 # Filter email through Wallace
 smtp-wallace        unix        -       -       n       -       3       smtp
+    -o default_destination_recipient_limit=1
     -o smtp_data_done_timeout=1800
     -o disable_dns_lookups=yes
     -o smtp_send_xforward_command=yes
