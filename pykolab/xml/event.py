@@ -880,7 +880,8 @@ class Event(object):
         if attr == "categories":
             self.add_category(value)
         elif attr == "class":
-            self.set_classification(value)
+            if (value and value[:2] not in ['X-', 'x-']):
+                self.set_classification(value)
         elif attr == "recurrenceid":
             self.set_ical_recurrenceid(value, params)
         elif hasattr(self, ical_setter):
