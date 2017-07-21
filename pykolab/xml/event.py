@@ -1035,7 +1035,7 @@ class Event(object):
         self.event.setSequence(int(sequence))
 
     def set_url(self, url):
-        self.event.setUrl(str(url))
+        self.event.setUrl(ustr(url))
 
     def set_recurrence(self, recurrence):
         self.event.setRecurrenceRule(recurrence)
