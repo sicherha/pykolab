@@ -774,14 +774,14 @@ def imap_proxy_auth(user_rec):
     return True
 
 
-def list_user_folders(user_rec, type):
+def list_user_folders(user_rec, _type):
     """
         Get a list of the given user's private calendar/tasks folders
     """
     global imap
 
     # return cached list
-    if user_rec.has_key('_imap_folders'):
+    if '_imap_folders' in user_rec:
         return user_rec['_imap_folders']
 
     result = []
@@ -789,38 +789,83 @@ def list_user_folders(user_rec, type):
     if not imap_proxy_auth(user_rec):
         return result
 
-    folders = imap.list_folders('*')
-    log.debug(_("List %r folders for user %r: %r") % (type, user_rec['mail'], folders), level=8)
+    folders = imap.get_metadata('*')
+
+    log.debug(
+        _("List %r folders for user %r: %r") % (
+            _type,
+            user_rec['mail'],
+            folders
+        ),
+        level=8
+    )
 
     (ns_personal, ns_other, ns_shared) = imap.namespaces()
 
-    for folder in folders:
-        # exclude shared and other user's namespace
-        if ns_other is not None and folder.startswith(ns_other) and '_delegated_mailboxes' in user_rec:
-            # allow shared folders from delegators
-            if len([_mailbox for _mailbox in user_rec['_delegated_mailboxes'] if folder.startswith(ns_other + _mailbox + '/')]) == 0:
+    _folders = {}
+
+    # Filter the folders by type relevance
+    for folder, metadata in folders.items():
+        key = '/shared' + FOLDER_TYPE_ANNOTATION
+        if key in metadata:
+            if metadata[key].startswith(_type):
+                _folders[folder] = metadata
+
+        key = '/private' + FOLDER_TYPE_ANNOTATION
+        if key in metadata:
+            if metadata[key].startswith(_type):
+                _folders[folder] = metadata
+
+    for folder, metadata in _folders.items():
+        folder_delegated = False
+
+        # Exclude shared and other user's namespace
+        #
+        # First, test if this is another users folder
+        if ns_other is not None and folder.startswith(ns_other):
+            # If we have no delegated mailboxes, we can skip this entirely
+            if '_delegated_mailboxes' not in user_rec:
                 continue
+
+            for _m in user_rec['_delegated_mailboxes']:
+                if folder.startswith(ns_other + _m + '/'):
+                    folder_delegated = True
+
+            if not folder_delegated:
+                continue
+
         # TODO: list shared folders the user has write privileges ?
-        if ns_shared is not None and len([_ns for _ns in ns_shared if folder.startswith(_ns)]) > 0:
-            continue
+        if ns_shared is not None:
+            if len([_ns for _ns in ns_shared if folder.startswith(_ns)]) > 0:
+                continue
 
-        metadata = imap.get_metadata(folder)
-        log.debug(_("IMAP metadata for %r: %r") % (folder, metadata), level=9)
-        if metadata.has_key(folder) and ( \
-            metadata[folder].has_key('/shared' + FOLDER_TYPE_ANNOTATION) and metadata[folder]['/shared' + FOLDER_TYPE_ANNOTATION].startswith(type) \
-            or metadata[folder].has_key('/private' + FOLDER_TYPE_ANNOTATION) and metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].startswith(type)):
-            result.append(folder)
+        key = '/shared' + FOLDER_TYPE_ANNOTATION
+        if key in metadata:
+            if metadata[key].startswith(_type):
+                result.append(folder)
 
-            if metadata[folder].has_key('/private' + FOLDER_TYPE_ANNOTATION):
-                # store default folder in user record
-                if metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].endswith('.default'):
-                    user_rec['_default_folder'] = folder
+        key = '/private' + FOLDER_TYPE_ANNOTATION
+        if key in metadata:
+            if metadata[key].startswith(_type):
+                result.append(folder)
 
-                # store private and confidential folders in user record
-                if metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].endswith('.confidential') and not user_rec.has_key('_confidential_folder'):
+            # store default folder in user record
+            if metadata[key].endswith('.default'):
+                user_rec['_default_folder'] = folder
+                continue
+
+            # store private and confidential folders in user record
+            if metadata[key].endswith('.confidential'):
+                if '_confidential_folder' not in user_rec:
                     user_rec['_confidential_folder'] = folder
-                if metadata[folder]['/private' + FOLDER_TYPE_ANNOTATION].endswith('.private') and not user_rec.has_key('_private_folder'):
+
+                continue
+
+            if metadata[key].endswith('.private'):
+                if '_private_folder' not in user_rec:
                     user_rec['_private_folder'] = folder
+
+                continue
 
     # cache with user record
     user_rec['_imap_folders'] = result
