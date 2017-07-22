@@ -246,6 +246,9 @@ class LDAP(pykolab.base.Base):
                     level=8
                 )
 
+            # Remove referrals
+            _result_data = [_e for _e in _result_data if _e[0] is not None]
+
             if len(_result_data) == 1:
                 (entry_dn, entry_attrs) = _result_data[0]
 

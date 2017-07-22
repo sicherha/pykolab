@@ -432,6 +432,9 @@ def heartbeat(lastrun):
 
     resource_dns = auth.find_resource('*')
 
+    # Remove referrals
+    resource_dns = [dn for dn in resource_dns if dn is not None]
+
     # filter by resource_base_dn
     resource_base_dn = conf.get('ldap', 'resource_base_dn', None)
     if resource_base_dn is not None:
