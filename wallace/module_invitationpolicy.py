@@ -419,8 +419,8 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
 
     # compare sequence number to determine a (re-)scheduling request
     if existing is not None:
-        log.debug(_("Existing %s: %r") % (existing.type, existing), level=9)
         scheduling_required = itip_event['sequence'] > 0 and itip_event['sequence'] > existing.get_sequence()
+        log.debug(_("Scheduling required: %r, for existing %s: %s") % (scheduling_required, existing.type, existing.get_uid()), level=8)
         save_object = True
 
     # if scheduling: check availability (skip that for tasks)
