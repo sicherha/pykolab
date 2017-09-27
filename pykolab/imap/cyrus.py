@@ -587,8 +587,7 @@ class Cyrus(cyruslib.CYRUS):
 
             TODO: It finds virtdomain folders for non-virtdomain searches.
         """
-        deleted_folder_search = "%(deleted_prefix)s%(separator)s" + \
-            "%(mailfolder)s%(separator)s*" % {
+        deleted_folder_search = "%(deleted_prefix)s%(separator)s%(mailfolder)s%(separator)s*" % {
                 # TODO: The prefix used is configurable
                 'deleted_prefix': "DELETED",
                 'mailfolder': self.separator.join(mbox['path_parts']),
