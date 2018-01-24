@@ -33,6 +33,7 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.imap')
 conf = pykolab.getConf()
 
+
 class IMAP(object):
     def __init__(self):
         # Pool of named IMAP connections, by hostname
@@ -44,11 +45,14 @@ class IMAP(object):
     def cleanup_acls(self, aci_subject):
         lm_suffix = ""
 
-        log.info(_("Cleaning up ACL entries for %s across all folders") % (aci_subject))
+        log.info(
+            _("Cleaning up ACL entries for %s across all folders") % (
+                aci_subject
+            )
+        )
 
         if len(aci_subject.split('@')) > 1:
             lm_suffix = "@%s" % (aci_subject.split('@')[1])
-
 
         shared_folders = self.imap.lm(
                 "shared/*%s" % (lm_suffix)
@@ -76,16 +80,34 @@ class IMAP(object):
             if self.imap.has_folder(folder):
                 acls = self.imap.lam(folder)
 
-                # For each ACL entry, see if we think it is a current, valid entry
+                # For each ACL entry, see if we think it is a current, valid
+                # entry
                 for acl_entry in acls.keys():
-                    # If the key 'acl_entry' does not exist in the dictionary of valid
-                    # ACL entries, this ACL entry has got to go.
+                    # If the key 'acl_entry' does not exist in the dictionary
+                    # of valid ACL entries, this ACL entry has got to go.
                     if acl_entry == aci_subject:
-                        # Set the ACL to '' (effectively deleting the ACL entry)
-                        log.debug(_("Removing acl %r for subject %r from folder %r") % (acls[acl_entry],acl_entry,folder), level=8)
+                        # Set the ACL to '' (effectively deleting the ACL
+                        # entry)
+                        log.debug(
+                            _(
+                                "Removing acl %r for subject %r from folder %r"
+                            ) % (
+                                acls[acl_entry],
+                                acl_entry,
+                                folder
+                            ),
+                            level=8
+                        )
+
                         self.set_acl(folder, acl_entry, '')
             else:
-                log.debug(_("Folder %r disappeared (ACL cleanup for %r") % (folder, subject), level=8)
+                log.debug(
+                    _("Folder %r disappeared (ACL cleanup for %r") % (
+                        folder,
+                        aci_subject
+                    ),
+                    level=8
+                )
 
     def connect(self, uri=None, server=None, domain=None, login=True):
         """
