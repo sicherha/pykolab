@@ -232,6 +232,24 @@ class LDAP(pykolab.base.Base):
 
                 return False
 
+            except ldap.NO_SUCH_OBJECT:
+                log.error(
+                    _("Invalid DN, username and/or password for '%s'.") % (
+                        bind_dn
+                    )
+                )
+
+                return False
+
+            except ldap.INVALID_CREDENTIALS:
+                log.error(
+                    _("Invalid DN, username and/or password for '%s'.") % (
+                        bind_dn
+                    )
+                )
+
+                return False
+
             except Exception, errmsg:
                 log.error(_("Exception occurred: %r") % (errmsg))
                 log.error(_("%s") % (traceback.format_exc()))
