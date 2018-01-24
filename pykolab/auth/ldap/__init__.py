@@ -2080,7 +2080,7 @@ class LDAP(pykolab.base.Base):
                     )
 
                 if not self.imap.has_folder(imap_mailbox):
-                    self.imap_user_mailbox_create(
+                    self.imap.user_mailbox_create(
                             entry[result_attribute]
                         )
 
