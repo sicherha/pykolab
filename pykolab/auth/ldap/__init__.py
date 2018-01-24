@@ -1435,8 +1435,13 @@ class LDAP(pykolab.base.Base):
                 bind_pw = self.config_get('service_bind_pw')
 
         if bind_dn is not None:
-            log.debug(_("Binding with bind_dn: %s and password: %s")
-                % (bind_dn, '*' * len(bind_pw)))
+            log.debug(
+                _("Binding with bind_dn: %s and password: %s") % (
+                    bind_dn,
+                    '*' * len(bind_pw)
+                ),
+                level=8
+            )
 
             # TODO: Binding errors control
             try:
@@ -1452,8 +1457,21 @@ class LDAP(pykolab.base.Base):
 
                 return False
 
+            except ldap.NO_SUCH_OBJECT:
+                log.error(
+                    _("Invalid DN, username and/or password for '%s'.") % (
+                        bind_dn
+                    )
+                )
+
+                return False
+
             except ldap.INVALID_CREDENTIALS:
-                log.error(_("Invalid DN, username and/or password."))
+                log.error(
+                    _("Invalid DN, username and/or password for '%s'.") % (
+                        bind_dn
+                    )
+                )
 
                 return False
 
@@ -1477,7 +1495,12 @@ class LDAP(pykolab.base.Base):
                 log.error(_("%s") % (traceback.format_exc()))
                 return False
             except ldap.INVALID_CREDENTIALS:
-                log.error(_("Invalid DN, username and/or password."))
+                log.error(
+                    _("Invalid DN, username and/or password for '%s'.") % (
+                        bind_dn
+                    )
+                )
+
                 return False
         else:
             log.debug(_("bind_priv() called but already bound"), level=8)
