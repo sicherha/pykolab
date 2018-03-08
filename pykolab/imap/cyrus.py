@@ -173,8 +173,8 @@ class Cyrus(cyruslib.CYRUS):
 
         _mailfolder = self.parse_mailfolder(mailfolder)
 
-        prefix = _mailfolder['path_parts'].pop(0)
-        mbox = _mailfolder['path_parts'].pop(0)
+        prefix = _mailfolder['path_parts'][0]
+        mbox = _mailfolder['path_parts'][1]
         if _mailfolder['domain'] is not None:
             mailfolder = "%s%s%s@%s" % (
                     prefix,
@@ -184,8 +184,14 @@ class Cyrus(cyruslib.CYRUS):
                 )
 
         # TODO: Workaround for undelete
-        if len(self.lm(mailfolder)) < 1:
-            return self.server
+        if len(self.lm(mailfolder)) < 1 and _mailfolder['hex_timestamp']:
+            mailfolder = self.folder_utf7("DELETED/%s%s%s@%s" % (
+                    self.separator.join(_mailfolder['path_parts']),
+                    self.separator,
+                    _mailfolder['hex_timestamp'],
+                    _mailfolder['domain'])
+               )
+
 
         # TODO: Murder capabilities may have been suppressed using Cyrus IMAP
         # configuration.
@@ -225,7 +231,7 @@ class Cyrus(cyruslib.CYRUS):
         while 1:
             num_try += 1
             annotations = self._getannotation(
-                    mailfolder,
+                    '"%s"' % (mailfolder),
                     ann_path
                 )
 
