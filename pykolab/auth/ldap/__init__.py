@@ -2074,12 +2074,7 @@ class LDAP(pykolab.base.Base):
 
                 cache.get_entry(self.domain, entry)
             else:
-                imap_mailbox = "user%s%s" % (
-                        self.imap.get_separator(),
-                        entry[result_attribute]
-                    )
-
-                if not self.imap.has_folder(imap_mailbox):
+                if not self.imap.user_mailbox_exists(entry[result_attribute]):
                     self.imap.user_mailbox_create(
                             entry[result_attribute]
                         )
