@@ -27,6 +27,31 @@ import time
 
 from pykolab.translate import _
 
+class StderrToLogger(object):
+    """
+    Fake file-like stream object that redirects writes to a logger instance.
+    """
+    def __init__(self, logger, log_level=logging.DEBUG):
+        self.logger = logger
+        self.log_level = log_level
+        self.linebuf = ''
+ 
+    def write(self, buf):
+        # ugly patch to make smtplib debug logging records appear on one line in log file
+        # smtplib uses "print>>stderr, var, var" statements for debug logging. These
+        # statements are splited into separate lines on separating whitespace.
+        for line in buf.rstrip().splitlines():
+            if buf != '\n':
+                if line.startswith('send:') or line.startswith('reply:'):
+                    self.linebuf = line
+                    return
+                else:
+                    self.logger.log(self.log_level, '%s %s', self.linebuf, line.rstrip()[:150])
+                    self.linebuf = ''
+ 
+    def flush(self): 
+        pass
+
 class Logger(logging.Logger):
     """
         The PyKolab version of a logger.
@@ -98,7 +123,7 @@ class Logger(logging.Logger):
 
         logging.Logger.__init__(self, name)
 
-        plaintextformatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+        plaintextformatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s [%(process)d] %(message)s")
 
         if not self.fork:
             self.console_stdout = logging.StreamHandler(sys.stdout)
@@ -213,7 +238,6 @@ class Logger(logging.Logger):
 
         if level <= self.debuglevel:
             # TODO: Not the way it's supposed to work!
-            self.log(logging.DEBUG, '[%d]: %s' % (os.getpid(),msg))
-
+            self.log(logging.DEBUG, msg)
 
 logging.setLoggerClass(Logger)

@@ -86,7 +86,7 @@ class Auth(pykolab.base.Base):
             back to the primary domain specified by the configuration.
         """
 
-        log.debug(_("Called for domain %r") % (domain), level=9)
+        log.debug(_("Called for domain %r") % (domain), level=8)
 
         if not self._auth == None:
             return
@@ -104,7 +104,7 @@ class Auth(pykolab.base.Base):
 
         log.debug(
                 _("Using section %s and domain %s") % (section,domain),
-                level=9
+                level=8
             )
 
         if not self.domains == None and self.domains.has_key(domain):
@@ -113,7 +113,7 @@ class Auth(pykolab.base.Base):
 
         log.debug(
                 _("Using section %s and domain %s") % (section,domain),
-                level=9
+                level=8
             )
 
         log.debug(
@@ -129,7 +129,7 @@ class Auth(pykolab.base.Base):
         if not conf.has_option(section, 'auth_mechanism'):
             log.debug(
                     _("Section %s has no option 'auth_mechanism'") % (section),
-                    level=9
+                    level=8
                 )
 
             section = 'kolab'
@@ -139,12 +139,12 @@ class Auth(pykolab.base.Base):
                             section,
                             conf.get(section,'auth_mechanism')
                         ),
-                    level=9
+                    level=8
                 )
 
         # Get the actual authentication and authorization backend.
         if conf.get(section, 'auth_mechanism') == 'ldap':
-            log.debug(_("Starting LDAP..."), level=9)
+            log.debug(_("Starting LDAP..."), level=8)
             from pykolab.auth import ldap
             self._auth = ldap.LDAP(self.domain)
 
@@ -153,7 +153,7 @@ class Auth(pykolab.base.Base):
             self._auth = sql.SQL(self.domain)
 
         else:
-            log.debug(_("Starting LDAP..."), level=9)
+            log.debug(_("Starting LDAP..."), level=8)
             from pykolab.auth import ldap
             self._auth = ldap.LDAP(self.domain)
 

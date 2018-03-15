@@ -184,7 +184,7 @@ def description():
 def cleanup():
     global auth, imap, write_locks
 
-    log.debug("cleanup(): %r, %r" % (auth, imap), level=9)
+    log.debug("cleanup(): %r, %r" % (auth, imap), level=8)
 
     auth.disconnect()
     del auth
@@ -210,7 +210,7 @@ def execute(*args, **kw):
         if not os.path.isdir(os.path.join(mybasepath, stage)):
             os.makedirs(os.path.join(mybasepath, stage))
 
-    log.debug(_("Invitation policy called for %r, %r") % (args, kw), level=9)
+    log.debug(_("Invitation policy called for %r, %r") % (args, kw), level=8)
 
     auth = Auth()
     imap = IMAP()
@@ -280,7 +280,7 @@ def execute(*args, **kw):
 
     else:
         any_itips = True
-        log.debug(_("iTip objects attached to this message contain the following information: %r") % (itip_events), level=9)
+        log.debug(_("iTip objects attached to this message contain the following information: %r") % (itip_events), level=8)
 
     # See if any iTip actually allocates a user.
     if any_itips and len([x['uid'] for x in itip_events if x.has_key('attendees') or x.has_key('organizer')]) > 0:
@@ -399,7 +399,7 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
 
     try:
         receiving_attendee = itip_event['xml'].get_attendee_by_email(recipient_email)
-        log.debug(_("Receiving Attendee: %r") % (receiving_attendee), level=9)
+        log.debug(_("Receiving Attendee: %r") % (receiving_attendee), level=8)
     except Exception, errmsg:
         log.error("Could not find envelope attendee: %r" % (errmsg))
         return MESSAGE_FORWARD
@@ -528,7 +528,7 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
     if policy & ACT_UPDATE:
         try:
             sender_attendee = itip_event['xml'].get_attendee_by_email(sender_email)
-            log.debug(_("Sender Attendee: %r") % (sender_attendee), level=9)
+            log.debug(_("Sender Attendee: %r") % (sender_attendee), level=8)
         except Exception, errmsg:
             log.error("Could not find envelope sender attendee: %r" % (errmsg))
             return MESSAGE_FORWARD
@@ -573,17 +573,17 @@ def process_itip_reply(itip_event, policy, recipient_email, sender_email, receiv
 
                     if not existing_delegatee:
                         existing.add_attendee(sender_delegatee)
-                        log.debug(_("Add delegatee: %r") % (sender_delegatee.to_dict()), level=9)
+                        log.debug(_("Add delegatee: %r") % (sender_delegatee.to_dict()), level=8)
                     else:
                         existing_delegatee.copy_from(sender_delegatee)
-                        log.debug(_("Update existing delegatee: %r") % (existing_delegatee.to_dict()), level=9)
+                        log.debug(_("Update existing delegatee: %r") % (existing_delegatee.to_dict()), level=8)
 
                     updated_attendees.append(sender_delegatee)
 
                     # copy all parameters from replying attendee (e.g. delegated-to, role, etc.)
                     existing_attendee.copy_from(sender_attendee)
                     existing.update_attendees([existing_attendee])
-                    log.debug(_("Update delegator: %r") % (existing_attendee.to_dict()), level=9)
+                    log.debug(_("Update delegator: %r") % (existing_attendee.to_dict()), level=8)
 
                 except Exception, errmsg:
                     log.error("Could not find delegated-to attendee: %r" % (errmsg))
@@ -699,7 +699,7 @@ def user_dn_from_email_address(email_address):
     if isinstance(user_dn, basestring):
         log.debug(_("User DN: %r") % (user_dn), level=8)
     else:
-        log.debug(_("No user record(s) found for %r") % (email_address), level=9)
+        log.debug(_("No user record(s) found for %r") % (email_address), level=8)
 
     # remember this lookup
     user_dn_from_email_address.cache[email_address] = user_dn
@@ -978,7 +978,7 @@ def check_availability(itip_event, receiving_user):
             break
 
     end = time.time()
-    log.debug(_("start: %r, end: %r, total: %r, messages: %d") % (start, end, (end-start), num_messages), level=9)
+    log.debug(_("start: %r, end: %r, total: %r, messages: %d") % (start, end, (end-start), num_messages), level=8)
 
     # remember the result of this check for further iterations
     itip_event['_conflicts'] = conflict
@@ -1006,7 +1006,7 @@ def set_write_lock(key, wait=True):
         if not wait:
             return False
 
-        log.debug(_("%r is locked, waiting...") % (key), level=9)
+        log.debug(_("%r is locked, waiting...") % (key), level=8)
         time.sleep(0.5)
         locktime = os.path.getmtime(filename) if os.path.isfile(filename) else 0
 
@@ -1284,28 +1284,8 @@ def send_update_notification(object, receiving_user, old=None, reply=True, sende
     msg['From'] = Header(utils.str2unicode('%s' % orgname) if orgname else '')
     msg['From'].append("<%s>" % orgemail)
 
-    smtp = smtplib.SMTP("localhost", 10027)
-
-    if conf.debuglevel > 8:
-        smtp.set_debuglevel(True)
-
-    success = False
-    retries = 5
-
-    while not success and retries > 0:
-        try:
-            success = smtp.sendmail(orgemail, receiving_user['mail'], msg.as_string())
-            log.debug(_("Sent update notification to %r: %r") % (receiving_user['mail'], success), level=8)
-            smtp.quit()
-            break
-        except Exception, errmsg:
-            log.error(_("SMTP sendmail error: %r") % (errmsg))
-
-        time.sleep(10)
-        retries -= 1
-
-    return success
-
+    modules._sendmail(orgemail, receiving_user['mail'], msg.as_string())
+    log.debug(_("Sent update notification to %r: %r") % (receiving_user['mail'], success), level=8)
 
 def send_cancel_notification(object, receiving_user, deleted=False, sender=None, comment=None):
     """
@@ -1366,18 +1346,8 @@ def send_cancel_notification(object, receiving_user, deleted=False, sender=None,
     msg['From'] = Header(utils.str2unicode('%s' % orgname) if orgname else '')
     msg['From'].append("<%s>" % orgemail)
 
-    smtp = smtplib.SMTP("localhost", 10027)
-
-    if conf.debuglevel > 8:
-        smtp.set_debuglevel(True)
-
-    try:
-        smtp.sendmail(orgemail, receiving_user['mail'], msg.as_string())
-    except Exception, errmsg:
-        log.error(_("SMTP sendmail error: %r") % (errmsg))
-
-    smtp.quit()
-
+    modules._sendmail(orgemail, receiving_user['mail'], msg.as_string())
+    log.debug(_("Sent cancel notification to %r: %r") % (receiving_user['mail'], success), level=8)
 
 def is_auto_reply(user, sender_email, type):
     accept_available = False

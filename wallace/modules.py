@@ -20,7 +20,6 @@
 import os
 import sys
 import time
-import traceback
 
 from email import message_from_string
 from email.message import Message
@@ -117,8 +116,7 @@ def execute(name, *args, **kw):
     try:
         return modules[name]['function'](*args, **kw)
     except Exception, errmsg:
-        log.error(_("Unknown error occurred; %r") % (errmsg))
-        log.error("%s" % (traceback.format_exc()))
+        log.exception(_("Module %r - Unknown error occurred; %r") % (name, errmsg))
 
 def heartbeat(name, *args, **kw):
     if not modules.has_key(name):
@@ -130,27 +128,40 @@ def heartbeat(name, *args, **kw):
 def _sendmail(sender, recipients, msg):
     # NOTE: Use "127.0.0.1" here for IPv6 (see also the service
     # definition in master.cf).
-    smtp = smtplib.SMTP("127.0.0.1", 10027)
+
+    sl = pykolab.logger.StderrToLogger(log)
+    smtplib.stderr = sl
+
+    smtp = smtplib.SMTP(timeout=5)
 
     if conf.debuglevel > 8:
-        smtp.set_debuglevel(True)
+        smtp.set_debuglevel(1)
 
-    # Not an infinite loop
-    while True:
+    success = False
+    retries = 5
+
+    while not success and retries > 0:
         try:
-            smtp.sendmail(
-                    sender,
-                    recipients,
-                    msg
-                )
+            log.debug(_("Trying to send email via smtplib from %r, to %r") % (sender, recipients), level=8)
+            smtp.connect("127.0.0.1", 10027)
+            _response = smtp.sendmail(sender, recipients, msg)
+
+            if len(_response) == 0:
+                log.debug(_("SMTP sendmail OK"), level=8)
+            else:
+                log.debug(_("SMTP sendmail returned: %r") % (_response), level=8)
 
             smtp.quit()
 
-            return True
+            success = True
+            break
 
         except smtplib.SMTPServerDisconnected, errmsg:
-            smtp.quit()
-            smtp.connect()
+            log.error("SMTP Server Disconnected Error, %r" % (errmsg))
+
+        except smtplib.SMTPConnectError, errmsg:
+            # DEFER
+            log.error("SMTP Connect Error, %r" % (errmsg))
 
         except smtplib.SMTPDataError, errmsg:
             # DEFER
@@ -169,10 +180,13 @@ def _sendmail(sender, recipients, msg):
             log.error("SMTP Sender Refused, %r" % (errmsg))
 
         except Exception, errmsg:
-            log.error(_("Unknown error occurred; %r") % (errmsg))
-            log.error("%r" % (traceback.format_exc()))
+            log.exception(_("smtplib - Unknown error occurred: %r") % (errmsg))
 
-        return False
+        smtp.quit()
+        time.sleep(10)
+        retries -= 1
+
+    return success
 
 def cb_action_HOLD(module, filepath):
     log.info(_("Holding message in queue for manual review (%s by %s)") % (filepath, module))

@@ -356,7 +356,7 @@ def execute(*args, **kw):
 
     mgmt_script = mgmt_script.__str__()
 
-    log.debug(_("MANAGEMENT script for user %s contents: %r") % (address,mgmt_script), level=9)
+    log.debug(_("MANAGEMENT script for user %s contents: %r") % (address,mgmt_script), level=8)
 
     result = sieveclient.putscript("MANAGEMENT", mgmt_script)
 

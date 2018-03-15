@@ -458,6 +458,7 @@ class LDAP(pykolab.base.Base):
         conn = ldap.ldapobject.ReconnectLDAPObject(
                 uri,
                 trace_level=trace_level,
+                trace_file=pykolab.logger.StderrToLogger(log),
                 retry_max=retry_max,
                 retry_delay=retry_delay
             )
@@ -543,9 +544,9 @@ class LDAP(pykolab.base.Base):
 
         self._bind()
 
-        log.debug(_("Entry ID: %r") % (entry_id), level=9)
+        log.debug(_("Entry ID: %r") % (entry_id), level=8)
         entry_dn = self.entry_dn(entry_id)
-        log.debug(_("Entry DN: %r") % (entry_dn), level=9)
+        log.debug(_("Entry DN: %r") % (entry_dn), level=8)
 
         log.debug(
                 _("ldap search: (%r, %r, filterstr='(objectclass=*)', attrlist=[ 'dn' ] + %r") % (
@@ -553,7 +554,7 @@ class LDAP(pykolab.base.Base):
                         ldap.SCOPE_BASE,
                         attributes
                     ),
-                level=9
+                level=8
             )
 
         _search = self.ldap.search_ext(
@@ -854,7 +855,7 @@ class LDAP(pykolab.base.Base):
 
     def get_latest_sync_timestamp(self):
         timestamp = cache.last_modify_timestamp(self.domain)
-        log.debug(_("Using timestamp %r") % (timestamp), level=9)
+        log.debug(_("Using timestamp %r") % (timestamp), level=8)
         return timestamp
 
     def list_secondary_domains(self):
@@ -1145,7 +1146,7 @@ class LDAP(pykolab.base.Base):
                         _("Secondary mail addresses that we want is not None: %r") % (
                                 secondary_mail_addresses
                             ),
-                        level=9
+                        level=8
                     )
 
                 secondary_mail_addresses = list(set(secondary_mail_addresses))
@@ -1156,7 +1157,7 @@ class LDAP(pykolab.base.Base):
                             _("Avoiding the duplication of the primary mail " + \
                                     "address %r in the list of secondary mail " + \
                                     "addresses") % (primary_mail_address),
-                            level=9
+                            level=8
                         )
 
                     secondary_mail_addresses.pop(
@@ -1167,14 +1168,14 @@ class LDAP(pykolab.base.Base):
                         _("Entry is getting secondary mail addresses: %r") % (
                                 secondary_mail_addresses
                             ),
-                        level=9
+                        level=8
                     )
 
                 if not entry.has_key(secondary_mail_attribute):
                     log.debug(
                             _("Entry did not have any secondary mail " + \
                                     "addresses in %r") % (secondary_mail_attribute),
-                            level=9
+                            level=8
                         )
 
                     if not len(secondary_mail_addresses) == 0:
@@ -1241,7 +1242,7 @@ class LDAP(pykolab.base.Base):
             )
 
     def set_entry_attribute(self, entry_id, attribute, value):
-        log.debug(_("Setting entry attribute %r to %r for %r") % (attribute, value, entry_id), level=9)
+        log.debug(_("Setting entry attribute %r to %r for %r") % (attribute, value, entry_id), level=8)
         self.set_entry_attributes(entry_id, { attribute: value })
 
     def set_entry_attributes(self, entry_id, attributes):
@@ -1375,7 +1376,7 @@ class LDAP(pykolab.base.Base):
                         current_ldap_quota,
                         default_quota
                     ),
-                level=9
+                level=8
             )
 
         new_quota = conf.plugins.exec_hook("set_user_folder_quota", kw={
@@ -2637,7 +2638,7 @@ class LDAP(pykolab.base.Base):
                         args,
                         kw
                     ),
-                level=9
+                level=8
             )
 
         # Typical for Persistent Change Control EntryChangeNotification
@@ -2718,7 +2719,7 @@ class LDAP(pykolab.base.Base):
 #
 #                rcpt_addrs = self.recipient_policy(entry)
 #
-#                log.debug(_("Recipient Addresses: %r") % (rcpt_addrs), level=9)
+#                log.debug(_("Recipient Addresses: %r") % (rcpt_addrs), level=8)
 #
 #                for key in rcpt_addrs.keys():
 #                    entry[key] = rcpt_addrs[key]
@@ -2950,6 +2951,7 @@ class LDAP(pykolab.base.Base):
                 '/var/lib/kolab/syncrepl_%s.db' % (self.domain),
                 ldap_url.initializeUrl(),
                 trace_level=2,
+                trace_file=pykolab.logger.StderrToLogger(log),
                 callback=self._synchronize_callback
             )
 

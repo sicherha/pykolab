@@ -94,7 +94,7 @@ def description():
 def cleanup():
     global auth, imap
 
-    log.debug("cleanup(): %r, %r" % (auth, imap), level=9)
+    log.debug("cleanup(): %r, %r" % (auth, imap), level=8)
 
     auth.disconnect()
     del auth
@@ -196,7 +196,7 @@ def execute(*args, **kw):
         log.debug(
                 _("iTip events attached to this message contain the " + \
                     "following information: %r") % (itip_events),
-                level=9
+                level=8
             )
 
     if any_itips:
@@ -275,7 +275,7 @@ def execute(*args, **kw):
                     try:
                         sender_attendee = itip_event['xml'].get_attendee_by_email(sender_email)
                         owner_reply = sender_attendee.get_participant_status()
-                        log.debug(_("Sender Attendee: %r => %r") % (sender_attendee, owner_reply), level=9)
+                        log.debug(_("Sender Attendee: %r => %r") % (sender_attendee, owner_reply), level=8)
                     except Exception, e:
                         log.error(_("Could not find envelope sender attendee: %r") % (e))
                         continue
@@ -317,7 +317,7 @@ def execute(*args, **kw):
 
         try:
             receiving_attendee = itip_event['xml'].get_attendee_by_email(receiving_resource['mail'])
-            log.debug(_("Receiving Resource: %r; %r") % (receiving_resource, receiving_attendee), level=9)
+            log.debug(_("Receiving Resource: %r; %r") % (receiving_resource, receiving_attendee), level=8)
         except Exception, e:
             log.error(_("Could not find envelope attendee: %r") % (e))
             continue
@@ -395,7 +395,7 @@ def execute(*args, **kw):
     # Look for ACT_REJECT policy
     if resource is not None:
         invitationpolicy = get_resource_invitationpolicy(resource)
-        log.debug(_("Apply invitation policies %r") % (invitationpolicy), level=9)
+        log.debug(_("Apply invitation policies %r") % (invitationpolicy), level=8)
 
         if invitationpolicy is not None:
             for policy in invitationpolicy:
@@ -488,7 +488,7 @@ def expunge_resource_calendar(mailbox):
     for num in data[0].split():
         log.debug(
             _("Fetching message ID %r from folder %r") % (num, mailbox),
-            level=9
+            level=8
         )
 
         typ, data = imap.imap.m.fetch(num, '(RFC822)')
@@ -542,20 +542,20 @@ def check_availability(itip_events, resource_dns, resources, receiving_attendee=
 
     end = time.time()
 
-    log.debug(_("start: %r, end: %r, total: %r, messages: %d") % (start, end, (end-start), num_messages), level=9)
+    log.debug(_("start: %r, end: %r, total: %r, messages: %d") % (start, end, (end-start), num_messages), level=8)
 
 
     # For each resource (collections are first!)
     # check conflicts and either accept or decline the reservation request
     for resource in resource_dns:
-        log.debug(_("Polling for resource %r") % (resource), level=9)
+        log.debug(_("Polling for resource %r") % (resource), level=8)
 
         if not resources.has_key(resource):
-            log.debug(_("Resource %r has been popped from the list") % (resource), level=9)
+            log.debug(_("Resource %r has been popped from the list") % (resource), level=8)
             continue
 
         if not resources[resource].has_key('conflicting_events'):
-            log.debug(_("Resource is a collection"), level=9)
+            log.debug(_("Resource is a collection"), level=8)
 
             # check if there are non-conflicting collection members
             conflicting_members = [x for x in resources[resource]['uniquemember'] if resources[x]['conflict']]
@@ -568,7 +568,7 @@ def check_availability(itip_events, resource_dns, resources, receiving_attendee=
 
                 log.debug(_("Removed conflicting resources from %r: (%r) => %r") % (
                     resource, conflicting_members, resources[resource]['uniquemember']
-                ), level=9)
+                ), level=8)
 
             else:
                 # TODO: shuffle existing bookings of collection members in order
@@ -578,7 +578,7 @@ def check_availability(itip_events, resource_dns, resources, receiving_attendee=
             continue
 
         if len(resources[resource]['conflicting_events']) > 0:
-            log.debug(_("Conflicting events: %r for resource %r") % (resources[resource]['conflicting_events'], resource), level=9)
+            log.debug(_("Conflicting events: %r for resource %r") % (resources[resource]['conflicting_events'], resource), level=8)
 
             done = False
 
@@ -664,7 +664,7 @@ def read_resource_calendar(resource_rec, itip_events):
 
     log.debug(
         _("Checking events in resource folder %r") % (mailbox),
-        level=9
+        level=8
     )
 
     # set read ACLs for admin user
@@ -683,7 +683,7 @@ def read_resource_calendar(resource_rec, itip_events):
 
         log.debug(
             _("Fetching message UID %r from folder %r") % (num, mailbox),
-            level=9
+            level=8
         )
 
         typ, data = imap.imap.m.fetch(num, '(UID RFC822)')
@@ -737,7 +737,7 @@ def find_existing_event(uid, recurrence_id, resource_rec):
     master = None
     mailbox = resource_rec['kolabtargetfolder']
 
-    log.debug(_("Searching %r for event %r") % (mailbox, uid), level=9)
+    log.debug(_("Searching %r for event %r") % (mailbox, uid), level=8)
 
     try:
         imap.imap.m.select(imap.folder_quote(mailbox))
@@ -802,7 +802,7 @@ def accept_reservation_request(itip_event, resource, delegator=None, confirmed=F
     if not confirmed and owner:
         if invitationpolicy is None:
             invitationpolicy = get_resource_invitationpolicy(resource)
-        log.debug(_("Apply invitation policies %r") % (invitationpolicy), level=9)
+        log.debug(_("Apply invitation policies %r") % (invitationpolicy), level=8)
 
         if invitationpolicy is not None:
             for policy in invitationpolicy:
@@ -934,7 +934,7 @@ def delete_resource_event(uid, resource, msguid=None):
 
             log.debug(_("Delete resource calendar object %r in %r: %r") % (
                 uid, resource['kolabtargetfolder'], data
-            ), level=9)
+            ), level=8)
 
             for num in data[0].split():
                 imap.imap.m.store(num, '+FLAGS', '\\Deleted')
@@ -993,7 +993,7 @@ def resource_record_from_email_address(email_address):
         if len(resource_records) > 0:
             log.debug(_("Resource record(s): %r") % (resource_records), level=8)
         else:
-            log.debug(_("No resource (collection) records found for %r") % (email_address), level=9)
+            log.debug(_("No resource (collection) records found for %r") % (email_address), level=8)
 
     elif isinstance(resource_records, basestring):
         resource_records = [ resource_records ]
@@ -1015,7 +1015,7 @@ def resource_records_from_itip_events(itip_events, recipient_email=None):
 
     resource_records = []
 
-    log.debug(_("Raw itip_events: %r") % (itip_events), level=9)
+    log.debug(_("Raw itip_events: %r") % (itip_events), level=8)
     attendees_raw = []
     for list_attendees_raw in [x for x in [y['attendees'] for y in itip_events if y.has_key('attendees') and isinstance(y['attendees'], list)]]:
         attendees_raw.extend(list_attendees_raw)
@@ -1023,7 +1023,7 @@ def resource_records_from_itip_events(itip_events, recipient_email=None):
     for list_attendees_raw in [y['attendees'] for y in itip_events if y.has_key('attendees') and isinstance(y['attendees'], basestring)]:
         attendees_raw.append(list_attendees_raw)
 
-    log.debug(_("Raw set of attendees: %r") % (attendees_raw), level=9)
+    log.debug(_("Raw set of attendees: %r") % (attendees_raw), level=8)
 
     # TODO: Resources are actually not implemented in the format. We reset this
     # list later.
@@ -1031,7 +1031,7 @@ def resource_records_from_itip_events(itip_events, recipient_email=None):
     for list_resources_raw in [x for x in [y['resources'] for y in itip_events if y.has_key('resources')]]:
         resources_raw.extend(list_resources_raw)
 
-    log.debug(_("Raw set of resources: %r") % (resources_raw), level=9)
+    log.debug(_("Raw set of resources: %r") % (resources_raw), level=8)
 
     # consider organizer (in REPLY messages), too
     organizers_raw = [re.sub('\+[A-Za-z0-9=/-]+@', '@', str(y['organizer'])) for y in itip_events if y.has_key('organizer')]
@@ -1065,7 +1065,7 @@ def resource_records_from_itip_events(itip_events, recipient_email=None):
                 resource_records.extend(_resource_records)
                 log.debug(_("Resource record(s): %r") % (_resource_records), level=8)
             else:
-                log.debug(_("No resource (collection) records found for %r") % (attendee), level=9)
+                log.debug(_("No resource (collection) records found for %r") % (attendee), level=8)
 
         elif isinstance(_resource_records, basestring):
             resource_records.append(_resource_records)
@@ -1236,7 +1236,7 @@ def get_resource_invitationpolicy(resource):
         if not isinstance(collections, list):
             collections = [ (collections['dn'],collections) ]
 
-        log.debug(_("Check collections %r for kolabinvitationpolicy attributes") % (collections), level=9)
+        log.debug(_("Check collections %r for kolabinvitationpolicy attributes") % (collections), level=8)
 
         for dn,collection in collections:
             # ldap.search_entry_by_attribute() doesn't return the attributes lower-cased

@@ -90,6 +90,11 @@ class Cyrus(cyruslib.CYRUS):
         if conf.debuglevel > 8:
             self.VERBOSE = True
             self.m.debug = 5
+            sl = pykolab.logger.StderrToLogger(log)
+            # imaplib debug outputs everything to stderr. Redirect to Logger
+            sys.stderr = sl
+            # cyruslib debug outputs everything to LOGFD. Redirect to Logger
+            self.LOGFD = sl
 
         # Initialize our variables
         self.separator = self.SEP
@@ -139,7 +144,13 @@ class Cyrus(cyruslib.CYRUS):
             Login to the Cyrus IMAP server through cyruslib.CYRUS, but set our
             hierarchy separator.
         """
-        cyruslib.CYRUS.login(self, *args, **kw)
+        try:
+            cyruslib.CYRUS.login(self, *args, **kw)
+        except cyruslib.CYRUSError, errmsg:
+            log.error("Login to Cyrus IMAP server failed: %r", errmsg)
+        except Exception, errmsg:
+            log.exception(errmsg)
+
         self.separator = self.SEP
         try:
             self._id()

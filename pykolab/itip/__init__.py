@@ -50,7 +50,7 @@ def objects_from_message(message, objnames, methods=None):
             # Get the itip_payload
             itip_payload = part.get_payload(decode=True)
 
-            log.debug(_("Raw iTip payload (%r): %r") % (part.get_param('charset'), itip_payload), level=9)
+            log.debug(_("Raw iTip payload (%r): %r") % (part.get_param('charset'), itip_payload), level=8)
 
             # Convert unsupported timezones, etc.
             itip_payload = _convert_itip_payload(itip_payload)
@@ -71,7 +71,7 @@ def objects_from_message(message, objnames, methods=None):
                     itip = {}
 
                     if c['uid'] in seen_uids:
-                        log.debug(_("Duplicate iTip object: %s") % (c['uid']), level=9)
+                        log.debug(_("Duplicate iTip object: %s") % (c['uid']), level=8)
                         continue
 
                     # From the event, take the following properties:

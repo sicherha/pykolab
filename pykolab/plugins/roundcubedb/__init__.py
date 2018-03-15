@@ -45,7 +45,7 @@ class KolabRoundcubedb(object):
             domain - domain name
         """
 
-        log.debug(_("user_delete: %r") % (kw), level=9)
+        log.debug(_("user_delete: %r") % (kw), level=8)
 
         if os.path.isdir('/usr/share/roundcubemail'):
             rcpath = '/usr/share/roundcubemail/'
@@ -64,6 +64,6 @@ class KolabRoundcubedb(object):
             if proc.returncode != 0:
                 log.error(rcpath + "bin/deluser.sh exited with error %d: %r" % (proc.returncode, procerr))
             else:
-                log.debug(rcpath + "bin/deluser.sh success: %r; %r" % (procout, procerr), level=9)
+                log.debug(rcpath + "bin/deluser.sh success: %r; %r" % (procout, procerr), level=8)
 
         return None
