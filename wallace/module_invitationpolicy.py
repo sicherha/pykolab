@@ -1161,7 +1161,6 @@ def send_update_notification(object, receiving_user, old=None, reply=True, sende
     """
     global auth
 
-    import smtplib
     from email.MIMEText import MIMEText
     from email.Utils import formatdate
     from email.header import Header
@@ -1284,14 +1283,13 @@ def send_update_notification(object, receiving_user, old=None, reply=True, sende
     msg['From'] = Header(utils.str2unicode('%s' % orgname) if orgname else '')
     msg['From'].append("<%s>" % orgemail)
 
-    modules._sendmail(orgemail, receiving_user['mail'], msg.as_string())
+    success = modules._sendmail(orgemail, receiving_user['mail'], msg.as_string())
     log.debug(_("Sent update notification to %r: %r") % (receiving_user['mail'], success), level=8)
 
 def send_cancel_notification(object, receiving_user, deleted=False, sender=None, comment=None):
     """
         Send a notification about event/task cancellation
     """
-    import smtplib
     from email.MIMEText import MIMEText
     from email.Utils import formatdate
     from email.header import Header
@@ -1346,7 +1344,7 @@ def send_cancel_notification(object, receiving_user, deleted=False, sender=None,
     msg['From'] = Header(utils.str2unicode('%s' % orgname) if orgname else '')
     msg['From'].append("<%s>" % orgemail)
 
-    modules._sendmail(orgemail, receiving_user['mail'], msg.as_string())
+    success = modules._sendmail(orgemail, receiving_user['mail'], msg.as_string())
     log.debug(_("Sent cancel notification to %r: %r") % (receiving_user['mail'], success), level=8)
 
 def is_auto_reply(user, sender_email, type):

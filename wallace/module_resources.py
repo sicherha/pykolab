@@ -1312,7 +1312,6 @@ def send_owner_notification(resource, owner, itip_event, success=True):
     """
         Send a reservation notification to the resource owner
     """
-    import smtplib
     from pykolab import utils
     from email.MIMEText import MIMEText
     from email.Utils import formatdate
@@ -1356,17 +1355,7 @@ def send_owner_notification(resource, owner, itip_event, success=True):
             resource['cn'], participant_status_label(status) if success else _('failed')
         ))
 
-        smtp = smtplib.SMTP("localhost", 10027)
-
-        if conf.debuglevel > 8:
-            smtp.set_debuglevel(True)
-
-        try:
-            smtp.sendmail(resource['mail'], owner['mail'], msg.as_string())
-        except Exception, e:
-            log.error(_("SMTP sendmail error: %r") % (e))
-
-        smtp.quit()
+        modules._sendmail(resource['mail'], owner['mail'], msg.as_string())
 
 def owner_notification_text(resource, owner, event, success):
     organizer = event.get_organizer()
