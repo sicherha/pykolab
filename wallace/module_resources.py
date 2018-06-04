@@ -1355,7 +1355,8 @@ def send_owner_notification(resource, owner, itip_event, success=True):
             resource['cn'], participant_status_label(status) if success else _('failed')
         ))
 
-        modules._sendmail(resource['mail'], owner['mail'], msg.as_string())
+        result = modules._sendmail(resource['mail'], owner['mail'], msg.as_string())
+        log.debug(_("Owner notification was sent successfully: %r") % result, level=8)
 
 def owner_notification_text(resource, owner, event, success):
     organizer = event.get_organizer()

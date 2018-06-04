@@ -1283,8 +1283,8 @@ def send_update_notification(object, receiving_user, old=None, reply=True, sende
     msg['From'] = Header(utils.str2unicode('%s' % orgname) if orgname else '')
     msg['From'].append("<%s>" % orgemail)
 
-    success = modules._sendmail(orgemail, receiving_user['mail'], msg.as_string())
-    log.debug(_("Sent update notification to %r: %r") % (receiving_user['mail'], success), level=8)
+    result = modules._sendmail(orgemail, receiving_user['mail'], msg.as_string())
+    log.debug(_("Sent update notification to %r: %r") % (receiving_user['mail'], result), level=8)
 
 def send_cancel_notification(object, receiving_user, deleted=False, sender=None, comment=None):
     """
@@ -1344,8 +1344,8 @@ def send_cancel_notification(object, receiving_user, deleted=False, sender=None,
     msg['From'] = Header(utils.str2unicode('%s' % orgname) if orgname else '')
     msg['From'].append("<%s>" % orgemail)
 
-    success = modules._sendmail(orgemail, receiving_user['mail'], msg.as_string())
-    log.debug(_("Sent cancel notification to %r: %r") % (receiving_user['mail'], success), level=8)
+    result = modules._sendmail(orgemail, receiving_user['mail'], msg.as_string())
+    log.debug(_("Sent cancel notification to %r: %r") % (receiving_user['mail'], result), level=8)
 
 def is_auto_reply(user, sender_email, type):
     accept_available = False

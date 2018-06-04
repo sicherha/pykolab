@@ -132,17 +132,17 @@ def _sendmail(sender, recipients, msg):
     sl = pykolab.logger.StderrToLogger(log)
     smtplib.stderr = sl
 
-    smtp = smtplib.SMTP(timeout=5)
+    smtp = smtplib.SMTP(timeout=15)
 
     if conf.debuglevel > 8:
         smtp.set_debuglevel(1)
 
     success = False
-    retries = 5
+    attempt = 1
 
-    while not success and retries > 0:
+    while not success and attempt <= 5:
         try:
-            log.debug(_("Trying to send email via smtplib from %r, to %r") % (sender, recipients), level=8)
+            log.debug(_("Sending email via smtplib from %r, to %r (Attempt %r)") % (sender, recipients, attempt), level=8)
             smtp.connect("127.0.0.1", 10027)
             _response = smtp.sendmail(sender, recipients, msg)
 
@@ -182,9 +182,13 @@ def _sendmail(sender, recipients, msg):
         except Exception, errmsg:
             log.exception(_("smtplib - Unknown error occurred: %r") % (errmsg))
 
-        smtp.quit()
+        try:
+            smtp.quit()
+        except Exception, errmsg:
+            log.error("smtplib quit() error - %r" % errmsg)
+
         time.sleep(10)
-        retries -= 1
+        attempt += 1
 
     return success
 
@@ -236,6 +240,8 @@ def cb_action_DEFER(module, filepath):
 
 def cb_action_REJECT(module, filepath):
     log.info(_("Rejecting message in %s (by module %s)") % (filepath, module))
+
+    log.debug(_("Rejecting message in: %r") %(filepath), level=8)
 
     # parse message headers
     message = Parser().parse(open(filepath, 'r'), True)
@@ -311,8 +317,12 @@ X-Wallace-Result: REJECT
             msg.as_string()
         )
 
+    log.debug(_("Rejection message was sent successfully: %r") % result)
     if result:
         os.unlink(filepath)
+    else:
+        log.debug(_("Message %r was not removed from spool") % filepath)
+
 
 def cb_action_ACCEPT(module, filepath):
     log.info(_("Accepting message in %s (by module %s)") % (filepath, module))
@@ -342,8 +352,11 @@ def cb_action_ACCEPT(module, filepath):
             message.as_string()
         )
 
+    log.debug(_("Message was sent successfully: %r") % result)
     if result:
         os.unlink(filepath)
+    else:
+        log.debug(_("Message %r was not removed from spool") % filepath)
 
 def register_group(dirname, module):
     modules_base_path = os.path.join(os.path.dirname(__file__), module)
