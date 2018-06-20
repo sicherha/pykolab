@@ -109,6 +109,7 @@ class TestWallaceResources(unittest.TestCase):
         import smtplib
         self.patch(smtplib.SMTP, "__init__", self._mock_smtp_init)
         self.patch(smtplib.SMTP, "quit", self._mock_nop)
+        self.patch(smtplib.SMTP, "connect", self._mock_nop)
         self.patch(smtplib.SMTP, "sendmail", self._mock_smtp_sendmail)
 
         self.smtplog = []
