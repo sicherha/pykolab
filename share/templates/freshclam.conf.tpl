@@ -49,7 +49,7 @@ LogFacility LOG_MAIL
 # By default when started freshclam drops privileges and switches to the
 # "clamav" user. This directive allows you to change the database owner.
 # Default: clamav (may depend on installation options)
-DatabaseOwner clam
+DatabaseOwner clamupdate
 
 # Initialize supplementary group access (freshclam must be started by root).
 # Default: no
