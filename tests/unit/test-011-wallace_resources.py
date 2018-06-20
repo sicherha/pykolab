@@ -109,7 +109,7 @@ class TestWallaceResources(unittest.TestCase):
         import smtplib
         self.patch(smtplib.SMTP, "__init__", self._mock_smtp_init)
         self.patch(smtplib.SMTP, "quit", self._mock_nop)
-        self.patch(smtplib.SMTP, "connect", self._mock_nop)
+        self.patch(smtplib.SMTP, "connect", self._mock_smtp_init)
         self.patch(smtplib.SMTP, "sendmail", self._mock_smtp_sendmail)
 
         self.smtplog = []
@@ -140,6 +140,7 @@ class TestWallaceResources(unittest.TestCase):
 
     def _mock_smtp_sendmail(self, from_addr, to_addr, message, mail_options=None, rcpt_options=None):
         self.smtplog.append((from_addr, to_addr, message))
+        return []
 
     def _get_ics_part(self, message):
         ics_part = None

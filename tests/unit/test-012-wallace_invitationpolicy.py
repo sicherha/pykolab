@@ -85,7 +85,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
         import smtplib
         self.patch(smtplib.SMTP, "__init__", self._mock_smtp_init)
         self.patch(smtplib.SMTP, "quit", self._mock_nop)
-        self.patch(smtplib.SMTP, "connect", self._mock_nop)
+        self.patch(smtplib.SMTP, "connect", self._mock_smtp_init)
         self.patch(smtplib.SMTP, "sendmail", self._mock_smtp_sendmail)
 
         self.smtplog = []
@@ -109,7 +109,7 @@ class TestWallaceInvitationpolicy(unittest.TestCase):
 
     def _mock_smtp_sendmail(self, from_addr, to_addr, message, mail_options=None, rcpt_options=None):
         self.smtplog.append((from_addr, to_addr, message))
-        return True
+        return []
 
     def test_001_itip_events_from_message(self):
         itips = pykolab.itip.events_from_message(message_from_string(itip_multipart))
