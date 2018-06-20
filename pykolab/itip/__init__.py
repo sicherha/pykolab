@@ -106,9 +106,11 @@ def objects_from_message(message, objnames, methods=None):
                         itip['duration'] = c['duration'].dt
                         itip['end'] = itip['start'] + c['duration'].dt
 
-                    itip['organizer'] = c['organizer']
+                    if (c.has_key('organizer')):
+                        itip['organizer'] = c['organizer']
 
-                    itip['attendees'] = c['attendee']
+                    if (c.has_key('attendee')):
+                        itip['attendees'] = c['attendee']
 
                     if itip.has_key('attendees') and not isinstance(itip['attendees'], list):
                         itip['attendees'] = [c['attendee']]
