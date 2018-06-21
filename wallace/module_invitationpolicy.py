@@ -1178,6 +1178,7 @@ def send_update_notification(object, receiving_user, old=None, reply=True, sende
     orgname = organizer.name()
 
     itip_comment = None
+    comment = comment.strip()
     if sender is not None and not comment == '':
         itip_comment = _("%s commented: %s") % (_attendee_name(sender), comment)
 
@@ -1331,6 +1332,7 @@ def send_cancel_notification(object, receiving_user, deleted=False, sender=None,
         else:
             message_text += " " + _("The copy in your calendar has been marked as cancelled accordingly.")
 
+    comment = comment.strip()
     if sender is not None and not comment == '':
         message_text += "\n" + _("%s commented: %s") % (_attendee_name(sender), comment)
 
