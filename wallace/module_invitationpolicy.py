@@ -319,8 +319,12 @@ def execute(*args, **kw):
 
     # for replies, the organizer is the recipient
     if itip_event['method'] == 'REPLY':
-        organizer_mailto = str(itip_event['organizer']).split(':')[-1]
-        user_attendees = [organizer_mailto] if organizer_mailto in recipient_emails else []
+        # Outlook can send iTip replies without an organizer property
+        if itip_event.has_key('organizer'):
+            organizer_mailto = str(itip_event['organizer']).split(':')[-1]
+            user_attendees = [organizer_mailto] if organizer_mailto in recipient_emails else []
+        else:
+            user_attendees = [recipient_email]
 
     else:
         # Limit the attendees to the one that is actually invited with the current message.
