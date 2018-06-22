@@ -817,7 +817,7 @@ class Event(object):
         if classification in self.classification_map.keys():
             self.event.setClassification(self.classification_map[classification])
         elif classification in self.classification_map.values():
-            self.event.setClassification(status)
+            self.event.setClassification(classification)
         else:
             raise ValueError, _("Invalid classification %r") % (classification)
 
