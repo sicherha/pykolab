@@ -1219,6 +1219,12 @@ def cache_init():
     else:
         engine = create_engine(cache_uri, echo=False)
 
+    if conf.drop_tables:
+        log.info(_("Dropping caching tables from database"))
+        policy_result_table.drop(engine, checkfirst=True)
+        statistic_table.drop(engine, checkfirst=True)
+        return False
+
     try:
         metadata.create_all(engine)
     except sqlalchemy.exc.OperationalError, e:
@@ -1594,6 +1600,13 @@ if __name__ == "__main__":
             _("Access Policy Options")
         )
 
+    access_policy_group.add_option(  "--drop-tables",
+                            dest    = "drop_tables",
+                            action  = "store_true",
+                            default = False,
+                            help    = _("Drop the caching tables from the " + \
+                                "database and exit."))
+
     access_policy_group.add_option(  "--timeout",
                             dest    = "timeout",
                             action  = "store",
@@ -1625,6 +1638,9 @@ if __name__ == "__main__":
     cache = cache_init()
 
     policy_requests = {}
+
+    if conf.drop_tables:
+        sys.exit(0)
 
     # Start the work
     while True:
