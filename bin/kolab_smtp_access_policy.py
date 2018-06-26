@@ -89,8 +89,8 @@ policy_result_table = Table(
         Column('id', Integer, Sequence('seq_id_result'), primary_key=True),
         Column('key', String(16), nullable=False),
         Column('value', Boolean, nullable=False),
-        Column('sender', String(64), nullable=True),
-        Column('recipient', String(64), nullable=False),
+        Column('sender', String(254), nullable=True),
+        Column('recipient', String(254), nullable=False),
         Column('sasl_username', String(64)),
         Column('sasl_sender', String(64)),
         Column('created', Integer, nullable=False),
@@ -133,8 +133,8 @@ mapper(PolicyResult, policy_result_table)
 statistic_table = Table(
         'statistic', metadata,
         Column('id', Integer, Sequence('seq_id_statistic'), primary_key=True),
-        Column('sender', String(64), nullable=False),
-        Column('recipient', String(64), nullable=False),
+        Column('sender', String(254), nullable=False),
+        Column('recipient', String(254), nullable=False),
         Column('date', Date, nullable=False),
         Column('count', Integer, nullable=False),
     )
