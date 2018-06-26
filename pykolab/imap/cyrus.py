@@ -195,7 +195,7 @@ class Cyrus(cyruslib.CYRUS):
                 )
 
         # TODO: Workaround for undelete
-        if len(self.lm(mailfolder)) < 1 and _mailfolder['hex_timestamp']:
+        if len(self.lm(mailfolder)) < 1 and 'hex_timestamp' in _mailfolder:
             mailfolder = self.folder_utf7("DELETED/%s%s%s@%s" % (
                     self.separator.join(_mailfolder['path_parts']),
                     self.separator,
