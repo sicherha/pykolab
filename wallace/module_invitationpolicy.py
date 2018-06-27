@@ -403,7 +403,7 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
 
     try:
         receiving_attendee = itip_event['xml'].get_attendee_by_email(recipient_email)
-        log.debug(_("Receiving Attendee: %r") % (receiving_attendee), level=8)
+        log.debug(_("Receiving attendee: %r") % (receiving_attendee.to_dict()), level=8)
     except Exception, errmsg:
         log.error("Could not find envelope attendee: %r" % (errmsg))
         return MESSAGE_FORWARD
