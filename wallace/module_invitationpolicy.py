@@ -19,6 +19,7 @@
 
 import datetime
 import os
+import signal
 import tempfile
 import time
 from urlparse import urlparse
@@ -1290,8 +1291,14 @@ def send_update_notification(object, receiving_user, old=None, reply=True, sende
     msg['From'] = Header(utils.str2unicode('%s' % orgname) if orgname else '')
     msg['From'].append("<%s>" % orgemail)
 
+    seed = random.randint(0, 6)
+    alarm_after = (seed * 10) + 60
+    log.debug(_("Set alarm to %s seconds") % (alarm_after), level=8)
+    signal.alarm(alarm_after)
+
     result = modules._sendmail(orgemail, receiving_user['mail'], msg.as_string())
     log.debug(_("Sent update notification to %r: %r") % (receiving_user['mail'], result), level=8)
+    signal.alarm(0)
 
 def send_cancel_notification(object, receiving_user, deleted=False, sender=None, comment=None):
     """
@@ -1354,8 +1361,14 @@ def send_cancel_notification(object, receiving_user, deleted=False, sender=None,
     msg['From'] = Header(utils.str2unicode('%s' % orgname) if orgname else '')
     msg['From'].append("<%s>" % orgemail)
 
+    seed = random.randint(0, 6)
+    alarm_after = (seed * 10) + 60
+    log.debug(_("Set alarm to %s seconds") % (alarm_after), level=8)
+    signal.alarm(alarm_after)
+
     result = modules._sendmail(orgemail, receiving_user['mail'], msg.as_string())
     log.debug(_("Sent cancel notification to %r: %r") % (receiving_user['mail'], result), level=8)
+    signal.alarm(0)
 
 def is_auto_reply(user, sender_email, type):
     accept_available = False

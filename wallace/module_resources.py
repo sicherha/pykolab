@@ -22,6 +22,7 @@ import icalendar
 import os
 import pytz
 import random
+import signal
 import tempfile
 import time
 from urlparse import urlparse
@@ -1355,8 +1356,14 @@ def send_owner_notification(resource, owner, itip_event, success=True):
             resource['cn'], participant_status_label(status) if success else _('failed')
         ))
 
+        seed = random.randint(0, 6)
+        alarm_after = (seed * 10) + 60
+        log.debug(_("Set alarm to %s seconds") % (alarm_after), level=8)
+        signal.alarm(alarm_after)
+
         result = modules._sendmail(resource['mail'], owner['mail'], msg.as_string())
         log.debug(_("Owner notification was sent successfully: %r") % result, level=8)
+        signal.alarm(0)
 
 def owner_notification_text(resource, owner, event, success):
     organizer = event.get_organizer()
