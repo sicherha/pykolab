@@ -358,7 +358,7 @@ def execute(*args, **kw):
     # do the magic for the receiving attendee
     (available_resource, itip_event) = check_availability(itip_events, resource_dns, resources, receiving_attendee)
 
-    reject = False
+    _reject = False
     resource = None
     original_resource = None
 
@@ -401,10 +401,10 @@ def execute(*args, **kw):
         if invitationpolicy is not None:
             for policy in invitationpolicy:
                 if policy & ACT_REJECT:
-                    reject = True
+                    _reject = True
                     break
 
-    if resource is not None and not reject:
+    if resource is not None and not _reject:
         log.debug(_("Accept invitation for individual resource %r / %r") % (resource['dn'], resource['mail']), level=8)
         accept_reservation_request(itip_event, resource, original_resource, False, invitationpolicy)
     else:
