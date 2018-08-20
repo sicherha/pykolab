@@ -334,12 +334,14 @@ def execute(*args, **kw):
                 if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()] \
                     and resources[resource].has_key('kolabtargetfolder'):
                     (event, master) = find_existing_event(itip_event['uid'], itip_event['recurrence-id'], resources[resource])
+                    if event is None:
+                        log.debug(_("Cancellation for an event %r: not found, skipping") % (itip_event['uid']), level=8)
                     # remove entire event
-                    if event and master is None:
+                    elif master is None:
                         log.debug(_("Cancellation for entire event %r: deleting") % (itip_event['uid']), level=8)
                         delete_resource_event(itip_event['uid'], resources[resource], event._msguid)
                     # just cancel one single occurrence: add exception with status=cancelled
-                    elif master is not None:
+                    else:
                         log.debug(_("Cancellation for a single occurrence %r of %r: updating...") % (itip_event['recurrence-id'], itip_event['uid']), level=8)
                         event.set_status('CANCELLED')
                         event.set_transparency(True)
