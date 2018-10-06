@@ -487,6 +487,9 @@ result_format = "shared+%%s"
     if os.path.isfile('/lib/systemd/system/amavis.service'):
         amavisservice = 'amavis.service'
 
+    if os.path.isfile('/etc/init.d/amavis'):
+        amavisservice = 'amavis.service'
+
     if os.path.isfile('/usr/lib/systemd/system/clamd.service'):
         clamavservice = 'clamd.service'
 
