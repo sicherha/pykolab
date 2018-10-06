@@ -84,6 +84,13 @@ def execute(*args, **kw):
     else:
         # Search and destroy
         php_ini = "/etc/php.ini"
+
+        if not os.path.isfile(php_ini):
+            php_ini = "/etc/php/7.2/apache2/php.ini"
+
+        if not os.path.isfile(php_ini):
+            php_ini = "/etc/php/7.0/apache2/php.ini"
+
         if not os.path.isfile(php_ini):
             php_ini = "/etc/php5/apache2/php.ini"
 
