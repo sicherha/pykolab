@@ -286,11 +286,18 @@ class WallaceDaemon(object):
             filepath = os.path.join(root, filename)
 
             try:
+                # ignore calls on too young files
                 if os.stat(filepath).st_mtime + 150 > time.time():
-                    log.debug("Skipping %s" % (filepath), level=8)
+                    log.debug("File not more than 150s old. Skipping %s" % (filepath), level=8)
                     continue
 
-            except:
+                # ignore calls on lock files
+                if '/locks/' in filepath:
+                    log.debug("File is in locks directory. Skipping %s" % (filepath), level=8)
+                    continue
+
+            except Exception, errmsg:
+                log.error("Error: %s. Skipping %s" % (errmsg, filepath))
                 continue
 
             if not root == pickup_path:
