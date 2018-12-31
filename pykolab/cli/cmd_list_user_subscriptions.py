@@ -30,7 +30,7 @@ log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
 def __init__():
-    commands.register('list_user_subscriptions', execute, description=description())
+    commands.register('list_user_subscriptions', execute, aliases='lus', description=description())
 
 def cli_options(*args, **kw):
     my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))

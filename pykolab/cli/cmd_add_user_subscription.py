@@ -31,7 +31,12 @@ log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
 def __init__():
-    commands.register('add_user_subscription', execute, description=description())
+    commands.register(
+        'add_user_subscription',
+        execute,
+        aliases=['aus', 'subscribe'],
+        description=description()
+    )
 
 def description():
     return _("Subscribe a user to a folder.")

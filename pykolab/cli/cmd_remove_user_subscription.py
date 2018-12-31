@@ -31,7 +31,12 @@ log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
 def __init__():
-    commands.register('remove_user_subscription', execute, description=description())
+    commands.register(
+        'remove_user_subscription',
+        execute,
+        aliases=['rus', 'unsubscribe'],
+        description=description()
+    )
 
 def description():
     return _("Unsubscribe a user from a folder.")
