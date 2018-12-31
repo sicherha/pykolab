@@ -31,7 +31,7 @@ log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
 def __init__():
-    commands.register('list_mailbox_metadata', execute, description=description())
+    commands.register('list_mailbox_metadata', execute, aliases='lmm', description=description())
 
 def cli_options():
     my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
