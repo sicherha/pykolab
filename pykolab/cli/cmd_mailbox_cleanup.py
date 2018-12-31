@@ -38,12 +38,23 @@ def __init__():
 def cli_options():
     my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
     my_option_group.add_option(
-            '--dry-run',
-            dest    = "dryrun",
-            action  = "store_true",
-            default = False,
-            help    = _("Do not actually delete mailboxes, but report what mailboxes would have been deleted.")
+        '--dry-run',
+        dest    = "dryrun",
+        action  = "store_true",
+        default = False,
+        help    = _(
+            "Do not actually delete mailboxes, but report what mailboxes would have been deleted."
         )
+    )
+
+    my_option_group.add_option(
+        '--server',
+        dest    = "connect_server",
+        action  = "store",
+        default = None,
+        metavar = "SERVER",
+        help    = _("Evaluate mailboxes on server SERVER only.")
+    )
 
 def description():
     return _("Clean up mailboxes that do no longer have an owner.")
@@ -57,7 +68,11 @@ def execute(*args, **kw):
     domains = auth.list_domains()
 
     imap = IMAP()
-    imap.connect()
+
+    if not conf.connect_server == None:
+        imap.connect(server=conf.connect_server)
+    else:
+        imap.connect()
 
     domain_folders = {}
 
