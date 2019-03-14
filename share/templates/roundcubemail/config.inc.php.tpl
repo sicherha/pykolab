@@ -105,10 +105,23 @@
 
     \$config['message_sort_col'] = 'date';
 
+    \$config['spellcheck_engine'] = 'pspell';
     \$config['spellcheck_dictionary'] = true;
     \$config['spellcheck_ignore_caps'] = true;
     \$config['spellcheck_ignore_nums'] = true;
     \$config['spellcheck_ignore_syms'] = true;
+    \$config['spellcheck_languages'] = array(
+            'da' => 'Dansk',
+            'de' => 'Deutsch',
+            'en' => 'English',
+            'es' => 'Español',
+            'fr' => 'Français',
+            'it' => 'Italiano',
+            'nl' => 'Nederlands',
+            'pt' => 'Português',
+            'ru' => 'Русский',
+            'sv' => 'Svenska'
+        );
 
     \$config['undo_timeout'] = 10;
     \$config['upload_progress'] = 2;
