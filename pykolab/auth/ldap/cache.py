@@ -31,6 +31,8 @@ from sqlalchemy import desc
 from sqlalchemy import create_engine
 from sqlalchemy.orm import mapper
 
+from uuid import UUID
+
 try:
     from sqlalchemy.orm import relationship
 except:
@@ -63,7 +65,7 @@ class Entry(object):
         self.uniqueid = uniqueid
         self.result_attribute = result_attr
 
-        modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format')
+        modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format').replace('%%', '%')
         if modifytimestamp_format == None:
             modifytimestamp_format = "%Y%m%d%H%M%SZ"
 
@@ -110,52 +112,59 @@ def get_entry(domain, entry, update=True):
     _entry = None
 
     db = init_db(domain)
+
     try:
-        _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
+        _uniqueid = str(UUID(bytes_le=entry['id']))
+        log.debug(_("Entry uniqueid was converted from binary form to string: %s") % _uniqueid, level=8)
+    except ValueError:
+        _uniqueid = entry['id']
+
+    try:
+        _entry = db.query(Entry).filter_by(uniqueid=_uniqueid).first()
     except sqlalchemy.exc.OperationalError, errmsg:
         db = init_db(domain,reinit=True)
     except sqlalchemy.exc.InvalidRequestError, errmsg:
         db = init_db(domain,reinit=True)
     finally:
-        _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
+        _entry = db.query(Entry).filter_by(uniqueid=_uniqueid).first()
 
     if not update:
         return _entry
 
     if _entry == None:
-        log.debug(_("Inserting cache entry %r") % (entry['id']), level=8)
+        log.debug(_("Inserting cache entry %r") % (_uniqueid), level=8)
 
         if not entry.has_key(result_attribute):
             entry[result_attribute] = ''
 
         db.add(
                 Entry(
-                        entry['id'],
+                        _uniqueid,
                         entry[result_attribute],
                         entry['modifytimestamp']
                     )
             )
 
         db.commit()
-        _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
+        _entry = db.query(Entry).filter_by(uniqueid=_uniqueid).first()
     else:
-        modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format')
+        modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format').replace('%%', '%')
         if modifytimestamp_format == None:
             modifytimestamp_format = "%Y%m%d%H%M%SZ"
 
         if not _entry.last_change.strftime(modifytimestamp_format) == entry['modifytimestamp']:
-            log.debug(_("Updating timestamp for cache entry %r") % (entry['id']), level=8)
+            log.debug(_("Updating timestamp for cache entry %r") % (_uniqueid), level=8)
             last_change = datetime.datetime.strptime(entry['modifytimestamp'], modifytimestamp_format)
             _entry.last_change = last_change
             db.commit()
-            _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
+            _entry = db.query(Entry).filter_by(uniqueid=_uniqueid).first()
 
         if entry.has_key(result_attribute):
             if not _entry.result_attribute == entry[result_attribute]:
-                log.debug(_("Updating result_attribute for cache entry %r") % (entry['id']), level=8)
+                log.debug(_("Updating result_attribute for cache entry %r") % (_uniqueid), level=8)
                 _entry.result_attribute = entry[result_attribute]
                 db.commit()
-                _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
+                _entry = db.query(Entry).filter_by(uniqueid=_uniqueid).first()
 
     return _entry
 
@@ -189,7 +198,7 @@ def init_db(domain,reinit=False):
     return db[domain]
 
 def last_modify_timestamp(domain):
-    modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format')
+    modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format').replace('%%', '%')
     if modifytimestamp_format == None:
         modifytimestamp_format = "%Y%m%d%H%M%SZ"
 

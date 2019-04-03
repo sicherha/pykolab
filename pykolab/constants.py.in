@@ -118,3 +118,9 @@ SUPPORTED_LDAP_CONTROLS = {
 #                'func': '_sync_repl'
 #            }
 #    }
+
+# Binay attributes which should not be stripped
+BINARY_ATTRS = (
+        'objectguid',
+        'objectsid'
+    )

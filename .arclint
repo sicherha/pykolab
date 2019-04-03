@@ -24,6 +24,7 @@
                 "E251": "disabled",
                 "E261": "disabled",
                 "E265": "disabled",
+                "E266": "disabled",
                 "E302": "disabled",
                 "E303": "disabled",
                 "E402": "disabled",

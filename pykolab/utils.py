@@ -364,7 +364,12 @@ def normalize(_object):
                 if _object[key] is None:
                     continue
 
-                val = map(_strip, _object[key])
+                # Dont run strip anything from attributes which
+                # hold byte strings
+                if key.lower() in constants.BINARY_ATTRS:
+                    val = _object[key]
+                else:
+                    val = map(_strip, _object[key])
 
                 if len(val) == 1:
                     result[key.lower()] = ''.join(val)

@@ -502,10 +502,12 @@ class LDAP(pykolab.base.Base):
         else:
             base_dn = config_base_dn
 
+        _filter = "(%s=%s)" % (unique_attribute, ldap.filter.escape_filter_chars(entry_id))
+
         _search = self.ldap.search_ext(
                 base_dn,
                 ldap.SCOPE_SUBTREE,
-                '(%s=%s)' % (unique_attribute, entry_id),
+                _filter,
                 ['entrydn']
             )
 
@@ -718,7 +720,7 @@ class LDAP(pykolab.base.Base):
             __filter_prefix = "(&"
             __filter_suffix = "(!(%s=%s)))" % (
                     self.config_get('unique_attribute'),
-                    exclude_entry_id
+                    ldap.filter.escape_filter_chars(exclude_entry_id)
                 )
 
         else:
@@ -794,7 +796,7 @@ class LDAP(pykolab.base.Base):
             __filter_prefix = "(&"
             __filter_suffix = "(!(%s=%s)))" % (
                     self.config_get('unique_attribute'),
-                    exclude_entry_id
+                    ldap.filter.escape_filter_chars(exclude_entry_id)
                 )
 
         else:
@@ -845,11 +847,8 @@ class LDAP(pykolab.base.Base):
                 attrsonly=True
             )
 
-        _entry_dns = []
-
-        for _result in _results:
-            (_entry_id, _entry_attrs) = _result
-            _entry_dns.append(_entry_id)
+        # Remove referrals
+        _entry_dns = [_e for _e in _results if _e[0] is not None]
 
         return _entry_dns
 
@@ -1232,7 +1231,7 @@ class LDAP(pykolab.base.Base):
         else:
             base_dn = config_base_dn
 
-        return self._search(
+        _results = self._search(
                 base_dn,
                 filterstr=_filter,
                 attrlist=[
@@ -1240,6 +1239,11 @@ class LDAP(pykolab.base.Base):
                     ],
                 override_search='_regular_search'
             )
+
+        # Remove referrals
+        _entry_dns = [_e for _e in _results if _e[0] is not None]
+
+        return _entry_dns
 
     def set_entry_attribute(self, entry_id, attribute, value):
         log.debug(_("Setting entry attribute %r to %r for %r") % (attribute, value, entry_id), level=8)
@@ -1296,7 +1300,7 @@ class LDAP(pykolab.base.Base):
             if not conf.resync:
                 modified_after = self.get_latest_sync_timestamp()
             else:
-                modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format')
+                modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format').replace('%%', '%')
                 if modifytimestamp_format == None:
                     modifytimestamp_format = "%Y%m%d%H%M%SZ"
 
@@ -1306,7 +1310,7 @@ class LDAP(pykolab.base.Base):
 
         _filter = "(&%s(modifytimestamp>=%s))" % (_filter,modified_after)
 
-        log.debug(_("Using filter %r") % (_filter), level=8)
+        log.debug(_("Synchronization is using filter %r") % (_filter), level=8)
 
         if not mode == 0:
             override_search = mode
@@ -2304,7 +2308,8 @@ class LDAP(pykolab.base.Base):
         # The list of naming contexts in the LDAP server
         attrs = self.get_entry_attributes("", ['namingContexts'])
 
-        naming_contexts = attrs['namingcontexts']
+        # Lower case of naming contexts - primarily for AD
+        naming_contexts = utils.normalize(attrs['namingcontexts'])
 
         if isinstance(naming_contexts, basestring):
             naming_contexts = [ naming_contexts ]
@@ -2643,6 +2648,9 @@ class LDAP(pykolab.base.Base):
 
         # Typical for Persistent Change Control EntryChangeNotification
         if kw.has_key('change_type'):
+
+            log.debug(_("change_type defined, typical for Persistent Change Control EntryChangeNotification"), level=5)
+
             change_type = None
 
             change_dict = {
@@ -2693,6 +2701,9 @@ class LDAP(pykolab.base.Base):
 
         # Typical for Paged Results Control
         elif kw.has_key('entry') and isinstance(kw['entry'], list):
+
+            log.debug(_("No change_type, typical for Paged Results Control"), level=5)
+
             for entry_dn,entry_attrs in kw['entry']:
                 # This is a referral
                 if entry_dn == None:
@@ -2703,7 +2714,7 @@ class LDAP(pykolab.base.Base):
                 for attr in entry_attrs.keys():
                     entry[attr.lower()] = entry_attrs[attr]
 
-                unique_attr = self.config_get('unique_attribute')
+                unique_attr = self.config_get('unique_attribute').lower()
                 entry['id'] = entry[unique_attr]
 
                 try:
@@ -2711,7 +2722,7 @@ class LDAP(pykolab.base.Base):
                 except:
                     entry['type'] = "unknown"
 
-                log.debug(_("Entry type: %s") % (entry['type']), level=8)
+                log.debug(_("Entry type for dn: %s is: %s") % (entry['dn'], entry['type']), level=8)
 
                 eval("self._change_none_%s(entry, None)" % (entry['type']))
 
@@ -2877,6 +2888,9 @@ class LDAP(pykolab.base.Base):
                     )
 
                 break
+
+            # Remove referrals
+            _result_data = [_e for _e in _result_data if _e[0] is not None]
 
             if callback:
                 callback(entry=_result_data)
