@@ -246,4 +246,6 @@
 
     \$config['fileapi_manticore'] = 'http://' . \$_SERVER['HTTP_HOST'] . ':8080';
 
+    @include('/etc/roundcubemail/kolab_syncroton.inc.php');
+
 ?>
