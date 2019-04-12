@@ -1005,6 +1005,24 @@ END:VEVENT
 
         self.assertEqual(rdates, ["20140530T110000", "20140620T110000", "20140815T100000"])
 
+    def test_029_dummy_datetime(self):
+        ical = """
+BEGIN:VEVENT
+UID:8515D49BA15EFF7DB34F080877BE11F5-D1F2672D6F04F316
+DTSTAMP:00000000T000000
+DTSTART:20190514T060000
+DTEND:20190514T073000
+SUMMARY:Summary
+SEQUENCE:1
+CREATED:00000000T000000
+LAST-MODIFIED:00000000T000000
+ORGANIZER:MAILTO:tests@test.com
+END:VEVENT
+"""
+        event = event_from_ical(ical)
+        self.assertEqual(str(event.get_lastmodified()), "1970-01-01 00:00:00+00:00")
+
+
     def _find_prop_in_list(self, diff, name):
         for prop in diff:
             if prop['property'] == name:

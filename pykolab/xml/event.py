@@ -822,7 +822,7 @@ class Event(object):
             raise ValueError, _("Invalid classification %r") % (classification)
 
     def set_created(self, _datetime=None):
-        if _datetime == None:
+        if _datetime is None or isinstance(_datetime, datetime.time):
             _datetime = datetime.datetime.utcnow()
 
         self.event.setCreated(xmlutils.to_cdatetime(_datetime, False, True))
@@ -1012,7 +1012,7 @@ class Event(object):
         if isinstance(_datetime, datetime.datetime):
             valid_datetime = True
 
-        if _datetime == None:
+        if _datetime is None or isinstance(_datetime, datetime.time):
             valid_datetime = True
             _datetime = datetime.datetime.utcnow()
 

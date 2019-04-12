@@ -85,28 +85,16 @@ def to_cdatetime(_datetime, with_timezone=True, as_utc=False):
             datetime = _datetime.replace(tzinfo=pytz.utc)
         with_timezone = False
 
-    (
-        year,
-        month,
-        day,
-    ) = (
-        _datetime.year,
-        _datetime.month,
-        _datetime.day,
-    )
+    # Sometimes we deal with dummy 00000000T000000 values from iCalendar
+    # in such cases we end up with datetime.time objects
+    if not hasattr(_datetime, 'year'):
+        (year, month, day) = (1970, 1, 1)
+    else:
+        (year, month, day) = (_datetime.year, _datetime.month, _datetime.day)
 
     if hasattr(_datetime, 'hour'):
-        (
-            hour,
-            minute,
-            second
-        ) = (
-            _datetime.hour,
-            _datetime.minute,
-            _datetime.second
-        )
+        (hour, minute, second) = (_datetime.hour, _datetime.minute, _datetime.second)
         _cdatetime = kolabformat.cDateTime(year, month, day, hour, minute, second)
-
     else:
         _cdatetime = kolabformat.cDateTime(year, month, day)
 
