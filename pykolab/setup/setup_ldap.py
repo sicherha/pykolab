@@ -417,7 +417,7 @@ ServerAdminPwd = %(admin_pass)s
         schema_error = True
 
     if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['/bin/systemctl', 'restart', 'dirsrv.target'])
+        subprocess.call(['/bin/systemctl', 'restart', 'dirsrv@' + _input['hostname']])
         time.sleep(20)
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'dirsrv', 'restart'])
@@ -429,7 +429,7 @@ ServerAdminPwd = %(admin_pass)s
         log.error(_("Could not start the directory server service."))
 
     if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['/bin/systemctl', 'enable', 'dirsrv.target'])
+        subprocess.call(['/bin/systemctl', 'enable', 'dirsrv@' + _input['hostname']])
     elif os.path.isfile('/sbin/chkconfig'):
         subprocess.call(['/sbin/chkconfig', 'dirsrv', 'on'])
     elif os.path.isfile('/usr/sbin/update-rc.d'):
