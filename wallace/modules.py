@@ -332,13 +332,17 @@ def cb_action_ACCEPT(module, filepath):
     # parse message headers
     message = Parser().parse(open(filepath, 'r'), True)
 
+    messageid = message['message-id'] if 'message-id' in message else None
     sender = [formataddr(x) for x in getaddresses(message.get_all('X-Kolab-From', []))]
     recipients = [formataddr(x) for x in getaddresses(message.get_all('X-Kolab-To', []))]
-    log.debug(_("recipients: %r") % (recipients))
+    log.debug(
+        _("Message-ID: %s, sender: %r, recipients: %r") % (messageid, sender, recipients), level=6
+    )
 
     # delete X-Kolab-* headers
     del message['X-Kolab-From']
     del message['X-Kolab-To']
+    log.debug(_("Removed X-Kolab- headers"), level=8)
 
     result = _sendmail(
             sender,
