@@ -202,6 +202,10 @@ class KolabDaemon(object):
                 os.close(1)
                 os.close(2)
 
+                os.open(os.devnull, os.O_RDONLY)
+                os.open(os.devnull, os.O_WRONLY)
+                os.open(os.devnull, os.O_WRONLY)
+
                 log.remove_stdout_handler()
                 self.set_signal_handlers()
                 self.write_pid()
