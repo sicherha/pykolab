@@ -1284,7 +1284,7 @@ def cache_insert(
         sasl_sender='',
         data=None):
 
-    if cache is notTrue:
+    if cache is not True:
         return []
 
     log.debug(
