@@ -25,18 +25,23 @@ except ImportError:
 import gettext
 import os
 
-N_ = lambda x: x
+N_ = lambda x: x  # noqa: E731
 
 # This function as such may, at times, cause tracebacks.
-#_ = lambda x: current.lgettext(x)
+# _ = lambda x: current.lgettext(x)
 
+# pylint: disable=invalid-name
 current = gettext.translation(domain, fallback=True)
+
 
 def _(x):
     try:
         return current.lgettext(x)
-    except Exception, errmsg:
+
+    # pylint: disable=broad-except
+    except Exception:
         return x
+
 
 def getDefaultLangs():
     languages = []
@@ -51,24 +56,32 @@ def getDefaultLangs():
     # now normalize and expand the languages
     nelangs = []
     for lang in languages:
+
+        # pylint: disable=protected-access
         for nelang in gettext._expand_lang(lang):
             if nelang not in nelangs:
                 nelangs.append(nelang)
 
     return nelangs
 
+
 def setUserLanguage(lang):
+    # pylint: disable=global-statement
     global current
 
     if not len(lang.split('.')) > 1 and not lang.endswith('.UTF-8'):
         lang = "%s.UTF-8" % (lang)
 
     langs = []
+
+    # pylint: disable=protected-access
     for l in gettext._expand_lang(lang):
         if l not in langs:
             langs.append(l)
 
     try:
         current = gettext.translation(domain, languages=langs, fallback=True)
-    except:
+
+    # pylint: disable=broad-except
+    except Exception:
         pass
