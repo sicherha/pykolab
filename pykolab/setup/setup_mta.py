@@ -277,6 +277,9 @@ result_format = "shared+%%s"
     if os.path.isfile('/etc/pki/tls/private/localhost.pem'):
         postfix_main_settings['smtpd_tls_cert_file'] = "/etc/pki/tls/private/localhost.pem"
         postfix_main_settings['smtpd_tls_key_file'] = "/etc/pki/tls/private/localhost.pem"
+    elif os.path.isfile('/etc/ssl/private/cyrus-imapd.pem'): # Debian 9
+        postfix_main_settings['smtpd_tls_cert_file'] = "/etc/ssl/private/cyrus-imapd.pem"
+        postfix_main_settings['smtpd_tls_key_file'] = "/etc/ssl/private/cyrus-imapd.pem"
 
     if not os.path.isfile('/etc/postfix/main.cf'):
         if os.path.isfile('/usr/share/postfix/main.cf.debian'):
