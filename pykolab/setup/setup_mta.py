@@ -235,6 +235,13 @@ result_format = "shared+%%s"
                     },
         }
 
+    if not os.path.isfile('/etc/postfix/main.cf'):
+        if os.path.isfile('/usr/share/postfix/main.cf.debian'):
+            shutil.copy(
+                    '/usr/share/postfix/main.cf.debian',
+                    '/etc/postfix/main.cf'
+                )
+
     if not os.path.isdir('/etc/postfix/ldap'):
         os.mkdir('/etc/postfix/ldap/', 0770)
 
@@ -280,13 +287,6 @@ result_format = "shared+%%s"
     elif os.path.isfile('/etc/ssl/private/cyrus-imapd.pem'): # Debian 9
         postfix_main_settings['smtpd_tls_cert_file'] = "/etc/ssl/private/cyrus-imapd.pem"
         postfix_main_settings['smtpd_tls_key_file'] = "/etc/ssl/private/cyrus-imapd.pem"
-
-    if not os.path.isfile('/etc/postfix/main.cf'):
-        if os.path.isfile('/usr/share/postfix/main.cf.debian'):
-            shutil.copy(
-                    '/usr/share/postfix/main.cf.debian',
-                    '/etc/postfix/main.cf'
-                )
 
     # Copy header checks files
     for hc_file in [ 'inbound', 'internal', 'submission' ]:
