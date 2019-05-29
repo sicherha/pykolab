@@ -383,8 +383,6 @@ class LDAP(pykolab.base.Base):
                     self._disconnect()
                     return False
 
-                auth_cache.set_entry(_filter, entry_dn)
-
             except ldap.NO_SUCH_OBJECT, errmsg:
                 log.debug(
                         _("Error occured, there is no such object: %r") % (
