@@ -124,7 +124,12 @@ def _synchronize(*args, **kw):
 
     entry = utils.normalize(kw)
 
-    if not entry.has_key('mail'):
+    mailbox_attribute = conf.get('cyrus-sasl', 'result_attribute')
+    if mailbox_attribute == None:
+        mailbox_attribute = 'mail'
+
+
+    if mailbox_attribute not in entry:
         return
 
     if not 'kolabinetorgperson' in entry['objectclass']:
@@ -133,13 +138,13 @@ def _synchronize(*args, **kw):
     imap = IMAP()
     imap.connect()
 
-    if not imap.user_mailbox_exists(entry['mail']):
+    if not imap.user_mailbox_exists(entry[mailbox_attribute]):
         if entry.has_key('mailhost'):
             server = entry['mailhost']
         else:
             server = None
 
-        imap.user_mailbox_create(entry['mail'], server=server)
+        imap.user_mailbox_create(entry[mailbox_attribute], server=server)
 
     imap.disconnect()
 
