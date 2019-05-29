@@ -95,6 +95,7 @@ policy_result_table = Table(
     Column('sasl_sender', String(64)),
     Column('created', Integer, nullable=False),
     Column('data', PickleType, nullable=True),
+    mysql_charset='utf8',
 )
 
 Index(
@@ -139,6 +140,7 @@ statistic_table = Table(
     Column('recipient', String(254), nullable=False),
     Column('date', Date, nullable=False),
     Column('count', Integer, nullable=False),
+    mysql_charset='utf8',
 )
 
 Index(
