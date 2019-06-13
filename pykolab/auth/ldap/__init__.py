@@ -846,7 +846,7 @@ class LDAP(pykolab.base.Base):
             )
 
         # Remove referrals
-        _entry_dns = [_e for _e in _results if _e[0] is not None]
+        _entry_dns = [_e[0] for _e in _results if _e[0] is not None]
 
         return _entry_dns
 
