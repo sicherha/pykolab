@@ -112,7 +112,9 @@ def execute(*args, **kw):
         log.error("Roundcube installation path not found.")
         return
 
-    if os.access(rcpath + 'skins/enterprise/', os.R_OK):
+    if os.access(rcpath + 'skins/kolab/', os.R_OK):
+        rc_settings['skin'] = 'kolab'
+    elif os.access(rcpath + 'skins/enterprise/', os.R_OK):
         rc_settings['skin'] = 'enterprise'
     elif os.access(rcpath + 'skins/chameleon/', os.R_OK):
         rc_settings['skin'] = 'chameleon'
