@@ -1,0 +1,9 @@
+This is an example TEXT signature.
+
+%(o)s
+
+%(manager:cn)s
+
+M: %(mobile)s
+T: %(telephonenumber)s
+W: https://it.services.inc
