@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2010-2013 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2010-2019 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
 #
@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
+from __future__ import print_function
 
 import os
 import sys
@@ -45,6 +47,7 @@ conf = pykolab.getConf()
 
 modules = {}
 
+
 def __init__():
     # We only want the base path
     modules_base_path = os.path.dirname(__file__)
@@ -55,14 +58,15 @@ def __init__():
 
         for filename in filenames:
             if filename.startswith('module_') and filename.endswith('.py'):
-                module_name = filename.replace('.py','')
+                module_name = filename.replace('.py', '')
                 name = module_name.replace('module_', '')
-                #print "exec(\"from %s import __init__ as %s_register\"" % (module_name,name)
+                # print("exec(\"from %s import __init__ as %s_register\")" % (module_name,name))
                 exec("from %s import __init__ as %s_register" % (module_name, name))
                 exec("%s_register()" % (name))
 
         for dirname in dirnames:
             register_group(modules_path, dirname)
+
 
 def list_modules(*args, **kw):
     """
@@ -75,8 +79,8 @@ def list_modules(*args, **kw):
         if isinstance(module, tuple):
             module_group, module = module
             __modules[module_group] = {
-                    module: modules[(module_group,module)]
-                }
+                module: modules[(module_group, module)]
+            }
         else:
             __modules[module] = modules[module]
 
@@ -84,38 +88,45 @@ def list_modules(*args, **kw):
     _modules.sort()
 
     for _module in _modules:
-        if __modules[_module].has_key('function'):
+        if 'function' in __modules[_module]:
             # This is a top-level module
-            if not __modules[_module]['description'] == None:
-                print "%-25s - %s" % (_module.replace('_','-'),__modules[_module]['description'])
+            if __modules[_module]['description'] is not None:
+                print("%-25s - %s" % (_module.replace('_', '-'), __modules[_module]['description']))
             else:
-                print "%-25s" % (_module.replace('_','-'))
+                print("%-25s" % (_module.replace('_', '-')))
 
     for _module in _modules:
-        if not __modules[_module].has_key('function'):
+        if 'function' not in __modules[_module]:
             # This is a nested module
-            print "\n" + _("Module Group: %s") % (_module) + "\n"
+            print("\n" + _("Module Group: %s") % (_module) + "\n")
             ___modules = __modules[_module].keys()
             ___modules.sort()
             for __module in ___modules:
-                if not __modules[_module][__module]['description'] == None:
-                    print "%-4s%-21s - %s" % ('',__module.replace('_','-'),__modules[_module][__module]['description'])
+                if __modules[_module][__module]['description'] is not None:
+                    print(
+                        "%-4s%-21s - %s" % (
+                            '',
+                            _module.replace('_', '-'),
+                            __modules[_module][__module]['description']
+                        )
+                    )
+
                 else:
-                    print "%-4s%-21s" % ('',__module.replace('_','-'))
+                    print("%-4s%-21s" % ('', __module.replace('_', '-')))
+
 
 def execute(name, *args, **kw):
-    if not modules.has_key(name):
+    if name not in modules:
         log.error(_("No such module %r in modules %r (1).") % (name, modules))
         sys.exit(1)
 
-    if not modules[name].has_key('function') and \
-        not modules[name].has_key('group'):
-        log.error(_("No such module %r in modules %r (2).") %(name, modules))
+    if 'function' not in modules[name] and 'group' not in modules[name]:
+        log.error(_("No such module %r in modules %r (2).") % (name, modules))
         sys.exit(1)
 
     try:
         return modules[name]['function'](*args, **kw)
-    except Exception, errmsg:
+    except Exception as errmsg:
         log.exception(_("Module %r - Unknown error occurred; %r") % (name, errmsg))
 
 def heartbeat(name, *args, **kw):
@@ -156,35 +167,35 @@ def _sendmail(sender, recipients, msg):
             success = True
             break
 
-        except smtplib.SMTPServerDisconnected, errmsg:
+        except smtplib.SMTPServerDisconnected as errmsg:
             log.error("SMTP Server Disconnected Error, %r" % (errmsg))
 
-        except smtplib.SMTPConnectError, errmsg:
+        except smtplib.SMTPConnectError as errmsg:
             # DEFER
             log.error("SMTP Connect Error, %r" % (errmsg))
 
-        except smtplib.SMTPDataError, errmsg:
+        except smtplib.SMTPDataError as errmsg:
             # DEFER
             log.error("SMTP Data Error, %r" % (errmsg))
 
-        except smtplib.SMTPHeloError, errmsg:
+        except smtplib.SMTPHeloError as errmsg:
             # DEFER
             log.error("SMTP HELO Error, %r" % (errmsg))
 
-        except smtplib.SMTPRecipientsRefused, errmsg:
+        except smtplib.SMTPRecipientsRefused as errmsg:
             # REJECT, send NDR
             log.error("SMTP Recipient(s) Refused, %r" % (errmsg))
 
-        except smtplib.SMTPSenderRefused, errmsg:
+        except smtplib.SMTPSenderRefused as errmsg:
             # REJECT, send NDR
             log.error("SMTP Sender Refused, %r" % (errmsg))
 
-        except Exception, errmsg:
+        except Exception as errmsg:
             log.exception(_("smtplib - Unknown error occurred: %r") % (errmsg))
 
         try:
             smtp.quit()
-        except Exception, errmsg:
+        except Exception as errmsg:
             log.error("smtplib quit() error - %r" % errmsg)
 
         time.sleep(10)
@@ -231,7 +242,7 @@ def cb_action_DEFER(module, filepath):
     #now = datetime.datetime.now()
     #delta = now - fileage
 
-    #print "file:", filepath, "fileage:", fileage, "now:", now, "delta(seconds):", delta.seconds
+    #print("file:", filepath, "fileage:", fileage, "now:", now, "delta(seconds):", delta.seconds)
 
     #if delta.seconds > 1800:
         ## TODO: Send NDR back to user
