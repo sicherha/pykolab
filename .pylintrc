@@ -1,0 +1,11 @@
+[MASTER]
+disable=
+    cyclic-import,
+    duplicate-code,
+    missing-docstring,
+    unused-argument,
+    unused-wildcard-import,
+    wildcard-import
+
+function-rgx=[a-z_][a-z0-9_]{2,90}$
+init-hook="import sys; sys.path.insert(0, './data/')"
