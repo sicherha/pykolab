@@ -10,7 +10,7 @@ Group=kolab
 EnvironmentFile=/etc/sysconfig/wallace
 ExecStart=/usr/sbin/wallaced $FLAGS --pid-file /run/wallaced/wallaced.pid
 ExecReload=/bin/kill -HUP $MAINPID
-ExecStop=/bin/kill -TERM $MAINPID
+ExecStop=/bin/kill -KILL $MAINPID
 
 [Install]
 WantedBy=multi-user.target
