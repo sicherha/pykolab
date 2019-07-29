@@ -35,50 +35,60 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.setup')
 conf = pykolab.getConf()
 
+
 def __init__():
     components.register('php', execute, description=description())
+
 
 def cli_options():
     php_group = conf.add_cli_parser_option_group(_("PHP Options"))
 
     php_group.add_option(
-            "--timezone",
-            dest    = "timezone",
-            action  = "store",
-            default = None,
-            help    = _("Specify the timezone for PHP.")
-        )
+        "--timezone",
+        dest="timezone",
+        action="store",
+        default=None,
+        help=_("Specify the timezone for PHP.")
+    )
 
     php_group.add_option(
-            "--with-php-ini",
-            dest    = "php_ini_path",
-            action  = "store",
-            default = None,
-            help    = _("Specify the path to the php.ini file used with the webserver.")
-        )
+        "--with-php-ini",
+        dest="php_ini_path",
+        action="store",
+        default=None,
+        help=_("Specify the path to the php.ini file used with the webserver.")
+    )
+
 
 def description():
     return _("Setup PHP.")
 
+
 def execute(*args, **kw):
-    if conf.timezone == None:
+    if conf.timezone is None:
         print >> sys.stderr, utils.multiline_message(
-                _("""
-                        Please supply the timezone PHP should be using.
-                        You have to use a Continent or Country / City locality name
-                        like 'Europe/Berlin', but not just 'CEST'.
-                    """)
-            )
+            _("""
+                Please supply the timezone PHP should be using.
+                You have to use a Continent or Country / City locality name
+                like 'Europe/Berlin', but not just 'CEST'.
+            """)
+        )
 
         conf.timezone = utils.ask_question(
-                _("Timezone ID"),
-                default="UTC"
+            _("Timezone ID"),
+            default="UTC"
+        )
+
+    if conf.php_ini_path is not None:
+        if not os.path.isfile(conf.php_ini_path):
+            log.error(
+                _("Cannot configure PHP through %r (No such file or directory)") % (
+                    conf.php_ini_path
+                )
             )
 
-    if not conf.php_ini_path == None:
-        if not os.path.isfile(conf.php_ini_path):
-            log.error(_("Cannot configure PHP through %r (No such file or directory)") % (conf.php_ini_path))
             return
+
         php_ini = conf.php_ini_path
 
     else:
@@ -98,20 +108,31 @@ def execute(*args, **kw):
             log.error(_("Could not find PHP configuration file php.ini"))
             return
 
-    myaugeas = Augeas()
+    try:
+        myaugeas = Augeas()
 
-    setting_base = '/files%s/' % (php_ini)
+        setting_base = '/files%s/' % (php_ini)
 
-    setting = os.path.join(setting_base, 'Date', 'date.timezone')
-    current_value = myaugeas.get(setting)
+        setting = os.path.join(setting_base, 'Date', 'date.timezone')
+        current_value = myaugeas.get(setting)
 
-    if current_value == None:
-        insert_paths = myaugeas.match('/files%s/Date/*' % (php_ini))
-        insert_path = insert_paths[(len(insert_paths)-1)]
-        myaugeas.insert(insert_path, 'date.timezone', False)
+        if current_value is None:
+            insert_paths = myaugeas.match('/files%s/Date/*' % (php_ini))
+            insert_path = insert_paths[(len(insert_paths) - 1)]
+            myaugeas.insert(insert_path, 'date.timezone', False)
 
-    log.debug(_("Setting key %r to %r") % ('Date/date.timezone', conf.timezone), level=8)
-    myaugeas.set(setting, conf.timezone)
+        log.debug(_("Setting key %r to %r") % ('Date/date.timezone', conf.timezone), level=8)
+        myaugeas.set(setting, conf.timezone)
 
-    myaugeas.save()
-
+        myaugeas.save()
+    except IndexError:
+        subprocess.Popen(
+            [
+                'sed',
+                '-i',
+                '-r',
+                '-e',
+                r's|^(;*)date\.timezone.*$|date.timezone = %s|g' % (conf.timezone),
+                php_ini
+            ]
+        )
