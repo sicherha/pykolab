@@ -33,30 +33,34 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.setup')
 conf = pykolab.getConf()
 
+
 def __init__():
     components.register('mysql', execute, description=description())
+
 
 def cli_options():
     ldap_group = conf.add_cli_parser_option_group(_("MySQL Options"))
 
     ldap_group.add_option(
-            "--mysqlserver",
-            dest    = "mysqlserver",
-            action  = "store",
-            help    = _("Specify whether to use an (existing) or (new) MySQL server.")
-        )
+        "--mysqlserver",
+        dest="mysqlserver",
+        action="store",
+        help=_("Specify whether to use an (existing) or (new) MySQL server.")
+    )
+
 
 def description():
     return _("Setup MySQL.")
 
-def execute(*args, **kw):
+
+def execute(*args, **kw):  # noqa: C901
 
     socket_paths = [
-            "/var/lib/mysql/mysql.sock",
-            "/var/run/mysqld/mysqld.sock",
-            "/var/run/mysql/mysql.sock",
-            "/var/run/mysqld/mysqld.pid"
-        ]
+        "/var/lib/mysql/mysql.sock",
+        "/var/run/mysqld/mysqld.sock",
+        "/var/run/mysql/mysql.sock",
+        "/var/run/mysqld/mysqld.pid"
+    ]
 
     # on CentOS7, there is MariaDB instead of MySQL
     mysqlservice = 'mysqld.service'
@@ -73,7 +77,7 @@ def execute(*args, **kw):
     elif os.path.isfile('/sbin/service'):
         subprocess.call(['/sbin/service', 'mysqld', 'restart'])
     elif os.path.isfile('/usr/sbin/service'):
-        subprocess.call(['/usr/sbin/service','mysql','restart'])
+        subprocess.call(['/usr/sbin/service', 'mysql', 'restart'])
     else:
         log.error(_("Could not start the MySQL database service."))
 
@@ -84,8 +88,9 @@ def execute(*args, **kw):
     elif os.path.isfile('/usr/sbin/update-rc.d'):
         subprocess.call(['/usr/sbin/update-rc.d', 'mysql', 'defaults'])
     else:
-        log.error(_("Could not configure to start on boot, the " + \
-                "MySQL database service."))
+        log.error(
+            _("Could not configure to start on boot, the MySQL database service.")
+        )
 
     log.info(_("Waiting for at most 30 seconds for MySQL/MariaDB to settle..."))
     max_wait = 30
@@ -99,9 +104,9 @@ def execute(*args, **kw):
             time.sleep(1)
 
     options = {
-            1: "Existing MySQL server (with root password already set).",
-            2: "New MySQL server (needs to be initialized)."
-        }
+        1: "Existing MySQL server (with root password already set).",
+        2: "New MySQL server (needs to be initialized)."
+    }
 
     answer = 0
     if len([x for x in socket_paths if os.path.exists(x)]) > 0:
@@ -115,37 +120,76 @@ def execute(*args, **kw):
 
     if answer == "1" or answer == 1:
         print >> sys.stderr, utils.multiline_message(
-                _("""
-                        Please supply the root password for MySQL, so we can set
-                        up user accounts for other components that use MySQL.
-                    """)
-            )
+            _("""
+                Please supply the root password for MySQL, so we can set
+                up user accounts for other components that use MySQL.
+            """)
+        )
 
         mysql_root_password = utils.ask_question(
-                _("MySQL root password"),
-                password=True
-            )
+            _("MySQL root password"),
+            password=True
+        )
 
     else:
         print >> sys.stderr, utils.multiline_message(
-                _("""
-                        Please supply a root password for MySQL. This password
-                        will be the administrative user for this MySQL server,
-                        and it should be kept a secret. After this setup process
-                        has completed, Kolab is going to discard and forget
-                        about this password, but you will need it for
-                        administrative tasks in MySQL.
-                    """)
-            )
+            _("""
+                Please supply a root password for MySQL. This password
+                will be the administrative user for this MySQL server,
+                and it should be kept a secret. After this setup process
+                has completed, Kolab is going to discard and forget
+                about this password, but you will need it for
+                administrative tasks in MySQL.
+            """)
+        )
 
         mysql_root_password = utils.ask_question(
-                _("MySQL root password"),
-                default=utils.generate_password(),
-                password=True,
-                confirm=True
-            )
+            _("MySQL root password"),
+            default=utils.generate_password(),
+            password=True,
+            confirm=True
+        )
 
-        p1 = subprocess.Popen(['echo', 'UPDATE mysql.user SET Password=PASSWORD(\'%s\') WHERE User=\'root\';' % (mysql_root_password)], stdout=subprocess.PIPE)
+        p1 = subprocess.Popen(
+            [
+                'echo',
+                'UPDATE mysql.user SET Password=PASSWORD(\'%s\') WHERE User=\'root\';' % (
+                    mysql_root_password
+                )
+            ],
+            stdout=subprocess.PIPE
+        )
+
+        p2 = subprocess.Popen(['mysql'], stdin=p1.stdout)
+        p1.stdout.close()
+        p2.communicate()
+
+        p1 = subprocess.Popen(
+            [
+                'echo',
+                "UPDATE mysql.user SET authentication_string=PASSWORD('%s') WHERE User='root';" % (
+                    mysql_root_password
+                )
+            ],
+            stdout=subprocess.PIPE
+        )
+
+        p2 = subprocess.Popen(['mysql'], stdin=p1.stdout)
+        p1.stdout.close()
+        p2.communicate()
+
+        p1 = subprocess.Popen(
+            [
+                'echo',
+                """
+                    UPDATE mysql.user
+                        SET plugin='mysql_native_password'
+                        WHERE User='root' AND plugin='auth_socket';
+                """
+            ],
+            stdout=subprocess.PIPE
+        )
+
         p2 = subprocess.Popen(['mysql'], stdin=p1.stdout)
         p1.stdout.close()
         p2.communicate()
@@ -162,7 +206,7 @@ password='%s'
 """ % (mysql_root_password)
 
     fp = open('/tmp/kolab-setup-my.cnf', 'w')
-    os.chmod('/tmp/kolab-setup-my.cnf', 0600)
+    os.chmod('/tmp/kolab-setup-my.cnf', 600)
     fp.write(data)
     fp.close()
 
@@ -174,41 +218,74 @@ password='%s'
                 if filename.endswith('oracle.sql'):
                     continue
 
-                schema_file = os.path.join(root,filename)
+                schema_file = os.path.join(root, filename)
 
-    if not schema_file == None:
+    if schema_file is not None:
         p1 = subprocess.Popen(['echo', 'create database kolab;'], stdout=subprocess.PIPE)
         p2 = subprocess.Popen(['mysql', '--defaults-file=/tmp/kolab-setup-my.cnf'], stdin=p1.stdout)
         p1.stdout.close()
         p2.communicate()
 
         print >> sys.stderr, utils.multiline_message(
-                _("""
-                        Please supply a password for the MySQL user 'kolab'.
-                        This password will be used by Kolab services, such as
-                        the Web Administration Panel.
-                    """)
-            )
+            _("""
+                Please supply a password for the MySQL user 'kolab'.
+                This password will be used by Kolab services, such as
+                the Web Administration Panel.
+            """)
+        )
 
         mysql_kolab_password = utils.ask_question(
-                _("MySQL kolab password"),
-                default=utils.generate_password(),
-                password=True,
-                confirm=True
-            )
+            _("MySQL kolab password"),
+            default=utils.generate_password(),
+            password=True,
+            confirm=True
+        )
 
-        p1 = subprocess.Popen(['echo', 'GRANT ALL PRIVILEGES ON kolab.* TO \'kolab\'@\'localhost\' IDENTIFIED BY \'%s\';' % (mysql_kolab_password)], stdout=subprocess.PIPE)
-        p2 = subprocess.Popen(['mysql', '--defaults-file=/tmp/kolab-setup-my.cnf'], stdin=p1.stdout)
+        p1 = subprocess.Popen(
+            [
+                'echo',
+                "GRANT ALL PRIVILEGES ON kolab.* TO 'kolab'@'localhost' IDENTIFIED BY '%s';" % (
+                    mysql_kolab_password
+                )
+            ],
+            stdout=subprocess.PIPE
+        )
+
+        p2 = subprocess.Popen(
+            [
+                'mysql',
+                '--defaults-file=/tmp/kolab-setup-my.cnf'
+            ],
+            stdin=p1.stdout
+        )
+
         p1.stdout.close()
         p2.communicate()
 
         p1 = subprocess.Popen(['cat', schema_file], stdout=subprocess.PIPE)
-        p2 = subprocess.Popen(['mysql', '--defaults-file=/tmp/kolab-setup-my.cnf', 'kolab'], stdin=p1.stdout)
+        p2 = subprocess.Popen(
+            [
+                'mysql',
+                '--defaults-file=/tmp/kolab-setup-my.cnf',
+                'kolab'
+            ],
+            stdin=p1.stdout
+        )
+
         p1.stdout.close()
         p2.communicate()
 
-        conf.command_set('kolab_wap', 'sql_uri', 'mysql://kolab:%s@localhost/kolab' % (mysql_kolab_password))
-        conf.command_set('kolab_smtp_access_policy', 'cache_uri', 'mysql://kolab:%s@localhost/kolab' % (mysql_kolab_password))
+        conf.command_set(
+            'kolab_wap',
+            'sql_uri',
+            'mysql://kolab:%s@localhost/kolab' % (mysql_kolab_password)
+        )
+
+        conf.command_set(
+            'kolab_smtp_access_policy',
+            'cache_uri',
+            'mysql://kolab:%s@localhost/kolab' % (mysql_kolab_password)
+        )
+
     else:
         log.warning(_("Could not find the MySQL Kolab schema file"))
-
