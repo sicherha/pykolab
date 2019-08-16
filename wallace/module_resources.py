@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=too-many-lines
 # Copyright 2010-2015 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Jeroen van Meeuwen (Kolab Systems) <vanmeeuwen a kolabsys.com>
@@ -17,40 +18,39 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import datetime
-import icalendar
-import os
-import pytz
-import random
-import signal
-import tempfile
-import time
-from urlparse import urlparse
-from dateutil.tz import tzlocal
 import base64
-import uuid
-import re
+import datetime
 
 from email import message_from_string
 from email.parser import Parser
 from email.utils import formataddr
 from email.utils import getaddresses
 
+import os
+import random
+import re
+import signal
+import time
+import uuid
+
+from dateutil.tz import tzlocal
+
 import modules
 
-import pykolab
 import kolabformat
 
+import pykolab
 from pykolab.auth import Auth
 from pykolab.conf import Conf
 from pykolab.imap import IMAP
+from pykolab.logger import LoggerAdapter
+from pykolab.itip import events_from_message
+from pykolab.itip import check_event_conflict
+from pykolab.translate import _
 from pykolab.xml import to_dt
 from pykolab.xml import utils as xmlutils
 from pykolab.xml import event_from_message
 from pykolab.xml import participant_status_label
-from pykolab.itip import events_from_message
-from pykolab.itip import check_event_conflict
-from pykolab.translate import _
 
 # define some contstants used in the code below
 COND_NOTIFY = 256
@@ -59,16 +59,18 @@ ACT_ACCEPT = 2
 ACT_REJECT = 8
 ACT_ACCEPT_AND_NOTIFY = ACT_ACCEPT + COND_NOTIFY
 
+# noqa: E241
 policy_name_map = {
-    'ACT_MANUAL':            ACT_MANUAL,
-    'ACT_ACCEPT':            ACT_ACCEPT,
-    'ACT_REJECT':            ACT_REJECT,
+    'ACT_MANUAL':            ACT_MANUAL,  # noqa: E241
+    'ACT_ACCEPT':            ACT_ACCEPT,  # noqa: E241
+    'ACT_REJECT':            ACT_REJECT,  # noqa: E241
     'ACT_ACCEPT_AND_NOTIFY': ACT_ACCEPT_AND_NOTIFY
 }
 
+# pylint: disable=invalid-name
 log = pykolab.getLogger('pykolab.wallace/resources')
 extra_log_params = {'qid': '-'}
-log = pykolab.logger.LoggerAdapter(log, extra_log_params)
+log = LoggerAdapter(log, extra_log_params)
 
 conf = pykolab.getConf()
 
@@ -77,23 +79,27 @@ mybasepath = '/var/spool/pykolab/wallace/resources/'
 auth = None
 imap = None
 
+
 def __init__():
     modules.register('resources', execute, description=description(), heartbeat=heartbeat)
 
+
 def accept(filepath):
     new_filepath = os.path.join(
-            mybasepath,
-            'ACCEPT',
-            os.path.basename(filepath)
-        )
+        mybasepath,
+        'ACCEPT',
+        os.path.basename(filepath)
+    )
 
     cleanup()
     os.rename(filepath, new_filepath)
     filepath = new_filepath
-    exec('modules.cb_action_ACCEPT(%r, %r)' % ('resources',filepath))
+    exec('modules.cb_action_ACCEPT(%r, %r)' % ('resources', filepath))
+
 
 def description():
     return """Resource management module."""
+
 
 def cleanup():
     global auth, imap, extra_log_params
@@ -109,7 +115,13 @@ def cleanup():
     imap.disconnect()
     del imap
 
-def execute(*args, **kw):
+
+# pylint: disable=inconsistent-return-statements
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-return-statements
+# pylint: disable=too-many-statements
+def execute(*args, **kw):  # noqa: C901
     global auth, imap, extra_log_params
 
     # TODO: Test for correct call.
@@ -118,12 +130,12 @@ def execute(*args, **kw):
     extra_log_params['qid'] = os.path.basename(filepath)
 
     # (re)set language to default
-    pykolab.translate.setUserLanguage(conf.get('kolab','default_locale'))
+    pykolab.translate.setUserLanguage(conf.get('kolab', 'default_locale'))
 
     if not os.path.isdir(mybasepath):
         os.makedirs(mybasepath)
 
-    for stage in ['incoming', 'ACCEPT', 'REJECT', 'HOLD', 'DEFER' ]:
+    for stage in ['incoming', 'ACCEPT', 'REJECT', 'HOLD', 'DEFER']:
         if not os.path.isdir(os.path.join(mybasepath, stage)):
             os.makedirs(os.path.join(mybasepath, stage))
 
@@ -132,37 +144,37 @@ def execute(*args, **kw):
     auth = Auth()
     imap = IMAP()
 
-    if kw.has_key('stage'):
+    if 'stage' in kw:
         log.debug(
-                _("Issuing callback after processing to stage %s") % (
-                        kw['stage']
-                    ),
-                level=8
-            )
+            _("Issuing callback after processing to stage %s") % (
+                kw['stage']
+            ),
+            level=8
+        )
 
         log.debug(_("Testing cb_action_%s()") % (kw['stage']), level=8)
         if hasattr(modules, 'cb_action_%s' % (kw['stage'])):
             log.debug(
-                    _("Attempting to execute cb_action_%s()") % (kw['stage']),
-                    level=8
-                )
+                _("Attempting to execute cb_action_%s()") % (kw['stage']),
+                level=8
+            )
 
             exec(
-                    'modules.cb_action_%s(%r, %r)' % (
-                            kw['stage'],
-                            'resources',
-                            filepath
-                        )
+                'modules.cb_action_%s(%r, %r)' % (
+                    kw['stage'],
+                    'resources',
+                    filepath
                 )
+            )
 
             return filepath
     else:
         # Move to incoming
         new_filepath = os.path.join(
-                mybasepath,
-                'incoming',
-                os.path.basename(filepath)
-            )
+            mybasepath,
+            'incoming',
+            os.path.basename(filepath)
+        )
 
         if not filepath == new_filepath:
             log.debug("Renaming %r to %r" % (filepath, new_filepath))
@@ -176,8 +188,11 @@ def execute(*args, **kw):
     if not message.get('X-Kolab-To'):
         return filepath
 
-    recipients = [address for displayname,address in getaddresses(message.get_all('X-Kolab-To'))]
-    sender_email = [address for displayname,address in getaddresses(message.get_all('X-Kolab-From'))][0]
+    recipients = [address for displayname, address in getaddresses(message.get_all('X-Kolab-To'))]
+
+    sender_email = [
+        address for displayname, address in getaddresses(message.get_all('X-Kolab-From'))
+    ][0]
 
     any_itips = False
     any_resources = False
@@ -188,43 +203,46 @@ def execute(*args, **kw):
     # is an iTip message by checking the length of this list.
     try:
         itip_events = events_from_message(message, ['REQUEST', 'REPLY', 'CANCEL'])
-    except Exception, e:
-        log.error(_("Failed to parse iTip events from message: %r" % (e)))
+
+    # pylint: disable=broad-except
+    except Exception as errmsg:
+        log.error(_("Failed to parse iTip events from message: %r" % (errmsg)))
         itip_events = []
 
     if not len(itip_events) > 0:
-        log.info(
-                _("Message is not an iTip message or does not contain any " + \
-                    "(valid) iTip.")
-            )
+        log.info("Message is not an iTip message or does not contain any (valid) iTip.")
 
     else:
         any_itips = True
 
         log.debug(
-                _("iTip events attached to this message contain the " + \
-                    "following information: %r") % (itip_events),
-                level=8
-            )
+            "iTip events attached to this message contain the following information: %r" % (
+                itip_events
+            ),
+            level=8
+        )
 
     if any_itips:
         # See if any iTip actually allocates a resource.
-        if len([x['resources'] for x in itip_events if x.has_key('resources')]) > 0 \
-            or len([x['attendees'] for x in itip_events if x.has_key('attendees')]) > 0:
-                possibly_any_resources = True
+        if (len([x['resources'] for x in itip_events if 'resources' in x]) > 0
+                or len([x['attendees'] for x in itip_events if 'attendees' in x]) > 0):
+
+            possibly_any_resources = True
 
     if possibly_any_resources:
         auth.connect()
 
         for recipient in recipients:
             # extract reference UID from recipients like resource+UID@domain.org
-            if re.match('.+\+[A-Za-z0-9=/-]+@', recipient):
+            if re.match(r'.+\+[A-Za-z0-9=/-]+@', recipient):
                 try:
                     (prefix, host) = recipient.split('@')
                     (local, uid) = prefix.split('+')
                     reference_uid = base64.b64decode(uid, '-/')
                     recipient = local + '@' + host
-                except:
+
+                # pylint: disable=broad-except
+                except Exception:
                     continue
 
             if not len(resource_record_from_email_address(recipient)) == 0:
@@ -233,9 +251,14 @@ def execute(*args, **kw):
 
     if any_resources:
         if not any_itips:
-            log.debug(_("Not an iTip message, but sent to resource nonetheless. Reject message"), level=5)
+            log.debug(
+                _("Not an iTip message, but sent to resource nonetheless. Reject message"),
+                level=5
+            )
+
             reject(filepath)
             return False
+
         else:
             # Continue. Resources and iTips. We like.
             pass
@@ -253,11 +276,16 @@ def execute(*args, **kw):
 
     # check if resource attendees match the envelope recipient
     if len(resource_dns) == 0:
-        log.info(_("No resource attendees matching envelope recipient %s, Reject message") % (resource_recipient))
+        log.info(
+            _("No resource attendees matching envelope recipient %s, Reject message") % (
+                resource_recipient
+            )
+        )
+
         log.debug("%r" % (itip_events), level=8)
         reject(filepath)
-        return False
 
+        return False
 
     # Get the resource details, which includes details on the IMAP folder
     # This may append resource collection members to recource_dns
@@ -276,23 +304,44 @@ def execute(*args, **kw):
 
             # find initial reservation referenced by the reply
             if reference_uid:
-                (event, master) = find_existing_event(reference_uid, itip_event['recurrence-id'], receiving_resource)
-                log.debug(_("iTip REPLY to %r, %r; matches %r") % (reference_uid, itip_event['recurrence-id'], type(event)), level=8)
+                (event, master) = find_existing_event(
+                    reference_uid,
+                    itip_event['recurrence-id'],
+                    receiving_resource
+                )
+
+                log.debug(
+                    _("iTip REPLY to %r, %r; matches %r") % (
+                        reference_uid,
+                        itip_event['recurrence-id'],
+                        type(event)
+                    ),
+                    level=8
+                )
 
                 if event:
                     try:
                         sender_attendee = itip_event['xml'].get_attendee_by_email(sender_email)
                         owner_reply = sender_attendee.get_participant_status()
-                        log.debug(_("Sender Attendee: %r => %r") % (sender_attendee, owner_reply), level=8)
-                    except Exception, e:
+                        log.debug(
+                            _("Sender Attendee: %r => %r") % (sender_attendee, owner_reply),
+                            level=8
+                        )
+
+                    # pylint: disable=broad-except
+                    except Exception as e:
                         log.error(_("Could not find envelope sender attendee: %r") % (e))
                         continue
 
                     # compare sequence number to avoid outdated replies
                     if not itip_event['sequence'] == event.get_sequence():
-                        log.info(_("The iTip reply sequence (%r) doesn't match the referred event version (%r). Ignoring.") % (
-                            itip_event['sequence'], event.get_sequence()
-                        ))
+                        log.info(
+                            _("The iTip reply sequence (%r) doesn't match the referred event version (%r). Ignoring.") % (
+                                itip_event['sequence'],
+                                event.get_sequence()
+                            )
+                        )
+
                         continue
 
                     # forward owner response comment
@@ -313,7 +362,11 @@ def execute(*args, **kw):
                             sender_attendee.get_participant_status(True), reference_uid
                         ))
                 else:
-                    log.info(_("Event referenced by this REPLY (%r) not found in resource calendar") % (reference_uid))
+                    log.info(
+                        _("Event referenced by this REPLY (%r) not found in resource calendar") % (
+                            reference_uid
+                        )
+                    )
 
             else:
                 log.info(_("No event reference found in this REPLY. Ignoring."))
@@ -324,9 +377,17 @@ def execute(*args, **kw):
         # else:
 
         try:
-            receiving_attendee = itip_event['xml'].get_attendee_by_email(receiving_resource['mail'])
-            log.debug(_("Receiving Resource: %r; %r") % (receiving_resource, receiving_attendee), level=8)
-        except Exception, e:
+            receiving_attendee = itip_event['xml'].get_attendee_by_email(
+                receiving_resource['mail']
+            )
+
+            log.debug(
+                _("Receiving Resource: %r; %r") % (receiving_resource, receiving_attendee),
+                level=8
+            )
+
+        # pylint: disable=broad-except
+        except Exception as e:
             log.error(_("Could not find envelope attendee: %r") % (e))
             continue
 
@@ -337,23 +398,53 @@ def execute(*args, **kw):
 
         if (att_delegated or att_nonpart) and not att_rsvp:
             done = True
-            log.debug(_("Recipient %r is non-participant, ignoring message") % (receiving_resource['mail']), level=8)
+
+            log.debug(
+                _("Recipient %r is non-participant, ignoring message") % (
+                    receiving_resource['mail']
+                ),
+                level=8
+            )
 
         # process CANCEL messages
         if not done and itip_event['method'] == "CANCEL":
             for resource in resource_dns:
-                if resources[resource]['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()] \
-                    and resources[resource].has_key('kolabtargetfolder'):
-                    (event, master) = find_existing_event(itip_event['uid'], itip_event['recurrence-id'], resources[resource])
-                    if event is None:
-                        log.debug(_("Cancellation for an event %r: not found, skipping") % (itip_event['uid']), level=8)
+                r_emails = [a.get_email() for a in itip_event['xml'].get_attendees()]
+                _resource = resources[resource]
+
+                if _resource['mail'] in r_emails and 'kolabtargetfolder' in _resource:
+                    (event, master) = find_existing_event(
+                        itip_event['uid'],
+                        itip_event['recurrence-id'],
+                        _resource
+                    )
+
+                    if not event:
+                        continue
+
                     # remove entire event
-                    elif master is None:
-                        log.debug(_("Cancellation for entire event %r: deleting") % (itip_event['uid']), level=8)
-                        delete_resource_event(itip_event['uid'], resources[resource], event._msguid)
+                    if master is None:
+                        log.debug(
+                            _("Cancellation for entire event %r: deleting") % (itip_event['uid']),
+                            level=8
+                        )
+
+                        delete_resource_event(
+                            itip_event['uid'],
+                            resources[resource],
+                            event._msguid
+                        )
+
                     # just cancel one single occurrence: add exception with status=cancelled
                     else:
-                        log.debug(_("Cancellation for a single occurrence %r of %r: updating...") % (itip_event['recurrence-id'], itip_event['uid']), level=8)
+                        log.debug(
+                            _("Cancellation for a single occurrence %r of %r: updating...") % (
+                                itip_event['recurrence-id'],
+                                itip_event['uid']
+                            ),
+                            level=8
+                        )
+
                         event.set_status('CANCELLED')
                         event.set_transparency(True)
                         _itip_event = dict(xml=event, uid=event.get_uid(), _master=master)
@@ -367,9 +458,13 @@ def execute(*args, **kw):
         cleanup()
         return
 
-
     # do the magic for the receiving attendee
-    (available_resource, itip_event) = check_availability(itip_events, resource_dns, resources, receiving_attendee)
+    (available_resource, itip_event) = check_availability(
+        itip_events,
+        resource_dns,
+        resources,
+        receiving_attendee
+    )
 
     _reject = False
     resource = None
@@ -377,10 +472,12 @@ def execute(*args, **kw):
 
     # accept reservation
     if available_resource is not None:
-        if available_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
+        atts = [a.get_email() for a in itip_event['xml'].get_attendees()]
+        if available_resource['mail'] in atts:
             # check if reservation was delegated
-            if available_resource['mail'] != receiving_resource['mail'] and receiving_attendee.get_participant_status() == kolabformat.PartDelegated:
-                original_resource = receiving_resource
+            if available_resource['mail'] != receiving_resource['mail']:
+                if receiving_attendee.get_participant_status() == kolabformat.PartDelegated:
+                    original_resource = receiving_resource
 
             resource = available_resource
         else:
@@ -390,20 +487,33 @@ def execute(*args, **kw):
             if available_resource.has_key('memberof'):
                 original_resource = resources[available_resource['memberof']]
 
-                if original_resource['mail'] in [a.get_email() for a in itip_event['xml'].get_attendees()]:
+                atts = [a.get_email() for a in itip_event['xml'].get_attendees()]
+
+                if original_resource['mail'] in atts:
                     #
                     # Delegate:
                     # - delegator: the original resource collection
                     # - delegatee: the target resource
                     #
-                    itip_event['xml'].delegate(original_resource['mail'], available_resource['mail'], available_resource['cn'])
+                    itip_event['xml'].delegate(
+                        original_resource['mail'],
+                        available_resource['mail'],
+                        available_resource['cn']
+                    )
 
                     # set delegator to NON-PARTICIPANT and RSVP=FALSE
                     delegator = itip_event['xml'].get_attendee_by_email(original_resource['mail'])
                     delegator.set_role(kolabformat.NonParticipant)
                     delegator.set_rsvp(False)
 
-                    log.debug(_("Delegate invitation for resource collection %r to %r") % (original_resource['mail'], available_resource['mail']), level=8)
+                    log.debug(
+                        _("Delegate invitation for resource collection %r to %r") % (
+                            original_resource['mail'],
+                            available_resource['mail']
+                        ),
+                        level=8
+                    )
+
                     resource = available_resource
 
     # Look for ACT_REJECT policy
@@ -418,11 +528,32 @@ def execute(*args, **kw):
                     break
 
     if resource is not None and not _reject:
-        log.debug(_("Accept invitation for individual resource %r / %r") % (resource['dn'], resource['mail']), level=8)
-        accept_reservation_request(itip_event, resource, original_resource, False, invitationpolicy)
+        log.debug(
+            _("Accept invitation for individual resource %r / %r") % (
+                resource['dn'],
+                resource['mail']
+            ),
+            level=8
+        )
+
+        accept_reservation_request(
+            itip_event,
+            resource,
+            original_resource,
+            False,
+            invitationpolicy
+        )
+
     else:
         resource = resources[resource_dns[0]]  # this is the receiving resource record
-        log.debug(_("Decline invitation for individual resource %r / %r") % (resource['dn'], resource['mail']), level=8)
+        log.debug(
+            _("Decline invitation for individual resource %r / %r") % (
+                resource['dn'],
+                resource['mail']
+            ),
+            level=8
+        )
+
         decline_reservation_request(itip_event, resource)
 
     cleanup()
@@ -463,7 +594,8 @@ def heartbeat(lastrun):
             if resource_attrs.has_key('kolabtargetfolder'):
                 try:
                     expunge_resource_calendar(resource_attrs['kolabtargetfolder'])
-                except Exception, e:
+                # pylint: disable=broad-except
+                except Exception as e:
                     log.error(_("Expunge resource calendar for %s (%s) failed: %r") % (
                         resource_dn, resource_attrs['kolabtargetfolder'], e
                     ))
@@ -507,11 +639,10 @@ def expunge_resource_calendar(mailbox):
 
         typ, data = imap.imap.m.fetch(num, '(RFC822)')
 
-        event_message = message_from_string(data[0][1])
-
         try:
             event = event_from_message(message_from_string(data[0][1]))
-        except Exception, e:
+        # pylint: disable=broad-except
+        except Exception as e:
             log.error(_("Failed to parse event from message %s/%s: %r") % (mailbox, num, e))
             continue
 
@@ -551,7 +682,8 @@ def check_availability(itip_events, resource_dns, resources, receiving_attendee=
         # sets the 'conflicting' flag and adds a list of conflicting events found
         try:
             num_messages += read_resource_calendar(resources[resource], itip_events)
-        except Exception, e:
+        # pylint: disable=broad-except
+        except Exception as e:
             log.error(_("Failed to read resource calendar for %r: %r") % (resource, e))
 
     end = time.time()
@@ -704,15 +836,15 @@ def read_resource_calendar(resource_rec, itip_events):
 
         try:
             msguid = re.search(r"\WUID (\d+)", data[0][0]).group(1)
-        except Exception, e:
+        # pylint: disable=broad-except
+        except Exception:
             log.error(_("No UID found in IMAP response: %r") % (data[0][0]))
             continue
 
-        event_message = message_from_string(data[0][1])
-
         try:
             event = event_from_message(message_from_string(data[0][1]))
-        except Exception, e:
+        # pylint: disable=broad-except
+        except Exception as e:
             log.error(_("Failed to parse event from message %s/%s: %r") % (mailbox, num, e))
             continue
 
@@ -756,7 +888,8 @@ def find_existing_event(uid, recurrence_id, resource_rec):
     try:
         imap.imap.m.select(imap.folder_quote(mailbox))
         typ, data = imap.imap.m.search(None, '(UNDELETED HEADER SUBJECT "%s")' % (uid))
-    except Exception, e:
+    # pylint: disable=broad-except
+    except Exception as e:
         log.error(_("Failed to access resource calendar:: %r") % (e))
         return event
 
@@ -765,7 +898,8 @@ def find_existing_event(uid, recurrence_id, resource_rec):
 
         try:
             msguid = re.search(r"\WUID (\d+)", data[0][0]).group(1)
-        except Exception, e:
+        # pylint: disable=broad-except
+        except Exception as e:
             log.error(_("No UID found in IMAP response: %r") % (data[0][0]))
             continue
 
@@ -792,7 +926,8 @@ def find_existing_event(uid, recurrence_id, resource_rec):
             if event is not None:
                 setattr(event, '_msguid', msguid)
 
-        except Exception, e:
+        # pylint: disable=broad-except
+        except Exception as e:
             log.error(_("Failed to parse event from message %s/%s: %r") % (mailbox, num, e))
             event = None
             master = None
@@ -918,7 +1053,8 @@ def save_resource_event(itip_event, resource):
         )
         return result
 
-    except Exception, e:
+    # pylint: disable=broad-except
+    except Exception as e:
         log.error(_("Failed to save event to resource calendar at %r: %r") % (
             resource['kolabtargetfolder'], e
         ))
@@ -956,7 +1092,8 @@ def delete_resource_event(uid, resource, msguid=None):
         imap.imap.m.expunge()
         return True
 
-    except Exception, e:
+    # pylint: disable=broad-except
+    except Exception as e:
         log.error(_("Failed to delete calendar object %r from folder %r: %r") % (
             uid, targetfolder, e
         ))
