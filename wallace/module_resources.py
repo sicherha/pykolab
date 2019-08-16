@@ -66,7 +66,10 @@ policy_name_map = {
     'ACT_ACCEPT_AND_NOTIFY': ACT_ACCEPT_AND_NOTIFY
 }
 
-log = pykolab.getLogger('pykolab.wallace')
+log = pykolab.getLogger('pykolab.wallace/resources')
+extra_log_params = {'qid': '-'}
+log = pykolab.logger.LoggerAdapter(log, extra_log_params)
+
 conf = pykolab.getConf()
 
 mybasepath = '/var/spool/pykolab/wallace/resources/'
@@ -93,9 +96,11 @@ def description():
     return """Resource management module."""
 
 def cleanup():
-    global auth, imap
+    global auth, imap, extra_log_params
 
     log.debug("cleanup(): %r, %r" % (auth, imap), level=8)
+
+    extra_log_params['qid'] = '-'
 
     auth.disconnect()
     del auth
@@ -105,7 +110,12 @@ def cleanup():
     del imap
 
 def execute(*args, **kw):
-    global auth, imap
+    global auth, imap, extra_log_params
+
+    # TODO: Test for correct call.
+    filepath = args[0]
+
+    extra_log_params['qid'] = os.path.basename(filepath)
 
     # (re)set language to default
     pykolab.translate.setUserLanguage(conf.get('kolab','default_locale'))
@@ -121,9 +131,6 @@ def execute(*args, **kw):
 
     auth = Auth()
     imap = IMAP()
-
-    # TODO: Test for correct call.
-    filepath = args[0]
 
     if kw.has_key('stage'):
         log.debug(

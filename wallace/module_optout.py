@@ -35,7 +35,7 @@ import pykolab
 
 from pykolab.translate import _
 
-log = pykolab.getLogger('pykolab.wallace')
+log = pykolab.getLogger('pykolab.wallace/optout')
 conf = pykolab.getConf()
 
 mybasepath = '/var/spool/pykolab/wallace/optout/'

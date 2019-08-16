@@ -33,7 +33,9 @@ from pykolab.auth import Auth
 from pykolab.translate import _
 
 # pylint: disable=invalid-name
-log = pykolab.getLogger('pykolab.wallace')
+log = pykolab.getLogger('pykolab.wallace/signature')
+extra_log_params = {'qid': '-'}
+log = pykolab.logger.LoggerAdapter(log, extra_log_params)
 conf = pykolab.getConf()
 
 mybasepath = '/var/spool/pykolab/wallace/signature/'
@@ -78,15 +80,19 @@ def attr_resolve(sender_info, attr):
 
 # pylint: disable=too-many-branches,too-many-locals,too-many-statements
 def execute(*args, **kw):  # noqa: C901
+    global extra_log_params
+
+    # TODO: Test for correct call.
+    filepath = args[0]
+
+    extra_log_params['qid'] = os.path.basename(filepath)
+
     if not os.path.isdir(mybasepath):
         os.makedirs(mybasepath)
 
     for stage in ['incoming', 'ACCEPT']:
         if not os.path.isdir(os.path.join(mybasepath, stage)):
             os.makedirs(os.path.join(mybasepath, stage))
-
-    # TODO: Test for correct call.
-    filepath = args[0]
 
     if 'stage' in kw:
         log.debug(_("Issuing callback after processing to stage %s") % (kw['stage']), level=8)

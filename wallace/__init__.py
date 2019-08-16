@@ -26,7 +26,7 @@ import multiprocessing
 import os
 import pwd
 import traceback
-from smtpd import SMTPChannel
+import smtpd
 import socket
 import struct
 import sys
@@ -42,6 +42,7 @@ from modules import cb_action_ACCEPT
 
 # pylint: disable=invalid-name
 log = pykolab.getLogger('pykolab.wallace')
+sys.stderr = pykolab.logger.StderrToLogger(log)
 conf = pykolab.getConf()
 
 
@@ -128,10 +129,15 @@ class Timer(_Timer):
         while True:
             while not self.finished.is_set():
                 self.finished.wait(self.interval)
+                log.debug(_("Timer looping function '%s' every %ss") % (
+                    self.function.__name__,
+                    self.interval
+                ), level=8)
                 self.function(*self.args, **self.kwargs)
 
             self.finished.set()
-
+            log.debug(_("Timer loop %s") % ('still active','finished')[self.finished.is_set()], level=8)
+            break
 
 class WallaceDaemon:
     def __init__(self):
@@ -174,6 +180,15 @@ class WallaceDaemon:
             default=4,
             type=int,
             help=_("Number of threads to use.")
+        )
+
+        daemon_group.add_option(
+            "--max-tasks",
+            dest    = "max_tasks",
+            action  = "store",
+            default = 10,
+            type    = int,
+            help    = _("Number of tasks per process.")
         )
 
         daemon_group.add_option(
@@ -226,7 +241,7 @@ class WallaceDaemon:
         self.parent_pid = os.getpid()
 
         if version.StrictVersion(sys.version[:3]) >= version.StrictVersion("2.7"):
-            self.pool = multiprocessing.Pool(conf.max_threads, worker_process, (), 1)
+            self.pool = multiprocessing.Pool(conf.max_threads, worker_process, (), conf.max_tasks)
         else:
             self.pool = multiprocessing.Pool(conf.max_threads, worker_process, ())
 
@@ -297,16 +312,25 @@ class WallaceDaemon:
         try:
             while 1:
                 while self.current_connections >= self.max_connections:
-                    log.debug("Out of connections.")
+                    log.debug(_("Reached limit of max connections of: %s. Sleeping for 0.5s") % self.max_connections, level=6)
                     time.sleep(0.5)
 
                 pair = s.accept()
-                log.info(_("Accepted connection"))
+                log.debug(_("Accepted connection %r with address %r") % (pair if pair is not None else (None, None)), level=8)
                 if pair is not None:
                     self.current_connections += 1
                     connection, address = pair
-                    SMTPChannel(self, connection, address)
+
+                    _smtpd = smtpd
+                    # Set DEBUGSTREAM of smtpd to log to pykolab logger
+                    if conf.debuglevel > 8:
+                        _smtpd.DEBUGSTREAM = pykolab.logger.StderrToLogger(log)
+
+                    log.debug(_("Creating SMTPChannel for accepted message"), level=8)
+                    channel = _smtpd.SMTPChannel(self, connection, address)
                     asyncore.loop()
+                else:
+                    log.error(_("Socket accepted, but (conn, address) tuple is None."))
 
         # pylint: disable=broad-except
         except Exception:
@@ -431,6 +455,7 @@ class WallaceDaemon:
         os.write(fp, data)
         os.close(fp)
 
+        log.debug(_("Started processing accepted message %s") % filename, level=8)
         self.pool.apply_async(pickup_message, (filename, (self.modules)))
 
         self.current_connections -= 1

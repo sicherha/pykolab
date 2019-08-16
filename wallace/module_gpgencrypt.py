@@ -40,7 +40,9 @@ import pykolab
 
 from pykolab.translate import _
 
-log = pykolab.getLogger('pykolab.wallace')
+log = pykolab.getLogger('pykolab.wallace/gpgencrypt')
+extra_log_params = {'qid': '-'}
+log = pykolab.logger.LoggerAdapter(log, extra_log_params)
 conf = pykolab.getConf()
 
 mybasepath = '/var/spool/pykolab/wallace/gpgencrypt/'
@@ -86,15 +88,19 @@ Content-Disposition: inline; filename=\"encrypted.asc\"\n\n"
     return msg
 
 def execute(*args, **kw):
+    global extra_log_params
+
+    # TODO: Test for correct call.
+    filepath = args[0]
+
+    extra_log_params['qid'] = os.path.basename(filepath)
+
     if not os.path.isdir(mybasepath):
         os.makedirs(mybasepath)
 
     for stage in ['incoming', 'ACCEPT' ]:
         if not os.path.isdir(os.path.join(mybasepath, stage)):
             os.makedirs(os.path.join(mybasepath, stage))
-
-    # TODO: Test for correct call.
-    filepath = args[0]
 
     if kw.has_key('stage'):
         log.debug(_("Issuing callback after processing to stage %s") % (kw['stage']), level=8)

@@ -35,22 +35,41 @@ class StderrToLogger(object):
         self.logger = logger
         self.log_level = log_level
         self.linebuf = ''
+        self.skip_next = False
  
     def write(self, buf):
-        # ugly patch to make smtplib debug logging records appear on one line in log file
+        # ugly patch to make smtplib and smtpd debug logging records appear on one line in log file
         # smtplib uses "print>>stderr, var, var" statements for debug logging. These
         # statements are splited into separate lines on separating whitespace.
+
         for line in buf.rstrip().splitlines():
+            if self.skip_next:
+                self.skip_next = False
+                continue
+
             if buf != '\n':
-                if line.startswith('send:') or line.startswith('reply:'):
+                linestarts = line.split(':')[0]
+                if linestarts in ['send', 'reply', 'Data', 'recips', 'Peer', 'sender']:
                     self.linebuf = line
-                    return
+                elif linestarts.startswith('===>'):
+                    # Do not log lines starting with ====>
+                    self.linebuf = ''
+                    self.skip_next = True
+                    continue
                 else:
                     self.logger.log(self.log_level, '%s %s', self.linebuf, line.rstrip()[:150])
                     self.linebuf = ''
  
     def flush(self): 
         pass
+
+class LoggerAdapter(logging.LoggerAdapter):
+    """
+        Custom LoggingAdapter to log Wallace mail message Queue ID
+    """
+
+    def process(self, msg, kwargs):
+        return '%s %s' % (self.extra['qid'], msg), kwargs
 
 class Logger(logging.Logger):
     """

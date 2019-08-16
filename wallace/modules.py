@@ -42,7 +42,10 @@ import pykolab
 from pykolab import constants
 from pykolab.translate import _
 
-log = pykolab.getLogger('pykolab.wallace')
+log = pykolab.getLogger('pykolab.wallace/modules')
+extra_log_params = {'qid': '-'}
+log = pykolab.logger.LoggerAdapter(log, extra_log_params)
+
 conf = pykolab.getConf()
 
 modules = {}
@@ -204,9 +207,17 @@ def _sendmail(sender, recipients, msg):
     return success
 
 def cb_action_HOLD(module, filepath):
+    global extra_log_params
+
+    extra_log_params['qid'] = os.path.basename(filepath)
+
     log.info(_("Holding message in queue for manual review (%s by %s)") % (filepath, module))
 
 def cb_action_DEFER(module, filepath):
+    global extra_log_params
+
+    extra_log_params['qid'] = os.path.basename(filepath)
+
     log.info(_("Deferring message in %s (by module %s)") % (filepath, module))
 
     # parse message headers
@@ -250,6 +261,10 @@ def cb_action_DEFER(module, filepath):
         #os.unlink(filepath)
 
 def cb_action_REJECT(module, filepath):
+    global extra_log_params
+
+    extra_log_params['qid'] = os.path.basename(filepath)
+
     log.info(_("Rejecting message in %s (by module %s)") % (filepath, module))
 
     log.debug(_("Rejecting message in: %r") %(filepath), level=8)
@@ -336,6 +351,10 @@ X-Wallace-Result: REJECT
 
 
 def cb_action_ACCEPT(module, filepath):
+    global extra_log_params
+
+    extra_log_params['qid'] = os.path.basename(filepath)
+
     log.info(_("Accepting message in %s (by module %s)") % (filepath, module))
 
     log.debug(_("Accepting message in: %r") %(filepath), level=8)

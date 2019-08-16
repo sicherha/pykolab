@@ -145,7 +145,10 @@ object_type_conditons = {
     'task':  COND_TYPE_TASK
 }
 
-log = pykolab.getLogger('pykolab.wallace')
+log = pykolab.getLogger('pykolab.wallace/invitationpolicy')
+extra_log_params = {'qid': '-'}
+log = pykolab.logger.LoggerAdapter(log, extra_log_params)
+
 conf = pykolab.getConf()
 
 mybasepath = '/var/spool/pykolab/wallace/invitationpolicy/'
@@ -184,9 +187,11 @@ def description():
     return """Invitation policy execution module."""
 
 def cleanup():
-    global auth, imap, write_locks
+    global auth, imap, write_locks, extra_log_params
 
     log.debug("cleanup(): %r, %r" % (auth, imap), level=8)
+
+    extra_log_params['qid'] = '-'
 
     auth.disconnect()
     del auth
@@ -200,7 +205,11 @@ def cleanup():
         remove_write_lock(key, False)
 
 def execute(*args, **kw):
-    global auth, imap
+    global auth, imap, extra_log_params
+
+    filepath = args[0]
+
+    extra_log_params['qid'] = os.path.basename(filepath)
 
     # (re)set language to default
     pykolab.translate.setUserLanguage(conf.get('kolab','default_locale'))
@@ -216,8 +225,6 @@ def execute(*args, **kw):
 
     auth = Auth()
     imap = IMAP()
-
-    filepath = args[0]
 
     # ignore calls on lock files
     if '/locks/' in filepath or kw.has_key('stage') and kw['stage'] == 'locks':
