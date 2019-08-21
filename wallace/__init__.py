@@ -186,7 +186,7 @@ class WallaceDaemon:
             "--max-tasks",
             dest    = "max_tasks",
             action  = "store",
-            default = 10,
+            default = None,
             type    = int,
             help    = _("Number of tasks per process.")
         )
