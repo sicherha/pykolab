@@ -505,12 +505,14 @@ class Conf(object):
 
         return values
 
-    def get_raw(self, section, key):
+    def get_raw(self, section, key, default=None):
         if not self.cfg_parser:
             self.read_config()
 
         if self.cfg_parser.has_option(section, key):
             return self.cfg_parser.get(section,key, 1)
+
+        return default
 
     def get(self, section, key, quiet=False):
         """

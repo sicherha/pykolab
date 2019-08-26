@@ -1298,15 +1298,20 @@ class LDAP(pykolab.base.Base):
             if not conf.resync:
                 modified_after = self.get_latest_sync_timestamp()
             else:
-                modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format').replace('%%', '%')
-                if modifytimestamp_format == None:
-                    modifytimestamp_format = "%Y%m%d%H%M%SZ"
+                modifytimestamp_format = conf.get_raw(
+                    'ldap',
+                    'modifytimestamp_format',
+                    default="%Y%m%d%H%M%SZ"
+                ).replace('%%', '%')
 
-                modified_after = datetime.datetime(1900, 01, 01, 00, 00, 00).strftime(modifytimestamp_format)
+                modified_after = datetime.datetime(1900, 01, 01, 00, 00, 00).strftime(
+                    modifytimestamp_format
+                )
+
         else:
             modified_after = self.get_latest_sync_timestamp()
 
-        _filter = "(&%s(modifytimestamp>=%s))" % (_filter,modified_after)
+        _filter = "(&%s(modifytimestamp>=%s))" % (_filter, modified_after)
 
         log.debug(_("Synchronization is using filter %r") % (_filter), level=8)
 
@@ -1318,7 +1323,7 @@ class LDAP(pykolab.base.Base):
         config_base_dn = self.config_get('base_dn')
         ldap_base_dn = self._kolab_domain_root_dn(self.domain)
 
-        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+        if ldap_base_dn is not None and not ldap_base_dn == config_base_dn:
             base_dn = ldap_base_dn
         else:
             base_dn = config_base_dn

@@ -65,14 +65,16 @@ class Entry(object):
         self.uniqueid = uniqueid
         self.result_attribute = result_attr
 
-        modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format').replace('%%', '%')
-        if modifytimestamp_format == None:
-            modifytimestamp_format = "%Y%m%d%H%M%SZ"
+        modifytimestamp_format = conf.get_raw(
+            'ldap',
+            'modifytimestamp_format',
+            default="%Y%m%d%H%M%SZ"
+        ).replace('%%', '%')
 
         self.last_change = datetime.datetime.strptime(
                 last_change,
-                modifytimestamp_format
-            )
+            modifytimestamp_format
+        )
 
 ##
 ## Tables
@@ -148,9 +150,11 @@ def get_entry(domain, entry, update=True):
         db.commit()
         _entry = db.query(Entry).filter_by(uniqueid=_uniqueid).first()
     else:
-        modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format').replace('%%', '%')
-        if modifytimestamp_format == None:
-            modifytimestamp_format = "%Y%m%d%H%M%SZ"
+        modifytimestamp_format = conf.get_raw(
+            'ldap',
+            'modifytimestamp_format',
+            default="%Y%m%d%H%M%SZ"
+        ).replace('%%', '%')
 
         if not _entry.last_change.strftime(modifytimestamp_format) == entry['modifytimestamp']:
             log.debug(_("Updating timestamp for cache entry %r") % (_uniqueid), level=8)
@@ -198,9 +202,11 @@ def init_db(domain,reinit=False):
     return db[domain]
 
 def last_modify_timestamp(domain):
-    modifytimestamp_format = conf.get_raw('ldap', 'modifytimestamp_format').replace('%%', '%')
-    if modifytimestamp_format == None:
-        modifytimestamp_format = "%Y%m%d%H%M%SZ"
+    modifytimestamp_format = conf.get_raw(
+        'ldap',
+        'modifytimestamp_format',
+        "%Y%m%d%H%M%SZ"
+    ).replace('%%', '%')
 
     try:
         db = init_db(domain)
