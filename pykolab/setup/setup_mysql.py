@@ -39,13 +39,20 @@ def __init__():
 
 
 def cli_options():
-    ldap_group = conf.add_cli_parser_option_group(_("MySQL Options"))
+    mysql_group = conf.add_cli_parser_option_group(_("MySQL Options"))
 
-    ldap_group.add_option(
+    mysql_group.add_option(
         "--mysqlserver",
         dest="mysqlserver",
         action="store",
         help=_("Specify whether to use an (existing) or (new) MySQL server.")
+    )
+
+    mysql_group.add_option(
+        "--mysqlrootpw",
+        dest="mysqlrootpw",
+        action="store",
+        help=_("The MySQL root user password.")
     )
 
 
@@ -119,17 +126,21 @@ def execute(*args, **kw):  # noqa: C901
             answer = utils.ask_menu(_("What MySQL server are we setting up?"), options)
 
     if answer == "1" or answer == 1:
-        print >> sys.stderr, utils.multiline_message(
-            _("""
-                Please supply the root password for MySQL, so we can set
-                up user accounts for other components that use MySQL.
-            """)
-        )
+        if not conf.mysqlrootpw:
+            print >> sys.stderr, utils.multiline_message(
+                _("""
+                    Please supply the root password for MySQL, so we can set
+                    up user accounts for other components that use MySQL.
+                """)
+            )
 
-        mysql_root_password = utils.ask_question(
-            _("MySQL root password"),
-            password=True
-        )
+            mysql_root_password = utils.ask_question(
+                _("MySQL root password"),
+                password=True
+            )
+
+        else:
+            mysql_root_password = conf.mysqlrootpw
 
     else:
         print >> sys.stderr, utils.multiline_message(
