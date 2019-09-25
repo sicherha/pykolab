@@ -232,7 +232,8 @@ def execute(*args, **kw):
 [mysql]
 user=root
 password='%s'
-""" % (mysql_root_password)
+host=%s
+""" % (mysql_root_password, conf.mysqlhost)
 
         fp = open('/tmp/kolab-setup-my.cnf', 'w')
         os.chmod('/tmp/kolab-setup-my.cnf', 600)

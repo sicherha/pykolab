@@ -49,6 +49,14 @@ def cli_options():
     )
 
     mysql_group.add_option(
+        "--mysqlhost",
+        dest="mysqlhost",
+        action="store",
+        default='127.0.0.1',
+        help=_("The MySQL host address.")
+    )
+
+    mysql_group.add_option(
         "--mysqlrootpw",
         dest="mysqlrootpw",
         action="store",
@@ -70,45 +78,46 @@ def execute(*args, **kw):  # noqa: C901
     ]
 
     # on CentOS7, there is MariaDB instead of MySQL
-    mysqlservice = 'mysqld.service'
-    if os.path.isfile('/usr/lib/systemd/system/mariadb.service'):
-        mysqlservice = 'mariadb.service'
-    elif os.path.isfile('/usr/lib/systemd/system/mysql.service'):
-        mysqlservice = 'mysql.service'
-    if not os.path.isfile('/usr/lib/systemd/system/' + mysqlservice):
-        # on Debian Jessie, systemctl restart mysql
-        mysqlservice = 'mysql'
+    if conf.mysqlserver != 'existing':
+        mysqlservice = 'mysqld.service'
+        if os.path.isfile('/usr/lib/systemd/system/mariadb.service'):
+            mysqlservice = 'mariadb.service'
+        elif os.path.isfile('/usr/lib/systemd/system/mysql.service'):
+            mysqlservice = 'mysql.service'
+        if not os.path.isfile('/usr/lib/systemd/system/' + mysqlservice):
+            # on Debian Jessie, systemctl restart mysql
+            mysqlservice = 'mysql'
 
-    if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['/bin/systemctl', 'restart', mysqlservice])
-    elif os.path.isfile('/sbin/service'):
-        subprocess.call(['/sbin/service', 'mysqld', 'restart'])
-    elif os.path.isfile('/usr/sbin/service'):
-        subprocess.call(['/usr/sbin/service', 'mysql', 'restart'])
-    else:
-        log.error(_("Could not start the MySQL database service."))
+        if os.path.isfile('/bin/systemctl'):
+            subprocess.call(['/bin/systemctl', 'restart', mysqlservice])
+        elif os.path.isfile('/sbin/service'):
+            subprocess.call(['/sbin/service', 'mysqld', 'restart'])
+        elif os.path.isfile('/usr/sbin/service'):
+            subprocess.call(['/usr/sbin/service', 'mysql', 'restart'])
+        else:
+            log.error(_("Could not start the MySQL database service."))
 
-    if os.path.isfile('/bin/systemctl'):
-        subprocess.call(['/bin/systemctl', 'enable', mysqlservice])
-    elif os.path.isfile('/sbin/chkconfig'):
-        subprocess.call(['/sbin/chkconfig', 'mysqld', 'on'])
-    elif os.path.isfile('/usr/sbin/update-rc.d'):
-        subprocess.call(['/usr/sbin/update-rc.d', 'mysql', 'defaults'])
-    else:
-        log.error(
-            _("Could not configure to start on boot, the MySQL database service.")
-        )
+        if os.path.isfile('/bin/systemctl'):
+            subprocess.call(['/bin/systemctl', 'enable', mysqlservice])
+        elif os.path.isfile('/sbin/chkconfig'):
+            subprocess.call(['/sbin/chkconfig', 'mysqld', 'on'])
+        elif os.path.isfile('/usr/sbin/update-rc.d'):
+            subprocess.call(['/usr/sbin/update-rc.d', 'mysql', 'defaults'])
+        else:
+            log.error(
+                _("Could not configure to start on boot, the MySQL database service.")
+            )
 
-    log.info(_("Waiting for at most 30 seconds for MySQL/MariaDB to settle..."))
-    max_wait = 30
-    while max_wait > 0:
-        for socket_path in socket_paths:
-            if os.path.exists(socket_path):
-                max_wait = 0
+        log.info(_("Waiting for at most 30 seconds for MySQL/MariaDB to settle..."))
+        max_wait = 30
+        while max_wait > 0:
+            for socket_path in socket_paths:
+                if os.path.exists(socket_path):
+                    max_wait = 0
 
-        if max_wait > 0:
-            max_wait = max_wait - 1
-            time.sleep(1)
+            if max_wait > 0:
+                max_wait = max_wait - 1
+                time.sleep(1)
 
     options = {
         1: "Existing MySQL server (with root password already set).",
@@ -116,14 +125,17 @@ def execute(*args, **kw):  # noqa: C901
     }
 
     answer = 0
-    if len([x for x in socket_paths if os.path.exists(x)]) > 0:
-        if conf.mysqlserver:
-            if conf.mysqlserver == 'existing':
-                answer = 1
-            elif conf.mysqlserver == 'new':
-                answer = 2
-        if answer == 0:
-            answer = utils.ask_menu(_("What MySQL server are we setting up?"), options)
+    if conf.mysqlserver != 'existing':
+        if len([x for x in socket_paths if os.path.exists(x)]) > 0:
+            if conf.mysqlserver:
+                if conf.mysqlserver == 'existing':
+                    answer = 1
+                elif conf.mysqlserver == 'new':
+                    answer = 2
+            if answer == 0:
+                answer = utils.ask_menu(_("What MySQL server are we setting up?"), options)
+    else:
+        answer = 1
 
     if answer == "1" or answer == 1:
         if not conf.mysqlrootpw:
@@ -214,7 +226,8 @@ def execute(*args, **kw):  # noqa: C901
 [mysql]
 user=root
 password='%s'
-""" % (mysql_root_password)
+host=%s
+""" % (mysql_root_password, conf.mysqlhost)
 
     fp = open('/tmp/kolab-setup-my.cnf', 'w')
     os.chmod('/tmp/kolab-setup-my.cnf', 600)

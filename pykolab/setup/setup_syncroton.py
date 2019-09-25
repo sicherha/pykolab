@@ -33,11 +33,19 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.setup')
 conf = pykolab.getConf()
 
+
 def __init__():
-    components.register('syncroton', execute, description=description(), after=['mysql','ldap','roundcube'])
+    components.register(
+        'syncroton',
+        execute,
+        description=description(),
+        after=['mysql','ldap','roundcube']
+    )
+
 
 def description():
     return _("Setup Syncroton.")
+
 
 def execute(*args, **kw):
     schema_files = []
@@ -71,7 +79,8 @@ def execute(*args, **kw):
 [mysql]
 user=root
 password='%s'
-""" % (mysql_root_password)
+host=%s
+""" % (mysql_root_password, conf.mysqlhost)
 
         fp = open('/tmp/kolab-setup-my.cnf', 'w')
         os.chmod('/tmp/kolab-setup-my.cnf', 0600)
