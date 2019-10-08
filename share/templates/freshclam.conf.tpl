@@ -10,7 +10,7 @@ DatabaseDirectory /var/lib/clamav
 
 # Path to the log file (make sure it has proper permissions)
 # Default: disabled
-UpdateLogFile /var/log/clamav/freshclam.log
+# UpdateLogFile /var/log/clamav/freshclam.log
 
 # Maximum size of the log file.
 # Value of 0 disables the limit.
