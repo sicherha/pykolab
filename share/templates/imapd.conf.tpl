@@ -1,7 +1,7 @@
-configdirectory: /var/lib/imap
-partition-default: /var/spool/imap
+configdirectory: $configdirectory
+partition-default: $partition_default
 admins: $admins
-sievedir: /var/lib/imap/sieve
+sievedir: $sievedir
 sendmail: /usr/sbin/sendmail
 sasl_pwcheck_method: saslauthd
 sasl_mech_list: PLAIN LOGIN

@@ -49,6 +49,17 @@ def execute(*args, **kw):
         Apply the necessary settings to /etc/imapd.conf
     """
 
+    configdirectory = "/var/lib/imap/"
+    partition_default = "/var/spool/imap/"
+    sievedir = "/var/lib/imap/sieve/"
+
+    if os.path.isdir("/var/lib/cyrus/"):
+        configdirectory = "/var/lib/cyrus/"
+        sievedir = "/var/lib/cyrus/sieve/"
+
+    if os.path.isdir("/var/spool/cyrus/"):
+        partition_default = "/var/spool/cyrus/"
+
     imapd_settings = {
             "ldap_servers": conf.get('ldap', 'ldap_uri'),
             "ldap_base": conf.get('ldap', 'base_dn'),
@@ -64,6 +75,9 @@ def execute(*args, **kw):
             "ldap_member_attribute": "nsrole",
             "admins": conf.get('cyrus-imap', 'admin_login'),
             "postuser": "shared",
+            "configdirectory": configdirectory,
+            "partition_default": partition_default,
+            "sievedir": sievedir
         }
 
     template_file = None
