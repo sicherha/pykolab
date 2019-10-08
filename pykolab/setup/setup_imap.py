@@ -57,8 +57,8 @@ def execute(*args, **kw):
         configdirectory = "/var/lib/cyrus/"
         sievedir = "/var/lib/cyrus/sieve/"
 
-    if os.path.isdir("/var/spool/cyrus/"):
-        partition_default = "/var/spool/cyrus/"
+    if os.path.isdir("/var/spool/cyrus/mail/"):
+        partition_default = "/var/spool/cyrus/mail/"
 
     imapd_settings = {
             "ldap_servers": conf.get('ldap', 'ldap_uri'),
