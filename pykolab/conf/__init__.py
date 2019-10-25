@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import print_function
 
 import logging
 import os
@@ -32,6 +33,7 @@ from pykolab.constants import *
 from pykolab.translate import _
 
 log = pykolab.getLogger('pykolab.conf')
+
 
 class Conf(object):
     def __init__(self):
@@ -53,7 +55,7 @@ class Conf(object):
         try:
             from pykolab.conf.entitlement import Entitlement
             entitlements = True
-        except:
+        except Exception:
             entitlements = False
             pass
 
@@ -68,7 +70,7 @@ class Conf(object):
         # Create the options
         self.create_options()
 
-    def finalize_conf(self,fatal=True):
+    def finalize_conf(self, fatal=True):
 
         self.create_options_from_plugins()
         self.parse_options(fatal=fatal)
@@ -84,8 +86,15 @@ class Conf(object):
 
         # But, they should be available in our class as well
         for option in self.defaults.__dict__.keys():
-            log.debug(_("Setting %s to %r (from defaults)") % (option, self.defaults.__dict__[option]), level=8)
-            setattr(self,option,self.defaults.__dict__[option])
+            log.debug(
+                _("Setting %s to %r (from defaults)") % (
+                    option,
+                    self.defaults.__dict__[option]
+                ),
+                level=8
+            )
+
+            setattr(self, option, self.defaults.__dict__[option])
 
         # This is where we check our parser for the defaults being set there.
         self.set_defaults_from_cli_options()
@@ -93,21 +102,41 @@ class Conf(object):
         self.options_set_from_config()
 
         # Also set the cli options
-        if hasattr(self,'cli_keywords') and not self.cli_keywords == None:
+        if hasattr(self, 'cli_keywords') and self.cli_keywords is not None:
             for option in self.cli_keywords.__dict__.keys():
                 retval = False
                 if hasattr(self, "check_setting_%s" % (option)):
-                    exec("retval = self.check_setting_%s(%r)" % (option, self.cli_keywords.__dict__[option]))
+                    exec(
+                        "retval = self.check_setting_%s(%r)" % (
+                            option,
+                            self.cli_keywords.__dict__[option]
+                        )
+                    )
 
-                    # The warning, error or confirmation dialog is in the check_setting_%s() function
+                    # The warning, error or confirmation dialog is in the check_setting_%s()
+                    # function
                     if not retval:
                         continue
 
-                    log.debug(_("Setting %s to %r (from CLI, verified)") % (option, self.cli_keywords.__dict__[option]), level=8)
-                    setattr(self,option,self.cli_keywords.__dict__[option])
+                    log.debug(
+                        _("Setting %s to %r (from CLI, verified)") % (
+                            option,
+                            self.cli_keywords.__dict__[option]
+                        ),
+                        level=8
+                    )
+
+                    setattr(self, option, self.cli_keywords.__dict__[option])
                 else:
-                    log.debug(_("Setting %s to %r (from CLI, not checked)") % (option, self.cli_keywords.__dict__[option]), level=8)
-                    setattr(self,option,self.cli_keywords.__dict__[option])
+                    log.debug(
+                        _("Setting %s to %r (from CLI, not checked)") % (
+                            option,
+                            self.cli_keywords.__dict__[option]
+                        ),
+                        level=8
+                    )
+
+                    setattr(self, option, self.cli_keywords.__dict__[option])
 
     def load_config(self, config):
         """
@@ -128,18 +157,18 @@ class Conf(object):
                     continue
 
                 if isinstance(self.defaults.__dict__[section][key], int):
-                    value = config.getint(section,key)
+                    value = config.getint(section, key)
                 elif isinstance(self.defaults.__dict__[section][key], bool):
-                    value = config.getboolean(section,key)
+                    value = config.getboolean(section, key)
                 elif isinstance(self.defaults.__dict__[section][key], str):
-                    value = config.get(section,key)
+                    value = config.get(section, key)
                 elif isinstance(self.defaults.__dict__[section][key], list):
-                    value = eval(config.get(section,key))
+                    value = eval(config.get(section, key))
                 elif isinstance(self.defaults.__dict__[section][key], dict):
-                    value = eval(config.get(section,key))
+                    value = eval(config.get(section, key))
 
-                if hasattr(self,"check_setting_%s_%s" % (section,key)):
-                    exec("retval = self.check_setting_%s_%s(%r)" % (section,key,value))
+                if hasattr(self, "check_setting_%s_%s" % (section, key)):
+                    exec("retval = self.check_setting_%s_%s(%r)" % (section, key, value))
                     if not retval:
                         # We just don't set it, check_setting_%s should have
                         # taken care of the error messages
@@ -147,10 +176,25 @@ class Conf(object):
 
                 if not self.defaults.__dict__[section][key] == value:
                     if key.count('password') >= 1:
-                        log.debug(_("Setting %s_%s to '****' (from configuration file)") % (section,key), level=8)
+                        log.debug(
+                            _("Setting %s_%s to '****' (from configuration file)") % (
+                                section,
+                                key
+                            ),
+                            level=8
+                        )
+
                     else:
-                        log.debug(_("Setting %s_%s to %r (from configuration file)") % (section,key,value), level=8)
-                    setattr(self,"%s_%s" % (section,key),value)
+                        log.debug(
+                            _("Setting %s_%s to %r (from configuration file)") % (
+                                section,
+                                key,
+                                value
+                            ),
+                            level=8
+                        )
+
+                    setattr(self, "%s_%s" % (section, key), value)
 
     def options_set_from_config(self):
         """
@@ -165,7 +209,7 @@ class Conf(object):
         # Other then default?
         self.config_file = self.defaults.config_file
 
-        if hasattr(self,'cli_keywords') and not self.cli_keywords == None:
+        if hasattr(self, 'cli_keywords') and self.cli_keywords is not None:
             if not self.cli_keywords.config_file == self.defaults.config_file:
                 self.config_file = self.cli_keywords.config_file
 
@@ -185,28 +229,35 @@ class Conf(object):
             retval = False
 
             if isinstance(self.defaults.__dict__['testing'][key], int):
-                value = config.getint('testing',key)
+                value = config.getint('testing', key)
             elif isinstance(self.defaults.__dict__['testing'][key], bool):
-                value = config.getboolean('testing',key)
+                value = config.getboolean('testing', key)
             elif isinstance(self.defaults.__dict__['testing'][key], str):
-                value = config.get('testing',key)
+                value = config.get('testing', key)
             elif isinstance(self.defaults.__dict__['testing'][key], list):
-                value = eval(config.get('testing',key))
+                value = eval(config.get('testing', key))
             elif isinstance(self.defaults.__dict__['testing'][key], dict):
-                value = eval(config.get('testing',key))
+                value = eval(config.get('testing', key))
 
-            if hasattr(self,"check_setting_%s_%s" % ('testing',key)):
-                exec("retval = self.check_setting_%s_%s(%r)" % ('testing',key,value))
+            if hasattr(self, "check_setting_%s_%s" % ('testing', key)):
+                exec("retval = self.check_setting_%s_%s(%r)" % ('testing', key, value))
                 if not retval:
                     # We just don't set it, check_setting_%s should have
                     # taken care of the error messages
                     continue
 
-            setattr(self,"%s_%s" % ('testing',key),value)
+            setattr(self, "%s_%s" % ('testing', key), value)
             if key.count('password') >= 1:
-                log.debug(_("Setting %s_%s to '****' (from configuration file)") % ('testing',key), level=8)
+                log.debug(
+                    _("Setting %s_%s to '****' (from configuration file)") % ('testing', key),
+                    level=8
+                )
+
             else:
-                log.debug(_("Setting %s_%s to %r (from configuration file)") % ('testing',key,value), level=8)
+                log.debug(
+                    _("Setting %s_%s to %r (from configuration file)") % ('testing', key, value),
+                    level=8
+                )
 
     def check_config(self, val=None):
         """
@@ -214,7 +265,7 @@ class Conf(object):
             and returns a SafeConfigParser instance if everything is OK.
         """
 
-        if not val == None:
+        if val is not None:
             config_file = val
         else:
             config_file = self.config_file
@@ -226,11 +277,13 @@ class Conf(object):
         log.debug(_("Reading configuration file %s") % config_file, level=8)
         try:
             config.read(config_file)
-        except:
+        except Exception:
             log.error(_("Invalid configuration file %s") % config_file)
 
         if not config.has_section("kolab"):
-            log.warning(_("No master configuration section [kolab] in configuration file %s") % config_file)
+            log.warning(
+                _("No master configuration section [kolab] in configuration file %s") % config_file
+            )
 
         return config
 
@@ -258,58 +311,70 @@ class Conf(object):
         # Enterprise Linux 5 does not have an "epilog" parameter to OptionParser
         try:
             self.cli_parser = OptionParser(epilog=epilog)
-        except:
+        except Exception:
             self.cli_parser = OptionParser()
 
-        ##
-        ## Runtime Options
-        ##
+        #
+        # Runtime Options
+        #
         runtime_group = self.cli_parser.add_option_group(_("Runtime Options"))
-        runtime_group.add_option(   "-c", "--config",
-                                    dest    = "config_file",
-                                    action  = "store",
-                                    default = "/etc/kolab/kolab.conf",
-                                    help    = _("Configuration file to use"))
+        runtime_group.add_option(
+            "-c", "--config",
+            dest="config_file",
+            action="store",
+            default="/etc/kolab/kolab.conf",
+            help=_("Configuration file to use")
+        )
 
-        runtime_group.add_option(   "-d", "--debug",
-                                    dest    = "debuglevel",
-                                    type    = 'int',
-                                    default = 0,
-                                    help    = _("Set the debugging " + \
-                                        "verbosity. Maximum is 9, tracing " + \
-                                        "protocols like LDAP, SQL and IMAP."))
-        
-        runtime_group.add_option(   "-e", "--default",
-                                    dest    = "answer_default",
-                                    action  = "store_true",
-                                    default = False,
-                                    help    = _("Use the default answer to all questions."))
+        runtime_group.add_option(
+            "-d", "--debug",
+            dest="debuglevel",
+            type='int',
+            default=0,
+            help=_(
+                "Set the debugging verbosity. Maximum is 9, tracing protocols LDAP, SQL and IMAP."
+            )
+        )
 
-        runtime_group.add_option(   "-l",
-                                    dest    = "loglevel",
-                                    type    = 'str',
-                                    default = "CRITICAL",
-                                    help    = _("Set the logging level. " + \
-                                        "One of info, warn, error, " + \
-                                        "critical or debug"))
+        runtime_group.add_option(
+            "-e", "--default",
+            dest="answer_default",
+            action="store_true",
+            default=False,
+            help=_("Use the default answer to all questions.")
+        )
 
-        runtime_group.add_option(   "--logfile",
-                                    dest    = "logfile",
-                                    action  = "store",
-                                    default = "/var/log/kolab/pykolab.log",
-                                    help    = _("Log file to use"))
+        runtime_group.add_option(
+            "-l",
+            dest="loglevel",
+            type='str',
+            default="CRITICAL",
+            help=_("Set the logging level. One of info, warn, error, critical or debug")
+        )
 
-        runtime_group.add_option(   "-q", "--quiet",
-                                    dest    = "quiet",
-                                    action  = "store_true",
-                                    default = False,
-                                    help    = _("Be quiet."))
+        runtime_group.add_option(
+            "--logfile",
+            dest="logfile",
+            action="store",
+            default="/var/log/kolab/pykolab.log",
+            help=_("Log file to use")
+        )
 
-        runtime_group.add_option(   "-y", "--yes",
-                                    dest    = "answer_yes",
-                                    action  = "store_true",
-                                    default = False,
-                                    help    = _("Answer yes to all questions."))
+        runtime_group.add_option(
+            "-q", "--quiet",
+            dest="quiet",
+            action="store_true",
+            default=False,
+            help=_("Be quiet.")
+        )
+
+        runtime_group.add_option(
+            "-y", "--yes",
+            dest="answer_yes",
+            action="store_true",
+            default=False,
+            help=_("Answer yes to all questions.")
+        )
 
     def parse_options(self, fatal=True):
         """
@@ -323,15 +388,18 @@ class Conf(object):
         """
             Run Forest, RUN!
         """
-
-        exitcode = 0
-
         if self.cli_args:
             if len(self.cli_args) >= 1:
-                if hasattr(self,"command_%s" % self.cli_args[0].replace('-','_')):
-                    exec("self.command_%s(%r)" %  (self.cli_args[0].replace('-','_'), self.cli_args[1:]))
+                if hasattr(self, "command_%s" % self.cli_args[0].replace('-', '_')):
+                    exec(
+                        "self.command_%s(%r)" % (
+                            self.cli_args[0].replace('-', '_'),
+                            self.cli_args[1:]
+                        )
+                    )
+
             else:
-                print >> sys.stderr, _("No command supplied")
+                print(_("No command supplied"), file=sys.stderr)
 
     def command_dump(self, *args, **kw):
         """
@@ -342,7 +410,7 @@ class Conf(object):
             self.read_config()
 
         if not self.cfg_parser.has_section('kolab'):
-            print "No section found for kolab"
+            print("No section found for kolab", file=sys.stderr)
             sys.exit(1)
 
         # Get the sections, and then walk through the sections in a
@@ -352,22 +420,22 @@ class Conf(object):
         items.sort()
 
         for item in items:
-            mode = self.cfg_parser.get('kolab',item)
-            print "%s = %s" % (item,mode)
+            mode = self.cfg_parser.get('kolab', item)
+            print("%s = %s" % (item, mode))
 
             if not self.cfg_parser.has_section(mode):
-                print "WARNING: No configuration section %s for item %s" % (mode,item)
+                print("WARNING: No configuration section %s for item %s" % (mode, item))
                 continue
 
             keys = self.cfg_parser.options(mode)
             keys.sort()
 
             if self.cfg_parser.has_option(mode, 'leave_this_one_to_me'):
-                print "Ignoring section %s" % (mode,)
+                print("Ignoring section %s" % (mode))
                 continue
 
             for key in keys:
-                print "%s_%s = %s" % (mode, key ,self.cfg_parser.get(mode,key))
+                print("%s_%s = %s" % (mode, key, self.cfg_parser.get(mode, key)))
 
     def read_config(self, value=None):
         """
@@ -377,7 +445,7 @@ class Conf(object):
         if not value:
             value = self.defaults.config_file
 
-            if hasattr(self, 'cli_keywords') and not self.cli_keywords == None:
+            if hasattr(self, 'cli_keywords') and self.cli_keywords is not None:
                     value = self.cli_keywords.config_file
 
         self.cfg_parser = SafeConfigParser()
@@ -397,7 +465,7 @@ class Conf(object):
 
         exec("args = %r" % args)
 
-        print "%s/%s: %r" % (args[0],args[1],self.get(args[0], args[1]))
+        print("%s/%s: %r" % (args[0], args[1], self.get(args[0], args[1])))
 
 #        if len(args) == 3:
 #            # Return non-zero if no match
@@ -444,8 +512,9 @@ class Conf(object):
         """
             Create a logger instance using cli_options.debuglevel
         """
+        global log
 
-        if not self.cli_keywords.debuglevel == None:
+        if self.cli_keywords.debuglevel is not None:
             loglevel = logging.DEBUG
         else:
             loglevel = logging.INFO
@@ -454,18 +523,34 @@ class Conf(object):
         self.debuglevel = self.cli_keywords.debuglevel
 
         # Initialize logger
-        log = pykolab.logger.Logger(loglevel=loglevel, debuglevel=self.cli_keywords.debuglevel, logfile=self.cli_keywords.logfile)
+        log = pykolab.logger.Logger(
+            loglevel=loglevel,
+            debuglevel=self.cli_keywords.debuglevel,
+            logfile=self.cli_keywords.logfile
+        )
 
     def set_defaults_from_cli_options(self):
         for long_opt in self.cli_parser.__dict__['_long_opt'].keys():
             if long_opt == "--help":
                 continue
-            setattr(self.defaults,self.cli_parser._long_opt[long_opt].dest,self.cli_parser._long_opt[long_opt].default)
+
+            setattr(
+                self.defaults,
+                self.cli_parser._long_opt[long_opt].dest,
+                self.cli_parser._long_opt[long_opt].default
+            )
 
         # But, they should be available in our class as well
         for option in self.cli_parser.defaults.keys():
-            log.debug(_("Setting %s to %r (from the default values for CLI options)") % (option, self.cli_parser.defaults[option]), level=8)
-            setattr(self,option,self.cli_parser.defaults[option])
+            log.debug(
+                _("Setting %s to %r (from the default values for CLI options)") % (
+                    option,
+                    self.cli_parser.defaults[option]
+                ),
+                level=8
+            )
+
+            setattr(self, option, self.cli_parser.defaults[option])
 
     def has_section(self, section):
         if not self.cfg_parser:
@@ -488,12 +573,12 @@ class Conf(object):
         untrimmed_values = []
 
         setting = self.get_raw(section, key)
-        if setting == None:
+        if setting is None:
             return []
 
         raw_values = setting.split(',')
 
-        if raw_values == None:
+        if raw_values is None:
             return []
 
         for raw_value in raw_values:
@@ -510,11 +595,11 @@ class Conf(object):
             self.read_config()
 
         if self.cfg_parser.has_option(section, key):
-            return self.cfg_parser.get(section,key, 1)
+            return self.cfg_parser.get(section, key, 1)
 
         return default
 
-    def get(self, section, key, quiet=False):
+    def get(self, section, key, default=None, quiet=False):
         """
             Get a configuration option from our store, the configuration file,
             or an external source if we have some sort of function for it.
@@ -526,40 +611,56 @@ class Conf(object):
         if not self.cfg_parser:
             self.read_config()
 
-        #log.debug(_("Obtaining value for section %r, key %r") % (section, key), level=8)
+        # log.debug(_("Obtaining value for section %r, key %r") % (section, key), level=8)
 
         if self.cfg_parser.has_option(section, key):
             try:
                 return self.cfg_parser.get(section, key)
-            except:
+            except Exception:
                 self.read_config()
                 return self.cfg_parser.get(section, key)
 
-        if hasattr(self, "get_%s_%s" % (section,key)):
+        if hasattr(self, "get_%s_%s" % (section, key)):
             try:
-                exec("retval = self.get_%s_%s(quiet)" % (section,key))
-            except Exception, e:
-                log.error(_("Could not execute configuration function: %s") % ("get_%s_%s(quiet=%r)" % (section,key,quiet)))
-                return None
+                exec("retval = self.get_%s_%s(quiet)" % (section, key))
+            except Exception:
+                log.error(
+                    _("Could not execute configuration function: %s") % (
+                        "get_%s_%s(quiet=%r)" % (
+                            section,
+                            key,
+                            quiet
+                        )
+                    )
+                )
+
+                return default
 
             return retval
 
         if quiet:
             return ""
         else:
-            log.warning(_("Option %s/%s does not exist in config file %s, pulling from defaults") % (section, key, self.config_file))
-            if hasattr(self.defaults, "%s_%s" % (section,key)):
-                return getattr(self.defaults, "%s_%s" % (section,key))
+            log.warning(
+                _("Option %s/%s does not exist in config file %s, pulling from defaults") % (
+                    section,
+                    key,
+                    self.config_file
+                )
+            )
+
+            if hasattr(self.defaults, "%s_%s" % (section, key)):
+                return getattr(self.defaults, "%s_%s" % (section, key))
             elif hasattr(self.defaults, "%s" % (section)):
                 if key in getattr(self.defaults, "%s" % (section)):
                     _dict = getattr(self.defaults, "%s" % (section))
                     return _dict[key]
                 else:
                     log.warning(_("Option does not exist in defaults."))
-                    return None
+                    return default
             else:
                 log.warning(_("Option does not exist in defaults."))
-                return None
+                return default
 
     def check_setting_config_file(self, value):
         if os.path.isfile(value):
@@ -576,7 +677,13 @@ class Conf(object):
 
     def check_setting_debuglevel(self, value):
         if value < 0:
-            log.info(_("WARNING: A negative debug level value does not make this program be any more silent."))
+            log.info(
+                _(
+                    "WARNING: A negative debug level value does not "
+                    + "make this program be any more silent."
+                )
+            )
+
         elif value == 0:
             return True
         elif value <= 9:
@@ -595,7 +702,7 @@ class Conf(object):
                 else:
                     try:
                         os.remove("/var/run/saslauthd/mux")
-                    except IOError, e:
+                    except IOError:
                         log.error(_("Cannot start SASL authentication daemon"))
                         return False
             elif os.path.isfile("/var/run/sasl2/mux"):
@@ -605,7 +712,7 @@ class Conf(object):
                 else:
                     try:
                         os.remove("/var/run/sasl2/mux")
-                    except IOError, e:
+                    except IOError:
                         log.error(_("Cannot start SASL authentication daemon"))
                         return False
         return True
@@ -644,14 +751,18 @@ class Conf(object):
         # Attempt to load the suite,
         # Get the suite's options,
         # Set them here.
-        if not hasattr(self,'test_suites'):
+        if not hasattr(self, 'test_suites'):
             self.test_suites = []
 
         if "zpush" in value:
             selectively = False
-            for item in [ 'calendar', 'contacts', 'mail' ]:
+            for item in ['calendar', 'contacts', 'mail']:
                 if self.cli_keywords.__dict__[item]:
-                    log.debug(_("Found you specified a specific set of items to test: %s") % (item), level=8)
+                    log.debug(
+                        _("Found you specified a specific set of items to test: %s") % (item),
+                        level=8
+                    )
+
                     selectively = item
 
             if not selectively:

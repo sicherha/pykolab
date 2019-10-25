@@ -5,6 +5,8 @@ exclude =
     docs/source/conf.py
 
 ignore =
+    # "Too complex"? Sure, for people that eat Hawaii pizza...
+    C901,
     # 'something' imported but unused
     F401,
     # 'from module import *' used: unable to detect undefined names

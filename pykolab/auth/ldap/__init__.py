@@ -6,20 +6,22 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import print_function
 
 import datetime
+# Catch python-ldap-2.4 changes
+from distutils import version
 import _ldap
 import ldap
-import ldap.async
 import ldap.controls
 import ldap.filter
 import logging
@@ -34,14 +36,11 @@ from pykolab.constants import *
 from pykolab.errors import *
 from pykolab.translate import _
 
-log = pykolab.getLogger('pykolab.auth')
-conf = pykolab.getConf()
-
 import auth_cache
 import cache
 
-# Catch python-ldap-2.4 changes
-from distutils import version
+log = pykolab.getLogger('pykolab.auth')
+conf = pykolab.getConf()
 
 if version.StrictVersion('2.4.0') <= version.StrictVersion(ldap.__version__):
     LDAP_CONTROL_PAGED_RESULTS = ldap.CONTROL_PAGEDRESULTS
@@ -50,8 +49,9 @@ else:
 
 try:
     from ldap.controls import psearch
-except:
+except ImportError:
     log.warning(_("Python LDAP library does not support persistent search"))
+
 
 class SimplePagedResultsControl(ldap.controls.SimplePagedResultsControl):
     """
@@ -61,46 +61,34 @@ class SimplePagedResultsControl(ldap.controls.SimplePagedResultsControl):
     """
 
     def __init__(self, page_size=0, cookie=''):
-        if version.StrictVersion(
-                '2.4.0'
-            ) <= version.StrictVersion(
-                    ldap.__version__
-                ):
+        if version.StrictVersion('2.4.0') <= version.StrictVersion(ldap.__version__):
 
             ldap.controls.SimplePagedResultsControl.__init__(
-                    self,
-                    size=page_size,
-                    cookie=cookie
-                )
+                self,
+                size=page_size,
+                cookie=cookie
+            )
+
         else:
             ldap.controls.SimplePagedResultsControl.__init__(
-                    self,
-                    LDAP_CONTROL_PAGED_RESULTS,
-                    True,
-                    (page_size, '')
-                )
+                self,
+                LDAP_CONTROL_PAGED_RESULTS,
+                True,
+                (page_size, '')
+            )
 
     def cookie(self):
-        if version.StrictVersion(
-                '2.4.0'
-            ) <= version.StrictVersion(
-                    ldap.__version__
-                ):
-
+        if version.StrictVersion('2.4.0') <= version.StrictVersion(ldap.__version__):
             return self.cookie
         else:
             return self.controlValue[1]
 
     def size(self):
-        if version.StrictVersion(
-                '2.4.0'
-            ) <= version.StrictVersion(
-                    ldap.__version__
-                ):
-
+        if version.StrictVersion('2.4.0') <= version.StrictVersion(ldap.__version__):
             return self.size
         else:
             return self.controlValue[0]
+
 
 class LDAP(pykolab.base.Base):
     """
@@ -119,7 +107,7 @@ class LDAP(pykolab.base.Base):
         self.ldap_priv = None
         self.bind = None
 
-        if domain == None:
+        if domain is None:
             self.domain = conf.get('kolab', 'primary_domain')
         else:
             self.domain = domain
@@ -144,13 +132,14 @@ class LDAP(pykolab.base.Base):
 
         try:
             log.debug(
-                    _("Attempting to authenticate user %s in realm %s") % (
-                            login[0],
-                            realm
-                        ),
-                    level=8
-                )
-        except:
+                _("Attempting to authenticate user %s in realm %s") % (
+                    login[0],
+                    realm
+                ),
+                level=8
+            )
+
+        except Exception:
             pass
 
         self.connect(immediate=True)
@@ -161,31 +150,31 @@ class LDAP(pykolab.base.Base):
 
         try:
             base_dn = auth_cache.get_entry(self.domain)
-        except Exception, errmsg:
+        except Exception as errmsg:
             log.error(_("Authentication cache failed: %r") % (errmsg))
             pass
 
-        if base_dn == None:
+        if base_dn is None:
             config_base_dn = self.config_get('base_dn')
             ldap_base_dn = self._kolab_domain_root_dn(self.domain)
 
-            if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+            if ldap_base_dn is not None and not ldap_base_dn == config_base_dn:
                 base_dn = ldap_base_dn
             else:
                 base_dn = config_base_dn
 
             try:
                 auth_cache.set_entry(self.domain, base_dn)
-            except Exception, errmsg:
+            except Exception as errmsg:
                 log.error(_("Authentication cache failed: %r") % (errmsg))
                 pass
 
         try:
             user_filter = self.config_get_raw('user_filter') % (
-                    {'base_dn': base_dn}
-                )
+                {'base_dn': base_dn}
+            )
 
-        except TypeError, errmsg:
+        except TypeError:
             user_filter = self.config_get_raw('user_filter')
 
         _filter = '(&(|'
@@ -203,32 +192,37 @@ class LDAP(pykolab.base.Base):
         # Attempt to obtain an entry_dn from cache.
         try:
             entry_dn = auth_cache.get_entry(_filter)
-        except Exception, errmsg:
+        except Exception as errmsg:
             log.error(_("Authentication cache failed: %r") % (errmsg))
             pass
 
         retval = False
+        timeout = self.config_get('timeout', 10)
 
         if entry_dn is None:
             _search = self.ldap.search_ext(
-                    base_dn,
-                    ldap.SCOPE_SUBTREE,
-                    _filter,
-                    ['entrydn']
-                )
+                base_dn,
+                ldap.SCOPE_SUBTREE,
+                filterstr=_filter,
+                attrlist=['entrydn'],
+                attrsonly=True,
+                timeout=timeout
+            )
 
             try:
                 (
-                        _result_type,
-                        _result_data,
-                        _result_msgid,
-                        _result_controls
-                    ) = self.ldap.result3(_search)
+                    _result_type,
+                    _result_data,
+                    _result_msgid,
+                    _result_controls
+                ) = self.ldap.result3(_search)
 
-            except ldap.SERVER_DOWN, errmsg:
-                log.error(_("LDAP server unavailable: %r") % (errmsg))
-                log.error(_("%s") % (traceback.format_exc()))
-                self._disconnect()
+            except ldap.INVALID_CREDENTIALS:
+                log.error(
+                    _("Invalid DN, username and/or password for '%s'.") % (
+                        bind_dn
+                    )
+                )
 
                 return False
 
@@ -241,16 +235,20 @@ class LDAP(pykolab.base.Base):
 
                 return False
 
-            except ldap.INVALID_CREDENTIALS:
-                log.error(
-                    _("Invalid DN, username and/or password for '%s'.") % (
-                        bind_dn
-                    )
-                )
+            except ldap.SERVER_DOWN as errmsg:
+                log.error(_("LDAP server unavailable: %r") % (errmsg))
+                log.error(_("%s") % (traceback.format_exc()))
+                self._disconnect()
 
                 return False
 
-            except Exception, errmsg:
+            except ldap.TIMEOUT:
+                log.error(_("LDAP timeout."))
+                self._disconnect()
+
+                return False
+
+            except Exception as errmsg:
                 log.error(_("Exception occurred: %r") % (errmsg))
                 log.error(_("%s") % (traceback.format_exc()))
                 self._disconnect()
@@ -258,11 +256,11 @@ class LDAP(pykolab.base.Base):
                 return False
 
             log.debug(
-                    _("Length of entries found: %r") % (
-                            len(_result_data)
-                        ),
-                    level=8
-                )
+                _("Length of entries found: %r") % (
+                    len(_result_data)
+                ),
+                level=8
+            )
 
             # Remove referrals
             _result_data = [_e for _e in _result_data if _e[0] is not None]
@@ -273,12 +271,12 @@ class LDAP(pykolab.base.Base):
             elif len(_result_data) > 1:
                 try:
                     log.info(
-                            _("Authentication for %r failed " +
-                                "(multiple entries)") % (
-                                    login[0]
-                                )
+                        _("Authentication for %r failed (multiple entries)") % (
+                            login[0]
                         )
-                except:
+                    )
+
+                except Exception:
                     pass
 
                 self._disconnect()
@@ -287,11 +285,12 @@ class LDAP(pykolab.base.Base):
             else:
                 try:
                     log.info(
-                            _("Authentication for %r failed (no entry)") % (
-                                    login[0]
-                                )
+                        _("Authentication for %r failed (no entry)") % (
+                            login[0]
                         )
-                except:
+                    )
+
+                except Exception:
                     pass
 
                 self._disconnect()
@@ -300,11 +299,12 @@ class LDAP(pykolab.base.Base):
             if entry_dn is None:
                 try:
                     log.info(
-                            _("Authentication for %r failed (LDAP error?)") % (
-                                    login[0]
-                                )
+                        _("Authentication for %r failed (LDAP error?)") % (
+                            login[0]
                         )
-                except:
+                    )
+
+                except Exception:
                     pass
 
                 self._disconnect()
@@ -318,22 +318,23 @@ class LDAP(pykolab.base.Base):
                 if retval:
                     try:
                         log.info(
-                                _("Authentication for %r succeeded") % (
-                                        login[0]
-                                    )
+                            _("Authentication for %r succeeded") % (
+                                login[0]
                             )
+                        )
 
-                    except:
+                    except Exception:
                         pass
 
                 else:
                     try:
                         log.info(
-                                _("Authentication for %r failed (error)") % (
-                                        login[0]
-                                    )
+                            _("Authentication for %r failed (error)") % (
+                                login[0]
                             )
-                    except:
+                        )
+
+                    except Exception:
                         pass
 
                     self._disconnect()
@@ -341,25 +342,26 @@ class LDAP(pykolab.base.Base):
 
                 try:
                     auth_cache.set_entry(_filter, entry_dn)
-                except Exception, errmsg:
+                except Exception as errmsg:
                     log.error(_("Authentication cache failed: %r") % (errmsg))
                     pass
 
-            except ldap.SERVER_DOWN, errmsg:
+            except ldap.SERVER_DOWN:
                 log.error(_("Authentication failed, LDAP server unavailable"))
                 self._disconnect()
 
                 return False
 
-            except Exception, errmsg:
+            except Exception:
                 try:
                     log.debug(
-                            _("Failed to authenticate as user %r") % (
-                                    login[0]
-                                ),
-                            level=8
-                        )
-                except:
+                        _("Failed to authenticate as user %r") % (
+                            login[0]
+                        ),
+                        level=8
+                    )
+
+                except Exception:
                     pass
 
                 self._disconnect()
@@ -375,45 +377,45 @@ class LDAP(pykolab.base.Base):
                     log.info(_("Authentication for %r succeeded") % (login[0]))
                 else:
                     log.info(
-                            _("Authentication for %r failed (password)") % (
-                                    login[0]
-                                )
+                        _("Authentication for %r failed (password)") % (
+                            login[0]
                         )
+                    )
 
                     self._disconnect()
                     return False
 
-            except ldap.NO_SUCH_OBJECT, errmsg:
+            except ldap.NO_SUCH_OBJECT as errmsg:
                 log.debug(
-                        _("Error occured, there is no such object: %r") % (
-                                errmsg
-                            ),
-                        level=8
-                    )
+                    _("Error occured, there is no such object: %r") % (
+                        errmsg
+                    ),
+                    level=8
+                )
 
                 self.bind = None
 
                 try:
                     auth_cache.del_entry(_filter)
 
-                except:
+                except Exception:
                     log.error(_("Authentication cache failed to clear entry"))
                     pass
 
                 retval = self.authenticate(login, realm)
 
-            except Exception, errmsg:
-                log.debug(_("Exception occured: %r") %(errmsg))
+            except Exception as errmsg:
+                log.debug(_("Exception occured: %r") % (errmsg))
 
                 try:
                     log.debug(
-                            _("Failed to authenticate as user %r") % (
-                                    login[0]
-                                ),
-                            level=8
-                        )
+                        _("Failed to authenticate as user %r") % (
+                            login[0]
+                        ),
+                        level=8
+                    )
 
-                except:
+                except Exception:
                     pass
 
                 self._disconnect()
@@ -454,12 +456,12 @@ class LDAP(pykolab.base.Base):
             retry_delay = 3.0
 
         conn = ldap.ldapobject.ReconnectLDAPObject(
-                uri,
-                trace_level=trace_level,
-                trace_file=pykolab.logger.StderrToLogger(log),
-                retry_max=retry_max,
-                retry_delay=retry_delay
-            )
+            uri,
+            trace_level=trace_level,
+            trace_file=pykolab.logger.StderrToLogger(log),
+            retry_max=retry_max,
+            retry_delay=retry_delay
+        )
 
         if immediate:
             conn.set_option(ldap.OPT_TIMEOUT, 10)
@@ -495,7 +497,7 @@ class LDAP(pykolab.base.Base):
         config_base_dn = self.config_get('base_dn')
         ldap_base_dn = self._kolab_domain_root_dn(self.domain)
 
-        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+        if ldap_base_dn is not None and not ldap_base_dn == config_base_dn:
             base_dn = ldap_base_dn
         else:
             base_dn = config_base_dn
@@ -503,18 +505,18 @@ class LDAP(pykolab.base.Base):
         _filter = "(%s=%s)" % (unique_attribute, ldap.filter.escape_filter_chars(entry_id))
 
         _search = self.ldap.search_ext(
-                base_dn,
-                ldap.SCOPE_SUBTREE,
-                _filter,
-                ['entrydn']
-            )
+            base_dn,
+            ldap.SCOPE_SUBTREE,
+            _filter,
+            ['entrydn']
+        )
 
         (
-                _result_type,
-                _result_data,
-                _result_msgid,
-                _result_controls
-            ) = self.ldap.result3(_search)
+            _result_type,
+            _result_data,
+            _result_msgid,
+            _result_controls
+        ) = self.ldap.result3(_search)
 
         if len(_result_data) >= 1:
             (entry_dn, entry_attrs) = _result_data[0]
@@ -530,9 +532,9 @@ class LDAP(pykolab.base.Base):
 
         entry_attrs = self.get_entry_attributes(entry_id, [attribute])
 
-        if entry_attrs.has_key(attribute):
+        if attribute in entry_attrs:
             return entry_attrs[attribute]
-        elif entry_attrs.has_key(attribute.lower()):
+        elif attribute.lower() in entry_attrs:
             return entry_attrs[attribute.lower()]
         else:
             return None
@@ -549,27 +551,27 @@ class LDAP(pykolab.base.Base):
         log.debug(_("Entry DN: %r") % (entry_dn), level=8)
 
         log.debug(
-                _("ldap search: (%r, %r, filterstr='(objectclass=*)', attrlist=[ 'dn' ] + %r") % (
-                        entry_dn,
-                        ldap.SCOPE_BASE,
-                        attributes
-                    ),
-                level=8
-            )
-
-        _search = self.ldap.search_ext(
+            _("ldap search: (%r, %r, filterstr='(objectclass=*)', attrlist=[ 'dn' ] + %r") % (
                 entry_dn,
                 ldap.SCOPE_BASE,
-                filterstr='(objectclass=*)',
-                attrlist=[ 'dn' ] + attributes
-            )
+                attributes
+            ),
+            level=8
+        )
+
+        _search = self.ldap.search_ext(
+            entry_dn,
+            ldap.SCOPE_BASE,
+            filterstr='(objectclass=*)',
+            attrlist=['dn'] + attributes
+        )
 
         (
-                _result_type,
-                _result_data,
-                _result_msgid,
-                _result_controls
-            ) = self.ldap.result3(_search)
+            _result_type,
+            _result_data,
+            _result_msgid,
+            _result_controls
+        ) = self.ldap.result3(_search)
 
         if len(_result_data) >= 1:
             (_entry_dn, _entry_attrs) = _result_data[0]
@@ -597,7 +599,7 @@ class LDAP(pykolab.base.Base):
         mail_attributes = conf.get_list('ldap', 'mail_attributes')
 
         for attr in mail_attributes:
-            if entry.has_key(attr):
+            if attr in entry:
                 if isinstance(entry[attr], list):
                     recipient_addresses.extend(entry[attr])
                 elif isinstance(entry[attr], basestring):
@@ -612,13 +614,18 @@ class LDAP(pykolab.base.Base):
         delegators = []
 
         mailbox_attribute = conf.get('cyrus-sasl', 'result_attribute')
-        if mailbox_attribute == None:
+        if mailbox_attribute is None:
             mailbox_attribute = 'mail'
 
         for __delegator in self.search_entry_by_attribute('kolabDelegate', entry_id):
             (_dn, _delegator) = __delegator
-            _delegator['dn'] = _dn;
-            _delegator['_mailbox_basename'] = _delegator[mailbox_attribute] if _delegator.has_key(mailbox_attribute) else None
+            _delegator['dn'] = _dn
+
+            if mailbox_attribute in _delegator:
+                _delegator['_mailbox_basename'] = _delegator[mailbox_attribute]
+            else:
+                _delegator['_mailbox_basename'] = None
+
             if isinstance(_delegator['_mailbox_basename'], list):
                 _delegator['_mailbox_basename'] = _delegator['_mailbox_basename'][0]
             delegators.append(_delegator)
@@ -635,18 +642,18 @@ class LDAP(pykolab.base.Base):
 
         self._bind()
 
-        if not exclude_entry_id == None:
+        if exclude_entry_id is not None:
             __filter_prefix = "(&"
             __filter_suffix = "(!(%s=%s)))" % (
-                    self.config_get('unique_attribute'),
-                    exclude_entry_id
-                )
+                self.config_get('unique_attribute'),
+                exclude_entry_id
+            )
         else:
             __filter_prefix = ""
             __filter_suffix = ""
 
         resource_filter = self.config_get('resource_filter')
-        if not resource_filter == None:
+        if resource_filter is not None:
             __filter_prefix = "(&%s" % resource_filter
             __filter_suffix = ")"
 
@@ -666,7 +673,7 @@ class LDAP(pykolab.base.Base):
 
         _filter += ")"
 
-        _filter = "%s%s%s" % (__filter_prefix,_filter,__filter_suffix)
+        _filter = "%s%s%s" % (__filter_prefix, _filter, __filter_suffix)
 
         log.debug(_("Finding resource with filter %r") % (_filter), level=8)
 
@@ -676,18 +683,18 @@ class LDAP(pykolab.base.Base):
         config_base_dn = self.config_get('resource_base_dn')
         ldap_base_dn = self._kolab_domain_root_dn(self.domain)
 
-        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+        if ldap_base_dn is not None and not ldap_base_dn == config_base_dn:
             resource_base_dn = ldap_base_dn
         else:
             resource_base_dn = config_base_dn
 
         _results = self.ldap.search_s(
-                resource_base_dn,
-                scope=ldap.SCOPE_SUBTREE,
-                filterstr=_filter,
-                attrlist=result_attributes,
-                attrsonly=True
-            )
+            resource_base_dn,
+            scope=ldap.SCOPE_SUBTREE,
+            filterstr=_filter,
+            attrlist=result_attributes,
+            attrsonly=True
+        )
 
         _entry_dns = []
 
@@ -714,18 +721,16 @@ class LDAP(pykolab.base.Base):
 
         self._bind()
 
-        if not exclude_entry_id == None:
+        if exclude_entry_id is not None:
             __filter_prefix = "(&"
             __filter_suffix = "(!(%s=%s)))" % (
-                    self.config_get('unique_attribute'),
-                    ldap.filter.escape_filter_chars(exclude_entry_id)
-                )
+                self.config_get('unique_attribute'),
+                ldap.filter.escape_filter_chars(exclude_entry_id)
+            )
 
         else:
             __filter_prefix = ""
             __filter_suffix = ""
-
-        kolab_filter = self._kolab_filter()
 
         if search_attrs is not None:
             recipient_address_attrs = search_attrs
@@ -746,7 +751,7 @@ class LDAP(pykolab.base.Base):
 
         _filter += ")"
 
-        _filter = "%s%s%s" % (__filter_prefix,_filter,__filter_suffix)
+        _filter = "%s%s%s" % (__filter_prefix, _filter, __filter_suffix)
 
         log.debug(_("Finding recipient with filter %r") % (_filter), level=8)
 
@@ -756,18 +761,18 @@ class LDAP(pykolab.base.Base):
         config_base_dn = self.config_get('base_dn')
         ldap_base_dn = self._kolab_domain_root_dn(self.domain)
 
-        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+        if ldap_base_dn is not None and not ldap_base_dn == config_base_dn:
             base_dn = ldap_base_dn
         else:
             base_dn = config_base_dn
 
         _results = self.ldap.search_s(
-                base_dn,
-                scope=ldap.SCOPE_SUBTREE,
-                filterstr=_filter,
-                attrlist=result_attributes,
-                attrsonly=True
-            )
+            base_dn,
+            scope=ldap.SCOPE_SUBTREE,
+            filterstr=_filter,
+            attrlist=result_attributes,
+            attrsonly=True
+        )
 
         _entry_dns = []
 
@@ -775,7 +780,7 @@ class LDAP(pykolab.base.Base):
             (_entry_id, _entry_attrs) = _result
 
             # Prevent Active Directory referrals
-            if not _entry_id == None:
+            if _entry_id is not None:
                 _entry_dns.append(_entry_id)
 
         return _entry_dns
@@ -790,19 +795,19 @@ class LDAP(pykolab.base.Base):
 
         self._bind()
 
-        if not exclude_entry_id == None:
+        if exclude_entry_id is not None:
             __filter_prefix = "(&"
             __filter_suffix = "(!(%s=%s)))" % (
-                    self.config_get('unique_attribute'),
-                    ldap.filter.escape_filter_chars(exclude_entry_id)
-                )
+                self.config_get('unique_attribute'),
+                ldap.filter.escape_filter_chars(exclude_entry_id)
+            )
 
         else:
             __filter_prefix = ""
             __filter_suffix = ""
 
         resource_filter = self.config_get('resource_filter')
-        if not resource_filter == None:
+        if resource_filter is not None:
             __filter_prefix = "(&%s" % resource_filter
             __filter_suffix = ")"
 
@@ -822,7 +827,7 @@ class LDAP(pykolab.base.Base):
 
         _filter += ")"
 
-        _filter = "%s%s%s" % (__filter_prefix,_filter,__filter_suffix)
+        _filter = "%s%s%s" % (__filter_prefix, _filter, __filter_suffix)
 
         log.debug(_("Finding resource with filter %r") % (_filter), level=8)
 
@@ -832,18 +837,18 @@ class LDAP(pykolab.base.Base):
         config_base_dn = self.config_get('resource_base_dn')
         ldap_base_dn = self._kolab_domain_root_dn(self.domain)
 
-        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+        if ldap_base_dn is not None and not ldap_base_dn == config_base_dn:
             resource_base_dn = ldap_base_dn
         else:
             resource_base_dn = config_base_dn
 
         _results = self.ldap.search_s(
-                resource_base_dn,
-                scope=ldap.SCOPE_SUBTREE,
-                filterstr=_filter,
-                attrlist=result_attributes,
-                attrsonly=True
-            )
+            resource_base_dn,
+            scope=ldap.SCOPE_SUBTREE,
+            filterstr=_filter,
+            attrlist=result_attributes,
+            attrsonly=True
+        )
 
         # Remove referrals
         _entry_dns = [_e[0] for _e in _results if _e[0] is not None]
@@ -859,8 +864,8 @@ class LDAP(pykolab.base.Base):
         """
             List alias domain name spaces for the current domain name space.
         """
-        if not self.domains == None:
-            return [s for s in self.domains.keys() if not s in self.domains.values()]
+        if self.domains is not None:
+            return [s for s in self.domains.keys() if s not in self.domains.values()]
         else:
             return []
 
@@ -886,14 +891,13 @@ class LDAP(pykolab.base.Base):
             secondary_mail_attribute = mail_attributes[1]
 
         daemon_rcpt_policy = self.config_get('daemon_rcpt_policy')
-        if not utils.true_or_false(daemon_rcpt_policy) and not daemon_rcpt_policy == None:
+        if not utils.true_or_false(daemon_rcpt_policy) and daemon_rcpt_policy is not None:
             log.debug(
-                    _(
-                            "Not applying recipient policy for %s " + \
-                            "(disabled through configuration)"
-                        ) % (entry_dn),
-                    level=1
-                )
+                _("Not applying recipient policy for %s (disabled through configuration)") % (
+                    entry_dn
+                ),
+                level=1
+            )
 
             return entry_modifications
 
@@ -907,79 +911,81 @@ class LDAP(pykolab.base.Base):
         # 'alias' and 'mailalternateaddress' are considered for secondary mail.
         #
         primary_mail = self.config_get_raw('%s_primary_mail' % (entry_type))
-        if primary_mail == None and entry_type == 'user':
+        if primary_mail is None and entry_type == 'user':
             primary_mail = self.config_get_raw('primary_mail')
 
-        if not secondary_mail_attribute == None:
+        if secondary_mail_attribute is not None:
             secondary_mail = self.config_get_raw('%s_secondary_mail' % (entry_type))
-            if secondary_mail == None and entry_type == 'user':
+            if secondary_mail is None and entry_type == 'user':
                 secondary_mail = self.config_get_raw('secondary_mail')
 
         log.debug(
-                _("Using mail attributes: %r, with primary %r and " + \
-                        "secondary %r") % (
-                                mail_attributes,
-                                primary_mail_attribute,
-                                secondary_mail_attribute
-                            ),
-                level=8
-            )
+            _("Using mail attributes: %r, with primary %r and secondary %r") % (
+                mail_attributes,
+                primary_mail_attribute,
+                secondary_mail_attribute
+            ),
+            level=8
+        )
 
         for _mail_attr in mail_attributes:
-            if not entry.has_key(_mail_attr):
+            if mail_attr not in entry:
                 log.debug(_("key %r not in entry") % (_mail_attr), level=8)
                 if _mail_attr == primary_mail_attribute:
                     log.debug(_("key %r is the prim. mail attr.") % (_mail_attr), level=8)
-                    if not primary_mail == None:
+                    if primary_mail is not None:
                         log.debug(_("prim. mail pol. is not empty"), level=8)
                         want_attrs.append(_mail_attr)
                 elif _mail_attr == secondary_mail_attribute:
                     log.debug(_("key %r is the sec. mail attr.") % (_mail_attr), level=8)
-                    if not secondary_mail == None:
+                    if secondary_mail is not None:
                         log.debug(_("sec. mail pol. is not empty"), level=8)
                         want_attrs.append(_mail_attr)
 
         if len(want_attrs) > 0:
-            log.debug(_("Attributes %r are not yet available for entry %r") % (
-                        want_attrs,
-                        entry_dn
-                    ),
-                    level=8
-                )
+            log.debug(
+                _("Attributes %r are not yet available for entry %r") % (
+                    want_attrs,
+                    entry_dn
+                ),
+                level=8
+            )
 
         # Also append the preferredlanguage or 'native tongue' configured
         # for the entry.
-        if not entry.has_key('preferredlanguage'):
+        if 'preferredlanguage' not in entry:
             want_attrs.append('preferredlanguage')
 
         # If we wanted anything, now is the time to get it.
         if len(want_attrs) > 0:
-            log.debug(_("Attributes %r are not yet available for entry %r") % (
-                        want_attrs,
-                        entry_dn
-                    ),
-                    level=8
-                )
+            log.debug(
+                _("Attributes %r are not yet available for entry %r") % (
+                    want_attrs,
+                    entry_dn
+                ),
+                level=8
+            )
+
             attributes = self.get_entry_attributes(entry_dn, want_attrs)
 
             for attribute in attributes.keys():
                 entry[attribute] = attributes[attribute]
 
-        if not entry.has_key('preferredlanguage'):
+        if 'preferredlanguage' not in entry:
             entry['preferredlanguage'] = conf.get('kolab', 'default_locale')
 
         # Primary mail address
-        if not primary_mail == None:
+        if primary_mail is not None:
             primary_mail_address = conf.plugins.exec_hook(
-                    "set_primary_mail",
-                    kw={
-                            'primary_mail': primary_mail,
-                            'entry': entry,
-                            'primary_domain': self.domain
-                        }
-                )
+                "set_primary_mail",
+                kw={
+                    'primary_mail': primary_mail,
+                    'entry': entry,
+                    'primary_domain': self.domain
+                }
+            )
 
-            if primary_mail_address == None:
+            if primary_mail_address is None:
                 return entry_modifications
 
             i = 1
@@ -993,35 +999,37 @@ class LDAP(pykolab.base.Base):
                 # or 1 (which should be the entry we're looking at here)
                 if len(results) == 0:
                     log.debug(
-                            _("No results for mail address %s found") % (
-                                    _primary_mail
-                                ),
-                            level=8
-                        )
+                        _("No results for mail address %s found") % (
+                            _primary_mail
+                        ),
+                        level=8
+                    )
 
                     done = True
                     continue
 
                 if len(results) == 1:
                     log.debug(
-                            _("1 result for address %s found, verifying") % (
-                                    _primary_mail
-                                ),
-                            level=8
-                        )
+                        _("1 result for address %s found, verifying") % (
+                            _primary_mail
+                        ),
+                        level=8
+                    )
 
                     almost_done = True
                     for result in results:
                         if not result == entry_dn:
                             log.debug(
-                                    _("Too bad, primary email address %s " + \
-                                    "already in use for %s (we are %s)") % (
-                                            _primary_mail,
-                                            result,
-                                            entry_dn
-                                        ),
-                                    level=8
-                                )
+                                _(
+                                    "Too bad, primary email address %s "
+                                    + "already in use for %s (we are %s)"
+                                ) % (
+                                    _primary_mail,
+                                    result,
+                                    entry_dn
+                                ),
+                                level=8
+                            )
 
                             almost_done = False
                         else:
@@ -1033,38 +1041,42 @@ class LDAP(pykolab.base.Base):
 
                 i += 1
                 _primary_mail = "%s%d@%s" % (
-                        primary_mail_address.split('@')[0],
-                        i,
-                        primary_mail_address.split('@')[1]
-                    )
+                    primary_mail_address.split('@')[0],
+                    i,
+                    primary_mail_address.split('@')[1]
+                )
 
             primary_mail_address = _primary_mail
 
             ###
-            ### FIXME
+            # FIXME
             ###
-            if not primary_mail_address == None:
-                if not entry.has_key(primary_mail_attribute):
+            if primary_mail_address is not None:
+                if primary_mail_attribute not in entry:
                     self.set_entry_attribute(entry, primary_mail_attribute, primary_mail_address)
                     entry_modifications[primary_mail_attribute] = primary_mail_address
                 else:
                     if not primary_mail_address == entry[primary_mail_attribute]:
-                        self.set_entry_attribute(entry, primary_mail_attribute, primary_mail_address)
+                        self.set_entry_attribute(
+                            entry,
+                            primary_mail_attribute,
+                            primary_mail_address
+                        )
 
                         entry_modifications[primary_mail_attribute] = primary_mail_address
 
-        if not secondary_mail == None:
+        if secondary_mail is not None:
             # Execute the plugin hook
             suggested_secondary_mail = conf.plugins.exec_hook(
-                    "set_secondary_mail",
-                    kw={
-                            'secondary_mail': secondary_mail,
-                            'entry': entry,
-                            'domain': self.domain,
-                            'primary_domain': self.domain,
-                            'secondary_domains': self.list_secondary_domains()
-                        }
-                ) # end of conf.plugins.exec_hook() call
+                "set_secondary_mail",
+                kw={
+                    'secondary_mail': secondary_mail,
+                    'entry': entry,
+                    'domain': self.domain,
+                    'primary_domain': self.domain,
+                    'secondary_domains': self.list_secondary_domains()
+                }
+            )  # end of conf.plugins.exec_hook() call
 
             secondary_mail_addresses = []
 
@@ -1080,37 +1092,38 @@ class LDAP(pykolab.base.Base):
                     # or 1 (which should be the entry we're looking at here)
                     if len(results) == 0:
                         log.debug(
-                                _("No results for address %s found") % (
-                                        __secondary_mail
-                                    ),
-                                level=8
-                            )
+                            _("No results for address %s found") % (
+                                __secondary_mail
+                            ),
+                            level=8
+                        )
 
                         done = True
                         continue
 
                     if len(results) == 1:
                         log.debug(
-                                _("1 result for address %s found, " + \
-                                "verifying...") % (
-                                        __secondary_mail
-                                    ),
-                                level=8
-                            )
+                            _("1 result for address %s found, verifying...") % (
+                                __secondary_mail
+                            ),
+                            level=8
+                        )
 
                         almost_done = True
                         for result in results:
                             if not result == entry_dn:
                                 log.debug(
-                                        _("Too bad, secondary email " + \
-                                        "address %s already in use for " + \
-                                        "%s (we are %s)") % (
-                                                __secondary_mail,
-                                                result,
-                                                entry_dn
-                                            ),
-                                        level=8
-                                    )
+                                    _(
+                                        "Too bad, secondary email "
+                                        + "address %s already in use for "
+                                        + "%s (we are %s)"
+                                    ) % (
+                                        __secondary_mail,
+                                        result,
+                                        entry_dn
+                                    ),
+                                    level=8
+                                )
 
                                 almost_done = False
                             else:
@@ -1122,88 +1135,118 @@ class LDAP(pykolab.base.Base):
 
                     i += 1
                     __secondary_mail = "%s%d@%s" % (
-                            _secondary_mail.split('@')[0],
-                            i,
-                            _secondary_mail.split('@')[1]
-                        )
+                        _secondary_mail.split('@')[0],
+                        i,
+                        _secondary_mail.split('@')[1]
+                    )
 
                 secondary_mail_addresses.append(__secondary_mail)
 
-            log.debug(_("Recipient policy composed the following set of secondary " + \
-                    "email addresses: %r") % (secondary_mail_addresses), level=8)
+            log.debug(
+                _(
+                    "Recipient policy composed the following set of secondary email addresses: %r"
+                ) % (
+                    secondary_mail_addresses
+                ),
+                level=8
+            )
 
-            if entry.has_key(secondary_mail_attribute):
+            if secondary_mail_attribute in entry:
                 if isinstance(entry[secondary_mail_attribute], list):
                     secondary_mail_addresses.extend(entry[secondary_mail_attribute])
                 else:
                     secondary_mail_addresses.append(entry[secondary_mail_attribute])
 
-            if not secondary_mail_addresses == None:
+            if secondary_mail_addresses is not None:
                 log.debug(
-                        _("Secondary mail addresses that we want is not None: %r") % (
-                                secondary_mail_addresses
-                            ),
-                        level=8
-                    )
+                    _("Secondary mail addresses that we want is not None: %r") % (
+                        secondary_mail_addresses
+                    ),
+                    level=8
+                )
 
                 secondary_mail_addresses = list(set(secondary_mail_addresses))
 
                 # Avoid duplicates
                 while primary_mail_address in secondary_mail_addresses:
                     log.debug(
-                            _("Avoiding the duplication of the primary mail " + \
-                                    "address %r in the list of secondary mail " + \
-                                    "addresses") % (primary_mail_address),
-                            level=8
-                        )
-
-                    secondary_mail_addresses.pop(
-                            secondary_mail_addresses.index(primary_mail_address)
-                        )
-
-                log.debug(
-                        _("Entry is getting secondary mail addresses: %r") % (
-                                secondary_mail_addresses
-                            ),
+                        _(
+                            "Avoiding the duplication of the primary mail "
+                            + "address %r in the list of secondary mail "
+                            + "addresses"
+                        ) % (primary_mail_address),
                         level=8
                     )
 
-                if not entry.has_key(secondary_mail_attribute):
+                    secondary_mail_addresses.pop(
+                        secondary_mail_addresses.index(primary_mail_address)
+                    )
+
+                log.debug(
+                    _("Entry is getting secondary mail addresses: %r") % (
+                        secondary_mail_addresses
+                    ),
+                    level=8
+                )
+
+                if secondary_mail_attribute not in entry:
                     log.debug(
-                            _("Entry did not have any secondary mail " + \
-                                    "addresses in %r") % (secondary_mail_attribute),
-                            level=8
-                        )
+                        _("Entry did not have any secondary mail addresses in %r") % (
+                            secondary_mail_attribute
+                        ),
+                        level=8
+                    )
 
                     if not len(secondary_mail_addresses) == 0:
                         self.set_entry_attribute(
-                                entry,
-                                secondary_mail_attribute,
-                                secondary_mail_addresses
-                            )
+                            entry,
+                            secondary_mail_attribute,
+                            secondary_mail_addresses
+                        )
 
                         entry_modifications[secondary_mail_attribute] = secondary_mail_addresses
                 else:
                     if isinstance(entry[secondary_mail_attribute], basestring):
                         entry[secondary_mail_attribute] = [entry[secondary_mail_attribute]]
 
-                    log.debug(_("secondary_mail_addresses: %r") % (secondary_mail_addresses), level=8)
-                    log.debug(_("entry[%s]: %r") % (secondary_mail_attribute,entry[secondary_mail_attribute]), level=8)
+                    log.debug(
+                        _("secondary_mail_addresses: %r") % (secondary_mail_addresses),
+                        level=8
+                    )
+
+                    log.debug(
+                        _("entry[%s]: %r") % (
+                            secondary_mail_attribute,
+                            entry[secondary_mail_attribute]
+                        ),
+                        level=8
+                    )
 
                     secondary_mail_addresses.sort()
                     entry[secondary_mail_attribute].sort()
 
-                    log.debug(_("secondary_mail_addresses: %r") % (secondary_mail_addresses), level=8)
-                    log.debug(_("entry[%s]: %r") % (secondary_mail_attribute,entry[secondary_mail_attribute]), level=8)
+                    log.debug(
+                        _("secondary_mail_addresses: %r") % (secondary_mail_addresses),
+                        level=8
+                    )
 
-                    if not list(set(secondary_mail_addresses)) == list(set(entry[secondary_mail_attribute])):
+                    log.debug(
+                        _("entry[%s]: %r") % (
+                            secondary_mail_attribute,
+                            entry[secondary_mail_attribute]
+                        ),
+                        level=8
+                    )
+
+                    smas = list(set(secondary_mail_addresses))
+                    if not smas == list(set(entry[secondary_mail_attribute])):
                         self.set_entry_attribute(
-                                entry,
-                                secondary_mail_attribute,
-                                list(set(secondary_mail_addresses))
-                            )
+                            entry,
+                            secondary_mail_attribute,
+                            smas
+                        )
 
-                        entry_modifications[secondary_mail_attribute] = list(set(secondary_mail_addresses))
+                        entry_modifications[secondary_mail_attribute] = smas
 
         log.debug(_("Entry modifications list: %r") % (entry_modifications), level=8)
 
@@ -1224,19 +1267,19 @@ class LDAP(pykolab.base.Base):
         config_base_dn = self.config_get('base_dn')
         ldap_base_dn = self._kolab_domain_root_dn(self.domain)
 
-        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+        if ldap_base_dn is not None and not ldap_base_dn == config_base_dn:
             base_dn = ldap_base_dn
         else:
             base_dn = config_base_dn
 
         _results = self._search(
-                base_dn,
-                filterstr=_filter,
-                attrlist=[
-                        '*',
-                    ],
-                override_search='_regular_search'
-            )
+            base_dn,
+            filterstr=_filter,
+            attrlist=[
+                '*',
+            ],
+            override_search='_regular_search'
+        )
 
         # Remove referrals
         _entry_dns = [_e for _e in _results if _e[0] is not None]
@@ -1244,8 +1287,12 @@ class LDAP(pykolab.base.Base):
         return _entry_dns
 
     def set_entry_attribute(self, entry_id, attribute, value):
-        log.debug(_("Setting entry attribute %r to %r for %r") % (attribute, value, entry_id), level=8)
-        self.set_entry_attributes(entry_id, { attribute: value })
+        log.debug(
+            _("Setting entry attribute %r to %r for %r") % (attribute, value, entry_id),
+            level=8
+        )
+
+        self.set_entry_attributes(entry_id, {attribute: value})
 
     def set_entry_attributes(self, entry_id, attributes):
         self._bind()
@@ -1262,14 +1309,14 @@ class LDAP(pykolab.base.Base):
         modlist = []
 
         for attribute in attrs.keys():
-            if not entry.has_key(attribute):
+            if attribute not in entry:
                 entry[attribute] = self.get_entry_attribute(entry_id, attribute)
 
         for attribute in attrs.keys():
-            if entry.has_key(attribute) and entry[attribute] == None:
+            if attribute in entry and entry[attribute] is None:
                 modlist.append((ldap.MOD_ADD, attribute, attrs[attribute]))
-            elif entry.has_key(attribute) and not entry[attribute] == None:
-                if attrs[attribute] == None:
+            elif attribute in entry and entry[attribute] is not None:
+                if attrs[attribute] is None:
                     modlist.append((ldap.MOD_DELETE, attribute, entry[attribute]))
                 else:
                     modlist.append((ldap.MOD_REPLACE, attribute, attrs[attribute]))
@@ -1279,8 +1326,15 @@ class LDAP(pykolab.base.Base):
         if len(modlist) > 0 and self._bind_priv() is True:
             try:
                 self.ldap_priv.modify_s(dn, modlist)
-            except Exception, errmsg:
-                log.error(_("Could not update dn:\nDN: %r\nModlist: %r\nError Message: %r") % (dn, modlist, errmsg))
+            except Exception as errmsg:
+                log.error(
+                    _("Could not update dn:\nDN: %r\nModlist: %r\nError Message: %r") % (
+                        dn,
+                        modlist,
+                        errmsg
+                    )
+                )
+
                 import traceback
                 log.error("%s" % (traceback.format_exc()))
 
@@ -1304,7 +1358,7 @@ class LDAP(pykolab.base.Base):
                     default="%Y%m%d%H%M%SZ"
                 ).replace('%%', '%')
 
-                modified_after = datetime.datetime(1900, 01, 01, 00, 00, 00).strftime(
+                modified_after = datetime.datetime(1900, 1, 1, 00, 00, 00).strftime(
                     modifytimestamp_format
                 )
 
@@ -1330,23 +1384,23 @@ class LDAP(pykolab.base.Base):
 
         log.debug(_("Synchronization is searching against base DN: %s") % (base_dn), level=8)
 
-        if callback == None:
+        if callback is None:
             callback = self._synchronize_callback
 
         try:
             self._search(
-                    base_dn,
-                    filterstr=_filter,
-                    attrlist=[
-                            '*',
-                            self.config_get('unique_attribute'),
-                            conf.get('cyrus-sasl', 'result_attribute'),
-                            'modifytimestamp'
-                        ],
-                    override_search=override_search,
-                    callback=callback,
-                )
-        except Exception, errmsg:
+                base_dn,
+                filterstr=_filter,
+                attrlist=[
+                    '*',
+                    self.config_get('unique_attribute'),
+                    conf.get('cyrus-sasl', 'result_attribute'),
+                    'modifytimestamp'
+                ],
+                override_search=override_search,
+                callback=callback,
+            )
+        except Exception as errmsg:
             log.error("An error occurred: %r" % (errmsg))
             log.error(_("%s") % (traceback.format_exc()))
 
@@ -1354,11 +1408,11 @@ class LDAP(pykolab.base.Base):
         default_quota = self.config_get('default_quota')
         quota_attribute = self.config_get('quota_attribute')
 
-        if quota_attribute == None:
+        if quota_attribute is None:
             return
 
         # The default quota may be None, but LDAP quota could still be set
-        if default_quota == None:
+        if default_quota is None:
             default_quota = 0
 
         self._bind()
@@ -1368,66 +1422,70 @@ class LDAP(pykolab.base.Base):
         current_ldap_quota = self.get_entry_attribute(entry_dn, quota_attribute)
         _imap_quota = self.imap.get_quota(folder)
 
-        if _imap_quota == None:
+        if _imap_quota is None:
             used = None
             current_imap_quota = None
         else:
             (used, current_imap_quota) = _imap_quota
 
         log.debug(
-                _("About to consider the user quota for %r (used: %r, " + \
-                    "imap: %r, ldap: %r, default: %r") % (
-                        entry_dn,
-                        used,
-                        current_imap_quota,
-                        current_ldap_quota,
-                        default_quota
-                    ),
-                level=8
-            )
+            _(
+                "About to consider the user quota for %r (used: %r, "
+                + "imap: %r, ldap: %r, default: %r"
+            ) % (
+                entry_dn,
+                used,
+                current_imap_quota,
+                current_ldap_quota,
+                default_quota
+            ),
+            level=8
+        )
 
-        new_quota = conf.plugins.exec_hook("set_user_folder_quota", kw={
-                    'used': used,
-                    'imap_quota': current_imap_quota,
-                    'ldap_quota': current_ldap_quota,
-                    'default_quota': default_quota
-                }
-            )
+        new_quota = conf.plugins.exec_hook(
+            "set_user_folder_quota",
+            kw={
+                'used': used,
+                'imap_quota': current_imap_quota,
+                'ldap_quota': current_ldap_quota,
+                'default_quota': default_quota
+            }
+        )
 
         try:
             current_ldap_quota = (int)(current_ldap_quota)
-        except:
+        except Exception:
             current_ldap_quota = None
 
         # If the new quota is zero, get out
         if new_quota == 0:
             return
 
-        if not current_ldap_quota == None:
+        if current_ldap_quota is not None:
             if not new_quota == (int)(current_ldap_quota):
                 self.set_entry_attribute(
-                        entry_dn,
-                        quota_attribute,
-                        "%s" % (new_quota)
-                    )
+                    entry_dn,
+                    quota_attribute,
+                    "%s" % (new_quota)
+                )
         else:
-            if not new_quota == None:
+            if new_quota is not None:
                 self.set_entry_attribute(
-                        entry_dn,
-                        quota_attribute,
-                        "%s" % (new_quota)
-                    )
+                    entry_dn,
+                    quota_attribute,
+                    "%s" % (new_quota)
+                )
 
-        if not current_imap_quota == None:
+        if current_imap_quota is not None:
             if not new_quota == current_imap_quota:
                 self.imap.set_quota(folder, new_quota)
 
         else:
-            if not new_quota == None:
+            if new_quota is not None:
                 self.imap.set_quota(folder, new_quota)
 
     ###
-    ### API depth level increasing!
+    # API depth level increasing!
     ###
 
     def _bind(self, bind_dn=None, bind_pw=None):
@@ -1442,7 +1500,7 @@ class LDAP(pykolab.base.Base):
             return False
 
         # and the same vice-versa
-        if bind_dn is not None and bind_pw is None:
+        if bind_dn is None and bind_pw is not None:
             log.error(_("Attempting to bind with a DN but without a password"))
             return False
 
@@ -1477,7 +1535,7 @@ class LDAP(pykolab.base.Base):
 
                 return True
 
-            except ldap.SERVER_DOWN, errmsg:
+            except ldap.SERVER_DOWN as errmsg:
                 log.error(_("LDAP server unavailable: %r") % (errmsg))
                 log.error(_("%s") % (traceback.format_exc()))
 
@@ -1516,7 +1574,7 @@ class LDAP(pykolab.base.Base):
             try:
                 self.ldap_priv.simple_bind_s(bind_dn, bind_pw)
                 return True
-            except ldap.SERVER_DOWN, errmsg:
+            except ldap.SERVER_DOWN as errmsg:
                 log.error(_("LDAP server unavailable: %r") % (errmsg))
                 log.error(_("%s") % (traceback.format_exc()))
                 return False
@@ -1575,50 +1633,48 @@ class LDAP(pykolab.base.Base):
 
         # Get some configuration values
         mailserver_attribute = self.config_get('mailserver_attribute')
-        if entry.has_key(mailserver_attribute):
+        if mailserver_attribute in entry:
             server = entry[mailserver_attribute]
 
         foldertype_attribute = self.config_get('sharedfolder_type_attribute')
-        if not foldertype_attribute == None:
-            if not entry.has_key(foldertype_attribute):
+        if foldertype_attribute is not None:
+            if foldertype_attribute not in entry:
                 entry[foldertype_attribute] = self.get_entry_attribute(
-                        entry['id'],
-                        foldertype_attribute
-                    )
+                    entry['id'],
+                    foldertype_attribute
+                )
 
-            if not entry[foldertype_attribute] == None:
+            if entry[foldertype_attribute] is not None:
                 entry['kolabfoldertype'] = entry[foldertype_attribute]
 
-        if not entry.has_key('kolabfoldertype'):
+        if 'kolabfoldertype' not in entry:
             entry['kolabfoldertype'] = self.get_entry_attribute(
-                    entry['id'],
-                    'kolabfoldertype'
-                )
+                entry['id'],
+                'kolabfoldertype'
+            )
 
         # A delivery address is postuser+targetfolder
         delivery_address_attribute = self.config_get('sharedfolder_delivery_address_attribute')
-        if delivery_address_attribute == None:
+        if delivery_address_attribute is None:
             delivery_address_attribute = 'mail'
 
-        if not entry.has_key(delivery_address_attribute):
+        if delivery_address_attribute not in entry:
             entry[delivery_address_attribute] = self.get_entry_attribute(
-                    entry['id'],
-                    delivery_address_attribute
-                )
+                entry['id'],
+                delivery_address_attribute
+            )
 
-        if not entry[delivery_address_attribute] == None:
+        if entry[delivery_address_attribute] is not None:
             if len(entry[delivery_address_attribute].split('+')) > 1:
                 entry['kolabtargetfolder'] = entry[delivery_address_attribute].split('+')[1]
 
-        if not entry.has_key('kolabtargetfolder'):
+        if 'kolabtargetfolder' not in entry:
             entry['kolabtargetfolder'] = self.get_entry_attribute(
-                    entry['id'],
-                    'kolabtargetfolder'
-                )
+                entry['id'],
+                'kolabtargetfolder'
+            )
 
-        if entry.has_key('kolabtargetfolder') and \
-                not entry['kolabtargetfolder'] == None:
-
+        if 'kolabtargetfolder' in entry and entry['kolabtargetfolder'] is not None:
             folder_path = entry['kolabtargetfolder']
         else:
             # TODO: What is *the* way to see if we need to create an @domain
@@ -1636,38 +1692,32 @@ class LDAP(pykolab.base.Base):
             folder_path = "shared/%s" % folder_path
 
         folderacl_entry_attribute = self.config_get('sharedfolder_acl_entry_attribute')
-        if folderacl_entry_attribute == None:
+        if folderacl_entry_attribute is None:
             folderacl_entry_attribute = 'acl'
 
-        if not entry.has_key(folderacl_entry_attribute):
+        if folderacl_entry_attribute not in entry:
             entry[folderacl_entry_attribute] = self.get_entry_attribute(
-                    entry['id'],
-                    folderacl_entry_attribute
-                )
+                entry['id'],
+                folderacl_entry_attribute
+            )
 
         if not self.imap.shared_folder_exists(folder_path):
             self.imap.shared_folder_create(folder_path, server)
 
-        if entry.has_key('kolabfoldertype') and \
-                not entry['kolabfoldertype'] == None:
+        if 'kolabfoldertype' in entry and entry['kolabfoldertype'] is not None:
 
-            self.imap.shared_folder_set_type(
-                    folder_path,
-                    entry['kolabfoldertype']
-                )
+            self.imap.shared_folder_set_type(folder_path, entry['kolabfoldertype'])
 
         entry['kolabfolderaclentry'] = self._parse_acl(entry[folderacl_entry_attribute])
 
-        self.imap._set_kolab_mailfolder_acls(
-                entry['kolabfolderaclentry'], folder_path
-            )
+        self.imap._set_kolab_mailfolder_acls(entry['kolabfolderaclentry'], folder_path)
 
-        if entry.has_key(delivery_address_attribute) and \
-                not entry[delivery_address_attribute] == None:
-            self.imap.set_acl(folder_path, 'anyone', '+p')
+        if delivery_address_attribute in entry:
+            if entry[delivery_address_attribute] is not None:
+                self.imap.set_acl(folder_path, 'anyone', '+p')
 
-        #if server == None:
-            #self.entry_set_attribute(mailserver_attribute, server)
+        # if server is None:
+            # self.entry_set_attribute(mailserver_attribute, server)
 
     def _change_add_unknown(self, entry, change):
         """
@@ -1676,17 +1726,17 @@ class LDAP(pykolab.base.Base):
         """
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
-        if not entry.has_key(result_attribute):
+        if result_attribute not in entry:
             return None
 
-        if entry[result_attribute] == None:
+        if entry[result_attribute] is None:
             return None
 
-        for _type in ['user','group','role','sharedfolder']:
+        for _type in ['user', 'group', 'role', 'sharedfolder']:
             try:
                 eval("self._change_add_%s(entry, change)" % (_type))
                 success = True
-            except:
+            except Exception:
                 success = False
 
             if success:
@@ -1697,18 +1747,18 @@ class LDAP(pykolab.base.Base):
             An entry of type user was added.
         """
         mailserver_attribute = self.config_get('mailserver_attribute')
-        if mailserver_attribute == None:
+        if mailserver_attribute is None:
             mailserver_attribute = 'mailhost'
 
         mailserver_attribute = mailserver_attribute.lower()
 
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
-        if result_attribute == None:
+        if result_attribute is None:
             result_attribute = 'mail'
 
         result_attribute = result_attribute.lower()
 
-        if not entry.has_key(mailserver_attribute):
+        if mailserver_attribute not in entry:
             entry[mailserver_attribute] = \
                 self.get_entry_attribute(entry, mailserver_attribute)
 
@@ -1716,10 +1766,10 @@ class LDAP(pykolab.base.Base):
         for key in rcpt_addrs:
             entry[key] = rcpt_addrs[key]
 
-        if not entry.has_key(result_attribute):
+        if result_attribute not in entry:
             return
 
-        if entry[result_attribute] == None:
+        if entry[result_attribute] is None:
             return
 
         if entry[result_attribute] == '':
@@ -1731,30 +1781,30 @@ class LDAP(pykolab.base.Base):
 
         if not self.imap.user_mailbox_exists(entry[result_attribute].lower()):
             folder = self.imap.user_mailbox_create(
-                    entry[result_attribute],
-                    entry[mailserver_attribute]
-                )
+                entry[result_attribute],
+                entry[mailserver_attribute]
+            )
 
         else:
-            folder = "user%s%s" % (self.imap.get_separator(),entry[result_attribute].lower())
+            folder = "user%s%s" % (self.imap.get_separator(), entry[result_attribute].lower())
 
         server = self.imap.user_mailbox_server(folder)
 
         log.debug(
-                _("Entry %s attribute value: %r") % (
-                        mailserver_attribute,
-                        entry[mailserver_attribute]
-                    ),
-                level=8
-            )
+            _("Entry %s attribute value: %r") % (
+                mailserver_attribute,
+                entry[mailserver_attribute]
+            ),
+            level=8
+        )
 
         log.debug(
-                _("imap.user_mailbox_server(%r) result: %r") % (
-                        folder,
-                        server
-                    ),
-                level=8
-            )
+            _("imap.user_mailbox_server(%r) result: %r") % (
+                folder,
+                server
+            ),
+            level=8
+        )
 
         if not entry[mailserver_attribute] == server:
             self.set_entry_attribute(entry, mailserver_attribute, server)
@@ -1768,14 +1818,13 @@ class LDAP(pykolab.base.Base):
 
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
-        if not entry.has_key(result_attribute):
+        if result_attribute not in entry:
             return None
 
-        if entry[result_attribute] == None:
+        if entry[result_attribute] is None:
             return None
 
         self.imap.cleanup_acls(entry[result_attribute])
-
 
     def _change_delete_None(self, entry, change):
         """
@@ -1799,17 +1848,17 @@ class LDAP(pykolab.base.Base):
         """
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
-        if not entry.has_key(result_attribute):
+        if result_attribute not in entry:
             return None
 
-        if entry[result_attribute] == None:
+        if entry[result_attribute] is None:
             return None
 
         success = True
-        for _type in ['user','group','resource','role','sharedfolder']:
+        for _type in ['user', 'group', 'resource', 'role', 'sharedfolder']:
             try:
                 success = eval("self._change_delete_%s(entry, change)" % (_type))
-            except Exception, errmsg:
+            except Exception as errmsg:
                 log.error(_("An error occured: %r") % (errmsg))
                 log.error(_("%s") % (traceback.format_exc()))
 
@@ -1824,10 +1873,10 @@ class LDAP(pykolab.base.Base):
         """
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
-        if not entry.has_key(result_attribute):
+        if result_attribute not in entry:
             return None
 
-        if entry[result_attribute] == None:
+        if entry[result_attribute] is None:
             return None
 
         cache.delete_entry(self.domain, entry)
@@ -1838,7 +1887,7 @@ class LDAP(pykolab.base.Base):
         # let plugins act upon this deletion
         conf.plugins.exec_hook(
             'user_delete',
-            kw = {
+            kw={
                 'user': entry,
                 'domain': self.domain
             }
@@ -1864,7 +1913,7 @@ class LDAP(pykolab.base.Base):
         old_canon_attr = None
 
         cache_entry = cache.get_entry(self.domain, entry)
-        if not cache_entry == None:
+        if cache_entry is not None:
             old_canon_attr = cache_entry.result_attribute
 
         # See if we have to trigger the recipient policy. Only really applies to
@@ -1890,10 +1939,10 @@ class LDAP(pykolab.base.Base):
             for key in entry_changes.keys():
                 entry[key] = entry_changes[key]
 
-            if not entry.has_key(result_attribute):
+            if result_attribute not in entry:
                 return
 
-            if entry[result_attribute] == None:
+            if entry[result_attribute] is None:
                 return
 
             if entry[result_attribute] == '':
@@ -1901,17 +1950,12 @@ class LDAP(pykolab.base.Base):
 
             # Now look at entry_changes and old_canon_attr, and see if they're
             # the same value.
-            if entry_changes.has_key(result_attribute):
-                if not old_canon_attr == None:
-                    self.imap.user_mailbox_create(
-                            entry_changes[result_attribute]
-                        )
+            if result_attribute in entry_changes:
+                if old_canon_attr is not None:
+                    self.imap.user_mailbox_create(entry_changes[result_attribute])
 
                 elif not entry_changes[result_attribute] == old_canon_attr:
-                    self.imap.user_mailbox_rename(
-                            old_canon_attr,
-                            entry_changes[result_attribute]
-                        )
+                    self.imap.user_mailbox_rename(old_canon_attr, entry_changes[result_attribute])
 
         cache.get_entry(self.domain, entry)
 
@@ -1937,49 +1981,47 @@ class LDAP(pykolab.base.Base):
 
         # Get some configuration values
         mailserver_attribute = self.config_get('mailserver_attribute')
-        if entry.has_key(mailserver_attribute):
+        if mailserver_attribute in entry:
             server = entry[mailserver_attribute]
 
         foldertype_attribute = self.config_get('sharedfolder_type_attribute')
-        if not foldertype_attribute == None:
-            if not entry.has_key(foldertype_attribute):
+        if foldertype_attribute is not None:
+            if foldertype_attribute not in entry:
                 entry[foldertype_attribute] = self.get_entry_attribute(
-                        entry['id'],
-                        foldertype_attribute
-                    )
+                    entry['id'],
+                    foldertype_attribute
+                )
 
-            if not entry[foldertype_attribute] == None:
+            if entry[foldertype_attribute] is not None:
                 entry['kolabfoldertype'] = entry[foldertype_attribute]
 
-        if not entry.has_key('kolabfoldertype'):
+        if 'kolabfoldertype' not in entry:
             entry['kolabfoldertype'] = self.get_entry_attribute(
-                    entry['id'],
-                    'kolabfoldertype'
-                )
+                entry['id'],
+                'kolabfoldertype'
+            )
 
         # A delivery address is postuser+targetfolder
         delivery_address_attribute = self.config_get('sharedfolder_delivery_address_attribute')
-        if not delivery_address_attribute == None:
-            if not entry.has_key(delivery_address_attribute):
+        if delivery_address_attribute is not None:
+            if delivery_address_attribute not in entry:
                 entry[delivery_address_attribute] = self.get_entry_attribute(
-                        entry['id'],
-                        delivery_address_attribute
-                    )
+                    entry['id'],
+                    delivery_address_attribute
+                )
 
-            if not entry[delivery_address_attribute] == None:
+            if entry[delivery_address_attribute] is not None:
                 if len(entry[delivery_address_attribute].split('+')) > 1:
                     entry['kolabtargetfolder'] = entry[delivery_address_attribute].split('+')[1]
 
-        if not entry.has_key('kolabtargetfolder'):
+        if 'kolabtargetfolder' not in entry:
             entry['kolabtargetfolder'] = self.get_entry_attribute(
-                    entry['id'],
-                    'kolabtargetfolder'
-                )
+                entry['id'],
+                'kolabtargetfolder'
+            )
 
-        if entry.has_key('kolabtargetfolder') and \
-                not entry['kolabtargetfolder'] == None:
-
-            folder_path = entry['kolabtargetfolder']
+        if 'kolabtargetfolder' in entry and entry['kolabtargetfolder'] is not None:
+                folder_path = entry['kolabtargetfolder']
         else:
             # TODO: What is *the* way to see if we need to create an @domain
             # shared mailbox?
@@ -1996,34 +2038,31 @@ class LDAP(pykolab.base.Base):
             folder_path = "shared/%s" % folder_path
 
         folderacl_entry_attribute = self.config_get('sharedfolder_acl_entry_attribute')
-        if folderacl_entry_attribute == None:
+        if folderacl_entry_attribute is None:
             folderacl_entry_attribute = 'acl'
 
-        if not entry.has_key(folderacl_entry_attribute):
+        if folderacl_entry_attribute not in entry:
             entry[folderacl_entry_attribute] = self.get_entry_attribute(
-                    entry['id'],
-                    folderacl_entry_attribute
-                )
+                entry['id'],
+                folderacl_entry_attribute
+            )
 
         if not self.imap.shared_folder_exists(folder_path):
             self.imap.shared_folder_create(folder_path, server)
 
-        if entry.has_key('kolabfoldertype') and \
-                not entry['kolabfoldertype'] == None:
-
+        if 'kolabfoldertype' in entry and entry['kolabfoldertype'] is not None:
             self.imap.shared_folder_set_type(
-                    folder_path,
-                    entry['kolabfoldertype']
-                )
+                folder_path,
+                entry['kolabfoldertype']
+            )
 
         entry['kolabfolderaclentry'] = self._parse_acl(entry[folderacl_entry_attribute])
 
         self.imap._set_kolab_mailfolder_acls(
-                entry['kolabfolderaclentry'], folder_path, True
-            )
+            entry['kolabfolderaclentry'], folder_path, True
+        )
 
-        if entry.has_key(delivery_address_attribute) and \
-                not entry[delivery_address_attribute] == None:
+        if delivery_address_attribute in entry and entry[delivery_address_attribute] is not None:
             self.imap.set_acl(folder_path, 'anyone', '+p')
 
     def _change_modify_user(self, entry, change):
@@ -2036,74 +2075,74 @@ class LDAP(pykolab.base.Base):
         # Initialize old_canon_attr (#1701)
         old_canon_attr = None
 
-        result_attribute = conf.get('cyrus-sasl','result_attribute')
+        result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
         _entry = cache.get_entry(self.domain, entry, update=False)
 
         # We do not necessarily have a synchronisation cache entry (#1701)
-        if not _entry == None:
-            if _entry.__dict__.has_key('result_attribute') and not _entry.result_attribute == '':
+        if _entry is not None:
+            if 'result_attribute' in _entry.__dict__ and not _entry.result_attribute == '':
                 old_canon_attr = _entry.result_attribute
 
         entry_changes = self.recipient_policy(entry)
 
         log.debug(
-                _("Result from recipient policy: %r") % (entry_changes),
-                level=8
-            )
+            _("Result from recipient policy: %r") % (entry_changes),
+            level=8
+        )
 
-        if entry_changes.has_key(result_attribute):
+        if result_attribute in entry_changes:
             if not entry_changes[result_attribute] == old_canon_attr:
-                if old_canon_attr == None:
+                if old_canon_attr is None:
                     self.imap.user_mailbox_create(
-                            entry_changes[result_attribute]
-                        )
+                        entry_changes[result_attribute]
+                    )
 
                 else:
                     self.imap.user_mailbox_rename(
-                            old_canon_attr,
-                            entry_changes[result_attribute]
-                        )
+                        old_canon_attr,
+                        entry_changes[result_attribute]
+                    )
 
                 entry[result_attribute] = entry_changes[result_attribute]
                 cache.get_entry(self.domain, entry)
-        elif entry.has_key(result_attribute):
+        elif result_attribute in entry:
             if not entry[result_attribute] == old_canon_attr:
-                if old_canon_attr == None:
+                if old_canon_attr is None:
                     self.imap.user_mailbox_create(
-                            entry[result_attribute]
-                        )
+                        entry[result_attribute]
+                    )
 
                 else:
                     self.imap.user_mailbox_rename(
-                            old_canon_attr,
-                            entry[result_attribute]
-                        )
+                        old_canon_attr,
+                        entry[result_attribute]
+                    )
 
                 cache.get_entry(self.domain, entry)
             else:
                 if not self.imap.user_mailbox_exists(entry[result_attribute]):
                     self.imap.user_mailbox_create(
-                            entry[result_attribute]
-                        )
-
-        self.user_quota(
-                entry,
-                "user%s%s" % (
-                        self.imap.get_separator(),
                         entry[result_attribute]
                     )
+
+        self.user_quota(
+            entry,
+            "user%s%s" % (
+                self.imap.get_separator(),
+                entry[result_attribute]
             )
+        )
 
         if conf.has_option(self.domain, 'sieve_mgmt'):
             sieve_mgmt_enabled = conf.get(self.domain, 'sieve_mgmt')
             if utils.true_or_false(sieve_mgmt_enabled):
                 conf.plugins.exec_hook(
-                        'sieve_mgmt_refresh',
-                        kw={
-                                'user': entry[result_attribute]
-                            }
-                    )
+                    'sieve_mgmt_refresh',
+                    kw={
+                        'user': entry[result_attribute]
+                    }
+                )
 
     def _change_none_group(self, entry, change):
         """
@@ -2135,36 +2174,35 @@ class LDAP(pykolab.base.Base):
         server = None
         mailserver_attribute = self.config_get('mailserver_attribute')
 
-        if entry.has_key(mailserver_attribute):
+        if mailserver_attribute in entry:
             server = entry[mailserver_attribute]
 
-        if not entry.has_key('kolabtargetfolder'):
+        if 'kolabtargetfolder' not in entry:
             entry['kolabtargetfolder'] = self.get_entry_attribute(
-                    entry['id'],
-                    'kolabtargetfolder'
-                )
+                entry['id'],
+                'kolabtargetfolder'
+            )
 
-        if not entry.has_key('kolabfoldertype'):
+        if 'kolabfoldertype' not in entry:
             entry['kolabfoldertype'] = self.get_entry_attribute(
-                    entry['id'],
-                    'kolabfoldertype'
-                )
+                entry['id'],
+                'kolabfoldertype'
+            )
 
         folderacl_entry_attribute = conf.get('ldap', 'sharedfolder_acl_entry_attribute')
-        if folderacl_entry_attribute == None:
+        if folderacl_entry_attribute is None:
             folderacl_entry_attribute = 'acl'
 
-        if not entry.has_key(folderacl_entry_attribute):
+        if folderacl_entry_attribute not in entry:
             entry['kolabfolderaclentry'] = self.get_entry_attribute(
-                    entry['id'],
-                    folderacl_entry_attribute
-                )
+                entry['id'],
+                folderacl_entry_attribute
+            )
         else:
             entry['kolabfolderaclentry'] = entry[folderacl_entry_attribute]
             del entry[folderacl_entry_attribute]
 
-        if entry.has_key('kolabtargetfolder') and \
-                not entry['kolabtargetfolder'] == None:
+        if 'kolabtargetfolder' in entry and entry['kolabtargetfolder'] is not None:
 
             folder_path = entry['kolabtargetfolder']
         else:
@@ -2185,40 +2223,39 @@ class LDAP(pykolab.base.Base):
         if not self.imap.shared_folder_exists(folder_path):
             self.imap.shared_folder_create(folder_path, server)
 
-        if entry.has_key('kolabfoldertype') and \
-                not entry['kolabfoldertype'] == None:
+        if 'kolabfoldertype' in entry and entry['kolabfoldertype'] is not None:
 
             self.imap.shared_folder_set_type(
-                    folder_path,
-                    entry['kolabfoldertype']
-                )
+                folder_path,
+                entry['kolabfoldertype']
+            )
 
         entry['kolabfolderaclentry'] = self._parse_acl(entry['kolabfolderaclentry'])
 
         self.imap._set_kolab_mailfolder_acls(
-                entry['kolabfolderaclentry'], folder_path, True
-            )
+            entry['kolabfolderaclentry'], folder_path, True
+        )
 
         delivery_address_attribute = self.config_get('sharedfolder_delivery_address_attribute')
-        if entry.has_key(delivery_address_attribute) and \
-                not entry[delivery_address_attribute] == None:
+        if delivery_address_attribute in entry and \
+                entry[delivery_address_attribute] is not None:
             self.imap.set_acl(folder_path, 'anyone', '+p')
 
-        #if server == None:
-            #self.entry_set_attribute(mailserver_attribute, server)
+        # if server is None:
+            # self.entry_set_attribute(mailserver_attribute, server)
 
     def _change_none_user(self, entry, change):
         """
             A user entry as part of the initial search result set.
         """
         mailserver_attribute = self.config_get('mailserver_attribute')
-        if mailserver_attribute == None:
+        if mailserver_attribute is None:
             mailserver_attribute = 'mailhost'
 
         mailserver_attribute = mailserver_attribute.lower()
 
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
-        if result_attribute == None:
+        if result_attribute is None:
             result_attribute = 'mail'
 
         result_attribute = result_attribute.lower()
@@ -2227,26 +2264,29 @@ class LDAP(pykolab.base.Base):
 
         _entry = cache.get_entry(self.domain, entry, update=False)
 
-        if not _entry == None and _entry.__dict__.has_key('result_attribute') and not _entry.result_attribute == '':
+        if _entry is not None and \
+                'result_attribute' in _entry.__dict__ and \
+                not _entry.result_attribute == '':
+
             old_canon_attr = _entry.result_attribute
 
         entry_changes = self.recipient_policy(entry)
 
-        if entry.has_key(result_attribute) and entry_changes.has_key(result_attribute):
+        if result_attribute in entry and result_attribute in entry_changes:
             if not entry[result_attribute] == entry_changes[result_attribute]:
                 old_canon_attr = entry[result_attribute]
 
         log.debug(
-                _("Result from recipient policy: %r") % (entry_changes),
-                level=8
-            )
+            _("Result from recipient policy: %r") % (entry_changes),
+            level=8
+        )
 
-        if entry_changes.has_key(result_attribute) and not old_canon_attr == None:
+        if result_attribute in entry_changes and old_canon_attr is not None:
             if not entry_changes[result_attribute] == old_canon_attr:
                 self.imap.user_mailbox_rename(
-                        old_canon_attr,
-                        entry_changes[result_attribute]
-                    )
+                    old_canon_attr,
+                    entry_changes[result_attribute]
+                )
 
         for key in entry_changes.keys():
             entry[key] = entry_changes[key]
@@ -2258,32 +2298,30 @@ class LDAP(pykolab.base.Base):
 
         server = None
 
-        if not entry.has_key(mailserver_attribute):
+        if mailserver_attribute not in entry:
             entry[mailserver_attribute] = self.get_entry_attribute(entry, mailserver_attribute)
 
-        if entry[mailserver_attribute] == "" or entry[mailserver_attribute] == None:
+        if entry[mailserver_attribute] == "" or entry[mailserver_attribute] is None:
             server = None
         else:
             server = entry[mailserver_attribute].lower()
 
-        if entry.has_key(result_attribute) and \
-                not entry.has_key(result_attribute) == None:
-
+        if result_attribute in entry and entry[result_attribute] is not None:
             if not self.imap.user_mailbox_exists(entry[result_attribute]):
                 folder = self.imap.user_mailbox_create(entry[result_attribute], server=server)
                 server = self.imap.user_mailbox_server(folder)
             else:
                 folder = "user%s%s" % (
-                        self.imap.get_separator(),
-                        entry[result_attribute]
-                    )
+                    self.imap.get_separator(),
+                    entry[result_attribute]
+                )
 
                 server = self.imap.user_mailbox_server(folder)
 
             self.user_quota(entry, folder)
 
             mailserver_attr = self.config_get('mailserver_attribute')
-            if not entry.has_key(mailserver_attr):
+            if mailserver_attr not in entry:
                 self.set_entry_attribute(entry, mailserver_attr, server)
             else:
                 if not entry[mailserver_attr] == server:
@@ -2292,11 +2330,11 @@ class LDAP(pykolab.base.Base):
 
         else:
             log.warning(
-                    _("Kolab user %s does not have a result attribute %r") % (
-                            entry['id'],
-                            result_attribute
-                        )
+                _("Kolab user %s does not have a result attribute %r") % (
+                    entry['id'],
+                    result_attribute
                 )
+            )
 
     def _disconnect(self):
         del self.ldap
@@ -2315,21 +2353,21 @@ class LDAP(pykolab.base.Base):
         naming_contexts = utils.normalize(attrs['namingcontexts'])
 
         if isinstance(naming_contexts, basestring):
-            naming_contexts = [ naming_contexts ]
+            naming_contexts = [naming_contexts]
 
         log.debug(
-                _("Naming contexts found: %r") % (naming_contexts),
-                level=8
-            )
+            _("Naming contexts found: %r") % (naming_contexts),
+            level=8
+        )
 
         self._kolab_domain_root_dn(domain)
 
         log.debug(
-                _("Domains/Root DNs found: %r") % (
-                        self.domain_rootdns
-                    ),
-                level=8
-            )
+            _("Domains/Root DNs found: %r") % (
+                self.domain_rootdns
+            ),
+            level=8
+        )
 
         # If we have a 1:1 match, continue as planned
         for naming_context in naming_contexts:
@@ -2354,7 +2392,7 @@ class LDAP(pykolab.base.Base):
             Returns True or False
         """
         if isinstance(value, dict):
-            if value.has_key('dn'):
+            if 'dn' in value:
                 return True
 
         return False
@@ -2372,7 +2410,7 @@ class LDAP(pykolab.base.Base):
 
         try:
             import ldap.dn
-            ldap_dn = ldap.dn.explode_dn(value)
+            ldap.dn.explode_dn(value)
         except ldap.DECODING_ERROR:
             # This is not a DN.
             return False
@@ -2390,26 +2428,27 @@ class LDAP(pykolab.base.Base):
         config_base_dn = self.config_get('base_dn')
         ldap_base_dn = self._kolab_domain_root_dn(self.domain)
 
-        if not ldap_base_dn == None and not ldap_base_dn == config_base_dn:
+        if ldap_base_dn is not None and not ldap_base_dn == config_base_dn:
             base_dn = ldap_base_dn
         else:
             base_dn = config_base_dn
 
         for _type in ['user', 'group', 'sharedfolder']:
             __filter = self.config_get('kolab_%s_filter' % (_type))
-            if __filter == None:
+            if __filter is None:
                 __filter = self.config_get('%s_filter' % (_type))
 
-            if not __filter == None:
+            if __filter is not None:
                 try:
                     result = self._regular_search(entry_dn, filterstr=__filter)
-                except:
+                except Exception:
                     result = self._regular_search(
-                            base_dn,
-                            filterstr="(%s=%s)" %(
-                                    self.config_get('unique_attribute'),
-                                    entry_id['id'])
-                                )
+                        base_dn,
+                        filterstr="(%s=%s)" % (
+                            self.config_get('unique_attribute'),
+                            entry_id['id']
+                        )
+                    )
 
                 if not result:
                     continue
@@ -2422,26 +2461,25 @@ class LDAP(pykolab.base.Base):
         """
 
         conf_prefix = 'kolab_' if kolabuser else ''
-        domain_root_dn = self._kolab_domain_root_dn(self.domain)
 
         user_base_dn = self.config_get(conf_prefix + 'user_base_dn')
-        if user_base_dn == None:
+        if user_base_dn is None:
             user_base_dn = self.config_get('base_dn')
 
         auth_attrs = self.config_get_list('auth_attributes')
 
-        auth_search_filter = [ '(|' ]
+        auth_search_filter = ['(|']
 
         for auth_attr in auth_attrs:
-            auth_search_filter.append('(%s=%s)' % (auth_attr,login))
-            if not '@' in login:
+            auth_search_filter.append('(%s=%s)' % (auth_attr, login))
+            if '@' not in login:
                 auth_search_filter.append(
-                        '(%s=%s@%s)' % (
-                                auth_attr,
-                                login,
-                                self.domain
-                            )
+                    '(%s=%s@%s)' % (
+                        auth_attr,
+                        login,
+                        self.domain
                     )
+                )
 
         auth_search_filter.append(')')
 
@@ -2450,16 +2488,16 @@ class LDAP(pykolab.base.Base):
         user_filter = self.config_get(conf_prefix + 'user_filter')
 
         search_filter = "(&%s%s)" % (
-                auth_search_filter,
-                user_filter
-            )
+            auth_search_filter,
+            user_filter
+        )
 
         _results = self._search(
-                user_base_dn,
-                filterstr=search_filter,
-                attrlist=[ 'dn' ],
-                override_search='_regular_search'
-            )
+            user_base_dn,
+            filterstr=search_filter,
+            attrlist=['dn'],
+            override_search='_regular_search'
+        )
 
         if len(_results) == 1:
             (_user_dn, _user_attrs) = _results[0]
@@ -2469,10 +2507,10 @@ class LDAP(pykolab.base.Base):
             if len(login.split('@')) < 2:
                 search_filter = "(uid=%s)" % (login)
                 _results = self._search(
-                        domain,
-                        filterstr=search_filter,
-                        attrlist=[ 'dn' ]
-                    )
+                    domain,
+                    filterstr=search_filter,
+                    attrlist=['dn']
+                )
 
                 if len(_results) == 1:
                     (_user_dn, _user_attrs) = _results[0]
@@ -2489,7 +2527,7 @@ class LDAP(pykolab.base.Base):
         if not hasattr(self, 'domain_rootdns'):
             self.domain_rootdns = {}
 
-        if self.domain_rootdns.has_key(domain):
+        if domain in self.domain_rootdns:
             log.debug(_("Returning from cache: %r") % (self.domain_rootdns[domain]), level=8)
             return self.domain_rootdns[domain]
 
@@ -2500,38 +2538,43 @@ class LDAP(pykolab.base.Base):
         domain_base_dn = conf.get('ldap', 'domain_base_dn', quiet=True)
         domain_filter = conf.get('ldap', 'domain_filter')
 
-        if not domain_filter == None:
-            if not domain == None:
+        if domain_filter is not None:
+            if domain is not None:
                 domain_filter = domain_filter.replace('*', domain)
 
             if not domain_base_dn == "":
 
                 _results = self._search(
-                        domain_base_dn,
-                        ldap.SCOPE_SUBTREE,
-                        domain_filter,
-                        override_search='_regular_search'
-                    )
-
-                domains = []
+                    domain_base_dn,
+                    ldap.SCOPE_SUBTREE,
+                    domain_filter,
+                    override_search='_regular_search'
+                )
 
                 for _domain in _results:
                     (domain_dn, _domain_attrs) = _domain
                     domain_rootdn_attribute = conf.get(
-                            'ldap',
-                            'domain_rootdn_attribute'
-                        )
+                        'ldap',
+                        'domain_rootdn_attribute'
+                    )
 
                     _domain_attrs = utils.normalize(_domain_attrs)
 
-                    if _domain_attrs.has_key(domain_rootdn_attribute):
-                        log.debug(_("Setting domain root dn from LDAP for domain %r: %r") % (domain, _domain_attrs[domain_rootdn_attribute]), level=8)
+                    if domain_rootdn_attribute in _domain_attrs:
+                        log.debug(
+                            _("Setting domain root dn from LDAP for domain %r: %r") % (
+                                domain,
+                                _domain_attrs[domain_rootdn_attribute]
+                            ),
+                            level=8
+                        )
+
                         self.domain_rootdns[domain] = _domain_attrs[domain_rootdn_attribute]
                         return _domain_attrs[domain_rootdn_attribute]
 
                     else:
                         domain_name_attribute = self.config_get('domain_name_attribute')
-                        if domain_name_attribute == None:
+                        if domain_name_attribute is None:
                             domain_name_attribute = 'associateddomain'
 
                         if isinstance(_domain_attrs[domain_name_attribute], list):
@@ -2554,11 +2597,11 @@ class LDAP(pykolab.base.Base):
         _filter = "(|"
         for _type in ['user', 'group', 'resource', 'sharedfolder']:
             __filter = self.config_get('kolab_%s_filter' % (_type))
-            if __filter == None:
+            if __filter is None:
                 __filter = self.config_get('%s_filter' % (_type))
 
-            if not __filter == None:
-                _filter = "%s%s" % (_filter,__filter)
+            if __filter is not None:
+                _filter = "%s%s" % (_filter, __filter)
 
         _filter = "%s)" % (_filter)
 
@@ -2590,27 +2633,28 @@ class LDAP(pykolab.base.Base):
         # If we haven't returned already, let's continue searching
         domain_filter = conf.get('ldap', 'domain_filter')
 
-        if not domain == None:
+        if domain is not None:
             domain_filter = domain_filter.replace('*', domain)
 
-        if domain_base_dn == None or domain_filter == None:
+        if domain_base_dn is None or domain_filter is None:
             return []
 
         dna = self.config_get('domain_name_attribute')
-        if dna == None:
+        if dna is None:
             dna = 'associateddomain'
 
         try:
             _search = self._search(
-                    domain_base_dn,
-                    ldap.SCOPE_SUBTREE,
-                    domain_filter,
-                    # TODO: Where we use associateddomain is actually
-                    # configurable
-                    [ dna ],
-                    override_search='_regular_search'
-                )
-        except:
+                domain_base_dn,
+                ldap.SCOPE_SUBTREE,
+                domain_filter,
+                # TODO: Where we use associateddomain is actually
+                # configurable
+                [dna],
+                override_search='_regular_search'
+            )
+
+        except Exception:
             return []
 
         domains = []
@@ -2628,7 +2672,7 @@ class LDAP(pykolab.base.Base):
             else:
                 primary_domain = domain_attrs[dna].lower()
 
-            domains.append((primary_domain,secondary_domains))
+            domains.append((primary_domain, secondary_domains))
 
         return domains
 
@@ -2642,26 +2686,29 @@ class LDAP(pykolab.base.Base):
         """
 
         log.debug(
-                "auth.ldap.LDAP._synchronize_callback(args %r, kw %r)" % (
-                        args,
-                        kw
-                    ),
-                level=8
-            )
+            "auth.ldap.LDAP._synchronize_callback(args %r, kw %r)" % (
+                args,
+                kw
+            ),
+            level=8
+        )
 
         # Typical for Persistent Change Control EntryChangeNotification
-        if kw.has_key('change_type'):
-
-            log.debug(_("change_type defined, typical for Persistent Change Control EntryChangeNotification"), level=5)
-
-            change_type = None
+        if 'change_type' in kw:
+            log.debug(
+                _(
+                    "change_type defined, typical for Persistent Change "
+                    + "Control EntryChangeNotification"
+                ),
+                level=5
+            )
 
             change_dict = {
-                    'change_type': kw['change_type'],
-                    'previous_dn': kw['previous_dn'],
-                    'change_number': kw['change_number'],
-                    'dn': kw['dn']
-                }
+                'change_type': kw['change_type'],
+                'previous_dn': kw['previous_dn'],
+                'change_number': kw['change_number'],
+                'dn': kw['dn']
+            }
 
             entry = utils.normalize(kw['entry'])
             entry['dn'] = kw['dn']
@@ -2671,12 +2718,12 @@ class LDAP(pykolab.base.Base):
 
             try:
                 entry['type'] = self._entry_type(entry)
-            except:
+            except Exception:
                 entry['type'] = None
 
             log.debug(_("Entry type: %s") % (entry['type']), level=8)
 
-            if change_dict['change_type'] == None:
+            if change_dict['change_type'] is None:
                 # This entry was in the start result set
                 eval("self._change_none_%s(entry, change_dict)" % (entry['type']))
             else:
@@ -2689,30 +2736,29 @@ class LDAP(pykolab.base.Base):
                 # See if we can find the cache entry - this way we can get to
                 # the value of a (former, on a deleted entry) result_attribute
                 result_attribute = conf.get('cyrus-sasl', 'result_attribute')
-                if not entry.has_key(result_attribute):
+                if result_attribute not in entry:
                     cache_entry = cache.get_entry(self.domain, entry, update=False)
 
                     if hasattr(cache_entry, 'result_attribute') and change == 'delete':
                         entry[result_attribute] = cache_entry.result_attribute
 
                 eval(
-                        "self._change_%s_%s(entry, change_dict)" % (
-                                change,
-                                entry['type']
-                            )
+                    "self._change_%s_%s(entry, change_dict)" % (
+                        change,
+                        entry['type']
                     )
+                )
 
         # Typical for Paged Results Control
-        elif kw.has_key('entry') and isinstance(kw['entry'], list):
-
+        elif 'entry' in kw and isinstance(kw['entry'], list):
             log.debug(_("No change_type, typical for Paged Results Control"), level=5)
 
-            for entry_dn,entry_attrs in kw['entry']:
+            for entry_dn, entry_attrs in kw['entry']:
                 # This is a referral
-                if entry_dn == None:
+                if entry_dn is None:
                     continue
 
-                entry = { 'dn': entry_dn }
+                entry = {'dn': entry_dn}
                 entry_attrs = utils.normalize(entry_attrs)
                 for attr in entry_attrs.keys():
                     entry[attr.lower()] = entry_attrs[attr]
@@ -2722,7 +2768,7 @@ class LDAP(pykolab.base.Base):
 
                 try:
                     entry['type'] = self._entry_type(entry)
-                except:
+                except Exception:
                     entry['type'] = "unknown"
 
                 log.debug(_("Entry type for dn: %s is: %s") % (entry['dn'], entry['type']), level=8)
@@ -2750,67 +2796,67 @@ class LDAP(pykolab.base.Base):
 #                    server = self.imap.user_mailbox_server(folder)
 
     ###
-    ### Backend search functions
+    # Backend search functions
     ###
 
-    def _persistent_search(self,
-            base_dn,
-            scope=ldap.SCOPE_SUBTREE,
-            filterstr="(objectClass=*)",
-            attrlist=None,
-            attrsonly=0,
-            timeout=-1,
-            callback=False,
-            primary_domain=None,
-            secondary_domains=[]
-        ):
-
-        _results = []
+    def _persistent_search(
+        self,
+        base_dn,
+        scope=ldap.SCOPE_SUBTREE,
+        filterstr="(objectClass=*)",
+        attrlist=None,
+        attrsonly=0,
+        timeout=-1,
+        callback=False,
+        primary_domain=None,
+        secondary_domains=[]
+    ):
 
         psearch_server_controls = []
 
-        psearch_server_controls.append(psearch.PersistentSearchControl(
-                    criticality=True,
-                    changeTypes=[ 'add', 'delete', 'modify', 'modDN' ],
-                    changesOnly=False,
-                    returnECs=True
-                )
+        psearch_server_controls.append(
+            psearch.PersistentSearchControl(
+                criticality=True,
+                changeTypes=['add', 'delete', 'modify', 'modDN'],
+                changesOnly=False,
+                returnECs=True
             )
+        )
 
         _search = self.ldap.search_ext(
-                base_dn,
-                scope=scope,
-                filterstr=filterstr,
-                attrlist=attrlist,
-                attrsonly=attrsonly,
-                timeout=timeout,
-                serverctrls=psearch_server_controls
-            )
+            base_dn,
+            scope=scope,
+            filterstr=filterstr,
+            attrlist=attrlist,
+            attrsonly=attrsonly,
+            timeout=timeout,
+            serverctrls=psearch_server_controls
+        )
 
         ecnc = psearch.EntryChangeNotificationControl
 
         while True:
-            res_type,res_data,res_msgid,_None,_None,_None = self.ldap.result4(
-                    _search,
-                    all=0,
-                    add_ctrls=1,
-                    add_intermediates=1,
-                    resp_ctrl_classes={ecnc.controlType:ecnc}
-                )
+            res_type, res_data, res_msgid, _None, _None, _None = self.ldap.result4(
+                _search,
+                all=0,
+                add_ctrls=1,
+                add_intermediates=1,
+                resp_ctrl_classes={ecnc.controlType: ecnc}
+            )
 
             change_type = None
             previous_dn = None
             change_number = None
 
-            for dn,entry,srv_ctrls in res_data:
+            for dn, entry, srv_ctrls in res_data:
                 log.debug(_("LDAP Search Result Data Entry:"), level=8)
                 log.debug("    DN: %r" % (dn), level=8)
                 log.debug("    Entry: %r" % (entry), level=8)
 
                 ecn_ctrls = [
-                        c for c in srv_ctrls
-                        if c.controlType == ecnc.controlType
-                    ]
+                    c for c in srv_ctrls
+                    if c.controlType == ecnc.controlType
+                ]
 
                 if ecn_ctrls:
                     change_type = ecn_ctrls[0].changeType
@@ -2819,76 +2865,76 @@ class LDAP(pykolab.base.Base):
                     change_type_desc = psearch.CHANGE_TYPES_STR[change_type]
 
                     log.debug(
-                            _("Entry Change Notification attributes:"),
-                            level=8
-                        )
+                        _("Entry Change Notification attributes:"),
+                        level=8
+                    )
 
                     log.debug(
-                            "    " + _("Change Type: %r (%r)") % (
-                                    change_type,
-                                    change_type_desc
-                                ),
-                            level=8
-                        )
+                        "    " + _("Change Type: %r (%r)") % (
+                            change_type,
+                            change_type_desc
+                        ),
+                        level=8
+                    )
 
                     log.debug(
-                            "    " + _("Previous DN: %r") % (previous_dn),
-                            level=8
-                        )
+                        "    " + _("Previous DN: %r") % (previous_dn),
+                        level=8
+                    )
 
                 if callback:
                     callback(
-                            dn=dn,
-                            entry=entry,
-                            previous_dn=previous_dn,
-                            change_type=change_type,
-                            change_number=change_number,
-                            primary_domain=primary_domain,
-                            secondary_domains=secondary_domains
-                        )
+                        dn=dn,
+                        entry=entry,
+                        previous_dn=previous_dn,
+                        change_type=change_type,
+                        change_number=change_number,
+                        primary_domain=primary_domain,
+                        secondary_domains=secondary_domains
+                    )
 
-    def _paged_search(self,
-            base_dn,
-            scope=ldap.SCOPE_SUBTREE,
-            filterstr="(objectClass=*)",
-            attrlist=None,
-            attrsonly=0,
-            timeout=-1,
-            callback=False,
-            primary_domain=None,
-            secondary_domains=[]
-        ):
+    def _paged_search(
+        self,
+        base_dn,
+        scope=ldap.SCOPE_SUBTREE,
+        filterstr="(objectClass=*)",
+        attrlist=None,
+        attrsonly=0,
+        timeout=-1,
+        callback=False,
+        primary_domain=None,
+        secondary_domains=[]
+    ):
 
         page_size = 500
-        critical = True
         _results = []
 
         server_page_control = SimplePagedResultsControl(page_size=page_size)
 
         _search = self.ldap.search_ext(
-                base_dn,
-                scope=scope,
-                filterstr=filterstr,
-                attrlist=attrlist,
-                attrsonly=attrsonly,
-                serverctrls=[server_page_control]
-            )
+            base_dn,
+            scope=scope,
+            filterstr=filterstr,
+            attrlist=attrlist,
+            attrsonly=attrsonly,
+            serverctrls=[server_page_control]
+        )
 
         pages = 0
         while True:
             pages += 1
             try:
                 (
-                        _result_type,
-                        _result_data,
-                        _result_msgid,
-                        _result_controls
-                    ) = self.ldap.result3(_search)
+                    _result_type,
+                    _result_data,
+                    _result_msgid,
+                    _result_controls
+                ) = self.ldap.result3(_search)
 
-            except ldap.NO_SUCH_OBJECT, e:
+            except ldap.NO_SUCH_OBJECT:
                 log.warning(
-                        _("Object %s searched no longer exists") % (base_dn)
-                    )
+                    _("Object %s searched no longer exists") % (base_dn)
+                )
 
                 break
 
@@ -2903,9 +2949,9 @@ class LDAP(pykolab.base.Base):
                 log.debug(_("%d results...") % (len(_results)))
 
             pctrls = [
-                    c for c in _result_controls
-                        if c.controlType == LDAP_CONTROL_PAGED_RESULTS
-                ]
+                c for c in _result_controls
+                if c.controlType == LDAP_CONTROL_PAGED_RESULTS
+            ]
 
             if pctrls:
                 if hasattr(pctrls[0], 'size'):
@@ -2917,47 +2963,49 @@ class LDAP(pykolab.base.Base):
                 if cookie:
                     server_page_control.cookie = cookie
                     _search = self.ldap.search_ext(
-                            base_dn,
-                            scope=scope,
-                            filterstr=filterstr,
-                            attrlist=attrlist,
-                            attrsonly=attrsonly,
-                            serverctrls=[server_page_control]
-                        )
+                        base_dn,
+                        scope=scope,
+                        filterstr=filterstr,
+                        attrlist=attrlist,
+                        attrsonly=attrsonly,
+                        serverctrls=[server_page_control]
+                    )
                 else:
                     # TODO: Error out more verbose
                     break
             else:
                 # TODO: Error out more verbose
-                print "Warning:  Server ignores RFC 2696 control."
+                print("Warning:  Server ignores RFC 2696 control.")
                 break
 
         return _results
 
-    def _vlv_search(self,
-            base_dn,
-            scope=ldap.SCOPE_SUBTREE,
-            filterstr="(objectClass=*)",
-            attrlist=None,
-            attrsonly=0,
-            timeout=-1,
-            callback=False,
-            primary_domain=None,
-            secondary_domains=[]
-        ):
+    def _vlv_search(
+        self,
+        base_dn,
+        scope=ldap.SCOPE_SUBTREE,
+        filterstr="(objectClass=*)",
+        attrlist=None,
+        attrsonly=0,
+        timeout=-1,
+        callback=False,
+        primary_domain=None,
+        secondary_domains=[]
+    ):
         pass
 
-    def _sync_repl(self,
-            base_dn,
-            scope=ldap.SCOPE_SUBTREE,
-            filterstr="(objectClass=*)",
-            attrlist=None,
-            attrsonly=0,
-            timeout=-1,
-            callback=False,
-            primary_domain=None,
-            secondary_domains=[]
-        ):
+    def _sync_repl(
+        self,
+        base_dn,
+        scope=ldap.SCOPE_SUBTREE,
+        filterstr="(objectClass=*)",
+        attrlist=None,
+        attrsonly=0,
+        timeout=-1,
+        callback=False,
+        primary_domain=None,
+        secondary_domains=[]
+    ):
 
         import ldapurl
         import syncrepl
@@ -2965,12 +3013,12 @@ class LDAP(pykolab.base.Base):
         ldap_url = ldapurl.LDAPUrl(self.config_get('ldap_uri'))
 
         ldap_sync_conn = syncrepl.DNSync(
-                '/var/lib/kolab/syncrepl_%s.db' % (self.domain),
-                ldap_url.initializeUrl(),
-                trace_level=2,
-                trace_file=pykolab.logger.StderrToLogger(log),
-                callback=self._synchronize_callback
-            )
+            '/var/lib/kolab/syncrepl_%s.db' % (self.domain),
+            ldap_url.initializeUrl(),
+            trace_level=2,
+            trace_file=pykolab.logger.StderrToLogger(log),
+            callback=self._synchronize_callback
+        )
 
         bind_dn = self.config_get('bind_dn')
         bind_pw = self.config_get('bind_pw')
@@ -2978,12 +3026,12 @@ class LDAP(pykolab.base.Base):
         ldap_sync_conn.simple_bind_s(bind_dn, bind_pw)
 
         msgid = ldap_sync_conn.syncrepl_search(
-                base_dn,
-                scope,
-                mode='refreshAndPersist',
-                filterstr=filterstr,
-                attrlist=attrlist,
-            )
+            base_dn,
+            scope,
+            mode='refreshAndPersist',
+            filterstr=filterstr,
+            attrlist=attrlist,
+        )
 
         try:
             # Here's where returns need to be taken into account...
@@ -2992,27 +3040,32 @@ class LDAP(pykolab.base.Base):
         except KeyboardInterrupt:
             pass
 
-    def _regular_search(self,
-            base_dn,
-            scope=ldap.SCOPE_SUBTREE,
-            filterstr="(objectClass=*)",
-            attrlist=None,
-            attrsonly=0,
-            timeout=-1,
-            callback=False,
-            primary_domain=None,
-            secondary_domains=[]
-        ):
+    def _regular_search(
+        self,
+        base_dn,
+        scope=ldap.SCOPE_SUBTREE,
+        filterstr="(objectClass=*)",
+        attrlist=None,
+        attrsonly=0,
+        timeout=None,
+        callback=False,
+        primary_domain=None,
+        secondary_domains=[]
+    ):
+
+        if timeout is None:
+            timeout = self.config_get('timeout', 10)
 
         log.debug(_("Searching with filter %r") % (filterstr), level=8)
 
         _search = self.ldap.search(
-                base_dn,
-                scope=scope,
-                filterstr=filterstr,
-                attrlist=attrlist,
-                attrsonly=attrsonly
-            )
+            base_dn,
+            scope=scope,
+            filterstr=filterstr,
+            attrlist=attrlist,
+            attrsonly=attrsonly,
+            timeout=timeout
+        )
 
         _results = []
         _result_type = None
@@ -3020,24 +3073,25 @@ class LDAP(pykolab.base.Base):
         while not _result_type == ldap.RES_SEARCH_RESULT:
             (_result_type, _result) = self.ldap.result(_search, False, 0)
 
-            if not _result == None:
+            if _result is not None:
                 for result in _result:
                     _results.append(result)
 
         return _results
 
-    def _search(self,
-            base_dn,
-            scope=ldap.SCOPE_SUBTREE,
-            filterstr="(objectClass=*)",
-            attrlist=None,
-            attrsonly=0,
-            timeout=-1,
-            override_search=False,
-            callback=False,
-            primary_domain=None,
-            secondary_domains=[]
-        ):
+    def _search(
+        self,
+        base_dn,
+        scope=ldap.SCOPE_SUBTREE,
+        filterstr="(objectClass=*)",
+        attrlist=None,
+        attrsonly=0,
+        timeout=None,
+        override_search=False,
+        callback=False,
+        primary_domain=None,
+        secondary_domains=[]
+    ):
         """
             Search LDAP.
 
@@ -3045,50 +3099,54 @@ class LDAP(pykolab.base.Base):
             the first one supported.
         """
 
+        if timeout is None:
+            timeout = self.config_get('timeout', 10)
+
         supported_controls = conf.get_list('ldap', 'supported_controls')
 
-        if not supported_controls == None and not len(supported_controls) < 1:
+        if supported_controls is not None and not len(supported_controls) < 1:
             for control_num in [(int)(x) for x in supported_controls]:
                 self.ldap.supported_controls.append(
-                        SUPPORTED_LDAP_CONTROLS[control_num]['func']
-                    )
+                    SUPPORTED_LDAP_CONTROLS[control_num]['func']
+                )
 
         if len(self.ldap.supported_controls) < 1:
             for control_num in SUPPORTED_LDAP_CONTROLS.keys():
                 log.debug(
-                        _("Checking for support for %s on %s") % (
-                                SUPPORTED_LDAP_CONTROLS[control_num]['desc'],
-                                self.domain
-                            ),
-                        level=8
-                    )
-
-            _search = self.ldap.search_s(
-                    '',
-                    scope=ldap.SCOPE_BASE,
-                    attrlist=['supportedControl']
+                    _("Checking for support for %s on %s") % (
+                        SUPPORTED_LDAP_CONTROLS[control_num]['desc'],
+                        self.domain
+                    ),
+                    level=8
                 )
 
-            for (_result,_supported_controls) in _search:
+            _search = self.ldap.search_s(
+                '',
+                scope=ldap.SCOPE_BASE,
+                attrlist=['supportedControl']
+            )
+
+            for (_result, _supported_controls) in _search:
                 supported_controls = _supported_controls.values()[0]
                 for control_num in SUPPORTED_LDAP_CONTROLS.keys():
                     if SUPPORTED_LDAP_CONTROLS[control_num]['oid'] in \
                             supported_controls:
 
-                        log.debug(_("Found support for %s") % (
-                                    SUPPORTED_LDAP_CONTROLS[control_num]['desc'],
-                                ),
-                                level=8
-                            )
+                        log.debug(
+                            _("Found support for %s") % (
+                                SUPPORTED_LDAP_CONTROLS[control_num]['desc'],
+                            ),
+                            level=8
+                        )
 
                         self.ldap.supported_controls.append(
-                                SUPPORTED_LDAP_CONTROLS[control_num]['func']
-                            )
+                            SUPPORTED_LDAP_CONTROLS[control_num]['func']
+                        )
 
         _results = []
 
-        if not override_search == False:
-            _use_ldap_controls = [ override_search ]
+        if override_search is not False:
+            _use_ldap_controls = [override_search]
         else:
             _use_ldap_controls = self.ldap.supported_controls
 
@@ -3101,7 +3159,8 @@ class LDAP(pykolab.base.Base):
 
             while not failed_ok:
                 try:
-                    exec("""_results = self.%s(
+                    exec(
+                        """_results = self.%s(
                             %r,
                             scope=%r,
                             filterstr=%r,
@@ -3112,29 +3171,39 @@ class LDAP(pykolab.base.Base):
                             primary_domain=%r,
                             secondary_domains=%r
                         )""" % (
-                                supported_control,
-                                base_dn,
-                                scope,
-                                filterstr,
-                                attrlist,
-                                attrsonly,
-                                timeout,
-                                primary_domain,
-                                secondary_domains
-                            )
+                            supported_control,
+                            base_dn,
+                            scope,
+                            filterstr,
+                            attrlist,
+                            attrsonly,
+                            timeout,
+                            primary_domain,
+                            secondary_domains
                         )
+                    )
 
                     break
 
-                except ldap.SERVER_DOWN, errmsg:
+                except ldap.SERVER_DOWN as errmsg:
                     log.error(_("LDAP server unavailable: %r") % (errmsg))
                     log.error(_("%s") % (traceback.format_exc()))
                     log.error(_("-- reconnecting in 10 seconds."))
 
+                    self._disconnect()
+
                     time.sleep(10)
                     self.reconnect()
 
-                except Exception, errmsg:
+                except ldap.TIMEOUT:
+                    log.error(_("LDAP timeout in searching for '%s'") % (filterstr))
+
+                    self._disconnect()
+
+                    time.sleep(10)
+                    self.reconnect()
+
+                except Exception as errmsg:
                     failed_ok = True
 
                     log.error(_("An error occured using %s: %r") % (supported_control, errmsg))
@@ -3153,7 +3222,7 @@ class LDAP(pykolab.base.Base):
 
         if acl is not None:
             if not isinstance(acl, list):
-                acl = [ acl ]
+                acl = [acl]
 
             for acl_entry in acl:
                 # entry already converted to IMAP format?
