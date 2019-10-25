@@ -18,6 +18,8 @@
 
 import datetime
 
+from uuid import UUID
+
 import sqlalchemy
 
 from sqlalchemy import Column
@@ -31,24 +33,14 @@ from sqlalchemy import desc
 from sqlalchemy import create_engine
 from sqlalchemy.orm import mapper
 
-from uuid import UUID
-
-try:
-    from sqlalchemy.orm import relationship
-except:
-    from sqlalchemy.orm import relation as relationship
-
-try:
-    from sqlalchemy.orm import sessionmaker
-except:
-    from sqlalchemy.orm import create_session
+from sqlalchemy.orm import sessionmaker
 
 import pykolab
 
-from pykolab import utils
 from pykolab.constants import KOLAB_LIB_PATH
 from pykolab.translate import _
 
+# pylint: disable=invalid-name
 conf = pykolab.getConf()
 log = pykolab.getLogger('pykolab.auth_cache')
 
@@ -56,11 +48,15 @@ metadata = MetaData()
 
 db = {}
 
-##
-## Classes
-##
+#
+# Classes
+#
 
-class Entry(object):
+
+# pylint: disable=too-few-public-methods
+class Entry:
+    last_change = None
+
     def __init__(self, uniqueid, result_attr, last_change):
         self.uniqueid = uniqueid
         self.result_attribute = result_attr
@@ -72,83 +68,82 @@ class Entry(object):
         ).replace('%%', '%')
 
         self.last_change = datetime.datetime.strptime(
-                last_change,
+            last_change,
             modifytimestamp_format
         )
 
-##
-## Tables
-##
+#
+# Tables
+#
+
 
 entry_table = Table(
-        'entry', metadata,
-        Column('id', Integer, primary_key=True),
-        Column('uniqueid', String(128), nullable=False),
-        Column('result_attribute', String(128), nullable=False),
-        Column('last_change', DateTime),
-    )
+    'entry', metadata,
+    Column('id', Integer, primary_key=True),
+    Column('uniqueid', String(128), nullable=False),
+    Column('result_attribute', String(128), nullable=False),
+    Column('last_change', DateTime),
+)
 
-##
-## Table <-> Class Mappers
-##
+#
+# Table <-> Class Mappers
+#
 
 mapper(Entry, entry_table)
 
-##
-## Functions
-##
+#
+# Functions
+#
+
 
 def delete_entry(domain, entry):
-    result_attribute = conf.get_raw('cyrus-sasl', 'result_attribute')
+    _db = init_db(domain)
+    _entry = _db.query(Entry).filter_by(uniqueid=entry['id']).first()
 
-    db = init_db(domain)
-    _entry = db.query(Entry).filter_by(uniqueid=entry['id']).first()
+    if _entry is not None:
+        _db.delete(_entry)
+        _db.commit()
 
-    if not _entry == None:
-        db.delete(_entry)
-        db.commit()
 
 def get_entry(domain, entry, update=True):
     result_attribute = conf.get_raw('cyrus-sasl', 'result_attribute')
 
     _entry = None
 
-    db = init_db(domain)
+    _db = init_db(domain)
 
     try:
         _uniqueid = str(UUID(bytes_le=entry['id']))
-        log.debug(_("Entry uniqueid was converted from binary form to string: %s") % _uniqueid, level=8)
+        log.debug(
+            _("Entry uniqueid was converted from binary form to string: %s") % _uniqueid,
+            level=8
+        )
+
     except ValueError:
         _uniqueid = entry['id']
 
     try:
-        _entry = db.query(Entry).filter_by(uniqueid=_uniqueid).first()
-    except sqlalchemy.exc.OperationalError, errmsg:
-        db = init_db(domain,reinit=True)
-    except sqlalchemy.exc.InvalidRequestError, errmsg:
-        db = init_db(domain,reinit=True)
+        _entry = _db.query(Entry).filter_by(uniqueid=_uniqueid).first()
+    except sqlalchemy.exc.OperationalError:
+        _db = init_db(domain, reinit=True)
+    except sqlalchemy.exc.InvalidRequestError:
+        _db = init_db(domain, reinit=True)
     finally:
-        _entry = db.query(Entry).filter_by(uniqueid=_uniqueid).first()
+        _entry = _db.query(Entry).filter_by(uniqueid=_uniqueid).first()
 
     if not update:
         return _entry
 
-    if _entry == None:
+    if _entry is None:
         log.debug(_("Inserting cache entry %r") % (_uniqueid), level=8)
 
-        if not entry.has_key(result_attribute):
+        if result_attribute not in entry:
             entry[result_attribute] = ''
 
-        db.add(
-                Entry(
-                        _uniqueid,
-                        entry[result_attribute],
-                        entry['modifytimestamp']
-                    )
-            )
+        _db.add(Entry(_uniqueid, entry[result_attribute], entry['modifytimestamp']))
 
-        db.commit()
-        _entry = db.query(Entry).filter_by(uniqueid=_uniqueid).first()
+        _db.commit()
+        _entry = _db.query(Entry).filter_by(uniqueid=_uniqueid).first()
     else:
         modifytimestamp_format = conf.get_raw(
             'ldap',
@@ -158,24 +153,30 @@ def get_entry(domain, entry, update=True):
 
         if not _entry.last_change.strftime(modifytimestamp_format) == entry['modifytimestamp']:
             log.debug(_("Updating timestamp for cache entry %r") % (_uniqueid), level=8)
-            last_change = datetime.datetime.strptime(entry['modifytimestamp'], modifytimestamp_format)
-            _entry.last_change = last_change
-            db.commit()
-            _entry = db.query(Entry).filter_by(uniqueid=_uniqueid).first()
+            last_change = datetime.datetime.strptime(
+                entry['modifytimestamp'],
+                modifytimestamp_format
+            )
 
-        if entry.has_key(result_attribute):
+            _entry.last_change = last_change
+            _db.commit()
+            _entry = _db.query(Entry).filter_by(uniqueid=_uniqueid).first()
+
+        if result_attribute in entry:
             if not _entry.result_attribute == entry[result_attribute]:
                 log.debug(_("Updating result_attribute for cache entry %r") % (_uniqueid), level=8)
                 _entry.result_attribute = entry[result_attribute]
-                db.commit()
-                _entry = db.query(Entry).filter_by(uniqueid=_uniqueid).first()
+                _db.commit()
+                _entry = _db.query(Entry).filter_by(uniqueid=_uniqueid).first()
 
     return _entry
 
-def init_db(domain,reinit=False):
+
+def init_db(domain, reinit=False):
     """
         Returns a SQLAlchemy Session() instance.
     """
+    # pylint: disable=global-statement
     global db
 
     if domain in db and not reinit:
@@ -192,7 +193,7 @@ def init_db(domain,reinit=False):
     try:
         engine = create_engine(db_uri, echo=echo)
         metadata.create_all(engine)
-    except:
+    except Exception:
         engine = create_engine('sqlite://')
         metadata.create_all(engine)
 
@@ -200,6 +201,7 @@ def init_db(domain,reinit=False):
     db[domain] = Session()
 
     return db[domain]
+
 
 def last_modify_timestamp(domain):
     modifytimestamp_format = conf.get_raw(
@@ -209,12 +211,13 @@ def last_modify_timestamp(domain):
     ).replace('%%', '%')
 
     try:
-        db = init_db(domain)
-        last_change = db.query(Entry).order_by(desc(Entry.last_change)).first()
+        _db = init_db(domain)
+        last_change = _db.query(Entry).order_by(desc(Entry.last_change)).first()
 
-        if not last_change == None:
+        if last_change is not None:
             return last_change.last_change.strftime(modifytimestamp_format)
-        else:
-            return datetime.datetime(1900, 01, 01, 00, 00, 00).strftime(modifytimestamp_format)
-    except:
-        return datetime.datetime(1900, 01, 01, 00, 00, 00).strftime(modifytimestamp_format)
+
+        return datetime.datetime(1900, 1, 1, 00, 00, 00).strftime(modifytimestamp_format)
+
+    except Exception:
+        return datetime.datetime(1900, 1, 1, 00, 00, 00).strftime(modifytimestamp_format)

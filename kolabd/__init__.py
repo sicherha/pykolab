@@ -20,6 +20,8 @@
     The Kolab daemon.
 """
 
+from __future__ import print_function
+
 import grp
 import os
 import pwd
@@ -33,77 +35,77 @@ import pykolab
 from pykolab.auth import Auth
 from pykolab import constants
 from pykolab import utils
-from pykolab.translate import _
+from pykolab.translate import _ as _l
 
-from process import KolabdProcess as Process
+from .process import KolabdProcess as Process
 
+# pylint: disable=invalid-name
 log = pykolab.getLogger('pykolab.daemon')
 conf = pykolab.getConf()
 
 
-class KolabDaemon(object):
+class KolabDaemon:
     def __init__(self):
         """
             The main Kolab Groupware daemon process.
         """
 
-        daemon_group = conf.add_cli_parser_option_group(_("Daemon Options"))
+        daemon_group = conf.add_cli_parser_option_group(_l("Daemon Options"))
 
         daemon_group.add_option(
-                "--fork",
-                dest    = "fork_mode",
-                action  = "store_true",
-                default = False,
-                help    = _("Fork to the background.")
-            )
+            "--fork",
+            dest="fork_mode",
+            action="store_true",
+            default=False,
+            help=_l("Fork to the background.")
+        )
 
         daemon_group.add_option(
-                "-p",
-                "--pid-file",
-                dest    = "pidfile",
-                action  = "store",
-                default = "/var/run/kolabd/kolabd.pid",
-                help    = _("Path to the PID file to use.")
-            )
+            "-p", "--pid-file",
+            dest="pidfile",
+            action="store",
+            default="/var/run/kolabd/kolabd.pid",
+            help=_l("Path to the PID file to use.")
+        )
 
         daemon_group.add_option(
-                "-u",
-                "--user",
-                dest    = "process_username",
-                action  = "store",
-                default = "kolab",
-                help    = _("Run as user USERNAME"),
-                metavar = "USERNAME"
-            )
+            "-u", "--user",
+            dest="process_username",
+            action="store",
+            default="kolab",
+            help=_l("Run as user USERNAME"),
+            metavar="USERNAME"
+        )
 
         daemon_group.add_option(
-                "-g",
-                "--group",
-                dest    = "process_groupname",
-                action  = "store",
-                default = "kolab",
-                help    = _("Run as group GROUPNAME"),
-                metavar = "GROUPNAME"
-            )
+            "-g", "--group",
+            dest="process_groupname",
+            action="store",
+            default="kolab",
+            help=_l("Run as group GROUPNAME"),
+            metavar="GROUPNAME"
+        )
 
         conf.finalize_conf()
 
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
     def run(self):
         """Run Forest, RUN!"""
 
         exitcode = 0
 
         utils.ensure_directory(
-                os.path.dirname(conf.pidfile),
-                conf.process_username,
-                conf.process_groupname
-            )
+            os.path.dirname(conf.pidfile),
+            conf.process_username,
+            conf.process_groupname
+        )
 
         try:
             try:
-                (ruid, euid, suid) = os.getresuid()
-                (rgid, egid, sgid) = os.getresgid()
-            except AttributeError, errmsg:
+                (ruid, _, _) = os.getresuid()
+                (rgid, _, _) = os.getresgid()
+            except AttributeError:
                 ruid = os.getuid()
                 rgid = os.getgid()
 
@@ -112,64 +114,47 @@ class KolabDaemon(object):
                 if rgid == 0:
                     # Get group entry details
                     try:
-                        (
-                                group_name,
-                                group_password,
-                                group_gid,
-                                group_members
-                            ) = grp.getgrnam(conf.process_groupname)
+                        (_, _, group_gid, _) = grp.getgrnam(conf.process_groupname)
 
                     except KeyError:
-                        print >> sys.stderr, _("Group %s does not exist") % (
-                                conf.process_groupname
-                            )
+                        log.error(
+                            _l("Group %s does not exist") % (conf.process_groupname)
+                        )
 
                         sys.exit(1)
 
                     # Set real and effective group if not the same as current.
                     if not group_gid == rgid:
                         log.debug(
-                                _("Switching real and effective group id to %d") % (
-                                        group_gid
-                                    ),
-                                level=8
-                            )
+                            _l("Switching real and effective group id to %d") % (group_gid),
+                            level=8
+                        )
 
                         os.setregid(group_gid, group_gid)
 
                 if ruid == 0:
                     # Means we haven't switched yet.
                     try:
-                        (
-                                user_name,
-                                user_password,
-                                user_uid,
-                                user_gid,
-                                user_gecos,
-                                user_homedir,
-                                user_shell
-                            ) = pwd.getpwnam(conf.process_username)
+                        (_, _, user_uid, _, _, _, _) = pwd.getpwnam(conf.process_username)
 
                     except KeyError:
-                        print >> sys.stderr, _("User %s does not exist") % (
-                                conf.process_username
-                            )
+                        log.error(
+                            _l("User %s does not exist") % (conf.process_username)
+                        )
 
                         sys.exit(1)
 
                     # Set real and effective user if not the same as current.
                     if not user_uid == ruid:
                         log.debug(
-                                _("Switching real and effective user id to %d") % (
-                                        user_uid
-                                    ),
-                                level=8
-                            )
+                            _l("Switching real and effective user id to %d") % (user_uid),
+                            level=8
+                        )
 
                         os.setreuid(user_uid, user_uid)
 
-        except:
-            log.error(_("Could not change real and effective uid and/or gid"))
+        except Exception:
+            log.error(_l("Could not change real and effective uid and/or gid"))
 
         try:
             pid = os.getpid()
@@ -211,36 +196,35 @@ class KolabDaemon(object):
                 self.write_pid()
                 self.do_sync()
 
-        except SystemExit, errcode:
+        except SystemExit as errcode:
             exitcode = errcode
 
         except KeyboardInterrupt:
             exitcode = 1
-            log.info(_("Interrupted by user"))
+            log.info(_l("Interrupted by user"))
 
-        except AttributeError, errmsg:
+        except AttributeError:
             exitcode = 1
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a " +
-                                   "bug at https://issues.kolab.org")
+            print(_l("Traceback occurred, please report a bug"), file=sys.stderr)
 
-        except TypeError, errmsg:
+        except TypeError as errmsg:
             exitcode = 1
             traceback.print_exc()
-            log.error(_("Type Error: %s") % errmsg)
+            log.error(_l("Type Error: %s") % errmsg)
 
-        except:
+        except Exception:
             exitcode = 2
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a " +
-                                   "bug at https://issues.kolab.org")
+            print(_l("Traceback occurred, please report a bug"), file=sys.stderr)
 
         sys.exit(exitcode)
 
+    # pylint: disable=no-self-use
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-locals
     def do_sync(self):
         domain_auth = {}
-
-        pid = os.getpid()
 
         primary_domain = conf.get('kolab', 'primary_domain')
 
@@ -252,23 +236,23 @@ class KolabDaemon(object):
                 try:
                     primary_auth.connect()
                     connected = True
-                except Exception, errmsg:
+                except Exception as errmsg:
                     connected = False
-                    log.error(_("Could not connect to LDAP, is it running?"))
+                    log.error(_l("Could not connect to LDAP, is it running?"))
+                    log.error(_l("Error: %r") % (errmsg))
+                    log.error("Traceback: %r" % (traceback.format_exc()))
                     time.sleep(5)
 
-            log.debug(_("Listing domains..."), level=5)
-
-            start = time.time()
+            log.debug(_l("Listing domains..."), level=5)
 
             try:
                 domains = primary_auth.list_domains()
-            except:
+            except Exception:
                 time.sleep(60)
                 continue
 
-            if isinstance(domains, list) and len(domains) < 1:
-                log.error(_("No domains. Not syncing"))
+            if domains:
+                log.error(_l("No domains. Not syncing"))
                 time.sleep(5)
                 continue
 
@@ -289,29 +273,32 @@ class KolabDaemon(object):
 
             for primary in primaries:
                 naming_context = primary_auth.domain_naming_context(primary)
+
+                # pylint: disable=protected-access
                 domain_root_dn = primary_auth._auth._kolab_domain_root_dn(primary)
+
                 log.debug(
-                        _("Domain %r naming context: %r, root dn: %r") % (
-                                primary,
-                                naming_context,
-                                domain_root_dn
-                            ),
-                        level=8
-                    )
+                    _l("Domain %r naming context: %r, root dn: %r") % (
+                        primary,
+                        naming_context,
+                        domain_root_dn
+                    ),
+                    level=8
+                )
 
                 domain_root_dns[primary] = domain_root_dn
                 naming_contexts[primary] = naming_context
 
             log.debug(
-                    _("Naming contexts to synchronize: %r") % (
-                            list(set(naming_contexts.values()))
-                        ),
-                    level=8
-                )
+                _l("Naming contexts to synchronize: %r") % (
+                    list(set(naming_contexts.values()))
+                ),
+                level=8
+            )
 
             # Find however many naming contexts we have, and what the
             # corresponding domain name is for them.
-            primary_domains = [x for x,y in naming_contexts.iteritems() if domain_root_dns[x] == y]
+            primary_domains = [x for x, y in naming_contexts.items() if domain_root_dns[x] == y]
 
             # Now we can check if any changes happened.
             added_domains = []
@@ -321,41 +308,44 @@ class KolabDaemon(object):
             # accounted for locally.
             all_domains = list(set(primary_domains + domain_auth.keys()))
 
-            log.debug(_("Result set of domains: %r") % (all_domains), level=8)
+            log.debug(_l("Result set of domains: %r") % (all_domains), level=8)
 
             for domain in all_domains:
-                log.debug(_("Checking for domain %s") % (domain), level=8)
+                log.debug(_l("Checking for domain %s") % (domain), level=8)
 
                 if domain in domain_auth.keys() and domain in primary_domains:
                     if not domain_auth[domain].is_alive():
-                        log.debug(_("Domain %s isn't alive anymore.") % (domain), level=8)
+                        log.debug(_l("Domain %s isn't alive anymore.") % (domain), level=8)
                         domain_auth[domain].terminate()
                         added_domains.append(domain)
                     else:
-                        log.debug(_("Domain %s already there and alive.") % (domain), level=8)
+                        log.debug(_l("Domain %s already there and alive.") % (domain), level=8)
                         continue
 
                 elif domain in domain_auth.keys():
-                    log.debug(_("Domain %s should not exist any longer.") % (domain), level=8)
+                    log.debug(_l("Domain %s should not exist any longer.") % (domain), level=8)
                     removed_domains.append(domain)
                 else:
-                    log.debug(_("Domain %s does not have a process yet.") % (domain), level=8)
+                    log.debug(_l("Domain %s does not have a process yet.") % (domain), level=8)
                     added_domains.append(domain)
 
-            if len(removed_domains) == 0 and len(added_domains) == 0:
+            if not removed_domains and not added_domains:
                 try:
-                    sleep_between_domain_operations_in_seconds = (float)(conf.get('kolab', 'domain_sync_interval'))
+                    sleep_between_domain_operations_in_seconds = (float)(
+                        conf.get(
+                            'kolab',
+                            'domain_sync_interval'
+                        )
+                    )
+
                     time.sleep(sleep_between_domain_operations_in_seconds)
                 except ValueError:
                     time.sleep(600)
 
             log.debug(
-                    _("added domains: %r, removed domains: %r") % (
-                            added_domains,
-                            removed_domains
-                        ),
-                    level=8
-                )
+                _l("added domains: %r, removed domains: %r") % (added_domains, removed_domains),
+                level=8
+            )
 
             for domain in added_domains:
                 domain_auth[domain] = Process(domain)
@@ -383,7 +373,7 @@ class KolabDaemon(object):
         if os.access(conf.pidfile, os.R_OK):
             try:
                 os.remove(conf.pidfile)
-            except:
+            except Exception:
                 pass
 
         raise SystemExit

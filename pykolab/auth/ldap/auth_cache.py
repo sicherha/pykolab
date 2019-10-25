@@ -25,30 +25,18 @@ from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import MetaData
 from sqlalchemy import String
-from sqlalchemy import Table
 from sqlalchemy import Text
 
-from sqlalchemy import desc
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import mapper
 
-try:
-    from sqlalchemy.orm import relationship
-except:
-    from sqlalchemy.orm import relation as relationship
-
-try:
-    from sqlalchemy.orm import sessionmaker
-except:
-    from sqlalchemy.orm import create_session
+from sqlalchemy.orm import sessionmaker
 
 import pykolab
 
-from pykolab import utils
 from pykolab.constants import KOLAB_LIB_PATH
-from pykolab.translate import _
 
+# pylint: disable=invalid-name
 conf = pykolab.getConf()
 log = pykolab.getLogger('pykolab.auth_cache')
 
@@ -56,12 +44,19 @@ metadata = MetaData()
 
 db = None
 
-##
-## Classes
-##
+try:
+    unicode('')
+except NameError:
+    unicode = str
+
+#
+# Classes
+#
 
 DeclarativeBase = declarative_base()
 
+
+# pylint: disable=too-few-public-methods
 class Entry(DeclarativeBase):
     __tablename__ = 'entries'
 
@@ -78,38 +73,47 @@ class Entry(DeclarativeBase):
         else:
             self.value = value
 
-##
-## Functions
-##
+#
+# Functions
+#
+
 
 def del_entry(key):
+    # pylint: disable=global-statement
+    global db
+
     db = init_db()
 
     try:
-        _entries = db.query(Entry).filter_by(key=key).delete()
-    except sqlalchemy.exc.OperationalError, errmsg:
+        db.query(Entry).filter_by(key=key).delete()
+    except sqlalchemy.exc.OperationalError:
         db = init_db(reinit=True)
-    except sqlalchemy.exc.InvalidRequest, errmsg:
+    except sqlalchemy.exc.InvalidRequest:
         db = init_db(reinit=True)
     finally:
-        _entries = db.query(Entry).filter_by(key=key).delete()
+        db.query(Entry).filter_by(key=key).delete()
 
     db.commit()
 
+
 def get_entry(key):
+    # pylint: disable=global-statement
+    global db
+
     db = init_db()
 
     try:
         _entries = db.query(Entry).filter_by(key=key).all()
-    except sqlalchemy.exc.OperationalError, errmsg:
+    except sqlalchemy.exc.OperationalError:
         db = init_db(reinit=True)
-    except sqlalchemy.exc.InvalidRequest, errmsg:
+    except sqlalchemy.exc.InvalidRequest:
         db = init_db(reinit=True)
     finally:
         _entries = db.query(Entry).filter_by(key=key).all()
 
-    if len(_entries) == 0:
+    if _entries:
         return None
+
     if len(_entries) > 1:
         return None
 
@@ -118,26 +122,23 @@ def get_entry(key):
 
     return _entries[0].value.encode('utf-8', 'latin1')
 
+
 def set_entry(key, value):
     db = init_db()
+
     try:
         _entries = db.query(Entry).filter_by(key=key).all()
-    except sqlalchemy.exc.OperationalError, errmsg:
+    except sqlalchemy.exc.OperationalError:
         db = init_db(reinit=True)
-    except sqlalchemy.exc.InvalidRequest, errmsg:
+    except sqlalchemy.exc.InvalidRequest:
         db = init_db(reinit=True)
     finally:
         _entries = db.query(Entry).filter_by(key=key).all()
 
-    if len(_entries) == 0:
-        db.add(
-                Entry(
-                        key,
-                        value
-                    )
-            )
-
+    if not _entries:
+        db.add(Entry(key, value))
         db.commit()
+
     elif len(_entries) == 1:
         if not isinstance(value, unicode):
             value = unicode(value, 'utf-8')
@@ -148,21 +149,28 @@ def set_entry(key, value):
         _entries[0].last_change = datetime.datetime.now()
         db.commit()
 
+
 def purge_entries(db):
-    db.query(Entry).filter(Entry.last_change <= (datetime.datetime.now() - datetime.timedelta(1))).delete()
+    db.query(Entry).filter(
+        Entry.last_change <= (datetime.datetime.now() - datetime.timedelta(1))
+    ).delete()
+
     db.commit()
+
 
 def init_db(reinit=False):
     """
         Returns a SQLAlchemy Session() instance.
     """
+    # pylint: disable=global-statement
     global db
 
-    if not db == None and not reinit:
+    if db is not None and not reinit:
         return db
 
     db_uri = conf.get('ldap', 'auth_cache_uri')
-    if db_uri == None:
+
+    if db_uri is None:
         db_uri = 'sqlite:///%s/auth_cache.db' % (KOLAB_LIB_PATH)
 
         if reinit:

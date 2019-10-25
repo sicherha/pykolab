@@ -51,7 +51,7 @@ conf = pykolab.getConf()
 modules = {}
 
 
-def __init__():
+def initialize():
     # We only want the base path
     modules_base_path = os.path.dirname(__file__)
 

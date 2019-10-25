@@ -20,13 +20,15 @@ from __future__ import print_function
 import datetime
 # Catch python-ldap-2.4 changes
 from distutils import version
-import _ldap
-import ldap
-import ldap.controls
-import ldap.filter
 import logging
 import time
 import traceback
+
+import ldap
+import ldap.controls
+import ldap.filter
+
+import _ldap
 
 import pykolab
 import pykolab.base
@@ -39,13 +41,18 @@ from pykolab.translate import _
 import auth_cache
 import cache
 
+# pylint: disable=invalid-name
 log = pykolab.getLogger('pykolab.auth')
 conf = pykolab.getConf()
 
 if version.StrictVersion('2.4.0') <= version.StrictVersion(ldap.__version__):
     LDAP_CONTROL_PAGED_RESULTS = ldap.CONTROL_PAGEDRESULTS
 else:
-    LDAP_CONTROL_PAGED_RESULTS = ldap.LDAP_CONTROL_PAGE_OID
+    if hasattr(ldap, 'LDAP_CONTROL_PAGE_OID'):
+        # pylint: disable=no-member
+        LDAP_CONTROL_PAGED_RESULTS = ldap.LDAP_CONTROL_PAGE_OID
+    else:
+        LDAP_CONTROL_PAGED_RESULTS = ldap.controls.SimplePagedResultsControl.controlType
 
 try:
     from ldap.controls import psearch
@@ -80,8 +87,8 @@ class SimplePagedResultsControl(ldap.controls.SimplePagedResultsControl):
     def cookie(self):
         if version.StrictVersion('2.4.0') <= version.StrictVersion(ldap.__version__):
             return self.cookie
-        else:
-            return self.controlValue[1]
+
+        return self.controlValue[1]
 
     def size(self):
         if version.StrictVersion('2.4.0') <= version.StrictVersion(ldap.__version__):
@@ -237,7 +244,7 @@ class LDAP(pykolab.base.Base):
 
             except ldap.SERVER_DOWN as errmsg:
                 log.error(_("LDAP server unavailable: %r") % (errmsg))
-                log.error(_("%s") % (traceback.format_exc()))
+                log.error(traceback.format_exc())
                 self._disconnect()
 
                 return False
@@ -250,7 +257,7 @@ class LDAP(pykolab.base.Base):
 
             except Exception as errmsg:
                 log.error(_("Exception occurred: %r") % (errmsg))
-                log.error(_("%s") % (traceback.format_exc()))
+                log.error(traceback.format_exc())
                 self._disconnect()
 
                 return False
@@ -1336,7 +1343,7 @@ class LDAP(pykolab.base.Base):
                 )
 
                 import traceback
-                log.error("%s" % (traceback.format_exc()))
+                log.error(traceback.format_exc())
 
     def synchronize(self, mode=0, callback=None):
         """
@@ -3063,8 +3070,7 @@ class LDAP(pykolab.base.Base):
             scope=scope,
             filterstr=filterstr,
             attrlist=attrlist,
-            attrsonly=attrsonly,
-            timeout=timeout
+            attrsonly=attrsonly
         )
 
         _results = []

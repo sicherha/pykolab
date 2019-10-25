@@ -17,13 +17,13 @@
 #
 
 import multiprocessing
-import os
 import time
 
 import pykolab
 from pykolab.auth import Auth
 from pykolab.translate import _
 
+# pylint: disable=invalid-name
 log = pykolab.getLogger('pykolab.daemon')
 conf = pykolab.getConf()
 
@@ -33,11 +33,11 @@ class KolabdProcess(multiprocessing.Process):
         self.domain = domain
         log.debug(_("Process created for domain %s") % (domain), level=8)
         multiprocessing.Process.__init__(
-                self,
-                target=self.synchronize,
-                args=(domain,),
-                name="Kolab(%s)" % domain
-            )
+            self,
+            target=self.synchronize,
+            args=(domain,),
+            name="Kolab(%s)" % domain
+        )
 
     def synchronize(self, domain):
         log.debug(_("Synchronizing for domain %s") % (domain), level=8)
@@ -56,7 +56,7 @@ class KolabdProcess(multiprocessing.Process):
                 time.sleep(sync_interval)
             except KeyboardInterrupt:
                 break
-            except Exception, errmsg:
+            except Exception as errmsg:
                 log.error(_("Error in process %r, terminating:\n\t%r") % (self.name, errmsg))
                 import traceback
                 traceback.print_exc()

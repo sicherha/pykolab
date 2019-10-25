@@ -19,14 +19,16 @@
 import pykolab
 from pykolab.imap import IMAP
 
+# pylint: disable=invalid-name
 conf = pykolab.getConf()
 
-class Base(object):
+
+class Base:
     """
         Abstraction class for functions commonly shared between auth, imap, etc.
     """
     def __init__(self, *args, **kw):
-        if kw.has_key('domain') and not kw['domain'] == None:
+        if 'domain' in kw and kw['domain'] is not None:
             self.domain = kw['domain']
         else:
             self.domain = conf.get('kolab', 'primary_domain')
@@ -94,4 +96,3 @@ class Base(object):
             return conf.get_raw('kolab', key1)
 
         return default
-

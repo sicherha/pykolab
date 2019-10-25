@@ -36,13 +36,15 @@ import time
 
 import pykolab
 from pykolab import utils
-from pykolab.translate import _
+from pykolab.logger import StderrToLogger
+from pykolab.translate import _ as _l
 
+import modules
 from modules import cb_action_ACCEPT
 
 # pylint: disable=invalid-name
 log = pykolab.getLogger('pykolab.wallace')
-sys.stderr = pykolab.logger.StderrToLogger(log)
+sys.stderr = StderrToLogger(log)
 conf = pykolab.getConf()
 
 
@@ -54,7 +56,7 @@ def pickup_message(filepath, *args, **kwargs):
         # Cause the previous modules to be skipped
         wallace_modules = wallace_modules[(wallace_modules.index(kwargs['module']) + 1):]
 
-        log.debug(_("Wallace modules: %r") % (wallace_modules), level=8)
+        log.debug(_l("Wallace modules: %r") % (wallace_modules), level=8)
 
         # Execute the module
         if 'stage' in kwargs:
@@ -129,31 +131,39 @@ class Timer(_Timer):
         while True:
             while not self.finished.is_set():
                 self.finished.wait(self.interval)
-                log.debug(_("Timer looping function '%s' every %ss") % (
+                log.debug(_l("Timer looping function '%s' every %ss") % (
                     self.function.__name__,
                     self.interval
                 ), level=8)
                 self.function(*self.args, **self.kwargs)
 
             self.finished.set()
-            log.debug(_("Timer loop %s") % ('still active','finished')[self.finished.is_set()], level=8)
+            log.debug(
+                _l("Timer loop %s") % ('still active', 'finished')[self.finished.is_set()],
+                level=8
+            )
+
             break
 
+
 class WallaceDaemon:
+    heartbeat = None
+    timer = None
+
     def __init__(self):
         self.current_connections = 0
         self.max_connections = 24
         self.parent_pid = None
         self.pool = None
 
-        daemon_group = conf.add_cli_parser_option_group(_("Daemon Options"))
+        daemon_group = conf.add_cli_parser_option_group(_l("Daemon Options"))
 
         daemon_group.add_option(
             "--fork",
             dest="fork_mode",
             action="store_true",
             default=False,
-            help=_("Fork to the background.")
+            help=_l("Fork to the background.")
         )
 
         daemon_group.add_option(
@@ -161,7 +171,7 @@ class WallaceDaemon:
             dest="wallace_bind_address",
             action="store",
             default="localhost",
-            help=_("Bind address for Wallace.")
+            help=_l("Bind address for Wallace.")
         )
 
         daemon_group.add_option(
@@ -169,7 +179,7 @@ class WallaceDaemon:
             dest="process_groupname",
             action="store",
             default="kolab",
-            help=_("Run as group GROUPNAME"),
+            help=_l("Run as group GROUPNAME"),
             metavar="GROUPNAME"
         )
 
@@ -179,16 +189,16 @@ class WallaceDaemon:
             action="store",
             default=4,
             type=int,
-            help=_("Number of threads to use.")
+            help=_l("Number of threads to use.")
         )
 
         daemon_group.add_option(
             "--max-tasks",
-            dest    = "max_tasks",
-            action  = "store",
-            default = None,
-            type    = int,
-            help    = _("Number of tasks per process.")
+            dest="max_tasks",
+            action="store",
+            default=None,
+            type=int,
+            help=_l("Number of tasks per process.")
         )
 
         daemon_group.add_option(
@@ -196,7 +206,7 @@ class WallaceDaemon:
             dest="pidfile",
             action="store",
             default="/var/run/wallaced/wallaced.pid",
-            help=_("Path to the PID file to use.")
+            help=_l("Path to the PID file to use.")
         )
 
         daemon_group.add_option(
@@ -205,7 +215,7 @@ class WallaceDaemon:
             action="store",
             default=10026,
             type=int,
-            help=_("Port that Wallace is supposed to use.")
+            help=_l("Port that Wallace is supposed to use.")
         )
 
         daemon_group.add_option(
@@ -213,7 +223,7 @@ class WallaceDaemon:
             dest="process_username",
             action="store",
             default="kolab",
-            help=_("Run as user USERNAME"),
+            help=_l("Run as user USERNAME"),
             metavar="USERNAME"
         )
 
@@ -230,13 +240,14 @@ class WallaceDaemon:
             mp_logger.setLevel(multiprocessing.SUBDEBUG)
             mp_logger.debug('Python multi-processing logger started')
 
-        import modules
-        modules.__init__()
+        modules.initialize()
 
         self.modules = conf.get_list('wallace', 'modules')
         if not self.modules:
             self.modules = []
 
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
     def do_wallace(self):
         self.parent_pid = os.getpid()
 
@@ -264,7 +275,7 @@ class WallaceDaemon:
             # pylint: disable=broad-except
             except Exception:
                 log.warning(
-                    _("Could not bind to socket on port %d on bind address %s") % (
+                    _l("Could not bind to socket on port %d on bind address %s") % (
                         conf.wallace_port,
                         conf.wallace_bind_address
                     )
@@ -277,7 +288,7 @@ class WallaceDaemon:
 
                     # pylint: disable=broad-except
                     except Exception:
-                        log.warning(_("Could not shut down socket"))
+                        log.warning(_l("Could not shut down socket"))
                         time.sleep(1)
 
                 s.close()
@@ -287,7 +298,10 @@ class WallaceDaemon:
         s.listen(5)
 
         self.timer = Timer(180, self.pickup_spool_messages, args=[], kwargs={'sync': True})
+
+        # pylint: disable=attribute-defined-outside-init
         self.timer.daemon = True
+
         self.timer.start()
 
         # start background process to run periodic jobs in active modules
@@ -301,6 +315,7 @@ class WallaceDaemon:
             self.heartbeat.finished = multiprocessing.Event()
             self.heartbeat.daemon = True
             self.heartbeat.start()
+
         except Exception as errmsg:
             log.error("Failed to start heartbeat daemon: %s" % (errmsg))
         finally:
@@ -312,11 +327,23 @@ class WallaceDaemon:
         try:
             while 1:
                 while self.current_connections >= self.max_connections:
-                    log.debug(_("Reached limit of max connections of: %s. Sleeping for 0.5s") % self.max_connections, level=6)
+                    log.debug(
+                        _l("Reached limit of max connections of: %s. Sleeping for 0.5s") % (
+                            self.max_connections
+                        ),
+                        level=6
+                    )
+
                     time.sleep(0.5)
 
                 pair = s.accept()
-                log.debug(_("Accepted connection %r with address %r") % (pair if pair is not None else (None, None)), level=8)
+                log.debug(
+                    _l("Accepted connection %r with address %r") % (
+                        pair if pair is not None else (None, None)
+                    ),
+                    level=8
+                )
+
                 if pair is not None:
                     self.current_connections += 1
                     connection, address = pair
@@ -326,11 +353,11 @@ class WallaceDaemon:
                     if conf.debuglevel > 8:
                         _smtpd.DEBUGSTREAM = pykolab.logger.StderrToLogger(log)
 
-                    log.debug(_("Creating SMTPChannel for accepted message"), level=8)
-                    channel = _smtpd.SMTPChannel(self, connection, address)
+                    log.debug(_l("Creating SMTPChannel for accepted message"), level=8)
+                    _smtpd.SMTPChannel(self, connection, address)
                     asyncore.loop()
                 else:
-                    log.error(_("Socket accepted, but (conn, address) tuple is None."))
+                    log.error(_l("Socket accepted, but (conn, address) tuple is None."))
 
         # pylint: disable=broad-except
         except Exception:
@@ -343,6 +370,7 @@ class WallaceDaemon:
         self.timer.cancel()
         self.timer.join()
 
+    # pylint: disable=no-self-use
     def data_header(self, mailfrom, rcpttos):
         COMMASPACE = ', '
 
@@ -354,7 +382,7 @@ class WallaceDaemon:
         pickup_path = '/var/spool/pykolab/wallace/'
 
         messages = []
-        for root, directory, files in os.walk(pickup_path):
+        for root, _, files in os.walk(pickup_path):
             for filename in files:
                 messages.append((root, filename))
 
@@ -455,7 +483,7 @@ class WallaceDaemon:
         os.write(fp, data)
         os.close(fp)
 
-        log.debug(_("Started processing accepted message %s") % filename, level=8)
+        log.debug(_l("Started processing accepted message %s") % filename, level=8)
         self.pool.apply_async(pickup_message, (filename, (self.modules)))
 
         self.current_connections -= 1
@@ -470,7 +498,7 @@ class WallaceDaemon:
             if os.getpid() == self.parent_pid:
                 log.debug("Stopping process %s" % multiprocessing.current_process().name, level=8)
 
-                log.debug(_("Terminating processes pool"), level=8)
+                log.debug(_l("Terminating processes pool"), level=8)
                 self.pool.close()
 
                 if hasattr(self, 'timer'):
@@ -479,7 +507,7 @@ class WallaceDaemon:
                         self.timer.finished.set()
                         self.timer.cancel()
 
-                log.debug(_("Terminating heartbeat process"), level=8)
+                log.debug(_l("Terminating heartbeat process"), level=8)
                 self.heartbeat.finished.set()
                 self.heartbeat.terminate()
 
@@ -489,7 +517,7 @@ class WallaceDaemon:
                 self.heartbeat.join(5)
 
                 if os.access(conf.pidfile, os.R_OK):
-                    log.warning(_("Removing PID file %s") % conf.pidfile)
+                    log.warning(_l("Removing PID file %s") % conf.pidfile)
                     os.remove(conf.pidfile)
 
                 log.warning("Exiting!")
@@ -520,8 +548,8 @@ class WallaceDaemon:
 
         try:
             try:
-                (ruid, euid, suid) = os.getresuid()
-                (rgid, egid, sgid) = os.getresgid()
+                (ruid, _, _) = os.getresuid()
+                (rgid, _, _) = os.getresgid()
             except AttributeError:
                 ruid = os.getuid()
                 rgid = os.getgid()
@@ -531,22 +559,17 @@ class WallaceDaemon:
                 if rgid == 0:
                     # Get group entry details
                     try:
-                        (
-                            group_name,
-                            group_password,
-                            group_gid,
-                            group_members
-                        ) = grp.getgrnam(conf.process_groupname)
+                        (_, _, group_gid, _) = grp.getgrnam(conf.process_groupname)
 
                     except KeyError:
-                        print(_("Group %s does not exist") % (conf.process_groupname))
+                        print(_l("Group %s does not exist") % (conf.process_groupname))
 
                         sys.exit(1)
 
                     # Set real and effective group if not the same as current.
                     if not group_gid == rgid:
                         log.debug(
-                            _("Switching real and effective group id to %d") % (
+                            _l("Switching real and effective group id to %d") % (
                                 group_gid
                             ),
                             level=8
@@ -557,25 +580,17 @@ class WallaceDaemon:
                 if ruid == 0:
                     # Means we haven't switched yet.
                     try:
-                        (
-                            user_name,
-                            user_password,
-                            user_uid,
-                            user_gid,
-                            user_gecos,
-                            user_homedir,
-                            user_shell
-                        ) = pwd.getpwnam(conf.process_username)
+                        (_, _, user_uid, _, _, _, _) = pwd.getpwnam(conf.process_username)
 
                     except KeyError:
-                        print(_("User %s does not exist") % (conf.process_username))
+                        print(_l("User %s does not exist") % (conf.process_username))
 
                         sys.exit(1)
 
                     # Set real and effective user if not the same as current.
                     if not user_uid == ruid:
                         log.debug(
-                            _("Switching real and effective user id to %d") % (
+                            _l("Switching real and effective user id to %d") % (
                                 user_uid
                             ),
                             level=8
@@ -585,7 +600,7 @@ class WallaceDaemon:
 
         # pylint: disable=broad-except
         except Exception:
-            log.error(_("Could not change real and effective uid and/or gid"))
+            log.error(_l("Could not change real and effective uid and/or gid"))
 
         try:
             pid = os.getpid()
@@ -631,20 +646,20 @@ class WallaceDaemon:
             exitcode = errmsg
         except KeyboardInterrupt:
             exitcode = 1
-            log.info(_("Interrupted by user"))
+            log.info(_l("Interrupted by user"))
         except AttributeError:
             exitcode = 1
             traceback.print_exc()
-            print(_("Traceback occurred, please report a bug."))
+            print(_l("Traceback occurred, please report a bug."))
 
         except TypeError as errmsg:
             exitcode = 1
             traceback.print_exc()
-            log.error(_("Type Error: %s") % errmsg)
-        except:
+            log.error(_l("Type Error: %s") % errmsg)
+        except Exception:
             exitcode = 2
             traceback.print_exc()
-            print(_("Traceback occurred, please report a bug."))
+            print(_l("Traceback occurred, please report a bug."))
 
         sys.exit(exitcode)
 
@@ -656,8 +671,8 @@ class WallaceDaemon:
     def write_pid(self):
         pid = os.getpid()
         if os.access(os.path.dirname(conf.pidfile), os.W_OK):
-            fp = open(conf.pidfile,'w')
+            fp = open(conf.pidfile, 'w')
             fp.write("%d\n" % (pid))
             fp.close()
         else:
-            print(_("Could not write pid file %s") % (conf.pidfile))
+            print(_l("Could not write pid file %s") % (conf.pidfile))

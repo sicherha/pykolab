@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import print_function
 
 import grp
 import logging
@@ -23,11 +24,9 @@ import logging.handlers
 import os
 import pwd
 import sys
-import time
 
-from pykolab.translate import _
 
-class StderrToLogger(object):
+class StderrToLogger:
     """
     Fake file-like stream object that redirects writes to a logger instance.
     """
@@ -36,7 +35,7 @@ class StderrToLogger(object):
         self.log_level = log_level
         self.linebuf = ''
         self.skip_next = False
- 
+
     def write(self, buf):
         # ugly patch to make smtplib and smtpd debug logging records appear on one line in log file
         # smtplib uses "print>>stderr, var, var" statements for debug logging. These
@@ -59,9 +58,10 @@ class StderrToLogger(object):
                 else:
                     self.logger.log(self.log_level, '%s %s', self.linebuf, line.rstrip()[:150])
                     self.linebuf = ''
- 
-    def flush(self): 
+
+    def flush(self):
         pass
+
 
 class LoggerAdapter(logging.LoggerAdapter):
     """
@@ -70,6 +70,7 @@ class LoggerAdapter(logging.LoggerAdapter):
 
     def process(self, msg, kwargs):
         return '%s %s' % (self.extra['qid'], msg), kwargs
+
 
 class Logger(logging.Logger):
     """
@@ -88,31 +89,31 @@ class Logger(logging.Logger):
         for arg in sys.argv:
             if debuglevel == -1:
                 try:
-                    debuglevel = int(arg)
-                except ValueError, errmsg:
+                    debuglevel = (int)(arg)
+                except ValueError:
                     continue
 
                 loglevel = logging.DEBUG
                 break
 
-            if '-d' == arg:
+            if arg == '-d':
                 debuglevel = -1
                 continue
 
-            if '-l' == arg:
+            if arg == '-l':
                 loglevel = -1
                 continue
 
-            if '--fork' == arg:
+            if arg == '--fork':
                 fork = True
 
             if loglevel == -1:
-                if hasattr(logging,arg.upper()):
-                    loglevel = getattr(logging,arg.upper())
+                if hasattr(logging, arg.upper()):
+                    loglevel = getattr(logging, arg.upper())
                 else:
                     loglevel = logging.DEBUG
 
-            if '-u' == arg or '--user' == arg:
+            if arg in ['-u', '--user']:
                 process_username = -1
                 continue
 
@@ -122,7 +123,7 @@ class Logger(logging.Logger):
             if process_username == -1:
                 process_username = arg
 
-            if '-g' == arg or '--group' == arg:
+            if arg in ['-g', '--group']:
                 process_groupname = -1
                 continue
 
@@ -132,8 +133,11 @@ class Logger(logging.Logger):
             if process_groupname == -1:
                 process_groupname = arg
 
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-statements
     def __init__(self, *args, **kw):
-        if kw.has_key('name'):
+        if 'name' in kw:
             name = kw['name']
         elif len(args) == 1:
             name = args[0]
@@ -142,7 +146,9 @@ class Logger(logging.Logger):
 
         logging.Logger.__init__(self, name)
 
-        plaintextformatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s [%(process)d] %(message)s")
+        plaintextformatter = logging.Formatter(
+            "%(asctime)s %(name)s %(levelname)s [%(process)d] %(message)s"
+        )
 
         if not self.fork:
             self.console_stdout = logging.StreamHandler(sys.stdout)
@@ -150,7 +156,7 @@ class Logger(logging.Logger):
 
             self.addHandler(self.console_stdout)
 
-        if kw.has_key('logfile'):
+        if 'logfile' in kw:
             self.logfile = kw['logfile']
         else:
             self.logfile = '/var/log/kolab/pykolab.log'
@@ -161,9 +167,9 @@ class Logger(logging.Logger):
         # Make sure (read: attempt to change) the permissions
         try:
             try:
-                (ruid, euid, suid) = os.getresuid()
-                (rgid, egid, sgid) = os.getresgid()
-            except AttributeError, errmsg:
+                (ruid, _, _) = os.getresuid()
+                (rgid, _, _) = os.getresgid()
+            except AttributeError:
                 ruid = os.getuid()
                 rgid = os.getgid()
 
@@ -173,48 +179,52 @@ class Logger(logging.Logger):
                     # Get group entry details
                     try:
                         (
-                                group_name,
-                                group_password,
-                                group_gid,
-                                group_members
-                            ) = grp.getgrnam(self.process_groupname)
+                            _,
+                            _,
+                            group_gid,
+                            _
+                        ) = grp.getgrnam(self.process_groupname)
 
-                    except KeyError, errmsg:
-                        group_name = False
+                    except KeyError:
+                        group_gid = False
 
                 if ruid == 0:
                     # Means we haven't switched yet.
                     try:
                         (
-                                user_name,
-                                user_password,
-                                user_uid,
-                                user_gid,
-                                user_gecos,
-                                user_homedir,
-                                user_shell
-                            ) = pwd.getpwnam(self.process_username)
+                            _,
+                            _,
+                            user_uid,
+                            _,
+                            _,
+                            _,
+                            _
+                        ) = pwd.getpwnam(self.process_username)
 
-                    except KeyError, errmsg:
-                        user_name = False
+                    except KeyError:
+                        user_uid = False
 
                 if os.path.isfile(self.logfile):
                     try:
-                        if not user_uid == 0 or group_gid == 0:
+                        if user_uid > 0 or group_gid > 0:
                             os.chown(
-                                    self.logfile,
-                                    user_uid,
-                                    group_gid
-                                )
-                            os.chmod(self.logfile, 0660)
+                                self.logfile,
+                                user_uid,
+                                group_gid
+                            )
 
-                    except Exception, errmsg:
-                        self.error(_("Could not change permissions on %s: %r") % (self.logfile, errmsg))
+                            os.chmod(self.logfile, 660)
+
+                    except Exception as errmsg:
+                        self.error(
+                            _("Could not change permissions on %s: %r") % (self.logfile, errmsg)
+                        )
+
                         if self.debuglevel > 8:
                             import traceback
                             traceback.print_exc()
 
-        except Exception, errmsg:
+        except Exception as errmsg:
             if os.path.isfile(self.logfile):
                 self.error(_("Could not change permissions on %s: %r") % (self.logfile, errmsg))
                 if self.debuglevel > 8:
@@ -223,7 +233,7 @@ class Logger(logging.Logger):
 
         # Make sure the log file exists
         try:
-            fhandle = file(self.logfile, 'a')
+            fhandle = open(self.logfile, 'a')
             try:
                 os.utime(self.logfile, None)
             finally:
@@ -232,16 +242,16 @@ class Logger(logging.Logger):
             try:
                 filelog_handler = logging.FileHandler(filename=self.logfile)
                 filelog_handler.setFormatter(plaintextformatter)
-            except IOError, e:
-                print >> sys.stderr, _("Cannot log to file %s: %s") % (self.logfile, e)
+            except IOError as errmsg:
+                print(_("Cannot log to file %s: %s") % (self.logfile, errmsg), file=sys.stderr)
 
-            if not len(self.handlers) > 1:
+            if len(self.handlers) <= 1:
                 try:
                     self.addHandler(filelog_handler)
-                except:
+                except Exception:
                     pass
 
-        except IOError, errmsg:
+        except IOError:
             pass
 
     def remove_stdout_handler(self):
@@ -249,14 +259,16 @@ class Logger(logging.Logger):
             self.console_stdout.close()
             self.removeHandler(self.console_stdout)
 
+    # pylint: disable=arguments-differ
+    # pylint: disable=keyword-arg-before-vararg
     def debug(self, msg, level=1, *args, **kw):
         self.setLevel(self.loglevel)
         # Work around other applications not using various levels of debugging
-        if not self.name.startswith('pykolab') and not self.debuglevel == 9:
+        if not self.name.startswith('pykolab') and self.debuglevel != 9:
             return
 
         if level <= self.debuglevel:
-            # TODO: Not the way it's supposed to work!
             self.log(logging.DEBUG, msg)
+
 
 logging.setLoggerClass(Logger)
