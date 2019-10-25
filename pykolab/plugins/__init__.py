@@ -30,6 +30,7 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.plugins')
 conf = pykolab.getConf()
 
+
 class KolabPlugins(object):
     """
         Detects, loads and interfaces with plugins for different
@@ -50,7 +51,7 @@ class KolabPlugins(object):
 
             if os.path.isdir(plugin_path):
                 for plugin in os.listdir(plugin_path):
-                    if os.path.isdir('%s/%s/' % (plugin_path,plugin,)):
+                    if os.path.isdir('%s/%s/' % (plugin_path, plugin, )):
                         self.plugins[plugin] = False
 
         self.check_plugins()
@@ -67,11 +68,11 @@ class KolabPlugins(object):
                 self.plugins[plugin] = True
                 self.load_plugins(plugins=[plugin])
             except ImportError, e:
-                log.error(_("ImportError for plugin %s: %s") % (plugin,e))
+                log.error(_("ImportError for plugin %s: %s") % (plugin, e))
                 traceback.print_exc()
                 self.plugins[plugin] = False
             except RuntimeError, e:
-                log.error( _("RuntimeError for plugin %s: %s") % (plugin,e))
+                log.error( _("RuntimeError for plugin %s: %s") % (plugin, e))
                 traceback.print_exc()
                 self.plugins[plugin] = False
             except Exception, e:
@@ -91,7 +92,7 @@ class KolabPlugins(object):
         for plugin in plugins:
             if self.plugins[plugin]:
                 try:
-                    exec("self.%s = %s.Kolab%s()" % (plugin,plugin,plugin.capitalize()))
+                    exec("self.%s = %s.Kolab%s()" % (plugin, plugin, plugin.capitalize()))
                 except:
                     # TODO: A little better verbosity please!
                     traceback.print_exc()
@@ -106,16 +107,16 @@ class KolabPlugins(object):
         for plugin in plugins:
             if not self.plugins[plugin]:
                 continue
-            if not hasattr(self,plugin):
+            if not hasattr(self, plugin):
                 continue
 
-            if hasattr(getattr(self,plugin),"set_defaults"):
+            if hasattr(getattr(self, plugin), "set_defaults"):
                 try:
-                    getattr(self,plugin).set_defaults(defaults)
+                    getattr(self, plugin).set_defaults(defaults)
                 except TypeError, e:
-                    log.error(_("Cannot set defaults for plugin %s: %s") % (plugin,e))
+                    log.error(_("Cannot set defaults for plugin %s: %s") % (plugin, e))
                 except RuntimeError, e:
-                    log.error(_("Cannot set defaults for plugin %s: %s") % (plugin,e))
+                    log.error(_("Cannot set defaults for plugin %s: %s") % (plugin, e))
                 except:
                     log.error(_("Cannot set defaults for plugin %s: Unknown Error") % (plugin))
 
@@ -132,14 +133,14 @@ class KolabPlugins(object):
         for plugin in plugins:
             if not self.plugins[plugin]:
                 continue
-            if not hasattr(self,plugin):
+            if not hasattr(self, plugin):
                 continue
 
-            if hasattr(getattr(self,plugin),"set_runtime"):
+            if hasattr(getattr(self, plugin), "set_runtime"):
                 try:
-                    getattr(self,plugin).set_runtime(runtime)
+                    getattr(self, plugin).set_runtime(runtime)
                 except RuntimeError, e:
-                    log.error(_("Cannot set runtime for plugin %s: %s") % (plugin,e))
+                    log.error(_("Cannot set runtime for plugin %s: %s") % (plugin, e))
             else:
                 log.debug(_("Not setting runtime for plugin %s: No function 'set_runtime()'") % (plugin), level=5)
 
@@ -153,16 +154,16 @@ class KolabPlugins(object):
         for plugin in plugins:
             if not self.plugins[plugin]:
                 continue
-            if not hasattr(self,plugin):
+            if not hasattr(self, plugin):
                 continue
 
-            if hasattr(getattr(self,plugin),"add_options"):
+            if hasattr(getattr(self, plugin), "add_options"):
                 try:
                     exec("self.%s.add_options(parser)" % plugin)
                 except RuntimeError, e:
-                    log.error(_("Cannot add options for plugin %s: %s") % (plugin,e))
+                    log.error(_("Cannot add options for plugin %s: %s") % (plugin, e))
                 except TypeError, e:
-                    log.error(_("Cannot add options for plugin %s: %s") % (plugin,e))
+                    log.error(_("Cannot add options for plugin %s: %s") % (plugin, e))
             else:
                     log.debug(_("Not adding options for plugin %s: No function 'add_options()'") % plugin, level=5)
 
@@ -177,14 +178,14 @@ class KolabPlugins(object):
         for plugin in plugins:
             if not self.plugins[plugin]:
                 continue
-            if not hasattr(self,plugin):
+            if not hasattr(self, plugin):
                 continue
 
-            if hasattr(getattr(self,plugin),"check_options"):
+            if hasattr(getattr(self, plugin), "check_options"):
                 try:
                     exec("self.%s.check_options()" % plugin)
                 except AttributeError, e:
-                    log.error(_("Cannot check options for plugin %s: %s") % (plugin,e))
+                    log.error(_("Cannot check options for plugin %s: %s") % (plugin, e))
             else:
                 log.debug(_("Not checking options for plugin %s: No function 'check_options()'") % (plugin), level=5)
 
@@ -199,11 +200,11 @@ class KolabPlugins(object):
         for plugin in plugins:
             if not self.plugins[plugin]:
                 continue
-            if not hasattr(self,plugin):
+            if not hasattr(self, plugin):
                 continue
 
-            if hasattr(getattr(self,plugin),"%s_%s" % (func,option)):
-                exec("retval = getattr(self,plugin).%s_%s(val)" % (func,option))
+            if hasattr(getattr(self, plugin), "%s_%s" % (func, option)):
+                exec("retval = getattr(self, plugin).%s_%s(val)" % (func, option))
                 return retval
 
         return False
@@ -219,23 +220,34 @@ class KolabPlugins(object):
         for plugin in plugins:
             if not self.plugins[plugin]:
                 continue
-            if not hasattr(self,plugin):
+            if not hasattr(self, plugin):
                 continue
 
-            if hasattr(getattr(self,plugin),hook):
+            if hasattr(getattr(self, plugin), hook):
                 try:
-                    log.debug(_("Executing hook %s for plugin %s") % (hook,plugin), level=8)
-                    #print "retval = self.%s.%s(%r, %r)" % (plugin,hook, args, kw)
-                    exec("retval = self.%s.%s(*args, **kw)" % (plugin,hook))
-                except TypeError, e:
-                    log.error(_("Cannot execute hook %s for plugin %s: %s") % (hook,plugin,e))
-                except AttributeError, e:
-                    log.error(_("Cannot execute hook %s for plugin %s: %s") % (hook,plugin,e))
+                    log.debug(_("Executing hook %s for plugin %s") % (hook, plugin), level=8)
+                    func = getattr(getattr(self, plugin), hook)
+                    retval = func(*args, **kw)
+                except TypeError as errmsg:
+                    log.error(
+                        _("Cannot execute hook %s for plugin %s: %s") % (hook, plugin, errmsg)
+                    )
+
+                    log.error(traceback.format_exc())
+                except AttributeError as errmsg:
+                    log.error(
+                        _("Cannot execute hook %s for plugin %s: %s") % (hook, plugin, errmsg)
+                    )
+
+                    log.error(traceback.format_exc())
 
         return retval
 
     def return_true_boolean_from_plugins(self, bool, plugins=[]):
-        """Given the name of a boolean, walks all specified plugins, or all available plugins, and returns True if a plugin has it set to true"""
+        """
+            Given the name of a boolean, walks all specified plugins, or all available plugins, and
+            returns True if a plugin has it set to true
+        """
         if len(plugins) < 1:
             plugins = self.plugins.keys()
 
@@ -244,12 +256,12 @@ class KolabPlugins(object):
         for plugin in plugins:
             if not self.plugins[plugin]:
                 continue
-            if not hasattr(self,plugin):
+            if not hasattr(self, plugin):
                 continue
 
-            if hasattr(getattr(self,plugin),bool):
+            if hasattr(getattr(self, plugin), bool):
                 try:
-                    exec("boolval = self.%s.%s" % (plugin,bool))
+                    exec("boolval = self.%s.%s" % (plugin, bool))
                 except AttributeError, e:
                     pass
             else:

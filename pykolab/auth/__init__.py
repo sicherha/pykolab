@@ -21,14 +21,17 @@ import os
 import time
 
 import pykolab
-import pykolab.base
+from pykolab.base import Base
 
 from pykolab.translate import _
 
+# pylint: disable=invalid-name
 log = pykolab.getLogger('pykolab.auth')
 conf = pykolab.getConf()
 
-class Auth(pykolab.base.Base):
+
+# pylint: disable=too-many-public-methods
+class Auth(Base):
     """
         This is the Authentication and Authorization module for PyKolab.
     """
@@ -37,7 +40,7 @@ class Auth(pykolab.base.Base):
         """
             Initialize the authentication class.
         """
-        pykolab.base.Base.__init__(self, domain=domain)
+        Base.__init__(self, domain=domain)
 
         self._auth = None
 
@@ -103,59 +106,59 @@ class Auth(pykolab.base.Base):
             section = domain
 
         log.debug(
-                _("Using section %s and domain %s") % (section,domain),
-                level=8
-            )
+            _("Using section %s and domain %s") % (section, domain),
+            level=8
+        )
 
-        if not self.domains == None and self.domains.has_key(domain):
+        if self.domains is not None and domain in self.domains:
             section = self.domains[domain]
             domain = self.domains[domain]
 
         log.debug(
-                _("Using section %s and domain %s") % (section,domain),
-                level=8
-            )
+            _("Using section %s and domain %s") % (section, domain),
+            level=8
+        )
 
         log.debug(
-                _("Connecting to Authentication backend for domain %s") % (
-                        domain
-                    ),
-                level=8
-            )
+            _("Connecting to Authentication backend for domain %s") % (
+                domain
+            ),
+            level=8
+        )
 
         if not conf.has_section(section):
             section = 'kolab'
 
         if not conf.has_option(section, 'auth_mechanism'):
             log.debug(
-                    _("Section %s has no option 'auth_mechanism'") % (section),
-                    level=8
-                )
+                _("Section %s has no option 'auth_mechanism'") % (section),
+                level=8
+            )
 
             section = 'kolab'
         else:
             log.debug(
-                    _("Section %s has auth_mechanism: %r") % (
-                            section,
-                            conf.get(section,'auth_mechanism')
-                        ),
-                    level=8
-                )
+                _("Section %s has auth_mechanism: %r") % (
+                    section,
+                    conf.get(section, 'auth_mechanism')
+                ),
+                level=8
+            )
 
         # Get the actual authentication and authorization backend.
         if conf.get(section, 'auth_mechanism') == 'ldap':
             log.debug(_("Starting LDAP..."), level=8)
-            from pykolab.auth import ldap
-            self._auth = ldap.LDAP(self.domain)
+            from pykolab.auth.ldap import LDAP
+            self._auth = LDAP(self.domain)
 
-        elif conf.get(section, 'auth_mechanism') == 'sql':
-            from pykolab.auth import sql
-            self._auth = sql.SQL(self.domain)
+        # elif conf.get(section, 'auth_mechanism') == 'sql':
+        #     from .sql import SQL
+        #     self._auth = SQL(self.domain)
 
         else:
             log.debug(_("Starting LDAP..."), level=8)
-            from pykolab.auth import ldap
-            self._auth = ldap.LDAP(self.domain)
+            from pykolab.auth.ldap import LDAP
+            self._auth = LDAP(self.domain)
 
         self._auth.connect()
 
@@ -165,13 +168,10 @@ class Auth(pykolab.base.Base):
             back to the primary domain specified by the configuration.
         """
 
-        if domain == None:
-            section = 'kolab'
+        if domain is None:
             domain = conf.get('kolab', 'primary_domain')
-        else:
-            section = domain
 
-        if not self._auth or self._auth == None:
+        if not self._auth:
             return
 
         self._auth._disconnect()

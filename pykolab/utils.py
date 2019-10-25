@@ -566,6 +566,7 @@ def translate(mystring, locale_name='en_US'):
     command = ['/usr/bin/iconv', '-f', 'UTF-8', '-t', 'ASCII//TRANSLIT', '-s']
 
     log.debug(_l("Executing '%s | %s'") % (r"%s" % (mystring), ' '.join(command)), level=8)
+
     process = subprocess.Popen(
         command,
         stdout=subprocess.PIPE,
@@ -575,7 +576,7 @@ def translate(mystring, locale_name='en_US'):
     )
 
     try:
-        print >> process.stdin, r"%s" % mystring
+        print(r"%s" % (mystring), file=process.stdin)
     except UnicodeEncodeError:
         pass
 

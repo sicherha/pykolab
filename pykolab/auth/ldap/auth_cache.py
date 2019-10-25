@@ -111,10 +111,7 @@ def get_entry(key):
     finally:
         _entries = db.query(Entry).filter_by(key=key).all()
 
-    if _entries:
-        return None
-
-    if len(_entries) > 1:
+    if len(_entries) != 1:
         return None
 
     log.debug("Entry found: %r" % (_entries[0].__dict__))

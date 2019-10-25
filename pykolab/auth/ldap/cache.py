@@ -27,11 +27,10 @@ from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import MetaData
 from sqlalchemy import String
-from sqlalchemy import Table
 
 from sqlalchemy import desc
 from sqlalchemy import create_engine
-from sqlalchemy.orm import mapper
+from sqlalchemy.ext.declarative import declarative_base
 
 from sqlalchemy.orm import sessionmaker
 
@@ -42,7 +41,7 @@ from pykolab.translate import _
 
 # pylint: disable=invalid-name
 conf = pykolab.getConf()
-log = pykolab.getLogger('pykolab.auth_cache')
+log = pykolab.getLogger('pykolab.cache')
 
 metadata = MetaData()
 
@@ -52,10 +51,19 @@ db = {}
 # Classes
 #
 
+DeclarativeBase = declarative_base()
+
 
 # pylint: disable=too-few-public-methods
-class Entry:
+class Entry(DeclarativeBase):
+    __tablename__ = 'entries'
+
     last_change = None
+
+    id = Column(Integer, primary_key=True)
+    uniqueid = Column(String(128), nullable=False)
+    result_attribute = Column(String(128), nullable=False)
+    last_change = Column(DateTime, nullable=False, default=datetime.datetime.now())
 
     def __init__(self, uniqueid, result_attr, last_change):
         self.uniqueid = uniqueid
@@ -72,24 +80,6 @@ class Entry:
             modifytimestamp_format
         )
 
-#
-# Tables
-#
-
-
-entry_table = Table(
-    'entry', metadata,
-    Column('id', Integer, primary_key=True),
-    Column('uniqueid', String(128), nullable=False),
-    Column('result_attribute', String(128), nullable=False),
-    Column('last_change', DateTime),
-)
-
-#
-# Table <-> Class Mappers
-#
-
-mapper(Entry, entry_table)
 
 #
 # Functions
@@ -192,9 +182,10 @@ def init_db(domain, reinit=False):
 
     try:
         engine = create_engine(db_uri, echo=echo)
-        metadata.create_all(engine)
+        DeclarativeBase.metadata.create_all(engine)
     except Exception:
         engine = create_engine('sqlite://')
+        DeclarativeBase.metadata.create_all(engine)
         metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)

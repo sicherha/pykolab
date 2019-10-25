@@ -251,7 +251,7 @@ class KolabDaemon:
                 time.sleep(60)
                 continue
 
-            if domains:
+            if not domains:
                 log.error(_l("No domains. Not syncing"))
                 time.sleep(5)
                 continue
