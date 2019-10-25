@@ -564,7 +564,7 @@ class Conf(object):
 
         return self.cfg_parser.has_option(section, option)
 
-    def get_list(self, section, key):
+    def get_list(self, section, key, default=None):
         """
             Gets a comma and/or space separated list from the configuration file
             and returns a list.
@@ -573,13 +573,14 @@ class Conf(object):
         untrimmed_values = []
 
         setting = self.get_raw(section, key)
+
         if setting is None:
-            return []
+            return default if default else []
 
         raw_values = setting.split(',')
 
         if raw_values is None:
-            return []
+            return default if default else []
 
         for raw_value in raw_values:
             untrimmed_values.extend(raw_value.split(' '))

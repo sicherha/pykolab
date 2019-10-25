@@ -197,7 +197,7 @@ class LDAP(pykolab.base.Base):
             pass
 
         retval = False
-        timeout = self.config_get('timeout', 10)
+        timeout = self.config_get('timeout', default=10)
 
         if entry_dn is None:
             _search = self.ldap.search_ext(
@@ -3100,7 +3100,7 @@ class LDAP(pykolab.base.Base):
         """
 
         if timeout is None:
-            timeout = self.config_get('timeout', 10)
+            timeout = self.config_get('timeout', default=10)
 
         supported_controls = conf.get_list('ldap', 'supported_controls')
 

@@ -38,9 +38,9 @@ class Base(object):
         self.imap = IMAP()
         self.domain_rootdns = {}
 
-    def config_get(self, key1, key2=None):
-        if not key2 == None:
-            return conf.get(key1, key2)
+    def config_get(self, key1, key2=None, default=None):
+        if key2 is not None:
+            return conf.get(key1, key2, default=default)
 
         if conf.has_option(self.domain, key1):
             return conf.get(self.domain, key1)
@@ -55,11 +55,11 @@ class Base(object):
         if conf.has_option('kolab', key1):
             return conf.get('kolab', key1)
 
-        return None
+        return default
 
-    def config_get_list(self, key1, key2=None):
-        if not key2 == None:
-            return conf.get_list(key1, key2)
+    def config_get_list(self, key1, key2=None, default=None):
+        if key2 is not None:
+            return conf.get_list(key1, key2, default=default)
 
         if conf.has_option(self.domain, key1):
             return conf.get_list(self.domain, key1)
@@ -74,11 +74,11 @@ class Base(object):
         if conf.has_option('kolab', key1):
             return conf.get_list('kolab', key1)
 
-        return None
+        return default
 
-    def config_get_raw(self, key1, key2=None):
-        if not key2 == None:
-            return conf.get_raw(key1, key2)
+    def config_get_raw(self, key1, key2=None, default=None):
+        if key2 is not None:
+            return conf.get_raw(key1, key2, default=default)
 
         if conf.has_option(self.domain, key1):
             return conf.get_raw(self.domain, key1)
@@ -93,5 +93,5 @@ class Base(object):
         if conf.has_option('kolab', key1):
             return conf.get_raw('kolab', key1)
 
-        return None
+        return default
 
