@@ -1,11 +1,13 @@
 [MASTER]
 disable=
+    broad-except,
     cyclic-import,
     duplicate-code,
+    logging-not-lazy,
     missing-docstring,
     unused-argument,
     unused-wildcard-import,
     wildcard-import
 
 function-rgx=[a-z_][a-z0-9_]{2,90}$
-init-hook="import sys; sys.path.insert(0, './data/')"
+init-hook="import sys; sys.path.insert(0, '.')"
