@@ -33,6 +33,8 @@ class Attendee(kolabformat.Attendee):
             "INDIVIDUAL": kolabformat.CutypeIndividual,
             "RESOURCE": kolabformat.CutypeResource,
             "GROUP": kolabformat.CutypeGroup,
+            "ROOM": kolabformat.CutypeRoom,
+            "UNKNOWN": kolabformat.CutypeUnknown,
         }
 
     participant_status_map = {

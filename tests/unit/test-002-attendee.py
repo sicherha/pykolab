@@ -4,6 +4,7 @@ import kolabformat
 
 from pykolab.xml import Attendee
 from pykolab.xml import participant_status_label
+from pykolab.xml.attendee import InvalidAttendeeCutypeError
 
 
 class TestEventXML(unittest.TestCase):
@@ -96,17 +97,21 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual([k for k, v in self.attendee.role_map.iteritems() if v == 3][0], "NON-PARTICIPANT")
 
     def test_015_cutype_map_length(self):
-        self.assertEqual(len(self.attendee.cutype_map.keys()), 3)
+        self.assertEqual(len(self.attendee.cutype_map.keys()), 5)
 
     def test_016_cutype_map_forward_lookup(self):
-        self.assertEqual(self.attendee.cutype_map["GROUP"], 1)
-        self.assertEqual(self.attendee.cutype_map["INDIVIDUAL"], 2)
-        self.assertEqual(self.attendee.cutype_map["RESOURCE"], 3)
+        self.assertEqual(self.attendee.cutype_map["GROUP"], kolabformat.CutypeGroup)
+        self.assertEqual(self.attendee.cutype_map["INDIVIDUAL"], kolabformat.CutypeIndividual)
+        self.assertEqual(self.attendee.cutype_map["RESOURCE"], kolabformat.CutypeResource)
+        self.assertEqual(self.attendee.cutype_map["ROOM"], kolabformat.CutypeRoom)
+        self.assertEqual(self.attendee.cutype_map["UNKNOWN"], kolabformat.CutypeUnknown)
 
     def test_017_cutype_map_reverse_lookup(self):
-        self.assertEqual([k for k, v in self.attendee.cutype_map.iteritems() if v == 1][0], "GROUP")
-        self.assertEqual([k for k, v in self.attendee.cutype_map.iteritems() if v == 2][0], "INDIVIDUAL")
-        self.assertEqual([k for k, v in self.attendee.cutype_map.iteritems() if v == 3][0], "RESOURCE")
+        self.assertEqual([k for k, v in self.attendee.cutype_map.iteritems() if v == kolabformat.CutypeGroup][0], "GROUP")
+        self.assertEqual([k for k, v in self.attendee.cutype_map.iteritems() if v == kolabformat.CutypeIndividual][0], "INDIVIDUAL")
+        self.assertEqual([k for k, v in self.attendee.cutype_map.iteritems() if v == kolabformat.CutypeResource][0], "RESOURCE")
+        self.assertEqual([k for k, v in self.attendee.cutype_map.iteritems() if v == kolabformat.CutypeRoom][0], "ROOM")
+        self.assertEqual([k for k, v in self.attendee.cutype_map.iteritems() if v == kolabformat.CutypeUnknown][0], "UNKNOWN")
 
     def test_018_partstat_label(self):
         self.assertEqual(participant_status_label('NEEDS-ACTION'), "Needs Action")
@@ -132,6 +137,9 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(data['name'], name)
         self.assertEqual(data['email'], 'jane@doe.org')
         self.assertTrue(data['rsvp'])
+
+    def test_030_to_cutype_exception(self):
+        self.assertRaises(InvalidAttendeeCutypeError, self.attendee.set_cutype, "DUMMY")
 
 if __name__ == '__main__':
     unittest.main()

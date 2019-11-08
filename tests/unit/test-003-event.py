@@ -41,7 +41,7 @@ SEQUENCE:2
 CLASS:PUBLIC
 ATTENDEE;CN="Manager, Jane";PARTSTAT=NEEDS-ACTION;ROLE=REQ-PARTICIPANT;CUTYP
  E=INDIVIDUAL;RSVP=TRUE:mailto:jane.manager@example.org
-ATTENDEE;CUTYPE=RESOURCE;PARTSTAT=NEEDS-ACTION;ROLE=OPT-PARTICIPANT;RSVP=FA
+ATTENDEE;CUTYPE=ROOM;PARTSTAT=NEEDS-ACTION;ROLE=OPT-PARTICIPANT;RSVP=FA
  LSE:MAILTO:max@imum.com
 ORGANIZER;CN=Doe\, John:mailto:john.doe@example.org
 URL:http://somelink.com/foo
@@ -495,7 +495,7 @@ METHOD:REQUEST
         self.assertEqual(event.get_categories(), ["Personal"])
         self.assertEqual(event.get_priority(), '2')
         self.assertEqual(event.get_classification(), kolabformat.ClassPublic)
-        self.assertEqual(event.get_attendee_by_email("max@imum.com").get_cutype(), kolabformat.CutypeResource)
+        self.assertEqual(event.get_attendee_by_email("max@imum.com").get_cutype(), kolabformat.CutypeRoom)
         self.assertEqual(event.get_sequence(), 2)
         self.assertTrue(event.is_recurring())
         self.assertIsInstance(event.get_duration(), datetime.timedelta)
