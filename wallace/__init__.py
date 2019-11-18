@@ -618,7 +618,7 @@ class WallaceDaemon:
                 # Give up the session, all control,
                 # all open file descriptors, see #5151
                 os.chdir("/")
-                os.umask(0)
+                old_umask = os.umask(0)
                 os.setsid()
 
                 pid = os.fork()
@@ -636,6 +636,8 @@ class WallaceDaemon:
                 os.open(os.devnull, os.O_RDONLY)
                 os.open(os.devnull, os.O_WRONLY)
                 os.open(os.devnull, os.O_WRONLY)
+
+                os.umask(old_umask)
 
                 log.remove_stdout_handler()
                 self.set_signal_handlers()

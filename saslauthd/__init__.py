@@ -138,7 +138,7 @@ class SASLAuthDaemon(object):
                 # Give up the session, all control,
                 # all open file descriptors, see #5151
                 os.chdir("/")
-                os.umask(0)
+                old_umask = os.umask(0)
                 os.setsid()
 
                 pid = os.fork()
@@ -152,6 +152,8 @@ class SASLAuthDaemon(object):
                 os.close(0)
                 os.close(1)
                 os.close(2)
+
+                os.umask(old_umask)
 
                 self.thread_count += 1
                 log.remove_stdout_handler()
