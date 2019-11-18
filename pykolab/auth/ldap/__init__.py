@@ -2687,6 +2687,12 @@ class LDAP(Base):
             }
 
             entry = utils.normalize(kw['entry'])
+
+            # Ignore nstombstone objects
+            if 'objectclass' in entry:
+                if 'nstombstone' in entry['objectclass']:
+                    return None
+
             entry['dn'] = kw['dn']
 
             unique_attr = self.config_get('unique_attribute')
@@ -2738,6 +2744,11 @@ class LDAP(Base):
                 entry_attrs = utils.normalize(entry_attrs)
                 for attr in entry_attrs.keys():
                     entry[attr.lower()] = entry_attrs[attr]
+
+                # Ignore nstombstone objects
+                if 'objectclass' in entry:
+                    if 'nstombstone' in entry['objectclass']:
+                        return None
 
                 unique_attr = self.config_get('unique_attribute').lower()
                 entry['id'] = entry[unique_attr]
