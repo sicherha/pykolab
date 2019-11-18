@@ -29,6 +29,7 @@ import shutil
 import sys
 import time
 import traceback
+import multiprocessing
 
 import pykolab
 
@@ -372,11 +373,15 @@ class KolabDaemon:
             at the same time, and therefore we need to test if the PID file
             exists, and only try/except removing it.
         """
-        if os.access(conf.pidfile, os.R_OK):
-            try:
+        try:
+            for p in multiprocessing.active_children():
+                p.terminate()
+
+            if os.access(conf.pidfile, os.R_OK):
                 os.remove(conf.pidfile)
-            except Exception:
-                pass
+
+        except Exception:
+            pass
 
         raise SystemExit
 
