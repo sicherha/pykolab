@@ -160,7 +160,7 @@ def execute(*args, **kw):  # noqa: C901
         if os.path.exists(_sig_text_conf):
             signature_text = open(_sig_text_conf, 'r').read()
 
-    if not signature_html and not signature_text:
+    if not signature_html and not signature_text and signature_rules is not None:
         for signature_rule in signature_rules:
             try:
                 for attr, regex in signature_rule.iteritems():
