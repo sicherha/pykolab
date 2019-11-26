@@ -164,7 +164,7 @@ class LDAP(Base):
             log.error(_l("Authentication cache failed: %r") % (errmsg))
 
         retval = False
-        timeout = self.config_get('ldap', 'timeout', default=10)
+        timeout = float(self.config_get('ldap', 'timeout', default=10))
 
         if entry_dn is None:
             _search = self.ldap.search_ext(
@@ -3041,7 +3041,7 @@ class LDAP(Base):
     ):
 
         if timeout is None:
-            timeout = self.config_get('ldap', 'timeout', 10)
+            timeout = float(self.config_get('ldap', 'timeout', default=10))
 
         log.debug(_l("Searching with filter %r") % (filterstr), level=8)
 
@@ -3086,7 +3086,7 @@ class LDAP(Base):
         """
 
         if timeout is None:
-            timeout = self.config_get('timeout', default=10)
+            timeout = float(self.config_get('ldap', 'timeout', default=10))
 
         supported_controls = conf.get_list('ldap', 'supported_controls')
 
