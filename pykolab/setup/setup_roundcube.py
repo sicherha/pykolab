@@ -132,7 +132,6 @@ def execute(*args, **kw):
         'kolab_folders.inc.php',
         'libkolab.inc.php',
         'managesieve.inc.php',
-        'owncloud.inc.php',
         'password.inc.php',
         'recipient_to_contact.inc.php',
         'terms.html',
