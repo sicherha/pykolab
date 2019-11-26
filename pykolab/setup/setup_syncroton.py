@@ -66,14 +66,40 @@ def execute(*args, **kw):
             break
 
     if not os.path.isfile('/tmp/kolab-setup-my.cnf'):
-        utils.multiline_message(
-                """Please supply the MySQL root password"""
+        print >> sys.stderr, utils.multiline_message(
+                """Please supply the MySQL root password (use 'unix_socket' for socket based authentication)"""
             )
 
         mysql_root_password = utils.ask_question(
                 _("MySQL root password"),
                 password=True
             )
+
+        socket_path = None
+        socket_paths = [
+            "/var/lib/mysql/mysql.sock",
+            "/var/run/mysqld/mysqld.sock",
+            "/var/run/mysql/mysql.sock"
+        ]
+        for sp in socket_paths:
+            if os.path.exists(sp):
+                socket_path = sp
+
+        if mysql_root_password == "unix_socket" and socket_path is not None:
+            data = """
+[mysql]
+user=root
+password=
+host=localhost
+socket=%s
+""" % (socket_path)
+        else:
+            data = """
+[mysql]
+user=root
+password='%s'
+host=%s
+""" % (mysql_root_password, conf.mysqlhost)
 
         data = """
 [mysql]

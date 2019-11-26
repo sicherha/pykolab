@@ -45,7 +45,7 @@ def cli_options():
         "--mysqlserver",
         dest="mysqlserver",
         action="store",
-        help=_("Specify whether to use an (existing) or (new) MySQL server.")
+        help=_("Specify whether to use an (existing), (unix_socket) or (new) MySQL server.")
     )
 
     mysql_group.add_option(
@@ -121,7 +121,8 @@ def execute(*args, **kw):  # noqa: C901
 
     options = {
         1: "Existing MySQL server (with root password already set).",
-        2: "New MySQL server (needs to be initialized)."
+        2: "Existing MySQL server (with unix_socket authentication plugin).",
+        3: "New MySQL server (needs to be initialized)."
     }
 
     answer = 0
@@ -130,8 +131,10 @@ def execute(*args, **kw):  # noqa: C901
             if conf.mysqlserver:
                 if conf.mysqlserver == 'existing':
                     answer = 1
-                elif conf.mysqlserver == 'new':
+                elif conf.mysqlserver == 'unix_socket':
                     answer = 2
+                elif conf.mysqlserver == 'new':
+                    answer = 3
             if answer == 0:
                 answer = utils.ask_menu(_("What MySQL server are we setting up?"), options)
     else:
@@ -153,6 +156,9 @@ def execute(*args, **kw):  # noqa: C901
 
         else:
             mysql_root_password = conf.mysqlrootpw
+
+    elif answer == "2" or answer == 2:
+        mysql_root_password = 'unix_socket'
 
     else:
         print >> sys.stderr, utils.multiline_message(
@@ -222,12 +228,32 @@ def execute(*args, **kw):  # noqa: C901
         p1.stdout.close()
         p2.communicate()
 
-    data = """
+    socket_path = None
+    socket_paths = [
+        "/var/lib/mysql/mysql.sock",
+        "/var/run/mysqld/mysqld.sock",
+        "/var/run/mysql/mysql.sock"
+    ]
+    for sp in socket_paths:
+        if os.path.exists(sp):
+            socket_path = sp
+
+    if mysql_root_password == "unix_socket" and socket_path is not None:
+        data = """
+[mysql]
+user=root
+password=
+host=localhost
+socket=%s
+""" % (socket_path)
+    else:
+        data = """
 [mysql]
 user=root
 password='%s'
 host=%s
 """ % (mysql_root_password, conf.mysqlhost)
+
 
     fp = open('/tmp/kolab-setup-my.cnf', 'w')
     os.chmod('/tmp/kolab-setup-my.cnf', 600)
