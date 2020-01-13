@@ -2896,7 +2896,7 @@ class LDAP(Base):
         page_size = 500
         _results = []
 
-        server_page_control = ldap.controls.libldap.SimplePagedResultsControl(size=page_size)
+        server_page_control = ldap.controls.libldap.SimplePagedResultsControl(size=page_size,cookie='')
 
         _search = self.ldap.search_ext(
             base_dn,
@@ -2937,7 +2937,7 @@ class LDAP(Base):
 
             pctrls = [
                 c for c in _result_controls
-                if c.controlType == LDAP_CONTROL_PAGED_RESULTS
+                if c.controlType == ldap.controls.libldap.SimplePagedResultsControl.controlType
             ]
 
             if pctrls:
