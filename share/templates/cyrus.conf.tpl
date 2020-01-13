@@ -13,7 +13,7 @@ SERVICES {
 
     sieve       cmd="timsieved" listen="sieve"                          prefork=0
 
-    ptloader    cmd="ptloader"  listen="/var/lib/imap/ptclient/ptsock"  prefork=0
+    ptloader    cmd="ptloader"  listen="/var/lib/imap/socket/ptsock"    prefork=0
 
     lmtpunix    cmd="lmtpd"     listen="/var/lib/imap/socket/lmtp"      prefork=1
 

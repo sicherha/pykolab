@@ -12,6 +12,7 @@ tls_server_key: /etc/pki/cyrus-imapd/cyrus-imapd.pem
 # qosmarking: af13
 auth_mech: pts
 pts_module: ldap
+ptloader_sock: /var/lib/imap/socket/ptsock
 ldap_servers: $ldap_servers
 ldap_sasl: 0
 ldap_base: $ldap_base
