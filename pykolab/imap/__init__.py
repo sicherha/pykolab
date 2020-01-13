@@ -43,27 +43,19 @@ class IMAP(object):
         self.imap = None
 
     def cleanup_acls(self, aci_subject):
-        lm_suffix = ""
-
         log.info(
             _("Cleaning up ACL entries for %s across all folders") % (
                 aci_subject
             )
         )
 
+        lm_suffix = ""
         if len(aci_subject.split('@')) > 1:
             lm_suffix = "@%s" % (aci_subject.split('@')[1])
 
         shared_folders = self.imap.lm("shared/*%s" % (lm_suffix))
 
         user_folders = self.imap.lm("user/*%s" % (lm_suffix))
-
-        log.debug(
-            _("Cleaning up ACL entries referring to identifier %s") % (
-                aci_subject
-            ),
-            level=5
-        )
 
         # For all folders (shared and user), ...
         folders = user_folders + shared_folders
@@ -72,8 +64,8 @@ class IMAP(object):
 
         # ... loop through them and ...
         for folder in folders:
-            # ... list the ACL entries -- but only if the folder still exists
-            if self.imap.has_folder(folder):
+            try:
+                # ... list the ACL entries
                 acls = self.imap.lam(folder)
 
                 # For each ACL entry, see if we think it is a current, valid
@@ -96,13 +88,13 @@ class IMAP(object):
                         )
 
                         self.set_acl(folder, acl_entry, '')
-            else:
-                log.debug(
-                    _("Folder %r disappeared (ACL cleanup for %r") % (
+
+            except Exception, errmsg:
+                log.error(
+                    _("Failed to read/set ACL on folder %s: %r") % (
                         folder,
-                        aci_subject
-                    ),
-                    level=8
+                        errmsg
+                    )
                 )
 
     def connect(self, uri=None, server=None, domain=None, login=True):
