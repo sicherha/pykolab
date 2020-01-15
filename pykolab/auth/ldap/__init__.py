@@ -1936,7 +1936,39 @@ class LDAP(Base):
         cache.get_entry(self.domain, entry)
 
     def _change_moddn_sharedfolder(self, entry, change):
-        pass
+        result_attribute = 'cn'
+
+        old_cn = explode_dn(change['previous_dn'], True)[0]
+
+        if 'kolabtargetfolder' in entry and entry['kolabtargetfolder'] is not None:
+            new_folder_path = entry['kolabtargetfolder']
+            old_folder_path = old_cn
+
+            if '@' in entry['kolabtargetfolder']:
+                old_folder_path = "%s@%s" % (
+                    old_folder_path,
+                    entry['kolabtargetfolder'].split('@')[1]
+                )
+
+        else:
+            result_attribute = conf.get('cyrus-sasl', 'result_attribute')
+            if result_attribute in ['mail']:
+                new_folder_path = "%s@%s" % (entry['cn'], self.domain)
+                old_folder_path = "%s@%s" % (old_cn, self.domain)
+            else:
+                new_folder_path = "%s" % (entry['cn'])
+                old_folder_path = old_cn
+
+        if not new_folder_path.startswith('shared/'):
+            new_folder_path = "shared/%s" % (new_folder_path)
+
+        if not old_folder_path.startswith('shared/'):
+            old_folder_path = "shared/%s" % (old_folder_path)
+
+        log.debug("old folder path: %r" % (old_folder_path))
+        log.debug("new folder path: %r" % (new_folder_path))
+
+        self.imap.shared_folder_rename(old_folder_path, new_folder_path)
 
     def _change_modify_None(self, entry, change):
         pass

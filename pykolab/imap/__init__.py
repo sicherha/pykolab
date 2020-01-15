@@ -421,12 +421,12 @@ class IMAP(object):
             self.imap.sam(self.folder_utf7(folder), identifier, acl)
         except Exception as errmsg:
             log.error(
-                    _("Could not set ACL for %s on folder %s: %r") % (
-                            identifier,
-                            folder,
-                            errmsg
-                        )
+                _("Could not set ACL for %s on folder %s: %r") % (
+                    identifier,
+                    folder,
+                    errmsg
                 )
+            )
 
     def set_metadata(self, folder, metadata_path, metadata_value, shared=True):
         """
@@ -453,7 +453,7 @@ class IMAP(object):
         if folder_name.startswith("shared%s" % (self.get_separator()) * 2):
             folder_name = folder_name[7:]
 
-        log.info(_("Creating new shared folder %s") %(folder_name))
+        log.info(_("Creating new shared folder %s") % (folder_name))
         self.create_folder(folder_name, server)
 
     def shared_folder_exists(self, folder_path):
@@ -467,6 +467,17 @@ class IMAP(object):
             folder_name = folder_name[7:]
 
         return self.has_folder(folder_name)
+
+    def shared_folder_rename(self, old, new):
+        if not self.has_folder(old):
+            log.error("Shared Folder rename error: Folder %s does not exist" % (old))
+            return
+
+        if self.has_folder(new):
+            log.error("Shared Folder rename error: Folder %s already exists" % (new))
+            return
+
+        self.imap._rename(old, new)
 
     def shared_folder_set_type(self, folder_path, folder_type):
         folder_name = 'shared%s%s' % (self.get_separator(), folder_path)
