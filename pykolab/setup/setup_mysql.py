@@ -256,7 +256,7 @@ host=%s
 
 
     fp = open('/tmp/kolab-setup-my.cnf', 'w')
-    os.chmod('/tmp/kolab-setup-my.cnf', 600)
+    os.chmod('/tmp/kolab-setup-my.cnf', 0600)
     fp.write(data)
     fp.close()
 
