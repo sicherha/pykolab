@@ -48,3 +48,5 @@ deletedprefix: DELETED
 delete_mode: delayed
 expunge_mode: delayed
 postuser: shared
+# on systems with cyrus 3+ specify search engine
+# search_engine: squat

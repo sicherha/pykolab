@@ -38,6 +38,6 @@ EVENTS {
     # this is only necessary if caching TLS sessions
     tlsprune	cmd="tls_prune" at=0400
 
-    # Create search indexes regularly
+    # Create search indexes regularly (remove -s for cyrus 3+)
     #squatter    cmd="squatter -s -i" at=0530
 }
