@@ -31,41 +31,75 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
+
 def __init__():
     commands.register('list_deleted_mailboxes', execute)
 
+
 def cli_options():
     my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
-    my_option_group.add_option( '--raw',
-                                dest    = "raw",
-                                action  = "store_true",
-                                default = False,
-                                help    = _("Display raw IMAP UTF-7 folder names"))
 
-    my_option_group.add_option( '--server',
-                                dest    = "connect_server",
-                                action  = "store",
-                                default = None,
-                                metavar = "SERVER",
-                                help    = _("List mailboxes on server SERVER only."))
+    my_option_group.add_option(
+        '--raw',
+        dest="raw",
+        action="store_true",
+        default=False,
+        help=_("Display raw IMAP UTF-7 folder names")
+    )
+
+    my_option_group.add_option(
+        '--server',
+        dest="connect_server",
+        action="store",
+        default=None,
+        metavar="SERVER",
+        help=_("List mailboxes on server SERVER only.")
+    )
+
 
 def execute(*args, **kw):
     """
         List deleted mailboxes
     """
-    imap = IMAP()
-    imap.connect()
-
-    auth = Auth()
-    auth.connect()
-
-    domains = auth.list_domains()
 
     folders = []
-    for domain in list(set(domains.keys())):
-        folders.extend(imap.lm("DELETED/*@%s" % (domain)))
+    searches = []
 
-    folders.extend(imap.lm("DELETED/*"))
+    imap = IMAP()
+
+    if conf.connect_server is not None:
+        imap.connect(server=conf.connect_server)
+    else:
+        imap.connect()
+
+    # See if conf.cli_args components make sense.
+    for arg in conf.cli_args:
+        if arg == '*':
+            searches.append(arg)
+        if arg.startswith('user'):
+            searches.append(arg)
+        if arg.startswith('shared'):
+            searches.append(arg)
+        if arg.startswith('DELETED'):
+            searches.append(arg)
+        if arg.startswith('news'):
+            searches.append(arg)
+
+    if len(searches) == 0:
+        auth = Auth()
+        auth.connect()
+
+        domains = auth.list_domains()
+
+        folders = []
+        for domain in list(set(domains.keys())):
+            folders.extend(imap.lm("DELETED/*@%s" % (domain)))
+
+        folders.extend(imap.lm("DELETED/*"))
+    else:
+        for search in searches:
+            log.debug(_("Appending folder search for %r") % (search), level=8)
+            folders.extend(imap.lm(imap_utf7.encode(search)))
 
     print "Deleted folders:"
 
