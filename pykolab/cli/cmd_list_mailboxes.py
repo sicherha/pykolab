@@ -28,28 +28,37 @@ from pykolab.translate import _
 log = pykolab.getLogger('pykolab.cli')
 conf = pykolab.getConf()
 
+
 def __init__():
     commands.register('list_mailboxes', execute, description=description(), aliases='lm')
+
 
 def description():
     return "List mailboxes.\n" + \
         "%-28s" % ('') + \
         "Use wildcards '*' and '%' for more control.\n"
 
+
 def cli_options():
     my_option_group = conf.add_cli_parser_option_group(_("CLI Options"))
-    my_option_group.add_option( '--raw',
-                                dest    = "raw",
-                                action  = "store_true",
-                                default = False,
-                                help    = _("Display raw IMAP UTF-7 folder names"))
 
-    my_option_group.add_option( '--server',
-                                dest    = "connect_server",
-                                action  = "store",
-                                default = None,
-                                metavar = "SERVER",
-                                help    = _("List mailboxes on server SERVER only."))
+    my_option_group.add_option(
+        '--raw',
+        dest="raw",
+        action="store_true",
+        default=False,
+        help=_("Display raw IMAP UTF-7 folder names")
+    )
+
+    my_option_group.add_option(
+        '--server',
+        dest="connect_server",
+        action="store",
+        default=None,
+        metavar="SERVER",
+        help=_("List mailboxes on server SERVER only.")
+    )
+
 
 def execute(*args, **kw):
     """
@@ -72,7 +81,7 @@ def execute(*args, **kw):
             searches.append(arg)
 
     if len(searches) == 0:
-        searches = [ '' ]
+        searches = ['']
 
     imap = IMAP()
 
