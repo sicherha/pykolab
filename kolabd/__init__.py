@@ -289,8 +289,8 @@ class KolabDaemon:
                     level=8
                 )
 
-                domain_root_dns[primary] = domain_root_dn
-                naming_contexts[primary] = naming_context
+                domain_root_dns[primary] = domain_root_dn.lower()
+                naming_contexts[primary] = naming_context.lower()
 
             log.debug(
                 _l("Naming contexts to synchronize: %r") % (

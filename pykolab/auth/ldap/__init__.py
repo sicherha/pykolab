@@ -2378,7 +2378,7 @@ class LDAP(Base):
 
         # If we have a 1:1 match, continue as planned
         for naming_context in naming_contexts:
-            if self.domain_rootdns[domain].endswith(naming_context):
+            if self.domain_rootdns[domain].lower().endswith(naming_context):
                 return naming_context
 
     def _primary_domain_for_naming_context(self, naming_context):
