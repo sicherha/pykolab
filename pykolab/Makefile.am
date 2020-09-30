@@ -12,6 +12,10 @@ pykolab_auth_ldap_PYTHON = \
 	auth/ldap/cache.py \
 	auth/ldap/syncrepl.py
 
+pykolab_auth_pleskdir = $(pythondir)/$(PACKAGE)/auth/plesk
+pykolab_auth_plesk_PYTHON = \
+	auth/plesk/__init__.py
+
 pykolab_clidir = $(pythondir)/$(PACKAGE)/cli
 pykolab_cli_PYTHON = \
 	$(wildcard cli/*.py)

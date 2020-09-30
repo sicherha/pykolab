@@ -151,6 +151,11 @@ class Auth(Base):
             from pykolab.auth.ldap import LDAP
             self._auth = LDAP(self.domain)
 
+        elif conf.get(section, 'auth_mechanism') == 'plesk':
+            log.debug(_("Starting Plesk..."), level=8)
+            from pykolab.auth import plesk
+            self._auth = plesk.Plesk(self.domain)
+
         # elif conf.get(section, 'auth_mechanism') == 'sql':
         #     from .sql import SQL
         #     self._auth = SQL(self.domain)
