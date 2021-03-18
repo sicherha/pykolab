@@ -1397,7 +1397,7 @@ class LDAP(Base):
         log.debug(
             _l(
                 "About to consider the user quota for %r (used: %r, "
-                + "imap: %r, ldap: %r, default: %r"
+                + "imap: %r, ldap: %r, default: %r)"
             ) % (
                 entry_dn,
                 used,
