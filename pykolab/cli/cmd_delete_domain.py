@@ -63,7 +63,7 @@ def execute(*args, **kw):
 
     try:
         domain = conf.cli_args.pop(0)
-    except IndexError, errmsg:
+    except IndexError:
         domain = utils.ask_question(_("Domain name"))
 
     if wap_client.domain_delete(domain, conf.force):

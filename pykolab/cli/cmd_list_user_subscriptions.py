@@ -56,10 +56,10 @@ def execute(*args, **kw):
         user = conf.cli_args.pop(0)
         try:
             folder_pattern = conf.cli_args.pop(0)
-        except IndexError, errmsg:
+        except IndexError:
             pass
 
-    except IndexError, errmsg:
+    except IndexError:
         user = utils.ask_question(_("User ID"))
 
     if len(user.split('@')) > 1:

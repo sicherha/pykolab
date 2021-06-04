@@ -162,7 +162,7 @@ class Todo(Event):
             valid_datetime = True
 
         if not valid_datetime:
-            raise InvalidEventDateError, _("Todo due needs datetime.date or datetime.datetime instance")
+            raise InvalidEventDateError(_("Todo due needs datetime.date or datetime.datetime instance"))
 
         self.event.setDue(xmlutils.to_cdatetime(_datetime, True))
 
@@ -259,7 +259,7 @@ class Todo(Event):
         if error == None or not error:
             return xml
         else:
-            raise TodoIntegrityError, kolabformat.errorMessage()
+            raise TodoIntegrityError(kolabformat.errorMessage())
 
 
 class TodoIntegrityError(Exception):

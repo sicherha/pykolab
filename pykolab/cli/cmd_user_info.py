@@ -39,7 +39,7 @@ def execute(*args, **kw):
 
     try:
         user = conf.cli_args.pop(0)
-    except IndexError, errmsg:
+    except IndexError:
         user = utils.ask_question(_("Email address"))
 
     result = wap_client.authenticate(username=conf.get("ldap", "bind_dn"), password=conf.get("ldap", "bind_pw"))

@@ -166,7 +166,7 @@ class Event(object):
             valid_datetime = True
 
         if not valid_datetime:
-            raise InvalidEventDateError, _("Rdate needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime))
+            raise InvalidEventDateError(_("Rdate needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime)))
 
         self.event.addRecurrenceDate(xmlutils.to_cdatetime(_datetime, True))
 
@@ -183,14 +183,14 @@ class Event(object):
             valid_datetime = True
 
         if not valid_datetime:
-            raise InvalidEventDateError, _("Exdate needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime))
+            raise InvalidEventDateError(_("Exdate needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime)))
 
         self.event.addExceptionDate(xmlutils.to_cdatetime(_datetime, True))
 
     def add_exception(self, exception):
         recurrence_id = exception.get_recurrence_id()
         if recurrence_id is None:
-            raise EventIntegrityError, "Recurrence exceptions require a Recurrence-ID property"
+            raise EventIntegrityError("Recurrence exceptions require a Recurrence-ID property")
 
         # check if an exception with the given recurrence-id already exists
         append = True
@@ -218,7 +218,7 @@ class Event(object):
     def del_exception(self, exception):
         recurrence_id = exception.get_recurrence_id()
         if recurrence_id is None:
-            raise EventIntegrityError, "Recurrence exceptions require a Recurrence-ID property"
+            raise EventIntegrityError("Recurrence exceptions require a Recurrence-ID property")
 
         updated = False
         vexceptions = self.event.exceptions()
@@ -402,7 +402,7 @@ class Event(object):
                 attendee = self.get_attendee_by_name(attendee)
 
             else:
-                raise ValueError, _("No attendee with email or name %r") %(attendee)
+                raise ValueError(_("No attendee with email or name %r") %(attendee))
 
             return attendee
 
@@ -410,7 +410,7 @@ class Event(object):
             return attendee
 
         else:
-            raise ValueError, _("Invalid argument value attendee %r, must be basestring or Attendee") % (attendee)
+            raise ValueError(_("Invalid argument value attendee %r, must be basestring or Attendee") % (attendee))
 
     def find_attendee(self, attendee):
         try:
@@ -422,13 +422,13 @@ class Event(object):
         if email in [x.get_email() for x in self.get_attendees()]:
             return [x for x in self.get_attendees() if x.get_email() == email][0]
 
-        raise ValueError, _("No attendee with email %r") %(email)
+        raise ValueError(_("No attendee with email %r") %(email))
 
     def get_attendee_by_name(self, name):
         if name in [x.get_name() for x in self.get_attendees()]:
             return [x for x in self.get_attendees() if x.get_name() == name][0]
 
-        raise ValueError, _("No attendee with name %r") %(name)
+        raise ValueError(_("No attendee with name %r") %(name))
 
     def get_attendees(self):
         return self._attendees
@@ -613,7 +613,7 @@ class Event(object):
         elif attendee.get_participant_status() in attendee.participant_status_map.values():
             return [k for k, v in attendee.participant_status_map.iteritems() if v == attendee.get_participant_status()][0]
         else:
-            raise ValueError, _("Invalid participant status")
+            raise ValueError(_("Invalid participant status"))
 
     def get_ical_created(self):
         return self.get_created()
@@ -819,7 +819,7 @@ class Event(object):
         elif classification in self.classification_map.values():
             self.event.setClassification(classification)
         else:
-            raise ValueError, _("Invalid classification %r") % (classification)
+            raise ValueError(_("Invalid classification %r") % (classification))
 
     def set_created(self, _datetime=None):
         if _datetime is None or isinstance(_datetime, datetime.time):
@@ -850,7 +850,7 @@ class Event(object):
             valid_datetime = True
 
         if not valid_datetime:
-            raise InvalidEventDateError, _("Event end needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime))
+            raise InvalidEventDateError(_("Event end needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime)))
 
         self.event.setEnd(xmlutils.to_cdatetime(_datetime, True))
 
@@ -864,7 +864,7 @@ class Event(object):
 
     def add_custom_property(self, name, value):
         if not name.upper().startswith('X-'):
-            raise ValueError, _("Invalid custom property name %r") % (name)
+            raise ValueError(_("Invalid custom property name %r") % (name))
 
         props = self.event.customProperties()
         props.append(kolabformat.CustomProperty(name.upper(), value))
@@ -1001,7 +1001,7 @@ class Event(object):
         try:
             self.thisandfuture = params.get('RANGE', '') == 'THISANDFUTURE'
             self.set_recurrence_id(value, self.thisandfuture)
-        except InvalidEventDateError, e:
+        except InvalidEventDateError:
             pass
 
     def set_lastmodified(self, _datetime=None):
@@ -1017,7 +1017,7 @@ class Event(object):
             _datetime = datetime.datetime.utcnow()
 
         if not valid_datetime:
-            raise InvalidEventDateError, _("Event last-modified needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime))
+            raise InvalidEventDateError(_("Event last-modified needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime)))
 
         self.event.setLastModified(xmlutils.to_cdatetime(_datetime, False, True))
 
@@ -1060,7 +1060,7 @@ class Event(object):
             valid_datetime = True
 
         if not valid_datetime:
-            raise InvalidEventDateError, _("Event start needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime))
+            raise InvalidEventDateError(_("Event start needs datetime.date or datetime.datetime instance, got %r") % (type(_datetime)))
 
         self.event.setStart(xmlutils.to_cdatetime(_datetime, True))
 
@@ -1070,7 +1070,7 @@ class Event(object):
         elif status in self.status_map.values():
             self.event.setStatus(status)
         elif not status == kolabformat.StatusUndefined:
-            raise InvalidEventStatusError, _("Invalid status set: %r") % (status)
+            raise InvalidEventStatusError(_("Invalid status set: %r") % (status))
 
     def set_summary(self, summary):
         self.event.setSummary(summary)
@@ -1093,7 +1093,7 @@ class Event(object):
             valid_datetime = True
 
         if not valid_datetime:
-            raise InvalidEventDateError, _("Event recurrence-id needs datetime.datetime instance")
+            raise InvalidEventDateError(_("Event recurrence-id needs datetime.datetime instance"))
 
         if _thisandfuture is None:
             _thisandfuture = self.thisandfuture
@@ -1111,7 +1111,7 @@ class Event(object):
         if error == None or not error:
             return event_xml
         else:
-            raise EventIntegrityError, kolabformat.errorMessage()
+            raise EventIntegrityError(kolabformat.errorMessage())
 
     def to_dict(self):
         data = dict()

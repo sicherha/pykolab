@@ -45,7 +45,7 @@ def __init__():
                 #print "exec(\"from %s import __init__ as %s_register\"" % (module_name,cmd_name)
                 try:
                     exec("from %s import __init__ as %s_register" % (module_name,cmd_name))
-                except ImportError, errmsg:
+                except ImportError:
                     pass
 
                 exec("%s_register()" % (cmd_name))
@@ -123,7 +123,7 @@ def execute(cmd_name, *args, **kw):
         try:
             exec("from %s.cmd_%s import cli_options as %s_%s_cli_options" % (group,command_name,group,command_name))
             exec("%s_%s_cli_options()" % (group,command_name))
-        except ImportError, e:
+        except ImportError:
             pass
 
     else:
@@ -131,7 +131,7 @@ def execute(cmd_name, *args, **kw):
         try:
             exec("from cmd_%s import cli_options as %s_cli_options" % (command_name,command_name))
             exec("%s_cli_options()" % (command_name))
-        except ImportError, errmsg:
+        except ImportError:
             pass
 
     conf.finalize_conf()

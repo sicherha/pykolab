@@ -286,7 +286,7 @@ def execute(*args, **kw):
         os.unlink(filepath)
 
         exec('modules.cb_action_%s(%r, %r)' % ('ACCEPT','gpgencrypt', new_filepath))
-    except Exception, errmsg:
+    except Exception as errmsg:
         log.error(_("An error occurred: %r") % (errmsg))
         if conf.debuglevel > 8:
             import traceback

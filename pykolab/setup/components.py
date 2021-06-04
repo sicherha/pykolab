@@ -130,14 +130,14 @@ def cli_options_from_component(component_name, *args, **kw):
         try:
             exec("from %s.setup_%s import cli_options as %s_%s_cli_options" % (group,component_name,group,component_name))
             exec("%s_%s_cli_options()" % (group,component_name))
-        except ImportError, e:
+        except ImportError:
             pass
 
     else:
         try:
             exec("from setup_%s import cli_options as %s_cli_options" % (component_name,component_name))
             exec("%s_cli_options()" % (component_name))
-        except ImportError, e:
+        except ImportError:
             pass
 
     components_included_in_cli.append(component_name)

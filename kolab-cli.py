@@ -32,7 +32,7 @@ from pykolab.cli import Cli
 
 try:
     import pykolab.logger
-except ImportError, e:
+except ImportError as e:
     print(_("Cannot load pykolab/logger.py:"), file=sys.stderr)
     print("%s" % e, file=sys.stderr)
     sys.exit(1)

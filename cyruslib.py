@@ -37,7 +37,7 @@ try:
     import imaplib
     import re
     from binascii import b2a_base64
-except ImportError, e:
+except ImportError as e:
     print(e)
     exit(1)
 
@@ -384,7 +384,7 @@ class CYRUS:
             res, msg = wrapped(*args)
             if ok(res):
                 return res, msg
-        except Exception, info:
+        except Exception as info:
             error = str(info).split(':').pop().strip()
             if error.upper().startswith('BAD'):
                 error = error.split('BAD', 1).pop().strip()
@@ -415,7 +415,7 @@ class CYRUS:
             self.AUTH = True
             self.id()
             admin = self.m.isadmin()
-        except Exception, info:
+        except Exception as info:
             self.AUTH = False
             error = str(info).split(':').pop().strip()
             self.__doexception("LOGIN", error)
@@ -448,7 +448,7 @@ class CYRUS:
     def logout(self):
         try:
             res, msg = self.m.logout()
-        except Exception, info:
+        except Exception as info:
             error = str(info).split(':').pop().strip()
             self.__doexception("LOGOUT", error)
         self.AUTH = False
@@ -577,7 +577,7 @@ class CYRUS:
             try:
                 userid = self.encode(aclList[i])
                 rights = aclList[i + 1]
-            except Exception, info:
+            except Exception as info:
                 self.__verbose( '[GETACL %s] BAD: %s' % (mailbox, info.args[0]) )
                 raise self.__doraise("GETACL")
             self.__verbose( '[GETACL %s] %s %s' % (mailbox, userid, rights) )
@@ -637,7 +637,7 @@ class CYRUS:
         self.__prepare('SETQUOTA', mailbox)
         try:
             limit = int(limit)
-        except ValueError, e:
+        except ValueError:
             self.__verbose( '[SETQUOTA %s] BAD: %s %s' % (mailbox, self.ERROR.get("SETQUOTA")[1], limit) )
             raise self.__doraise("SETQUOTA")
         res, msg = self.__docommand("setquota", self.decode(mailbox), limit)
@@ -694,16 +694,16 @@ class CYRUS:
 
             try:
                 value_priv = _annot[(_annot.index('"value.priv"')+len('"value.priv"')):_annot.index('"size.priv"')].strip()
-            except ValueError, errmsg:
+            except ValueError:
                 value_priv = None
 
             try:
                 size_priv = _annot[(_annot.index('"size.priv"')+len('"size.priv"')):].strip().split('"')[1].strip()
                 try:
                     value_priv = value_priv[value_priv.index('{%s}' % (size_priv))+len('{%s}' % (size_priv)):].strip()
-                except Exception, errmsg:
+                except Exception:
                     pass
-            except Exception, errmsg:
+            except Exception:
                 pass
 
             if value_priv in empty_values:
@@ -730,16 +730,16 @@ class CYRUS:
 
             try:
                 value_shared = _annot[(_annot.index('"value.shared"')+len('"value.shared"')):_annot.index('"size.shared"')].strip()
-            except ValueError, errmsg:
+            except ValueError:
                 value_shared = None
 
             try:
                 size_shared = _annot[(_annot.index('"size.shared"')+len('"size.shared"')):].strip().split('"')[1].strip()
                 try:
                     value_shared = value_shared[value_shared.index('{%s}' % (size_shared))+len('{%s}' % (size_shared)):].strip()
-                except Exception, errmsg:
+                except Exception:
                     pass
-            except Exception, errmsg:
+            except Exception:
                 pass
 
             if value_shared in empty_values:

@@ -43,10 +43,10 @@ def execute(*args, **kw):
         folder = conf.cli_args.pop(0)
         try:
             identifier = conf.cli_args.pop(0)
-        except IndexError, errmsg:
+        except IndexError:
             identifier = utils.ask_question(_("ACI Subject"))
 
-    except IndexError, errmsg:
+    except IndexError:
         folder = utils.ask_question(_("Folder name"))
         quota = utils.ask_question(_("ACI Subject"))
 

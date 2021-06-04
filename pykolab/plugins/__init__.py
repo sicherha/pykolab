@@ -67,15 +67,15 @@ class KolabPlugins(object):
                 exec("from pykolab.plugins import %s" % (plugin))
                 self.plugins[plugin] = True
                 self.load_plugins(plugins=[plugin])
-            except ImportError, e:
+            except ImportError as e:
                 log.error(_("ImportError for plugin %s: %s") % (plugin, e))
                 traceback.print_exc()
                 self.plugins[plugin] = False
-            except RuntimeError, e:
+            except RuntimeError as e:
                 log.error( _("RuntimeError for plugin %s: %s") % (plugin, e))
                 traceback.print_exc()
                 self.plugins[plugin] = False
-            except Exception, e:
+            except Exception as e:
                 log.error(_("Plugin %s failed to load (%s: %s)") % (plugin, e.__class__, e))
                 traceback.print_exc()
             except:
@@ -113,9 +113,9 @@ class KolabPlugins(object):
             if hasattr(getattr(self, plugin), "set_defaults"):
                 try:
                     getattr(self, plugin).set_defaults(defaults)
-                except TypeError, e:
+                except TypeError as e:
                     log.error(_("Cannot set defaults for plugin %s: %s") % (plugin, e))
-                except RuntimeError, e:
+                except RuntimeError as e:
                     log.error(_("Cannot set defaults for plugin %s: %s") % (plugin, e))
                 except:
                     log.error(_("Cannot set defaults for plugin %s: Unknown Error") % (plugin))
@@ -139,7 +139,7 @@ class KolabPlugins(object):
             if hasattr(getattr(self, plugin), "set_runtime"):
                 try:
                     getattr(self, plugin).set_runtime(runtime)
-                except RuntimeError, e:
+                except RuntimeError as e:
                     log.error(_("Cannot set runtime for plugin %s: %s") % (plugin, e))
             else:
                 log.debug(_("Not setting runtime for plugin %s: No function 'set_runtime()'") % (plugin), level=5)
@@ -160,9 +160,9 @@ class KolabPlugins(object):
             if hasattr(getattr(self, plugin), "add_options"):
                 try:
                     exec("self.%s.add_options(parser)" % plugin)
-                except RuntimeError, e:
+                except RuntimeError as e:
                     log.error(_("Cannot add options for plugin %s: %s") % (plugin, e))
-                except TypeError, e:
+                except TypeError as e:
                     log.error(_("Cannot add options for plugin %s: %s") % (plugin, e))
             else:
                     log.debug(_("Not adding options for plugin %s: No function 'add_options()'") % plugin, level=5)
@@ -184,7 +184,7 @@ class KolabPlugins(object):
             if hasattr(getattr(self, plugin), "check_options"):
                 try:
                     exec("self.%s.check_options()" % plugin)
-                except AttributeError, e:
+                except AttributeError as e:
                     log.error(_("Cannot check options for plugin %s: %s") % (plugin, e))
             else:
                 log.debug(_("Not checking options for plugin %s: No function 'check_options()'") % (plugin), level=5)
@@ -262,7 +262,7 @@ class KolabPlugins(object):
             if hasattr(getattr(self, plugin), bool):
                 try:
                     exec("boolval = self.%s.%s" % (plugin, bool))
-                except AttributeError, e:
+                except AttributeError:
                     pass
             else:
                 boolval = None

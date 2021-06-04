@@ -92,7 +92,7 @@ def execute(*args, **kw):
 
             try:
                 recipient = auth.find_recipient(user)
-            except ldap.NO_SUCH_OBJECT, errmsg:
+            except ldap.NO_SUCH_OBJECT:
                 if not user in subjects_deleted and conf.dryrun:
                     subjects_deleted.append(user)
 

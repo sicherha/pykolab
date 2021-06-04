@@ -106,7 +106,7 @@ class SASLAuthDaemon(object):
                     conf.process_username,
                     conf.process_groupname
                 )
-        except Exception, errmsg:
+        except Exception as errmsg:
             log.error(_("Could not create %r: %r") % (os.path.dirname(conf.pidfile), errmsg))
             sys.exit(1)
 
@@ -162,18 +162,18 @@ class SASLAuthDaemon(object):
                 self.write_pid()
                 self.do_saslauthd()
 
-        except SystemExit, e:
+        except SystemExit as e:
             exitcode = e
         except KeyboardInterrupt:
             exitcode = 1
             log.info(_("Interrupted by user"))
-        except AttributeError, e:
+        except AttributeError:
             exitcode = 1
             traceback.print_exc()
             print(_("Traceback occurred, please report a " +
                                    "bug at https://issues.kolab.org"),
                   file=sys.stderr)
-        except TypeError, e:
+        except TypeError as e:
             exitcode = 1
             traceback.print_exc()
             log.error(_("Type Error: %s") % e)
@@ -220,7 +220,7 @@ class SASLAuthDaemon(object):
                 try:
                     (clientsocket, address) = s.accept()
                     bound = True
-                except Exception, errmsg:
+                except Exception as errmsg:
                     log.error(
                             _("kolab-saslauthd could not accept " +
                               "connections on socket: %r") % (errmsg)
@@ -312,7 +312,7 @@ class SASLAuthDaemon(object):
             try:
                 (ruid, euid, suid) = os.getresuid()
                 (rgid, egid, sgid) = os.getresgid()
-            except AttributeError, errmsg:
+            except AttributeError:
                 ruid = os.getuid()
                 rgid = os.getgid()
 

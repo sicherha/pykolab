@@ -436,7 +436,7 @@ def request_raw(method, api_uri, get=None, post=None, headers={}, isretry=False)
 
     try:
         response_data = json.loads(data)
-    except ValueError, e:
+    except ValueError:
         # Some data is not JSON
         log.error(_("Response data is not JSON"))
 

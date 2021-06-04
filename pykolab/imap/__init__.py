@@ -89,7 +89,7 @@ class IMAP(object):
 
                         self.set_acl(folder, acl_entry, '')
 
-            except Exception, errmsg:
+            except Exception as errmsg:
                 log.error(
                     _("Failed to read/set ACL on folder %s: %r") % (
                         folder,

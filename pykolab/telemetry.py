@@ -642,7 +642,7 @@ def init_db():
 
         try:
             metadata.create_all(engine)
-        except sqlalchemy.exc.OperationalError, e:
+        except sqlalchemy.exc.OperationalError as e:
             log.error(_("Operational Error in telemetry database: %s" % (e)))
 
         Session = sessionmaker(bind=engine)

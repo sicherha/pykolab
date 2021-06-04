@@ -45,14 +45,14 @@ def execute(*args, **kw):
             identifier = conf.cli_args.pop(0)
             try:
                 acl = conf.cli_args.pop(0)
-            except IndexError, errmsg:
+            except IndexError:
                 acl = utils.ask_question(_("ACI Permissions"))
 
-        except IndexError, errmsg:
+        except IndexError:
             identifier = utils.ask_question(_("ACI Subject"))
             acl = utils.ask_question(_("ACI Permissions"))
 
-    except IndexError, errmsg:
+    except IndexError:
         folder = utils.ask_question(_("Folder name"))
         identifier = utils.ask_question(_("ACI Subject"))
         acl = utils.ask_question(_("ACI Permissions"))

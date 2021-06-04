@@ -57,14 +57,14 @@ def execute(*args, **kw):
             metadata_path = conf.cli_args.pop(0)
             try:
                 metadata_value = conf.cli_args.pop(0)
-            except IndexError, errmsg:
+            except IndexError:
                 metadata_value = utils.ask_question(_("Metadata value"))
 
-        except IndexError, errmsg:
+        except IndexError:
             metadata_path = utils.ask_question(_("Metadata path"))
             metadata_value = utils.ask_question(_("Metadata value"))
 
-    except IndexError, errmsg:
+    except IndexError:
         folder = utils.ask_question(_("Folder name"))
         metadata_path = utils.ask_question(_("Metadata path"))
         metadata_value = utils.ask_question(_("Metadata value"))

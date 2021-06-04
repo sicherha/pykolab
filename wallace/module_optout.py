@@ -177,7 +177,7 @@ def request(params=None):
 
     try:
         f = urllib.urlopen(optout_url, params)
-    except Exception, e:
+    except Exception:
         log.error(_("Could not send request to optout_url %s") % (optout_url))
         return "DEFER"
 
@@ -185,7 +185,7 @@ def request(params=None):
 
     try:
         response_data = json.loads(response)
-    except ValueError, e:
+    except ValueError:
         # Some data is not JSON
         print("Response data is not JSON")
 

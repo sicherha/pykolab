@@ -53,7 +53,7 @@ def execute(*args, **kw):
 
     try:
         quota_folder = conf.cli_args.pop(0)
-    except IndexError, e:
+    except IndexError:
         quota_folder = '*'
 
     imap = IMAP()

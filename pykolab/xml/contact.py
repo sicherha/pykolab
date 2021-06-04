@@ -328,7 +328,7 @@ class Contact(kolabformat.Contact):
         if error == None or not error:
             return xml
         else:
-            raise ContactIntegrityError, kolabformat.errorMessage()
+            raise ContactIntegrityError(kolabformat.errorMessage())
 
 
 class ContactIntegrityError(Exception):

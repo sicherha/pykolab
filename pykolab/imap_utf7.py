@@ -31,7 +31,7 @@ def encode(s):
     if isinstance(s, str) and sum(n for n in (ord(c) for c in s) if n > 127):
         try:
             s = unicode(s, "UTF-8")
-        except Exception, errmsg:
+        except Exception:
             raise FolderNameError("%r contains characters not valid in a str folder name. "
                               "Convert to unicode first?" % s)
 

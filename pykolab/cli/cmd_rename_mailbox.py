@@ -48,11 +48,11 @@ def execute(*args, **kw):
             target_folder = conf.cli_args.pop(0)
             try:
                 partition = conf.cli_args.pop(0)
-            except IndexError, errmsg:
+            except IndexError:
                 partition = None
-        except IndexError, errmsg:
+        except IndexError:
             print(_("No target mailbox name specified"), file=sys.stderr)
-    except IndexError, errmsg:
+    except IndexError:
         print(_("No source mailbox name specified"), file=sys.stderr)
         sys.exit(1)
 

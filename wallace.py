@@ -29,7 +29,7 @@ from pykolab.translate import _
 
 try:
     from pykolab.constants import *
-except ImportError, e:
+except ImportError as e:
     print(_("Cannot load pykolab/constants.py:"), file=sys.stderr)
     print("%s" % e, file=sys.stderr)
     sys.exit(1)

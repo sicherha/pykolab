@@ -148,15 +148,15 @@ class Cyrus(cyruslib.CYRUS):
         """
         try:
             cyruslib.CYRUS.login(self, *args, **kw)
-        except cyruslib.CYRUSError, errmsg:
+        except cyruslib.CYRUSError as errmsg:
             log.error("Login to Cyrus IMAP server failed: %r", errmsg)
-        except Exception, errmsg:
+        except Exception as errmsg:
             log.exception(errmsg)
 
         self.separator = self.SEP
         try:
             self._id()
-        except Exception, errmsg:
+        except Exception:
             pass
 
         log.debug(
@@ -382,7 +382,7 @@ class Cyrus(cyruslib.CYRUS):
 
         try:
             self.setannotation(mailfolder, annotation, value, shared)
-        except cyruslib.CYRUSError, errmsg:
+        except cyruslib.CYRUSError as errmsg:
             log.error(
                     _("Could not set annotation %r on mail folder %r: %r") % (
                             annotation,

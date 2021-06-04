@@ -41,7 +41,7 @@ def description():
 def execute(*args, **kw):
     try:
         email_address = conf.cli_args.pop(0)
-    except IndexError, errmsg:
+    except IndexError:
         email_address = utils.ask_question("Email address to remove")
 
     # Get the domain from the email address

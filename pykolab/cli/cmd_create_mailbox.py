@@ -56,7 +56,7 @@ def description():
 def execute(*args, **kw):
     try:
         mailbox = conf.cli_args.pop(0)
-    except IndexError, errmsg:
+    except IndexError:
         log.error(_("Invalid argument"))
         sys.exit(1)
 

@@ -75,7 +75,7 @@ class KolabRecipientpolicy(object):
             mail = utils.translate(mail, user_attrs['preferredlanguage'])
             mail = mail.lower()
             return mail
-        except KeyError, e:
+        except KeyError:
             log.warning(_("Attribute substitution for 'mail' failed in Recipient Policy"))
             if user_attrs.has_key('mail'):
                 return user_attrs['mail']
@@ -112,7 +112,7 @@ class KolabRecipientpolicy(object):
 
         try:
             exec("alternative_mail_routines = %s" % kw['secondary_mail'])
-        except Exception, e:
+        except Exception:
             log.error(_("Could not parse the alternative mail routines"))
 
         alternative_mail = []
@@ -123,7 +123,7 @@ class KolabRecipientpolicy(object):
         for attr in [ 'givenname', 'sn', 'surname' ]:
             try:
                 user_attrs[attr] = utils.translate(user_attrs[attr], user_attrs['preferredlanguage'])
-            except Exception, errmsg:
+            except Exception:
                 log.error(_("An error occurred in composing the secondary mail attribute for entry %r") % (user_attrs['id']))
                 if conf.debuglevel > 8:
                     import traceback
@@ -138,7 +138,7 @@ class KolabRecipientpolicy(object):
                     log.debug(_("Appending additional mail address: %s") % (retval), level=8)
                     alternative_mail.append(retval)
 
-                except Exception, errmsg:
+                except Exception as errmsg:
                     log.error(_("Policy for secondary email address failed: %r") % (errmsg))
                     if conf.debuglevel > 8:
                         import traceback
@@ -153,7 +153,7 @@ class KolabRecipientpolicy(object):
                         log.debug(_("Appending additional mail address: %s") % (retval), level=8)
                         alternative_mail.append(retval)
 
-                    except KeyError, e:
+                    except KeyError:
                         log.warning(_("Attribute substitution for 'alternative_mail' failed in Recipient Policy"))
 
         alternative_mail = utils.normalize(alternative_mail)

@@ -91,7 +91,7 @@ class Note(kolabformat.Note):
         elif classification in self.classification_map.values():
             self.setClassification(status)
         else:
-            raise ValueError, _("Invalid classification %r") % (classification)
+            raise ValueError(_("Invalid classification %r") % (classification))
 
     def add_category(self, category):
         _categories = self.categories()
@@ -131,7 +131,7 @@ class Note(kolabformat.Note):
         if error == None or not error:
             return xml
         else:
-            raise NoteIntegrityError, kolabformat.errorMessage()
+            raise NoteIntegrityError(kolabformat.errorMessage())
 
 class NoteIntegrityError(Exception):
     def __init__(self, message):

@@ -113,7 +113,7 @@ def execute(*args, **kw):
                             log.info(_("Deleting mailbox '%s' because it has no recipients") % (folder))
                             try:
                                 imap.dm(folder)
-                            except Exception, errmsg:
+                            except Exception as errmsg:
                                 log.error(_("An error occurred removing mailbox %r: %r") % (folder, errmsg))
                         else:
                             log.info(_("Not automatically deleting shared folder '%s'") % (folder))
@@ -161,7 +161,7 @@ def execute(*args, **kw):
                                 log.info(_("Deleting mailbox '%s' because it has no recipients") % (folder))
                                 try:
                                     imap.dm(folder)
-                                except Exception, errmsg:
+                                except Exception as errmsg:
                                     log.error(_("An error occurred removing mailbox %r: %r") % (folder, errmsg))
                             else:
                                 log.info(_("Not automatically deleting shared folder '%s'") % (folder))

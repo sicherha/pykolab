@@ -54,8 +54,8 @@ class Entitlement(object):
                 )
 
             if (bool)(ca_cert.has_expired()):
-                raise Exception, _("Invalid entitlement verification " + \
-                        "certificate at %s" % (ca_cert_file))
+                raise Exception(_("Invalid entitlement verification " + \
+                        "certificate at %s" % (ca_cert_file)))
 
             # TODO: Check validity and warn ~1-2 months in advance.
 
@@ -77,8 +77,8 @@ class Entitlement(object):
             ca_cert_issuer_hash_digest = hashlib.sha224(ca_cert_issuer_hash).hexdigest()
 
             if not ca_cert_issuer_hash_digest in self.entitlement_verification:
-                raise Exception, _("Invalid entitlement verification " + \
-                        "certificate at %s") % (ca_cert_file)
+                raise Exception(_("Invalid entitlement verification " + \
+                        "certificate at %s") % (ca_cert_file))
 
             ca_cert_subject_hash = subprocess.Popen(
                     [
@@ -95,8 +95,8 @@ class Entitlement(object):
             ca_cert_subject_hash_digest = hashlib.sha224(ca_cert_subject_hash).hexdigest()
 
             if not ca_cert_subject_hash_digest in self.entitlement_verification:
-                raise Exception, _("Invalid entitlement verification " + \
-                        "certificate at %s") % (ca_cert_file)
+                raise Exception(_("Invalid entitlement verification " + \
+                        "certificate at %s") % (ca_cert_file))
 
             customer_cert_issuer_hash = subprocess.Popen(
                     [
@@ -113,14 +113,14 @@ class Entitlement(object):
             customer_cert_issuer_hash_digest = hashlib.sha224(customer_cert_issuer_hash).hexdigest()
 
             if not customer_cert_issuer_hash_digest in self.entitlement_verification:
-                raise Exception, _("Invalid entitlement verification " + \
-                        "certificate at %s") % (customer_cert_file)
+                raise Exception(_("Invalid entitlement verification " + \
+                        "certificate at %s") % (customer_cert_file))
 
             if not ca_cert_issuer.countryName == ca_cert_subject.countryName:
-                raise Exception, _("Invalid entitlement certificate")
+                raise Exception(_("Invalid entitlement certificate"))
 
             if not ca_cert_issuer.organizationName == ca_cert_subject.organizationName:
-                raise Exception, _("Invalid entitlement certificate")
+                raise Exception(_("Invalid entitlement certificate"))
 
             if os.path.isdir('/etc/kolab/entitlement.d/') and \
                     os.access('/etc/kolab/entitlement.d/', os.R_OK):
@@ -227,8 +227,8 @@ class License(object):
             ).communicate()[0].strip().split('=')[1]
 
         if not customer_cert_serial == cert_serial:
-            raise Exception, _("Invalid entitlement verification " + \
-                    "certificate at %s") % (customer_cert_file)
+            raise Exception(_("Invalid entitlement verification " + \
+                    "certificate at %s") % (customer_cert_file))
 
         customer_cert_issuer_hash = subprocess.Popen(
                 [
@@ -243,8 +243,8 @@ class License(object):
             ).communicate()[0].strip()
 
         if not customer_cert_issuer_hash == cert_issuer_hash:
-            raise Exception, _("Invalid entitlement verification " + \
-                    "certificate at %s") % (customer_cert_file)
+            raise Exception(_("Invalid entitlement verification " + \
+                    "certificate at %s") % (customer_cert_file))
 
         customer_cert_subject_hash = subprocess.Popen(
                 [
@@ -259,8 +259,8 @@ class License(object):
             ).communicate()[0].strip()
 
         if not customer_cert_subject_hash == cert_subject_hash:
-            raise Exception, _("Invalid entitlement verification " + \
-                    "certificate at %s") % (customer_cert_file)
+            raise Exception(_("Invalid entitlement verification " + \
+                    "certificate at %s") % (customer_cert_file))
 
     def get(self):
         return self.entitlement

@@ -52,7 +52,7 @@ def description():
 def execute(*args, **kw):
     try:
         folder = conf.cli_args.pop(0)
-    except IndexError, errmsg:
+    except IndexError:
         folder = utils.ask_question(_("Folder name"))
 
     if len(folder.split('@')) > 1:

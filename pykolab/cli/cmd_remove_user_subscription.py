@@ -50,10 +50,10 @@ def execute(*args, **kw):
         user = conf.cli_args.pop(0)
         try:
             folder_pattern = conf.cli_args.pop(0)
-        except IndexError, errmsg:
+        except IndexError:
             folder_pattern = utils.ask_question(_("Folder pattern"))
 
-    except IndexError, errmsg:
+    except IndexError:
         user = utils.ask_question(_("User ID"))
         folder_pattern = utils.ask_question(_("Folder pattern"))
 

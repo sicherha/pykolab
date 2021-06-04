@@ -132,14 +132,14 @@ class Attendee(kolabformat.Attendee):
 
         for delegator in delegators:
             if not isinstance(delegator, Attendee):
-                raise ValueError, _("Not a valid attendee")
+                raise ValueError(_("Not a valid attendee"))
             else:
                 self.set_role(delegator.get_role())
                 self.set_cutype(delegator.get_cutype())
                 crefs.append(delegator.contactreference)
 
         if len(crefs) == 0:
-            raise ValueError, _("No valid delegator references found")
+            raise ValueError(_("No valid delegator references found"))
         else:
             crefs += self.get_delegated_from()
 
@@ -154,12 +154,12 @@ class Attendee(kolabformat.Attendee):
 
         for delegatee in delegatees:
             if not isinstance(delegatee, Attendee):
-                raise ValueError, _("Not a valid attendee")
+                raise ValueError(_("Not a valid attendee"))
             else:
                 crefs.append(delegatee.contactreference)
 
         if len(crefs) == 0:
-            raise ValueError, _("No valid delegatee references found")
+            raise ValueError(_("No valid delegatee references found"))
         else:
             crefs += self.get_delegated_to()
 
@@ -219,7 +219,7 @@ class Attendee(kolabformat.Attendee):
         elif cutype in self.cutype_map.values():
             self.setCutype(cutype)
         else:
-            raise InvalidAttendeeCutypeError, _("Invalid cutype %r") % (cutype)
+            raise InvalidAttendeeCutypeError(_("Invalid cutype %r") % (cutype))
 
     def set_name(self, name):
         self.contactreference.set_name(name)
@@ -231,7 +231,7 @@ class Attendee(kolabformat.Attendee):
         elif participant_status in self.participant_status_map.values():
             self.setPartStat(participant_status)
         else:
-            raise InvalidAttendeeParticipantStatusError, _("Invalid participant status %r") % (participant_status)
+            raise InvalidAttendeeParticipantStatusError(_("Invalid participant status %r") % (participant_status))
 
     def set_role(self, role):
         if role in self.role_map.keys():
@@ -239,7 +239,7 @@ class Attendee(kolabformat.Attendee):
         elif role in self.role_map.values():
             self.setRole(role)
         else:
-            raise InvalidAttendeeRoleError, _("Invalid role %r") % (role)
+            raise InvalidAttendeeRoleError(_("Invalid role %r") % (role))
 
     def set_rsvp(self, rsvp):
         self.setRSVP(rsvp)

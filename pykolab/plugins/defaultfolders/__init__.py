@@ -49,7 +49,7 @@ class KolabDefaultfolders(object):
 
         try:
             exec("additional_folders = %s" % (kw['additional_folders']))
-        except Exception, e:
+        except Exception:
             log.error(_("Could not parse additional_folders"))
             return {}
 

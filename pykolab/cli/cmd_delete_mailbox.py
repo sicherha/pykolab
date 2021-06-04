@@ -67,6 +67,6 @@ def execute(*args, **kw):
     for delete_folder in delete_folders:
         try:
             imap.delete_mailfolder(delete_folder)
-        except Exception, errmsg:
+        except Exception:
             log.error(_("Could not delete mailbox '%s'") % (delete_folder))
 
