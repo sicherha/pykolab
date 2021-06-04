@@ -109,7 +109,7 @@ host=%s
 """ % (mysql_root_password, conf.mysqlhost)
 
         fp = open('/tmp/kolab-setup-my.cnf', 'w')
-        os.chmod('/tmp/kolab-setup-my.cnf', 0600)
+        os.chmod('/tmp/kolab-setup-my.cnf', 0o600)
         fp.write(data)
         fp.close()
 

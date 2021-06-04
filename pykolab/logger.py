@@ -213,7 +213,7 @@ class Logger(logging.Logger):
                                 group_gid
                             )
 
-                            os.chmod(self.logfile, 0660)
+                            os.chmod(self.logfile, 0o660)
 
                     except Exception as errmsg:
                         self.error(

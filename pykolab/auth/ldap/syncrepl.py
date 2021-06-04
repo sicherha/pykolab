@@ -22,7 +22,7 @@ class DNSync(ldap.ldapobject.LDAPObject,ldap.syncrepl.SyncreplConsumer):
             del kwargs['callback']
 
         ldap.ldapobject.LDAPObject.__init__(self, *args, **kwargs)
-        self.__db = anydbm.open(filename, 'c', 0640)
+        self.__db = anydbm.open(filename, 'c', 0o640)
         self.__presentUUIDs = {}
 
     def syncrepl_set_cookie(self,cookie):

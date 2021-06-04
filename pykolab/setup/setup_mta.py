@@ -243,7 +243,7 @@ result_format = "shared+%%s"
                 )
 
     if not os.path.isdir('/etc/postfix/ldap'):
-        os.mkdir('/etc/postfix/ldap/', 0770)
+        os.mkdir('/etc/postfix/ldap/', 0o770)
 
     for filename in files.keys():
         fp = open(filename, 'w')

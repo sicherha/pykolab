@@ -204,7 +204,7 @@ class SASLAuthDaemon(object):
             pass
 
         s.bind(conf.socketfile)
-        os.chmod(conf.socketfile, 0777)
+        os.chmod(conf.socketfile, 0o777)
 
         s.listen(5)
 
