@@ -37,4 +37,4 @@ def execute(*args, **kw):
 
     for user_type in user_types['list']:
         type = user_types['list'][user_type]
-        print "%-15s - %s" % (type['key'], type['description'])
+        print("%-15s - %s" % (type['key'], type['description']))

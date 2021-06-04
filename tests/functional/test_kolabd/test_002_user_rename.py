@@ -61,7 +61,7 @@ class TestKolabDaemon(unittest.TestCase):
 
         time.sleep(2)
 
-        print imap.lm()
+        print(imap.lm())
 
         user_info = wap_client.user_info('uid=sixpack,ou=People,dc=example,dc=org')
         if not user_info['mail'] == 'joe.sixpack@example.org':
@@ -71,7 +71,7 @@ class TestKolabDaemon(unittest.TestCase):
 
         self.assertEqual(user_info['mail'], 'joe.sixpack@example.org')
 
-        print imap.lm()
+        print(imap.lm())
 
         folders = imap.lm('user/john.doe@example.org')
         self.assertEqual(len(folders), 0, "INBOX for john.doe still exists")

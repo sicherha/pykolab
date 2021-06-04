@@ -103,19 +103,19 @@ def execute(*args, **kw):
         )
 
     if not result:
-        print "LOGIN FAILED??"
+        print("LOGIN FAILED??")
 
     sieveclient.authenticated = True
 
     result = sieveclient.listscripts()
 
     if result == None:
-        print "No scripts"
+        print("No scripts")
         sys.exit(0)
 
     (active, scripts) = result
 
-    print "%s (active)" % (active)
+    print("%s (active)" % (active))
     for script in scripts:
-        print script
+        print(script)
 

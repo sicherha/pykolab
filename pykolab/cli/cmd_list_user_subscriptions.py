@@ -91,14 +91,14 @@ def execute(*args, **kw):
 
         if len(unsubscribed_folders) > 0:
             if not conf.raw:
-                print "\n".join([imap_utf7.decode(x) for x in unsubscribed_folders])
+                print("\n".join([imap_utf7.decode(x) for x in unsubscribed_folders]))
             else:
-                print "\n".join(unsubscribed_folders)
+                print("\n".join(unsubscribed_folders))
         else:
-            print _("No unsubscribed folders for user %s") % (user)
+            print(_("No unsubscribed folders for user %s") % (user))
 
     else:
         if not conf.raw:
-            print "\n".join([imap_utf7.decode(x) for x in subscribed_folders])
+            print("\n".join([imap_utf7.decode(x) for x in subscribed_folders]))
         else:
-            print "\n".join(subscribed_folders)
+            print("\n".join(subscribed_folders))

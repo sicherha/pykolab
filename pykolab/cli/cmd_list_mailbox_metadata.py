@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import sys
 
 import commands
@@ -77,19 +79,19 @@ def execute(*args, **kw):
         imap.connect(domain=domain)
 
     if not imap.has_folder(folder):
-        print >> sys.stderr, _("No such folder %r") % (folder)
+        print(_("No such folder %r") % (folder), file=sys.stderr)
 
     else:
         metadata = []
         folders = imap.list_folders(folder)
         for folder in folders:
-            print "Folder", folder
+            print("Folder", folder)
 
             metadata = imap.get_metadata(folder)
 
             if metadata.has_key(folder):
                 for annotation in metadata[folder].keys():
-                    print "  %-49s %s" % (
+                    print("  %-49s %s" % (
                             annotation,
                             metadata[folder][annotation]
-                        )
+                        ))

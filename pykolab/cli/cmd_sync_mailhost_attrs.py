@@ -174,7 +174,7 @@ def execute(*args, **kw):
 
             if not server == mailhost:
                 if conf.dry_run:
-                    print folder, server, mailhost
+                    print(folder, server, mailhost)
                 else:
                     auth.set_entry_attribute(primary, recipient, 'mailhost', server)
 
@@ -193,4 +193,4 @@ def execute(*args, **kw):
         else:
             recipient = auth.find_recipient('/'.join(folder.split('/')[1:]), search_attrs=[result_attribute])
 
-        print folder, server, recipient
+        print(folder, server, recipient)

@@ -80,21 +80,21 @@ def list_components(*args, **kw):
         if __components[_component].has_key('function'):
             # This is a top-level component
             if not __components[_component]['description'] == None:
-                print "%-25s - %s" % (_component.replace('_','-'),__components[_component]['description'])
+                print("%-25s - %s" % (_component.replace('_','-'),__components[_component]['description']))
             else:
-                print "%-25s" % (_component.replace('_','-'))
+                print("%-25s" % (_component.replace('_','-')))
 
     for _component in _components:
         if not __components[_component].has_key('function'):
             # This is a nested component
-            print "\n" + _("Command Group: %s") % (_component) + "\n"
+            print("\n" + _("Command Group: %s") % (_component) + "\n")
             ___components = __components[_component].keys()
             ___components.sort()
             for __component in ___components:
                 if not __components[_component][__component]['description'] == None:
-                    print "%-4s%-21s - %s" % ('',__component.replace('_','-'),__components[_component][__component]['description'])
+                    print("%-4s%-21s - %s" % ('',__component.replace('_','-'),__components[_component][__component]['description']))
                 else:
-                    print "%-4s%-21s" % ('',__component.replace('_','-'))
+                    print("%-4s%-21s" % ('',__component.replace('_','-')))
 
 def _list_components(*args, **kw):
     """
@@ -262,5 +262,5 @@ def register(component_name, func, group=None, description=None, aliases=[], aft
 ##
 
 def not_yet_implemented(*args, **kw):
-    print _("Not yet implemented")
+    print(_("Not yet implemented"))
     sys.exit(1)

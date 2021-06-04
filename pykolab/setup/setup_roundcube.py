@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import codecs
 import grp
 import hashlib
@@ -51,13 +53,13 @@ def description():
 
 
 def execute(*args, **kw):
-    print >> sys.stderr, utils.multiline_message(
+    print(utils.multiline_message(
         """
             Please supply a password for the MySQL user 'roundcube'.
             This password will be used by the Roundcube webmail
             interface.
         """
-    )
+    ), file=sys.stderr)
 
     mysql_roundcube_password = utils.ask_question(
         "MySQL roundcube password",
@@ -223,9 +225,9 @@ def execute(*args, **kw):
             break
 
     if not os.path.isfile('/tmp/kolab-setup-my.cnf'):
-        print >> sys.stderr, utils.multiline_message(
+        print(utils.multiline_message(
                 """Please supply the MySQL root password (use 'unix_socket' for socket based authentication)"""
-            )
+            ), file=sys.stderr)
 
         mysql_root_password = utils.ask_question(
                 _("MySQL root password"),

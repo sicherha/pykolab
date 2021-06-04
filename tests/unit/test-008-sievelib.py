@@ -53,5 +53,5 @@ class TestSievelib(unittest.TestCase):
             i += 1
             result = sieve_parser.parse(sieve_str)
             if not result:
-                print "Sieve line: %r" % (sieve_parser.lexer.text.split('\n')[(sieve_parser.lexer.text[:sieve_parser.lexer.pos].count('\n'))])
+                print("Sieve line: %r" % (sieve_parser.lexer.text.split('\n')[(sieve_parser.lexer.text[:sieve_parser.lexer.pos].count('\n'))]))
                 raise Exception("Failed parsing Sieve script #%d: %s" % (i, sieve_parser.error))

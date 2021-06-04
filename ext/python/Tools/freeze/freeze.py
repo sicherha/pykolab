@@ -162,7 +162,7 @@ def main():
     # process option arguments
     for o, a in opts:
         if o == '-h':
-            print __doc__
+            print(__doc__)
             return
         if o == '-b':
             binlib = a
@@ -224,7 +224,7 @@ def main():
     if win:
         extensions_c = 'frozen_extensions.c'
     if ishome:
-        print "(Using Python source directory)"
+        print("(Using Python source directory)")
         binlib = exec_prefix
         incldir = os.path.join(prefix, 'Include')
         config_h_dir = exec_prefix
@@ -316,7 +316,7 @@ def main():
     if odir and not os.path.isdir(odir):
         try:
             os.mkdir(odir)
-            print "Created output directory", odir
+            print("Created output directory", odir)
         except os.error, msg:
             usage('%s: mkdir failed (%s)' % (odir, str(msg)))
     base = ''
@@ -377,7 +377,7 @@ def main():
 
     if debug > 0:
         mf.report()
-        print
+        print()
     dict = mf.modules
 
     if error_if_any_missing:
@@ -485,18 +485,18 @@ def main():
     # Done!
 
     if odir:
-        print 'Now run "make" in', odir,
-        print 'to build the target:', base_target
+        print('Now run "make" in', odir, end=' ')
+        print('to build the target:', base_target)
     else:
-        print 'Now run "make" to build the target:', base_target
+        print('Now run "make" to build the target:', base_target)
 
 
 # Print usage message and exit
 
 def usage(msg):
     sys.stdout = sys.stderr
-    print "Error:", msg
-    print "Use ``%s -h'' for help" % sys.argv[0]
+    print("Error:", msg)
+    print("Use ``%s -h'' for help" % sys.argv[0])
     sys.exit(2)
 
 

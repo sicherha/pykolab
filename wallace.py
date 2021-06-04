@@ -18,6 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import sys
 
 # For development purposes
@@ -28,8 +30,8 @@ from pykolab.translate import _
 try:
     from pykolab.constants import *
 except ImportError, e:
-    print >> sys.stderr, _("Cannot load pykolab/constants.py:")
-    print >> sys.stderr, "%s" % e
+    print(_("Cannot load pykolab/constants.py:"), file=sys.stderr)
+    print("%s" % e, file=sys.stderr)
     sys.exit(1)
 
 import wallace

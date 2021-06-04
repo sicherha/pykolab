@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import sys
 
 import commands
@@ -48,13 +50,13 @@ def execute(*args, **kw):
     user_info = wap_client.user_find({'mail':user})
 
     if user_info == None or not user_info:
-        print >> sys.stderr, _("No such user %s") % (user)
+        print(_("No such user %s") % (user), file=sys.stderr)
         sys.exit(0)
 
     unic_attrs = ['displayname', 'givenname', 'cn', 'sn', 'ou', 'entrydn']
 
     for (k,v) in user_info.iteritems():
         if k in unic_attrs:
-            print "%s: %s" % (k,v)
+            print("%s: %s" % (k,v))
         else:
-            print "%s: %r" % (k,v)
+            print("%s: %r" % (k,v))

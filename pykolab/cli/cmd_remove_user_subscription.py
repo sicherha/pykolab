@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import sys
 
 import commands
@@ -73,9 +75,9 @@ def execute(*args, **kw):
     imap.login_plain(admin_login, admin_password, user)
 
     if not imap.has_folder(folder_pattern):
-        print >> sys.stderr, \
-                _("Cannot subscribe user to folder %r:") % (folder_pattern), \
-                _("No such folder")
+        print(_("Cannot subscribe user to folder %r:") % (folder_pattern), \
+              _("No such folder"), \
+              file=sys.stderr)
         sys.exit(1)
 
     _folders = imap.lm(folder_pattern)
@@ -88,14 +90,14 @@ def execute(*args, **kw):
             unsubscribed_folders.append(_folder)
 
     if len(unsubscribed_folders) > 0:
-        print _("Successfully unsubscribed user %s from the following folders:") % (
+        print(_("Successfully unsubscribed user %s from the following folders:") % (
                 user
-            )
+            ))
 
-        print "\n".join(unsubscribed_folders)
+        print("\n".join(unsubscribed_folders))
     else:
-        print >> sys.stderr, _("User %s was not unsubscribed from any folders.") % (
+        print(_("User %s was not unsubscribed from any folders.") % (
                 user
-            )
+            ), file=sys.stderr)
 
         sys.exit(1)

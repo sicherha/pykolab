@@ -118,17 +118,17 @@ def execute(*args, **kw):
         if len(flags) >= 3:
             # Any flags are set
             if flags[2] == '(\\Deleted))':
-                print num, '\Deleted'
+                print(num, '\Deleted')
             elif flags[2] == '(\\Deleted':
-                print num, '\Deleted'
+                print(num, '\Deleted')
             elif '\\Deleted' in flags[3:]:
-                print num, '\Deleted'
+                print(num, '\Deleted')
             elif '\\Deleted))' in flags[3:]:
-                print num, '\Deleted'
+                print(num, '\Deleted')
             else:
-                print num
+                print(num)
         else:
-            print num
+            print(num)
 
     if conf.user == None:
         imap.set_acl(folder, 'cyrus-admin', '')

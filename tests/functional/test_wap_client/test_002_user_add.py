@@ -48,8 +48,8 @@ class TestUserAdd(unittest.TestCase):
 
         folders = imap.lm('user/%(local)s/*@%(domain)s' % (self.user))
 
-        print folders
-        print ac_folders.keys()
+        print(folders)
+        print(ac_folders.keys())
 
         self.assertEqual(len(folders), len(ac_folders.keys()))
 

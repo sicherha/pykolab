@@ -17,6 +17,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+from __future__ import print_function
+
 import sys
 
 import commands
@@ -57,10 +59,10 @@ def execute(*args, **kw):
     imap.connect(domain=domain)
 
     if not imap.has_folder(folder):
-        print >> sys.stderr, _("No such folder %r") % (folder)
+        print(_("No such folder %r") % (folder), file=sys.stderr)
         sys.exit(1)
 
     for _folder in imap.lm(imap.folder_utf7(folder)):
         imap.set_quota(_folder, quota)
-        print >> sys.stdout, "Quota for folder '%s' set to %d" % (_folder, int(quota))
+        print("Quota for folder '%s' set to %d" % (_folder, int(quota)), file=sys.stdout)
 

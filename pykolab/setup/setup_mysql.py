@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import os
 import subprocess
 import tempfile
@@ -142,12 +144,12 @@ def execute(*args, **kw):  # noqa: C901
 
     if answer == "1" or answer == 1:
         if not conf.mysqlrootpw:
-            print >> sys.stderr, utils.multiline_message(
+            print(utils.multiline_message(
                 _("""
                     Please supply the root password for MySQL, so we can set
                     up user accounts for other components that use MySQL.
                 """)
-            )
+            ), file=sys.stderr)
 
             mysql_root_password = utils.ask_question(
                 _("MySQL root password"),
@@ -161,7 +163,7 @@ def execute(*args, **kw):  # noqa: C901
         mysql_root_password = 'unix_socket'
 
     else:
-        print >> sys.stderr, utils.multiline_message(
+        print(utils.multiline_message(
             _("""
                 Please supply a root password for MySQL. This password
                 will be the administrative user for this MySQL server,
@@ -170,7 +172,7 @@ def execute(*args, **kw):  # noqa: C901
                 about this password, but you will need it for
                 administrative tasks in MySQL.
             """)
-        )
+        ), file=sys.stderr)
 
         mysql_root_password = utils.ask_question(
             _("MySQL root password"),
@@ -276,13 +278,13 @@ host=%s
         p1.stdout.close()
         p2.communicate()
 
-        print >> sys.stderr, utils.multiline_message(
+        print(utils.multiline_message(
             _("""
                 Please supply a password for the MySQL user 'kolab'.
                 This password will be used by Kolab services, such as
                 the Web Administration Panel.
             """)
-        )
+        ), file=sys.stderr)
 
         mysql_kolab_password = utils.ask_question(
             _("MySQL kolab password"),

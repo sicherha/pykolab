@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import sys
 
 import commands
@@ -87,7 +89,7 @@ def execute(*args, **kw):
         pass
 
     else:
-        print >> sys.stderr, _("Found the following recipients:")
+        print(_("Found the following recipients:"), file=sys.stderr)
 
         for recipient in recipients:
-            print recipient
+            print(recipient)

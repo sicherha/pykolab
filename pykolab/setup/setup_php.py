@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
 from augeas import Augeas
 import os
 import shutil
@@ -66,13 +67,13 @@ def description():
 
 def execute(*args, **kw):
     if conf.timezone is None:
-        print >> sys.stderr, utils.multiline_message(
+        print(utils.multiline_message(
             _("""
                 Please supply the timezone PHP should be using.
                 You have to use a Continent or Country / City locality name
                 like 'Europe/Berlin', but not just 'CEST'.
             """)
-        )
+        ), file=sys.stderr)
 
         conf.timezone = utils.ask_question(
             _("Timezone ID"),

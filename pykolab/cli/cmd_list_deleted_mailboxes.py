@@ -101,7 +101,7 @@ def execute(*args, **kw):
             log.debug(_("Appending folder search for %r") % (search), level=8)
             folders.extend(imap.lm(imap_utf7.encode(search)))
 
-    print "Deleted folders:"
+    print("Deleted folders:")
 
     for folder in folders:
         utf8_folder = imap_utf7.decode(folder).encode('utf-8')
@@ -109,6 +109,6 @@ def execute(*args, **kw):
         ts = datetime.datetime.fromtimestamp(int(mbox_parts['hex_timestamp'], 16))
 
         if not conf.raw:
-            print "%s (Deleted at %s)" % (utf8_folder, ts)
+            print("%s (Deleted at %s)" % (utf8_folder, ts))
         else:
-            print "%s (Deleted at %s)" % (folder, ts)
+            print("%s (Deleted at %s)" % (folder, ts))

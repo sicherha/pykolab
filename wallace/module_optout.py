@@ -187,6 +187,6 @@ def request(params=None):
         response_data = json.loads(response)
     except ValueError, e:
         # Some data is not JSON
-        print "Response data is not JSON"
+        print("Response data is not JSON")
 
     return response_data['result']

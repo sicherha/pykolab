@@ -50,7 +50,7 @@ class TestUserAddFrFR(unittest.TestCase):
         self.assertEqual(recipient, "uid=mehul,ou=People,dc=example,dc=org")
 
         result = wap_client.user_info(recipient)
-        print result
+        print(result)
 
         self.assertEqual(result['mail'], 'etienne-nicolas.mehul@example.org')
         self.assertEqual(sorted(result['alias']), ['e.mehul@example.org', 'mehul@example.org'])

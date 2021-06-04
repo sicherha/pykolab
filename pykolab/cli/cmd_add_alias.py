@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import sys
 
 import commands
@@ -39,10 +41,10 @@ def execute(*args, **kw):
         try:
             secondary_rcpt_address = conf.cli_args.pop(0)
         except:
-            print >> sys.stderr, _("Specify the (new) alias address")
+            print(_("Specify the (new) alias address"), file=sys.stderr)
             sys.exit(1)
     except:
-        print >> sys.stderr, _("Specify the existing recipient address")
+        print(_("Specify the existing recipient address"), file=sys.stderr)
         sys.exit(1)
 
     if len(primary_rcpt_address.split('@')) > 1:
@@ -63,28 +65,28 @@ def execute(*args, **kw):
 
     # Check if either is in fact a domain
     if not primary_rcpt_domain.lower() in domains.keys():
-        print >> sys.stderr, _("Domain %r is not a local domain") % (primary_rcpt_domain)
+        print(_("Domain %r is not a local domain") % (primary_rcpt_domain), file=sys.stderr)
         sys.exit(1)
 
     if not secondary_rcpt_domain.lower() in domains.keys():
-        print >> sys.stderr, _("Domain %r is not a local domain") % (secondary_rcpt_domain)
+        print(_("Domain %r is not a local domain") % (secondary_rcpt_domain), file=sys.stderr)
         sys.exit(1)
 
     if not primary_rcpt_domain == secondary_rcpt_domain:
         if not domains[primary_rcpt_domain] == domains[secondary_rcpt_domain]:
-            print >> sys.stderr, _("Primary and secondary domain do not have the same parent domain")
+            print(_("Primary and secondary domain do not have the same parent domain"), file=sys.stderr)
             sys.exit(1)
 
     primary_recipient_dn = auth.find_recipient(primary_rcpt_address)
 
     if primary_recipient_dn == [] or len(primary_recipient_dn) == 0:
-        print >> sys.stderr, _("No such recipient %r") % (primary_rcpt_address)
+        print(_("No such recipient %r") % (primary_rcpt_address), file=sys.stderr)
         sys.exit(1)
 
     secondary_recipient_dn = auth.find_recipient(secondary_rcpt_address)
 
     if not secondary_recipient_dn == [] and not len(secondary_recipient_dn) == 0:
-        print >> sys.stderr, _("Recipient for alias %r already exists") % (secondary_rcpt_address)
+        print(_("Recipient for alias %r already exists") % (secondary_rcpt_address), file=sys.stderr)
         sys.exit(1)
 
     rcpt_attrs = conf.get_list('ldap', 'mail_attributes')
@@ -94,15 +96,15 @@ def execute(*args, **kw):
     if len(rcpt_attrs) >= 2:
         secondary_rcpt_attr = rcpt_attrs[1]
     else:
-        print >> sys.stderr, _("Environment is not configured for " + \
-            "users to hold secondary mail attributes")
+        print(_("Environment is not configured for " + \
+            "users to hold secondary mail attributes"), file=sys.stderr)
 
         sys.exit(1)
 
     primary_recipient = auth.get_entry_attributes(primary_rcpt_domain, primary_recipient_dn, rcpt_attrs)
 
     if not primary_recipient.has_key(primary_rcpt_attr):
-        print >> sys.stderr, _("Recipient %r is not the primary recipient for address %r") % (primary_recipient, primary_rcpt_address)
+        print(_("Recipient %r is not the primary recipient for address %r") % (primary_recipient, primary_rcpt_address), file=sys.stderr)
         sys.exit(1)
 
     if not primary_recipient.has_key(secondary_rcpt_attr):

@@ -89,7 +89,7 @@ def execute(*args, **kw):
 
     active, scripts = sieveclient.listscripts()
 
-    print "%s (active)" % (active)
+    print("%s (active)" % (active))
     
     _all_scripts = [ active ] + scripts
     _used_scripts = [ active ]
@@ -97,7 +97,7 @@ def execute(*args, **kw):
 
     _a_script = sieveclient.getscript(active)
 
-    print _a_script
+    print(_a_script)
 
     import sievelib.parser
 
@@ -107,23 +107,23 @@ def execute(*args, **kw):
     #print "%r" % (_a_parsed)
 
     if not _a_parsed:
-        print _a_parser.error
+        print(_a_parser.error)
 
-    print "%r" % (_a_parser.result)
+    print("%r" % (_a_parser.result))
 
     for _a_command in _a_parser.result:
-        print _a_command.name, _a_command.arguments
+        print(_a_command.name, _a_command.arguments)
         if len(_a_command.children) > 0:
             for _a_child in _a_command.children:
-                print "  ", _a_child.name, _a_child.arguments
+                print("  ", _a_child.name, _a_child.arguments)
 
         if _a_command.name == "include":
             if _a_command.arguments["script"].strip('"') in scripts:
-                print "OK"
+                print("OK")
                 _used_scripts.append(_a_command.arguments["script"].strip('"'))
             else:
-                print "Not OK"
+                print("Not OK")
 
     for script in scripts:
-        print script
+        print(script)
 

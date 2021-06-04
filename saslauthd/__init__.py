@@ -25,6 +25,7 @@
     backend.
 """
 
+from __future__ import print_function
 from optparse import OptionParser
 from ConfigParser import SafeConfigParser
 
@@ -169,8 +170,9 @@ class SASLAuthDaemon(object):
         except AttributeError, e:
             exitcode = 1
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a " +
-                                   "bug at https://issues.kolab.org")
+            print(_("Traceback occurred, please report a " +
+                                   "bug at https://issues.kolab.org"),
+                  file=sys.stderr)
         except TypeError, e:
             exitcode = 1
             traceback.print_exc()
@@ -178,8 +180,9 @@ class SASLAuthDaemon(object):
         except:
             exitcode = 2
             traceback.print_exc()
-            print >> sys.stderr, _("Traceback occurred, please report a " +
-                                   "bug at https://issues.kolab.org")
+            print(_("Traceback occurred, please report a " +
+                                   "bug at https://issues.kolab.org"),
+                  file=sys.stderr)
 
         sys.exit(exitcode)
 
@@ -326,9 +329,9 @@ class SASLAuthDaemon(object):
                             ) = grp.getgrnam(conf.process_groupname)
 
                     except KeyError:
-                        print >> sys.stderr, _("Group %s does not exist") % (
+                        print(_("Group %s does not exist") % (
                                 conf.process_groupname
-                            )
+                            ), file=sys.stderr)
 
                         sys.exit(1)
 
@@ -357,9 +360,9 @@ class SASLAuthDaemon(object):
                             ) = pwd.getpwnam(conf.process_username)
 
                     except KeyError:
-                        print >> sys.stderr, _("User %s does not exist") % (
+                        print(_("User %s does not exist") % (
                                 conf.process_username
-                            )
+                            ), file=sys.stderr)
 
                         sys.exit(1)
 

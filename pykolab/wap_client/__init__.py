@@ -191,22 +191,22 @@ def get_group_input():
     if len(group_types.keys()) > 1:
         for key in group_types.keys():
             if not key == "status":
-                print "%s) %s" % (key,group_types[key]['name'])
+                print("%s) %s" % (key,group_types[key]['name']))
 
         group_type_id = utils.ask_question("Please select the group type")
 
     elif len(group_types.keys()) > 0:
-        print "Automatically selected the only group type available"
+        print("Automatically selected the only group type available")
         group_type_id = group_types.keys()[0]
 
     else:
-        print "No group types available"
+        print("No group types available")
         sys.exit(1)
 
     if group_types.has_key(group_type_id):
         group_type_info = group_types[group_type_id]['attributes']
     else:
-        print "No such group type"
+        print("No such group type")
         sys.exit(1)
 
     params = {
@@ -226,26 +226,26 @@ def get_user_input():
     user_types = user_types_list()
 
     if user_types['count'] > 1:
-        print ""
+        print("")
         for key in user_types['list'].keys():
             if not key == "status":
-                print "%s) %s" % (key,user_types['list'][key]['name'])
+                print("%s) %s" % (key,user_types['list'][key]['name']))
 
-        print ""
+        print("")
         user_type_id = utils.ask_question("Please select the user type")
 
     elif user_types['count'] > 0:
-        print "Automatically selected the only user type available"
+        print("Automatically selected the only user type available")
         user_type_id = user_types['list'].keys()[0]
 
     else:
-        print "No user types available"
+        print("No user types available")
         sys.exit(1)
 
     if user_types['list'].has_key(user_type_id):
         user_type_info = user_types['list'][user_type_id]['attributes']
     else:
-        print "No such user type"
+        print("No such user type")
         sys.exit(1)
 
     params = {
@@ -304,7 +304,7 @@ def get_user_input():
         params[attribute] = user_type_info['fields'][attribute]
 
     exec("retval = user_form_value_generate(params)")
-    print retval
+    print(retval)
 
     return params
 

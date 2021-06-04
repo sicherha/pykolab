@@ -87,21 +87,21 @@ def list_commands(*args, **kw):
         if __commands[_command].has_key('function'):
             # This is a top-level command
             if not __commands[_command]['description'] == None:
-                print "%-25s - %s" % (_command.replace('_','-'),__commands[_command]['description'])
+                print("%-25s - %s" % (_command.replace('_','-'),__commands[_command]['description']))
             else:
-                print "%-25s" % (_command.replace('_','-'))
+                print("%-25s" % (_command.replace('_','-')))
 
     for _command in _commands:
         if not __commands[_command].has_key('function'):
             # This is a nested command
-            print "\n" + _("Command Group: %s") % (_command) + "\n"
+            print("\n" + _("Command Group: %s") % (_command) + "\n")
             ___commands = __commands[_command].keys()
             ___commands.sort()
             for __command in ___commands:
                 if not __commands[_command][__command]['description'] == None:
-                    print "%-4s%-21s - %s" % ('',__command.replace('_','-'),__commands[_command][__command]['description'])
+                    print("%-4s%-21s - %s" % ('',__command.replace('_','-'),__commands[_command][__command]['description']))
                 else:
-                    print "%-4s%-21s" % ('',__command.replace('_','-'))
+                    print("%-4s%-21s" % ('',__command.replace('_','-')))
 
 def execute(cmd_name, *args, **kw):
     if cmd_name == "":
@@ -197,5 +197,5 @@ def register(cmd_name, func, group=None, description=None, aliases=[]):
 ##
 
 def not_yet_implemented(*args, **kw):
-    print _("Not yet implemented")
+    print(_("Not yet implemented"))
     sys.exit(1)

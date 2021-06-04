@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import cyruslib
 import sys
 import time
@@ -499,18 +501,16 @@ class Cyrus(cyruslib.CYRUS):
                 self.rename(undelete_folder, target_folder)
             else:
                 if not target_server == source_server:
-                    print >> sys.stdout, \
-                        _("Would have transferred %s from %s to %s") % (
+                    print(_("Would have transferred %s from %s to %s") % (
                                 undelete_folder,
                                 source_server,
                                 target_server
-                            )
+                            ), file=sys.stdout)
 
-                print >> sys.stdout, \
-                    _("Would have renamed %s to %s") % (
+                print(_("Would have renamed %s to %s") % (
                             undelete_folder,
                             target_folder
-                        )
+                        ), file=sys.stdout)
 
     def parse_mailfolder(self, mailfolder):
         """

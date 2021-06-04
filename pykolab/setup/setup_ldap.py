@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import ldap
 import ldap.modlist
 import os
@@ -102,7 +104,7 @@ def execute(*args, **kw):
         ask_questions = False
 
     if conf.without_ldap:
-        print >> sys.stderr, _("Skipping setup of LDAP, as specified")
+        print(_("Skipping setup of LDAP, as specified"), file=sys.stderr)
         return
 
     _input = {}
@@ -130,12 +132,12 @@ def execute(*args, **kw):
         return
 
     elif conf.with_ad and conf.with_openldap:
-        print >> sys.stderr, utils.multiline_message(
+        print(utils.multiline_message(
                 _("""
                         You can not configure Kolab to run against OpenLDAP
                         and Active Directory simultaneously.
                     """)
-            )
+            ), file=sys.stderr)
 
         sys.exit(1)
 
@@ -143,7 +145,7 @@ def execute(*args, **kw):
     for path, directories, files in os.walk('/etc/dirsrv/'):
         for direct in directories:
             if direct.startswith('slapd-'):
-                print >> sys.stderr, utils.multiline_message(
+                print(utils.multiline_message(
                         _("""
                                 It seems 389 Directory Server has an existing
                                 instance configured. This setup script does not
@@ -151,20 +153,20 @@ def execute(*args, **kw):
                                 make sure /etc/dirsrv/ and /var/lib/dirsrv/ are
                                 clean so that this setup does not have to worry.
                             """)
-                    )
+                    ), file=sys.stderr)
 
                 sys.exit(1)
 
     _input = {}
 
     if ask_questions:
-        print >> sys.stderr, utils.multiline_message(
+        print(utils.multiline_message(
                 _("""
                         Please supply a password for the LDAP administrator user
                         'admin', used to login to the graphical console of 389
                         Directory server.
                     """)
-            )
+            ), file=sys.stderr)
 
         _input['admin_pass'] = utils.ask_question(
                 _("Administrator password"),
@@ -176,14 +178,14 @@ def execute(*args, **kw):
         if conf.directory_manager_pwd is not None:
             _input['dirmgr_pass'] = conf.directory_manager_pwd
         else:
-            print >> sys.stderr, utils.multiline_message(
+            print(utils.multiline_message(
                 _("""
                         Please supply a password for the LDAP Directory Manager
                         user, which is the administrator user you will be using
                         to at least initially log in to the Web Admin, and that
                         Kolab uses to perform administrative tasks.
                     """)
-            )
+            ), file=sys.stderr)
 
             _input['dirmgr_pass'] = utils.ask_question(
                 _("Directory Manager password"),
@@ -192,13 +194,13 @@ def execute(*args, **kw):
                 confirm=True
             )
 
-        print >> sys.stderr, utils.multiline_message(
+        print(utils.multiline_message(
                 _("""
                         Please choose the system user and group the service
                         should use to run under. These should be existing,
                         unprivileged, local system POSIX accounts with no shell.
                     """)
-            )
+            ), file=sys.stderr)
 
         try:
             pw = pwd.getpwnam("dirsrv")
@@ -241,7 +243,7 @@ def execute(*args, **kw):
     _input['rootdn'] = utils.standard_root_dn(_input['domain'])
 
     if ask_questions:
-        print >> sys.stderr, utils.multiline_message(
+        print(utils.multiline_message(
                 _("""
                         This setup procedure plans to set up Kolab Groupware for
                         the following domain name space. This domain name is
@@ -249,7 +251,7 @@ def execute(*args, **kw):
                         interface. Please confirm this is the appropriate domain
                         name space.
                     """)
-            )
+            ), file=sys.stderr)
 
         answer = utils.ask_confirmation("%s" % (_input['domain']))
 
@@ -260,21 +262,21 @@ def execute(*args, **kw):
                 if not _input['domain'] == None and not _input['domain'] == "":
                     positive_answer = True
                 else:
-                    print >> sys.stderr, utils.multiline_message(
+                    print(utils.multiline_message(
                             _("""
                                     Invalid input. Please try again.
                                 """)
-                        )
+                        ), file=sys.stderr)
 
         _input['nodotdomain'] = _input['domain'].replace('.','_')
         _input['rootdn'] = utils.standard_root_dn(_input['domain'])
 
-        print >> sys.stderr, utils.multiline_message(
+        print(utils.multiline_message(
                 _("""
                         The standard root dn we composed for you follows. Please
                         confirm this is the root dn you wish to use.
                     """)
-            )
+            ), file=sys.stderr)
 
         answer = utils.ask_confirmation("%s" % (_input['rootdn']))
 
@@ -285,11 +287,11 @@ def execute(*args, **kw):
                 if not _input['rootdn'] == None and not _input['rootdn'] == "":
                     positive_answer = True
                 else:
-                    print >> sys.stderr, utils.multiline_message(
+                    print(utils.multiline_message(
                             _("""
                                     Invalid input. Please try again.
                                 """)
-                        )
+                        ), file=sys.stderr)
 
     # TODO: Loudly complain if the fqdn does not resolve back to this system.
 
@@ -344,13 +346,13 @@ ServerAdminPwd = %(admin_pass)s
             '--file=%s' % (filename)
         ]
 
-    print >> sys.stderr, utils.multiline_message(
+    print(utils.multiline_message(
             _("""
                     Setup is now going to set up the 389 Directory Server. This
                     may take a little while (during which period there is no
                     output and no progress indication).
                 """)
-        )
+        ), file=sys.stderr)
 
     log.info(_("Setting up 389 Directory Server"))
 
@@ -363,7 +365,7 @@ ServerAdminPwd = %(admin_pass)s
     (stdoutdata, stderrdata) = setup_389.communicate()
 
     if not setup_389.returncode == 0:
-        print >> sys.stderr, utils.multiline_message(
+        print(utils.multiline_message(
                 _("""
                         An error was detected in the setup procedure for 389
                         Directory Server. This setup will write out stderr and
@@ -371,7 +373,7 @@ ServerAdminPwd = %(admin_pass)s
                         /var/log/kolab/setup.out.log respectively, before it
                         exits.
                     """)
-            )
+            ), file=sys.stderr)
 
         fp = open('/var/log/kolab/setup.error.log', 'w')
         fp.write(stderrdata)
@@ -441,7 +443,7 @@ ServerAdminPwd = %(admin_pass)s
                 "directory server service."))
 
     if ask_questions:
-        print >> sys.stderr, utils.multiline_message(
+        print(utils.multiline_message(
                 _("""
                         Please supply a Cyrus Administrator password. This
                         password is used by Kolab to execute administrative
@@ -449,7 +451,7 @@ ServerAdminPwd = %(admin_pass)s
                         yourself to troubleshoot Cyrus IMAP and/or perform
                         other administrative tasks against Cyrus IMAP directly.
                     """)
-            )
+            ), file=sys.stderr)
 
         _input['cyrus_admin_pass'] = utils.ask_question(
                 _("Cyrus Administrator password"),
@@ -458,14 +460,14 @@ ServerAdminPwd = %(admin_pass)s
                 confirm=True
             )
 
-        print >> sys.stderr, utils.multiline_message(
+        print(utils.multiline_message(
                 _("""
                         Please supply a Kolab Service account password. This
                         account is used by various services such as Postfix,
                         and Roundcube, as anonymous binds to the LDAP server
                         will not be allowed.
                     """)
-            )
+            ), file=sys.stderr)
 
         _input['kolab_service_pass'] = utils.ask_question(
                 _("Kolab Service password"),

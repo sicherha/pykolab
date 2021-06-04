@@ -18,8 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# Requires python >= 2.3
+# Requires python >= 2.6
 #
+
+from __future__ import print_function
 
 __version__ = '0.8.5'
 __all__ = [ 'CYRUS' ]
@@ -36,7 +38,7 @@ try:
     import re
     from binascii import b2a_base64
 except ImportError, e:
-    print e
+    print(e)
     exit(1)
 
 Commands = {
@@ -342,7 +344,7 @@ class CYRUS:
 
     def __verbose(self, msg):
         if self.VERBOSE:
-            print >> self.LOGFD, msg
+            print(msg, file=self.LOGFD)
 
     def __doexception(self, function, msg=None, *args):
         if msg is None:

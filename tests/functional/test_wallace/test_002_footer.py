@@ -276,7 +276,7 @@ class TestWallaceFooter(unittest.TestCase):
 
         script_str = script.__str__()
 
-        print script_str
+        print(script_str)
 
         sieveclient.putscript("test_wallace_test_009_forward", script_str)
 

@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import sys
 
 import commands
@@ -91,7 +93,7 @@ def execute(*args, **kw):
         imap.connect(domain=domain)
 
     if not imap.has_folder(folder):
-        print >> sys.stderr, _("No such folder %r") % (folder)
+        print(_("No such folder %r") % (folder), file=sys.stderr)
 
     else:
         folders = imap.lm(imap_utf7.encode(folder))

@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import sys
 
 import commands
@@ -41,7 +43,7 @@ def execute(*args, **kw):
     """
 
     if len(conf.cli_args) < 1:
-        print >> sys.stderr, _("No mailbox specified")
+        print(_("No mailbox specified"), file=sys.stderr)
         sys.exit(1)
 
     imap = IMAP()
@@ -54,12 +56,12 @@ def execute(*args, **kw):
         folders = imap.list_folders(folder)
 
         if len(folders) < 1:
-            print >> sys.stderr, _("No such folder(s): %s") % (folder)
+            print(_("No such folder(s): %s") % (folder), file=sys.stderr)
 
         delete_folders.extend(folders)
 
     if len(delete_folders) == 0:
-        print >> sys.stderr, _("No folders to delete.")
+        print(_("No folders to delete."), file=sys.stderr)
         sys.exit(1)
 
     for delete_folder in delete_folders:

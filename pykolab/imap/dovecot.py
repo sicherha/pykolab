@@ -37,6 +37,8 @@
 # are using need.
 # -----
 
+from __future__ import print_function
+
 import cyruslib
 import imaplib
 import sys
@@ -240,7 +242,7 @@ class Dovecot(cyruslib.CYRUS):
 
     def __verbose(self, msg):
         if self.VERBOSE:
-            print >> self.LOGFD, msg
+            print(msg, file=self.LOGFD)
 
     def connect(self, uri):
         """
@@ -521,9 +523,9 @@ class Dovecot(cyruslib.CYRUS):
                 self.rename(undelete_folder,target_folder)
             else:
                 if not target_server == self.server:
-                    print >> sys.stdout, _("Would have transfered %s from %s to %s") % (undelete_folder, self.server, target_server)
+                    print(_("Would have transfered %s from %s to %s") % (undelete_folder, self.server, target_server), file=sys.stdout)
 
-                print >> sys.stdout, _("Would have renamed %s to %s") % (undelete_folder, target_folder)
+                print(_("Would have renamed %s to %s") % (undelete_folder, target_folder), file=sys.stdout)
 
     def parse_mailfolder(self, mailfolder):
         """

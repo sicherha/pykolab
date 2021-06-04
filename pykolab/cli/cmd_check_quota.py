@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import sys
 
 import commands
@@ -81,7 +83,7 @@ def execute(*args, **kw):
             user_dn = domain_auth.find_recipient(login)
 
             if user_dn == None:
-                print >> sys.stderr, _("No such user %s") % (login)
+                print(_("No such user %s") % (login), file=sys.stderr)
                 continue
 
             if len(login.split('@')) > 1:
@@ -95,14 +97,14 @@ def execute(*args, **kw):
                 user_quota = None
 
             if user_quota == None:
-                print >> sys.stderr, _("No quota for user %s") % (login)
+                print(_("No quota for user %s") % (login), file=sys.stderr)
                 continue
 
             try:
                 (used, quota) = imap.get_quota(folder)
 
                 if not (int)(quota) == (int)(user_quota):
-                    print >> sys.stderr, _("user quota does not match for %s (IMAP: %d, LDAP: %d)") % (login, (int)(quota), (int)(user_quota))
+                    print(_("user quota does not match for %s (IMAP: %d, LDAP: %d)") % (login, (int)(quota), (int)(user_quota)), file=sys.stderr)
                 
             except:
                 pass

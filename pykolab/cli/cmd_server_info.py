@@ -55,4 +55,4 @@ def execute(*args, **kw):
     else:
         imap.connect()
 
-    print imap.get_metadata("")
+    print(imap.get_metadata(""))

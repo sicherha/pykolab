@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import sys
 
 import commands
@@ -49,9 +51,9 @@ def execute(*args, **kw):
             except IndexError, errmsg:
                 partition = None
         except IndexError, errmsg:
-            print >> sys.stderr, _("No target mailbox name specified")
+            print(_("No target mailbox name specified"), file=sys.stderr)
     except IndexError, errmsg:
-        print >> sys.stderr, _("No source mailbox name specified")
+        print(_("No source mailbox name specified"), file=sys.stderr)
         sys.exit(1)
 
     if len(source_folder.split('@')) > 1:
@@ -63,11 +65,11 @@ def execute(*args, **kw):
     imap.connect(domain=domain)
 
     if not imap.has_folder(source_folder):
-        print >> sys.stderr, _("Source folder %r does not exist") % (source_folder)
+        print(_("Source folder %r does not exist") % (source_folder), file=sys.stderr)
         sys.exit(1)
 
     if imap.has_folder(target_folder) and partition == None:
-        print >> sys.stderr, _("Target folder %r already exists") % (target_folder)
+        print(_("Target folder %r already exists") % (target_folder), file=sys.stderr)
         sys.exit(1)
 
     imap.imap.rename(imap.folder_utf7(source_folder), imap.folder_utf7(target_folder), partition)

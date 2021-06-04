@@ -18,6 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import logging
 import os
 import sys
@@ -31,8 +33,8 @@ from pykolab.cli import Cli
 try:
     import pykolab.logger
 except ImportError, e:
-    print >> sys.stderr, _("Cannot load pykolab/logger.py:")
-    print >> sys.stderr, "%s" % e
+    print(_("Cannot load pykolab/logger.py:"), file=sys.stderr)
+    print("%s" % e, file=sys.stderr)
     sys.exit(1)
 
 if __name__ == "__main__":

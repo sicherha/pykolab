@@ -75,10 +75,10 @@ def execute(*args, **kw):
         for secondary in secondaries:
             folders.extend(imap.lm("user/%%@%s" % (secondary)))
 
-    print "Deleted folders:"
+    print("Deleted folders:")
 
     for folder in folders:
         if not conf.raw:
-            print imap_utf7.decode(folder)
+            print(imap_utf7.decode(folder))
         else:
-            print folder
+            print(folder)

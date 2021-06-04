@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import commands
 
 import pykolab
@@ -115,8 +117,8 @@ def execute(*args, **kw):
                 stdout=subprocess.PIPE
             ).communicate()[0]
 
-        print >> sys.stderr, _("ZIP file at %s.zip") % (user)
+        print(_("ZIP file at %s.zip") % (user), file=sys.stderr)
     else:
-        print >> sys.stderr, _("No directories found for user %s") % (user)
+        print(_("No directories found for user %s") % (user), file=sys.stderr)
         sys.exit(1)
 

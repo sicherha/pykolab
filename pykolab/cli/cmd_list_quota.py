@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import sys
 
 import commands
@@ -67,36 +69,36 @@ def execute(*args, **kw):
     for quota_folder in quota_folders:
         try:
             (used, quota) = imap.get_quota(quota_folder)
-            print "Folder: %s" % (quota_folder)
+            print("Folder: %s" % (quota_folder))
             if not used == None and not quota == None:
                 if quota == 0:
-                    print >> sys.stderr, _("The quota for folder %s is set to literally allow 0KB of storage.") % (quota_folder)
-                    print "%d (Used: %d, Percentage: %s)" % (quota, used, u'\u221E')
+                    print(_("The quota for folder %s is set to literally allow 0KB of storage.") % (quota_folder), file=sys.stderr)
+                    print("%d (Used: %d, Percentage: %s)" % (quota, used, u'\u221E'))
                 else:
                     percentage = round(((float)(used)/(float)(quota)) * 100.0, 1)
-                    print "%d (Used: %d, Percentage: %d)" % (quota, used, percentage)
+                    print("%d (Used: %d, Percentage: %d)" % (quota, used, percentage))
             else:
                 if used == None:
-                    print "%d (Used: %d, Percentage: %d)" % (quota, 0, 0)
+                    print("%d (Used: %d, Percentage: %d)" % (quota, 0, 0))
                 else:
-                    print "No quota"
+                    print("No quota")
         except:
             try:
                 (quota_root, used, quota) = imap.get_quota_root(quota_folder)
-                print "Folder: %s" % (quota_folder)
+                print("Folder: %s" % (quota_folder))
                 if not quota_root == None and not used == None and not quota == None:
                     if quota == 0:
-                        print >> sys.stderr, _("The quota for folder %s is set to literally allow 0KB of storage.") % (quota_folder)
-                        print "%d (Used: %d, Percentage: %d)" % (quota, used, u'\u221E')
+                        print(_("The quota for folder %s is set to literally allow 0KB of storage.") % (quota_folder), file=sys.stderr)
+                        print("%d (Used: %d, Percentage: %d)" % (quota, used, u'\u221E'))
                     else:
                         percentage = round(((float)(used)/(float)(quota)) * 100.0, 1)
-                        print "%d (Root: %s, Used: %d, Percentage: %d)" % (quota, quota_root, used, percentage)
+                        print("%d (Root: %s, Used: %d, Percentage: %d)" % (quota, quota_root, used, percentage))
                 else:
                     if used == None and not quota_root == None:
-                        print "%d (Root: %s, Used: %d, Percentage: %d)" % (quota, quota_root, 0, 0)
+                        print("%d (Root: %s, Used: %d, Percentage: %d)" % (quota, quota_root, 0, 0))
                     else:
-                        print "No quota"
+                        print("No quota")
             except:
-                print "Folder: %s" % (quota_folder)
-                print "No quota root"
+                print("Folder: %s" % (quota_folder))
+                print("No quota root")
 

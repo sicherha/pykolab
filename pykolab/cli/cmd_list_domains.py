@@ -38,15 +38,15 @@ def execute(*args, **kw):
 
     dna = conf.get('ldap', 'domain_name_attribute')
 
-    print "%-39s %-40s" % ("Primary Domain Name Space","Secondary Domain Name Space(s)")
+    print("%-39s %-40s" % ("Primary Domain Name Space","Secondary Domain Name Space(s)"))
 
     # TODO: Take a hint in --quiet, and otherwise print out a nice table
     # with headers and such.
     if isinstance(domains['list'], dict):
         for domain_dn in domains['list'].keys():
             if isinstance(domains['list'][domain_dn][dna], list):
-                print domains['list'][domain_dn][dna][0]
+                print(domains['list'][domain_dn][dna][0])
                 for domain_alias in domains['list'][domain_dn][dna][1:]:
-                    print "%-39s %-40s" % ('', domain_alias)
+                    print("%-39s %-40s" % ('', domain_alias))
             else:
-                print domains['list'][domain_dn][dna]
+                print(domains['list'][domain_dn][dna])

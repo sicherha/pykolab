@@ -36,4 +36,4 @@ def execute(*args, **kw):
     wap_client.authenticate(username=conf.get("ldap", "bind_dn"), password=conf.get("ldap", "bind_pw"))
 
     users = wap_client.users_list()
-    print '\n'.join(users['list'].keys())
+    print('\n'.join(users['list'].keys()))

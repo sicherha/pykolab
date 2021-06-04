@@ -138,5 +138,5 @@ class TestWallacePerformance(unittest.TestCase):
         res = module_resources.read_resource_calendar(self.room1, [itip])
         self.assertEqual(res, num)
 
-        print "\nREAD TIME:", time.time() - start
-        print "CONFLICTS:", self.room1['conflicting_events']
+        print("\nREAD TIME:", time.time() - start)
+        print("CONFLICTS:", self.room1['conflicting_events'])

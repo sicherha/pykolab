@@ -38,13 +38,13 @@ def execute(*args, **kw):
     system_capabilities = wap_client.system_capabilities()
 
     if system_capabilities['count'] < 1:
-        print "No system capabilities"
+        print("No system capabilities")
         sys.exit(1)
 
     for domain in system_capabilities['list'].keys():
-        print "Domain capabilities for %s" % (domain)
+        print("Domain capabilities for %s" % (domain))
 
         domain_capabilities = system_capabilities['list'][domain]
 
         for service in domain_capabilities['actions'].keys():
-            print "  %-15s - %r" % (service, domain_capabilities['actions'][service]['type'])
+            print("  %-15s - %r" % (service, domain_capabilities['actions'][service]['type']))

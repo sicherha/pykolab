@@ -57,10 +57,10 @@ def execute(*args, **kw):
 
     folders = []
     for domain in domains.keys():
-        print "%s: %d" % (domain,len(imap.lm("user/%%@%s" % (domain))))
+        print("%s: %d" % (domain,len(imap.lm("user/%%@%s" % (domain)))))
 
     null_realm = len(imap.lm("user/%%"))
 
     if null_realm > 0:
-        print "null: %d" % (null_realm)
+        print("null: %d" % (null_realm))
 

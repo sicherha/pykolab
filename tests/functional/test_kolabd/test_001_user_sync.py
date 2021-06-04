@@ -104,7 +104,7 @@ class TestKolabDaemon(unittest.TestCase):
 
         for folder in folders:
             metadata = imap.get_metadata(folder)
-            print metadata
+            print(metadata)
 
             folder_name = '/'.join(folder.split('/')[2:]).split('@')[0]
             if folder_name in ac_folders:

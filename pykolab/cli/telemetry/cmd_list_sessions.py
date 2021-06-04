@@ -55,9 +55,9 @@ def execute(*args, **kw):
                     id=session.user_id
                 ).first()
 
-        print _("Session for user %s started at %s with ID %s") % (
+        print(_("Session for user %s started at %s with ID %s") % (
                 user.sasl_username,
                 session.start,
                 session.id
-            )
+            ))
 
