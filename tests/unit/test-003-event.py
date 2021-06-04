@@ -460,7 +460,7 @@ class TestEventXML(unittest.TestCase):
         self.assertIsInstance(_tz.tzinfo, datetime.tzinfo)
 
     def test_016_start_with_timezone(self):
-        _start = datetime.datetime(2012, 05, 23, 11, 58, 00, tzinfo=pytz.timezone("Europe/Zurich"))
+        _start = datetime.datetime(2012, 5, 23, 11, 58, 00, tzinfo=pytz.timezone("Europe/Zurich"))
         _start_utc = _start.astimezone(pytz.utc)
         # self.assertEqual(_start.__str__(), "2012-05-23 11:58:00+01:00")
         # self.assertEqual(_start_utc.__str__(), "2012-05-23 10:58:00+00:00")
@@ -469,7 +469,7 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(_start.tzinfo, pytz.timezone("Europe/Zurich"))
 
     def test_017_allday_without_timezone(self):
-        _start = datetime.date(2012, 05, 23)
+        _start = datetime.date(2012, 5, 23)
         self.assertEqual(_start.__str__(), "2012-05-23")
         self.event.set_start(_start)
         self.assertEqual(hasattr(_start, 'tzinfo'), False)
@@ -553,12 +553,12 @@ END:VEVENT
 
     def test_019_as_string_itip(self):
         self.event.set_summary("test")
-        self.event.set_start(datetime.datetime(2014, 05, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
-        self.event.set_end(datetime.datetime(2014, 05, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
+        self.event.set_start(datetime.datetime(2014, 5, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
+        self.event.set_end(datetime.datetime(2014, 5, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
         self.event.set_sequence(3)
         self.event.set_classification('CONFIDENTIAL')
         self.event.add_custom_property('X-Custom', 'check')
-        self.event.set_recurrence_id(datetime.datetime(2014, 05, 23, 11, 0, 0), True)
+        self.event.set_recurrence_id(datetime.datetime(2014, 5, 23, 11, 0, 0), True)
 
         rrule = RecurrenceRule()
         rrule.set_frequency(kolabformat.RecurrenceRule.Weekly)
@@ -592,8 +592,8 @@ END:VEVENT
     def test_019_to_message_itip(self):
         self.event = Event()
         self.event.set_summary("test")
-        self.event.set_start(datetime.datetime(2014, 05, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
-        self.event.set_end(datetime.datetime(2014, 05, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
+        self.event.set_start(datetime.datetime(2014, 5, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
+        self.event.set_end(datetime.datetime(2014, 5, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
         self.event.set_organizer("me@kolab.org")
         self.event.add_attendee("john@doe.org")
         self.event.add_attendee("jane@doe.org")
@@ -742,17 +742,17 @@ END:VEVENT
 
     def test_021_ical_exceptions(self):
         self.event.set_summary("test")
-        self.event.set_start(datetime.datetime(2014, 05, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
-        self.event.set_end(datetime.datetime(2014, 05, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
+        self.event.set_start(datetime.datetime(2014, 5, 23, 11, 00, 00, tzinfo=pytz.timezone("Europe/London")))
+        self.event.set_end(datetime.datetime(2014, 5, 23, 12, 30, 00, tzinfo=pytz.timezone("Europe/London")))
 
         rrule = kolabformat.RecurrenceRule()
         rrule.setFrequency(kolabformat.RecurrenceRule.Weekly)
         self.event.set_recurrence(rrule)
 
         xmlexception = Event(from_string=str(self.event))
-        xmlexception.set_start(datetime.datetime(2014, 05, 30, 14, 00, 00, tzinfo=pytz.timezone("Europe/London")))
-        xmlexception.set_end(datetime.datetime(2014, 05, 30, 16, 00, 00, tzinfo=pytz.timezone("Europe/London")))
-        xmlexception.set_recurrence_id(datetime.datetime(2014, 05, 30, 11, 0, 0), False)
+        xmlexception.set_start(datetime.datetime(2014, 5, 30, 14, 00, 00, tzinfo=pytz.timezone("Europe/London")))
+        xmlexception.set_end(datetime.datetime(2014, 5, 30, 16, 00, 00, tzinfo=pytz.timezone("Europe/London")))
+        xmlexception.set_recurrence_id(datetime.datetime(2014, 5, 30, 11, 0, 0), False)
         self.event.add_exception(xmlexception)
 
         ical = icalendar.Calendar.from_ical(self.event.as_string_itip())
