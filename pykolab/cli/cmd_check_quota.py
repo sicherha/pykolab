@@ -72,7 +72,7 @@ def execute(*args, **kw):
     domains = auth.list_domains()
 
     folders = []
-    for domain in domains.keys():
+    for domain in domains:
         folders = imap.lm("user/%%@%s" % (domain))
 
         domain_auth = Auth(domain=domain)

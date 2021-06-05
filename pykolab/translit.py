@@ -110,8 +110,8 @@ def transliterate(_input, lang, _output_expected=None):
             if translit_map.has_key(_translit_name):
                 if translit_map[_translit_name].has_key(char):
                     _output += translit_map[_translit_name][char]
-                elif char in [repr(x) for x in translit_map[_translit_name].keys()]:
-                    _output += translit_map[_translit_name][[char in [raw(x) for x in translit_map[_translit_name].keys()]][0]]
+                elif char in [repr(x) for x in translit_map[_translit_name]]:
+                    _output += translit_map[_translit_name][[char in [raw(x) for x in translit_map[_translit_name]]][0]]
                 else:
                     _output += char
             else:
@@ -121,8 +121,8 @@ def transliterate(_input, lang, _output_expected=None):
             if translit_map.has_key(_translit_name):
                 if translit_map[_translit_name].has_key(char):
                     _output += translit_map[_translit_name][char]
-                elif char in [repr(x) for x in translit_map[_translit_name].keys()]:
-                    _output += translit_map[_translit_name][[char in [raw(x) for x in translit_map[_translit_name].keys()]][0]]
+                elif char in [repr(x) for x in translit_map[_translit_name]]:
+                    _output += translit_map[_translit_name][[char in [raw(x) for x in translit_map[_translit_name]]][0]]
                 else:
                     _output += char
             else:

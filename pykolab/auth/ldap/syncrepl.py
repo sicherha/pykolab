@@ -71,7 +71,7 @@ class DNSync(ldap.ldapobject.LDAPObject,ldap.syncrepl.SyncreplConsumer):
         if uuids is None:
             if refreshDeletes is False:
                 nonpresent = []
-                for uuid in self.__db.keys():
+                for uuid in self.__db:
                     if uuid == 'cookie': continue
                     if uuid in self.__presentUUIDs: continue
                     nonpresent.append(uuid)

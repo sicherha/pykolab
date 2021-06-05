@@ -83,13 +83,13 @@ def handler(*args, **kw):
         new = utils.normalize(args[1])
         old = utils.normalize(args[2])
 
-        if isinstance(old, dict) and len(old.keys()) > 0:
+        if isinstance(old, dict) and len(old) > 0:
             # Two options:
             # - entry changed
             # - entry deleted
             log.info("user %r, old is dict" % (dn))
 
-            if isinstance(new, dict) and len(new.keys()) > 0:
+            if isinstance(new, dict) and len(new) > 0:
                 log.info("Modify entry %r" % (dn))
 
                 mailserver_attribute = conf.get('ldap', 'mailserver_attribute').lower()
@@ -160,7 +160,7 @@ def handler(*args, **kw):
                             entry=old
                         )
 
-        elif isinstance(new, dict) and len(new.keys()) > 0:
+        elif isinstance(new, dict) and len(new) > 0:
             # Old is not a dict (or empty), so the entry is just created
             log.info("Add entry %r" % (dn))
 

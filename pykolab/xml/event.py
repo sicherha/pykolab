@@ -551,28 +551,28 @@ class Event(object):
             delegators = attendee.get_delegated_from()
             delegatees = attendee.get_delegated_to()
 
-            if rsvp in attendee.rsvp_map.keys():
+            if rsvp in attendee.rsvp_map:
                 _rsvp = rsvp
             elif rsvp in attendee.rsvp_map.values():
                 _rsvp = [k for k, v in attendee.rsvp_map.iteritems() if v == rsvp][0]
             else:
                 _rsvp = None
 
-            if role in attendee.role_map.keys():
+            if role in attendee.role_map:
                 _role = role
             elif role in attendee.role_map.values():
                 _role = [k for k, v in attendee.role_map.iteritems() if v == role][0]
             else:
                 _role = None
 
-            if partstat in attendee.participant_status_map.keys():
+            if partstat in attendee.participant_status_map:
                 _partstat = partstat
             elif partstat in attendee.participant_status_map.values():
                 _partstat = [k for k, v in attendee.participant_status_map.iteritems() if v == partstat][0]
             else:
                 _partstat = None
 
-            if cutype in attendee.cutype_map.keys():
+            if cutype in attendee.cutype_map:
                 _cutype = cutype
             elif cutype in attendee.cutype_map.values():
                 _cutype = [k for k, v in attendee.cutype_map.iteritems() if v == cutype][0]
@@ -608,7 +608,7 @@ class Event(object):
     def get_ical_attendee_participant_status(self, attendee):
         attendee = self.get_attendee(attendee)
 
-        if attendee.get_participant_status() in attendee.participant_status_map.keys():
+        if attendee.get_participant_status() in attendee.participant_status_map:
             return attendee.get_participant_status()
         elif attendee.get_participant_status() in attendee.participant_status_map.values():
             return [k for k, v in attendee.participant_status_map.iteritems() if v == attendee.get_participant_status()][0]
@@ -652,7 +652,7 @@ class Event(object):
     def get_ical_status(self):
         status = self.event.status()
 
-        if status in self.status_map.keys():
+        if status in self.status_map:
             return status
 
         return self._translate_value(status, self.status_map) if status else None
@@ -814,7 +814,7 @@ class Event(object):
         self.event.setAttendees(self._attendees)
 
     def set_classification(self, classification):
-        if classification in self.classification_map.keys():
+        if classification in self.classification_map:
             self.event.setClassification(self.classification_map[classification])
         elif classification in self.classification_map.values():
             self.event.setClassification(classification)
@@ -1065,7 +1065,7 @@ class Event(object):
         self.event.setStart(xmlutils.to_cdatetime(_datetime, True))
 
     def set_status(self, status):
-        if status in self.status_map.keys():
+        if status in self.status_map:
             self.event.setStatus(self.status_map[status])
         elif status in self.status_map.values():
             self.event.setStatus(status)

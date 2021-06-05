@@ -175,7 +175,7 @@ class RecurrenceRule(kolabformat.RecurrenceRule):
     def _set_map_value(self, val, pmap, setter):
         if isinstance(val, list):
             val = val[0]
-        if val in pmap.keys():
+        if val in pmap:
             getattr(self, setter)(pmap[val])
         elif val in pmap.values():
             getattr(self, setter)(val)

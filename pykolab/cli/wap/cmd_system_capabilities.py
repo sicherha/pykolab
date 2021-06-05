@@ -41,10 +41,10 @@ def execute(*args, **kw):
         print("No system capabilities")
         sys.exit(1)
 
-    for domain in system_capabilities['list'].keys():
+    for domain in system_capabilities['list']:
         print("Domain capabilities for %s" % (domain))
 
         domain_capabilities = system_capabilities['list'][domain]
 
-        for service in domain_capabilities['actions'].keys():
+        for service in domain_capabilities['actions']:
             print("  %-15s - %r" % (service, domain_capabilities['actions'][service]['type']))

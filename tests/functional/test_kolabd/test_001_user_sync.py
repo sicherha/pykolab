@@ -89,7 +89,7 @@ class TestKolabDaemon(unittest.TestCase):
 
         folders = imap.lm('user/%(local)s/*@%(domain)s' % (self.user))
 
-        self.assertEqual(len(folders), len(ac_folders.keys()))
+        self.assertEqual(len(folders), len(ac_folders))
 
     def test_005_user_folders_metadata_set(self):
         imap = IMAP()
@@ -109,7 +109,7 @@ class TestKolabDaemon(unittest.TestCase):
             folder_name = '/'.join(folder.split('/')[2:]).split('@')[0]
             if folder_name in ac_folders:
                 if 'annotations' in ac_folders[folder_name]:
-                    for _annotation in ac_folders[folder_name]['annotations'].keys():
+                    for _annotation in ac_folders[folder_name]['annotations']:
                         if _annotation.startswith('/private'):
                             continue
 

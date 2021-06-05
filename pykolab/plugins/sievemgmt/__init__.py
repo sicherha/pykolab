@@ -47,7 +47,7 @@ class KolabSievemgmt(object):
 
             user - the user identifier
         """
-        if not len(kw.keys()) == 1 or not kw.has_key('user'):
+        if not len(kw) == 1 or not kw.has_key('user'):
             log.error(_("Wrong number of arguments for sieve management plugin"))
             return
         else:

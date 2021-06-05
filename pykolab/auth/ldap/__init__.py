@@ -820,7 +820,7 @@ class LDAP(Base):
             List alias domain name spaces for the current domain name space.
         """
         if self.domains is not None:
-            return [s for s in self.domains.keys() if s not in self.domains.values()]
+            return [s for s in self.domains if s not in self.domains.values()]
 
         return []
 
@@ -923,7 +923,7 @@ class LDAP(Base):
 
             attributes = self.get_entry_attributes(entry_dn, want_attrs)
 
-            for attribute in attributes.keys():
+            for attribute in attributes:
                 entry[attribute] = attributes[attribute]
 
         if 'preferredlanguage' not in entry:
@@ -1259,7 +1259,7 @@ class LDAP(Base):
 
         attrs = {}
 
-        for attribute in attributes.keys():
+        for attribute in attributes:
             attrs[attribute.lower()] = attributes[attribute]
 
         modlist = []
@@ -2283,7 +2283,7 @@ class LDAP(Base):
                     entry_changes[result_attribute]
                 )
 
-        for key in entry_changes.keys():
+        for key in entry_changes:
             entry[key] = entry_changes[key]
             self.set_entry_attribute(entry, key, entry[key])
 
@@ -2780,7 +2780,7 @@ class LDAP(Base):
 
                 entry = {'dn': entry_dn}
                 entry_attrs = utils.normalize(entry_attrs)
-                for attr in entry_attrs.keys():
+                for attr in entry_attrs:
                     entry[attr.lower()] = entry_attrs[attr]
 
                 # Ignore nstombstone objects
@@ -2806,7 +2806,7 @@ class LDAP(Base):
 #
 #                log.debug(_l("Recipient Addresses: %r") % (rcpt_addrs), level=8)
 #
-#                for key in rcpt_addrs.keys():
+#                for key in rcpt_addrs:
 #                    entry[key] = rcpt_addrs[key]
 #
 #                cache.get_entry(self.domain, entry)
@@ -3135,7 +3135,7 @@ class LDAP(Base):
                 )
 
         if len(self.ldap.supported_controls) < 1:
-            for control_num in SUPPORTED_LDAP_CONTROLS.keys():
+            for control_num in SUPPORTED_LDAP_CONTROLS:
                 log.debug(
                     _l("Checking for support for %s on %s") % (
                         SUPPORTED_LDAP_CONTROLS[control_num]['desc'],
@@ -3152,7 +3152,7 @@ class LDAP(Base):
 
             for (_result, _supported_controls) in _search:
                 supported_controls = _supported_controls.values()[0]
-                for control_num in SUPPORTED_LDAP_CONTROLS.keys():
+                for control_num in SUPPORTED_LDAP_CONTROLS:
                     if SUPPORTED_LDAP_CONTROLS[control_num]['oid'] in \
                             supported_controls:
 

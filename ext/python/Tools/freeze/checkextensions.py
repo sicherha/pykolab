@@ -28,7 +28,7 @@ def checkextensions(unknown, extensions):
                 if liba in files:
                     break
                 files.append(liba)
-                for m in mods.keys():
+                for m in mods:
                     files = files + select(e, mods, vars,
                                            m, 1)
                 break

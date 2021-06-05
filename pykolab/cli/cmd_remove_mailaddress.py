@@ -74,7 +74,7 @@ def execute(*args, **kw):
         attributes = auth.get_entry_attributes(domain, recipient, mail_attributes)
 
         # See which attribute holds the value we're trying to remove
-        for attribute in attributes.keys():
+        for attribute in attributes:
             if isinstance(attributes[attribute], list):
                 if email_address in attributes[attribute]:
                     attributes[attribute].pop(attributes[attribute].index(email_address))

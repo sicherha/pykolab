@@ -51,7 +51,7 @@ class TestUserAdd(unittest.TestCase):
         print(folders)
         print(ac_folders.keys())
 
-        self.assertEqual(len(folders), len(ac_folders.keys()))
+        self.assertEqual(len(folders), len(ac_folders))
 
     def test_003_folders_metadata_set(self):
         imap = IMAP()

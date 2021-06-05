@@ -70,7 +70,7 @@ class IMAP(object):
 
                 # For each ACL entry, see if we think it is a current, valid
                 # entry
-                for acl_entry in acls.keys():
+                for acl_entry in acls:
                     # If the key 'acl_entry' does not exist in the dictionary
                     # of valid ACL entries, this ACL entry has got to go.
                     if acl_entry == aci_subject:
@@ -243,7 +243,7 @@ class IMAP(object):
                 del self.imap
 
             # Empty out self._imap as well
-            for key in self._imap.keys():
+            for key in self._imap:
                 del self._imap[key]
 
         else:
@@ -410,7 +410,7 @@ class IMAP(object):
                 acl_map[mode] += char
 
             current_acls = self.imap.lam(self.folder_utf7(folder))
-            for current_acl in current_acls.keys():
+            for current_acl in current_acls:
                 if current_acl == identifier:
                     _acl = current_acls[current_acl]
                     break
@@ -568,7 +568,7 @@ class IMAP(object):
 
                 auth.disconnect()
 
-                if len(domains.keys()) > 0:
+                if len(domains) > 0:
                     if self.domain in domains:
                         primary = domains[self.domain]
 
@@ -650,7 +650,7 @@ class IMAP(object):
 
                 time.sleep(0.5)
 
-        for additional_folder in additional_folders.keys():
+        for additional_folder in additional_folders:
             _add_folder = {}
 
             folder_name = additional_folder
@@ -667,7 +667,7 @@ class IMAP(object):
                 continue
 
             if "annotations" in additional_folders[additional_folder]:
-                for annotation in additional_folders[additional_folder]["annotations"].keys():
+                for annotation in additional_folders[additional_folder]["annotations"]:
                     self.set_metadata(
                             folder_name,
                             "%s" % (annotation),
@@ -675,7 +675,7 @@ class IMAP(object):
                         )
 
             if "acls" in additional_folders[additional_folder]:
-                for acl in additional_folders[additional_folder]["acls"].keys():
+                for acl in additional_folders[additional_folder]["acls"]:
                     self.set_acl(
                             folder_name,
                             "%s" % (acl),
@@ -740,7 +740,7 @@ class IMAP(object):
         self.logout()
         self.connect(domain=self.domain)
 
-        for additional_folder in additional_folders.keys():
+        for additional_folder in additional_folders:
             if additional_folder.startswith(personal) and not personal == '':
                 folder_name = additional_folder.replace(personal, '')
             else:

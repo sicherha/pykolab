@@ -316,7 +316,7 @@ class KolabDaemon:
             for domain in all_domains:
                 log.debug(_l("Checking for domain %s") % (domain), level=8)
 
-                if domain in domain_auth.keys() and domain in primary_domains:
+                if domain in domain_auth and domain in primary_domains:
                     if not domain_auth[domain].is_alive():
                         log.debug(_l("Domain %s isn't alive anymore.") % (domain), level=8)
                         domain_auth[domain].terminate()
@@ -325,7 +325,7 @@ class KolabDaemon:
                         log.debug(_l("Domain %s already there and alive.") % (domain), level=8)
                         continue
 
-                elif domain in domain_auth.keys():
+                elif domain in domain_auth:
                     log.debug(_l("Domain %s should not exist any longer.") % (domain), level=8)
                     removed_domains.append(domain)
                 else:

@@ -80,10 +80,10 @@ def execute(*args, **kw):
     # Placeholder for subjects that would have already been deleted
     subjects_deleted = []
 
-    for domain in domains.keys():
+    for domain in domains:
         domain_folders[domain] = imap.lm("user/%%@%s" % (domain))
 
-    for domain in domain_folders.keys():
+    for domain in domain_folders:
         auth = Auth(domain=domain)
         auth.connect(domain)
 
@@ -128,7 +128,7 @@ def execute(*args, **kw):
 
         if len(mailbox.split('@')) > 1:
             domain = mailbox.split('@')[1]
-            if not domain in domains.keys() and not domain in imap_domains:
+            if not domain in domains and not domain in imap_domains:
                 imap_domains.append(domain)
 
     for domain in imap_domains:
@@ -162,7 +162,7 @@ def execute(*args, **kw):
         folder = imap_utf7.decode(folder)
         acls = imap.list_acls(folder)
 
-        for subject in acls.keys():
+        for subject in acls:
             if subject == 'anyone':
                 log.info(
                         _("Skipping removal of ACL %s for subject %s on folder %s") % (

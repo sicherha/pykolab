@@ -62,6 +62,6 @@ def execute(*args, **kw):
             print("Folder", folder)
             acls = imap.list_acls(folder)
 
-            for acl in acls.keys():
+            for acl in acls:
                 print("  %-13s %s" %(acls[acl], acl))
 

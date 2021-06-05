@@ -85,7 +85,7 @@ class Conf(object):
         self.defaults = Defaults(self.plugins)
 
         # But, they should be available in our class as well
-        for option in self.defaults.__dict__.keys():
+        for option in self.defaults.__dict__:
             log.debug(
                 _("Setting %s to %r (from defaults)") % (
                     option,
@@ -103,7 +103,7 @@ class Conf(object):
 
         # Also set the cli options
         if hasattr(self, 'cli_keywords') and self.cli_keywords is not None:
-            for option in self.cli_keywords.__dict__.keys():
+            for option in self.cli_keywords.__dict__:
                 retval = False
                 if hasattr(self, "check_setting_%s" % (option)):
                     exec(
@@ -144,14 +144,14 @@ class Conf(object):
             file and checks, then sets everything it can find.
         """
 
-        for section in self.defaults.__dict__.keys():
+        for section in self.defaults.__dict__:
             if section == 'testing':
                 continue
 
             if not config.has_section(section):
                 continue
 
-            for key in self.defaults.__dict__[section].keys():
+            for key in self.defaults.__dict__[section]:
                 retval = False
                 if not config.has_option(section, key):
                     continue
@@ -530,7 +530,7 @@ class Conf(object):
         )
 
     def set_defaults_from_cli_options(self):
-        for long_opt in self.cli_parser.__dict__['_long_opt'].keys():
+        for long_opt in self.cli_parser.__dict__['_long_opt']:
             if long_opt == "--help":
                 continue
 
@@ -541,7 +541,7 @@ class Conf(object):
             )
 
         # But, they should be available in our class as well
-        for option in self.cli_parser.defaults.keys():
+        for option in self.cli_parser.defaults:
             log.debug(
                 _("Setting %s to %r (from the default values for CLI options)") % (
                     option,

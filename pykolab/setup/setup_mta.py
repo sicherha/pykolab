@@ -245,7 +245,7 @@ result_format = "shared+%%s"
     if not os.path.isdir('/etc/postfix/ldap'):
         os.mkdir('/etc/postfix/ldap/', 0o770)
 
-    for filename in files.keys():
+    for filename in files:
         fp = open(filename, 'w')
         fp.write(files[filename])
         fp.close()
@@ -305,7 +305,7 @@ result_format = "shared+%%s"
 
     setting_base = '/files/etc/postfix/main.cf/'
 
-    for setting_key in postfix_main_settings.keys():
+    for setting_key in postfix_main_settings:
         setting = os.path.join(setting_base,setting_key)
         current_value = myaugeas.get(setting)
 

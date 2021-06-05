@@ -184,7 +184,7 @@ class PolicyRequest(object):
 
                 http://www.postfix.org/SMTPD_POLICY_README.html
         """
-        for key in policy_request.keys():
+        for key in policy_request:
 
             # Normalize email addresses (they may contain recipient delimiters)
             if key in self.email_address_keys:
@@ -333,7 +333,7 @@ class PolicyRequest(object):
             # mapping the rule onto a key in "special_rule_values", a
             # dictionary with the corresponding value set to a function to
             # execute.
-            if rule in special_rule_values.keys():
+            if rule in special_rule_values:
                 special_rules = special_rule_values[rule]()
                 if rule.startswith("-"):
                     rules['deny'].extend(special_rules)
@@ -1599,7 +1599,7 @@ def verify_domain(domain):
     global auth, mydomains
 
     if mydomains is not None:
-        return domain in mydomains.keys()
+        return domain in mydomains
 
     auth.connect()
 

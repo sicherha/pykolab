@@ -64,11 +64,11 @@ def execute(*args, **kw):
         secondary_rcpt_domain = conf.get('kolab', 'primary_domain')
 
     # Check if either is in fact a domain
-    if not primary_rcpt_domain.lower() in domains.keys():
+    if not primary_rcpt_domain.lower() in domains:
         print(_("Domain %r is not a local domain") % (primary_rcpt_domain), file=sys.stderr)
         sys.exit(1)
 
-    if not secondary_rcpt_domain.lower() in domains.keys():
+    if not secondary_rcpt_domain.lower() in domains:
         print(_("Domain %r is not a local domain") % (secondary_rcpt_domain), file=sys.stderr)
         sys.exit(1)
 

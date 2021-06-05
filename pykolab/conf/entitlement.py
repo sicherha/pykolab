@@ -192,7 +192,7 @@ class Entitlement(object):
 #            log.error(_("Error reading entitlement certificate authority file"))
 
     def get(self):
-        if len(self.entitlement.keys()) == 0:
+        if len(self.entitlement) == 0:
             return None
         else:
             return self.entitlement

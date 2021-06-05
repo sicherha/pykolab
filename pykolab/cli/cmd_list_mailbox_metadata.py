@@ -90,7 +90,7 @@ def execute(*args, **kw):
             metadata = imap.get_metadata(folder)
 
             if metadata.has_key(folder):
-                for annotation in metadata[folder].keys():
+                for annotation in metadata[folder]:
                     print("  %-49s %s" % (
                             annotation,
                             metadata[folder][annotation]

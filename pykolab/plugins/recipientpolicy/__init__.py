@@ -130,8 +130,8 @@ class KolabRecipientpolicy(object):
                     traceback.print_exc()
                 return []
 
-        for number in alternative_mail_routines.keys():
-            for routine in alternative_mail_routines[number].keys():
+        for number in alternative_mail_routines:
+            for routine in alternative_mail_routines[number]:
                 try:
                     exec("retval = '%s'.%s" % (routine,alternative_mail_routines[number][routine] % user_attrs))
 

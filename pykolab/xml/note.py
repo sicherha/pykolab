@@ -86,7 +86,7 @@ class Note(kolabformat.Note):
         return _class
 
     def set_classification(self, classification):
-        if classification in self.classification_map.keys():
+        if classification in self.classification_map:
             self.setClassification(self.classification_map[classification])
         elif classification in self.classification_map.values():
             self.setClassification(status)

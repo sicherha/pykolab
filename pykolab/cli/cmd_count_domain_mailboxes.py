@@ -56,7 +56,7 @@ def execute(*args, **kw):
     domains = auth.list_domains()
 
     folders = []
-    for domain in domains.keys():
+    for domain in domains:
         print("%s: %d" % (domain,len(imap.lm("user/%%@%s" % (domain)))))
 
     null_realm = len(imap.lm("user/%%"))

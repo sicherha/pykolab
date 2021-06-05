@@ -68,7 +68,7 @@ def list_commands(*args, **kw):
 
     __commands = {}
 
-    for command in commands.keys():
+    for command in commands:
         if isinstance(command, tuple):
             command_group, command = command
             __commands[command_group] = {

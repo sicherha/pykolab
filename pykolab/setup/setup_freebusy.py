@@ -164,12 +164,12 @@ def execute(*args, **kw):
     cfg_parser = RawConfigParser()
     cfg_parser.read('/etc/kolab-freebusy/config.ini')
 
-    for section in freebusy_settings.keys():
-        if len(freebusy_settings[section].keys()) < 1:
+    for section in freebusy_settings:
+        if len(freebusy_settings[section]) < 1:
             cfg_parser.remove_section(section)
             continue
 
-        for key in freebusy_settings[section].keys():
+        for key in freebusy_settings[section]:
             if not cfg_parser.has_section(section):
                 cfg_parser.add_section(section)
 

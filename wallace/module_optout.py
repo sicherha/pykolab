@@ -90,7 +90,7 @@ def execute(*args, **kw):
                 "Cc": []
             }
 
-    for recipient_type in recipients.keys():
+    for recipient_type in recipients:
         for recipient in recipients[recipient_type]:
             log.debug(
                     _("Running opt-out consult from envelope sender '%s " + \
@@ -136,7 +136,7 @@ def execute(*args, **kw):
 
         use_this = False
 
-        for recipient_type in _recipients[answer].keys():
+        for recipient_type in _recipients[answer]:
             _message.__delitem__(recipient_type)
             if not len(_recipients[answer][recipient_type]) == 0:
                 _message.__setitem__(

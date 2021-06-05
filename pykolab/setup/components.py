@@ -64,7 +64,7 @@ def list_components(*args, **kw):
 
     __components = {}
 
-    for component in components.keys():
+    for component in components:
         if isinstance(component, tuple):
             component_group, component = component
             __components[component_group] = {
@@ -104,7 +104,7 @@ def _list_components(*args, **kw):
 
     __components = {}
 
-    for component in components.keys():
+    for component in components:
         if isinstance(component, tuple):
             component_group, component = component
             __components[component_group] = {

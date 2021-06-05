@@ -78,7 +78,7 @@ def list_modules(*args, **kw):
 
     __modules = {}
 
-    for module in modules.keys():
+    for module in modules:
         if isinstance(module, tuple):
             module_group, module = module
             __modules[module_group] = {

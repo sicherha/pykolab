@@ -214,7 +214,7 @@ class Attendee(kolabformat.Attendee):
         return name_map[val] if name_map.has_key(val) else 'UNKNOWN'
 
     def set_cutype(self, cutype):
-        if cutype in self.cutype_map.keys():
+        if cutype in self.cutype_map:
             self.setCutype(self.cutype_map[cutype])
         elif cutype in self.cutype_map.values():
             self.setCutype(cutype)
@@ -226,7 +226,7 @@ class Attendee(kolabformat.Attendee):
         self.setContact(self.contactreference)
 
     def set_participant_status(self, participant_status):
-        if participant_status in self.participant_status_map.keys():
+        if participant_status in self.participant_status_map:
             self.setPartStat(self.participant_status_map[participant_status])
         elif participant_status in self.participant_status_map.values():
             self.setPartStat(participant_status)
@@ -234,7 +234,7 @@ class Attendee(kolabformat.Attendee):
             raise InvalidAttendeeParticipantStatusError(_("Invalid participant status %r") % (participant_status))
 
     def set_role(self, role):
-        if role in self.role_map.keys():
+        if role in self.role_map:
             self.setRole(self.role_map[role])
         elif role in self.role_map.values():
             self.setRole(role)

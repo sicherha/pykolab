@@ -121,7 +121,7 @@ def execute(*args, **kw):
                     log.warning(_("No recipients for '%s' (use --delete to delete)!") % (r_folder))
 
     for primary in list(set(domains.values())):
-        secondaries = [x for x in domains.keys() if domains[x] == primary]
+        secondaries = [x for x in domains if domains[x] == primary]
 
         folders = []
 

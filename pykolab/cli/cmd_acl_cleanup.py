@@ -52,7 +52,7 @@ def execute(*args, **kw):
         acls = imap.list_acls(folder)
 
         if not aci_subject == None:
-            if aci_subject in acls.keys():
+            if aci_subject in acls:
                 log.debug(_("Deleting ACL %s for subject %s on folder %s") % (
                         acls[aci_subject],
                         aci_subject,
@@ -62,7 +62,7 @@ def execute(*args, **kw):
                 imap.set_acl(folder, aci_subject, '')
 
         #else:
-            #for _aci_subject in acls.keys():
+            #for _aci_subject in acls:
                 # connect to auth(!)
                 # find recipient result_attr=aci_subject
                 # if no entry, expire acl

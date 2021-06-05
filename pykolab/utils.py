@@ -198,7 +198,7 @@ def ask_menu(question, options={}, default=''):
 
         str_format = "%%%ds" % max_key_length
 
-        if default == '' or default not in options.keys():
+        if default == '' or default not in options:
             for key in keys:
                 if options[key] == key:
                     print(" - " + key)
@@ -219,10 +219,10 @@ def ask_menu(question, options={}, default=''):
 
             continue
 
-        if answer == '' and default in options.keys():
+        if answer == '' and default in options:
             answer = default
 
-        if answer in [str(x) for x in options.keys()]:
+        if answer in [str(x) for x in options]:
             answer_correct = True
 
     return answer

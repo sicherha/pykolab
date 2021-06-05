@@ -43,7 +43,7 @@ def execute(*args, **kw):
     # TODO: Take a hint in --quiet, and otherwise print out a nice table
     # with headers and such.
     if isinstance(domains['list'], dict):
-        for domain_dn in domains['list'].keys():
+        for domain_dn in domains['list']:
             if isinstance(domains['list'][domain_dn][dna], list):
                 print(domains['list'][domain_dn][dna][0])
                 for domain_alias in domains['list'][domain_dn][dna][1:]:

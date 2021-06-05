@@ -30,7 +30,7 @@ def resource_add(type, cn, members=None, owner=None, **kw):
     type_id = 0
     resource_types = wap_client.resource_types_list()
 
-    for key in resource_types['list'].keys():
+    for key in resource_types['list']:
         if resource_types['list'][key]['key'] == type:
             type_id = key
 
@@ -41,7 +41,7 @@ def resource_add(type, cn, members=None, owner=None, **kw):
 
     params = {}
 
-    for attribute in resource_type_info['form_fields'].keys():
+    for attribute in resource_type_info['form_fields']:
         attr_details = resource_type_info['form_fields'][attribute]
 
         if isinstance(attr_details, dict):
@@ -53,7 +53,7 @@ def resource_add(type, cn, members=None, owner=None, **kw):
     fvg_params = params
     fvg_params['object_type'] = 'resource'
     fvg_params['type_id'] = type_id
-    fvg_params['attributes'] = [attr for attr in resource_type_info['auto_form_fields'].keys() if attr not in params]
+    fvg_params['attributes'] = [attr for attr in resource_type_info['auto_form_fields'] if attr not in params]
 
     result = wap_client.resource_add(params)
     result['dn'] = "cn=" + result['cn'] + ",ou=Resources,dc=example,dc=org"

@@ -77,10 +77,10 @@ def handler(*args, **kw):
         new = utils.normalize(args[1])
         old = utils.normalize(args[2])
 
-        if isinstance(old, dict) and len(old.keys()) > 0:
+        if isinstance(old, dict) and len(old) > 0:
             # Either the entry changed or was deleted
 
-            if isinstance(new, dict) and len(new.keys()) > 0:
+            if isinstance(new, dict) and len(new) > 0:
                 # The entry was modified.
 
                 result_attr = conf.get('cyrus-sasl', 'result_attribute')
@@ -128,7 +128,7 @@ def handler(*args, **kw):
                 # Sieve Script Management
                 return
 
-        elif isinstance(new, dict) and len(new.keys()) > 0:
+        elif isinstance(new, dict) and len(new) > 0:
             # Old is not a dict (or empty), so the entry is just created
 
             # See if the mailserver_attribute exists

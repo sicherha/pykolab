@@ -32,7 +32,7 @@ def user_add(givenname, sn, preferredlanguage='en_US', **kw):
 
     user_types = wap_client.user_types_list()
 
-    for key in user_types['list'].keys():
+    for key in user_types['list']:
         if user_types['list'][key]['key'] == 'kolab':
             user_type_id = key
 
@@ -42,7 +42,7 @@ def user_add(givenname, sn, preferredlanguage='en_US', **kw):
             'user_type_id': user_type_id,
         }
 
-    for attribute in user_type_info['form_fields'].keys():
+    for attribute in user_type_info['form_fields']:
         attr_details = user_type_info['form_fields'][attribute]
 
         if isinstance(attr_details, dict):
@@ -54,6 +54,6 @@ def user_add(givenname, sn, preferredlanguage='en_US', **kw):
     fvg_params = params
     fvg_params['object_type'] = 'user'
     fvg_params['type_id'] = user_type_id
-    fvg_params['attributes'] = [attr for attr in user_type_info['auto_form_fields'].keys() if attr not in params]
+    fvg_params['attributes'] = [attr for attr in user_type_info['auto_form_fields'] if attr not in params]
 
     result = wap_client.user_add(params)

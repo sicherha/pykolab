@@ -708,7 +708,7 @@ def check_availability(itip_events, resource_dns, resources, receiving_attendee=
     num_messages = 0
     available_resource = None
 
-    for resource in resources.keys():
+    for resource in resources:
         # skip this for resource collections
         if 'kolabtargetfolder' not in resources[resource]:
             continue

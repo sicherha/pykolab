@@ -34,7 +34,7 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(self.attendee.get_participant_status(), 0)
 
     def test_005_participant_status_map_length(self):
-        self.assertEqual(len(self.attendee.participant_status_map.keys()), 7)
+        self.assertEqual(len(self.attendee.participant_status_map), 7)
 
     def test_006_participant_status_map_forward_lookup(self):
         # Forward lookups
@@ -60,7 +60,7 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(self.attendee.get_rsvp(), 0)
 
     def test_009_rsvp_map_length(self):
-        self.assertEqual(len(self.attendee.rsvp_map.keys()), 2)
+        self.assertEqual(len(self.attendee.rsvp_map), 2)
 
     def test_010_rsvp_map_forward_lookup_boolean(self):
         self.assertEqual(self.attendee.rsvp_map["TRUE"], True)
@@ -82,7 +82,7 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(self.attendee.get_role(), 0)
 
     def test_015_role_map_length(self):
-        self.assertEqual(len(self.attendee.role_map.keys()), 4)
+        self.assertEqual(len(self.attendee.role_map), 4)
 
     def test_016_role_map_forward_lookup(self):
         self.assertEqual(self.attendee.role_map["REQ-PARTICIPANT"], 0)
@@ -97,7 +97,7 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual([k for k, v in self.attendee.role_map.iteritems() if v == 3][0], "NON-PARTICIPANT")
 
     def test_015_cutype_map_length(self):
-        self.assertEqual(len(self.attendee.cutype_map.keys()), 5)
+        self.assertEqual(len(self.attendee.cutype_map), 5)
 
     def test_016_cutype_map_forward_lookup(self):
         self.assertEqual(self.attendee.cutype_map["GROUP"], kolabformat.CutypeGroup)

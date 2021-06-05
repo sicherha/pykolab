@@ -247,7 +247,7 @@ def compute_diff(a, b, reduced=False):
     diff = []
 
     properties = a.keys()
-    properties.extend([x for x in b.keys() if x not in properties])
+    properties.extend([x for x in b if x not in properties])
 
     for prop in properties:
         aa = a[prop] if a.has_key(prop) else None
@@ -355,7 +355,7 @@ def reduce_properties(aa, bb):
         return (aa, bb)
 
     properties = aa.keys()
-    properties.extend([x for x in bb.keys() if x not in properties])
+    properties.extend([x for x in bb if x not in properties])
 
     for prop in properties:
         if not aa.has_key(prop) or not bb.has_key(prop):

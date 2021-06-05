@@ -188,14 +188,14 @@ def form_value_select_options(object_type, object_type_id, attribute):
 def get_group_input():
     group_types = group_types_list()
 
-    if len(group_types.keys()) > 1:
-        for key in group_types.keys():
+    if len(group_types) > 1:
+        for key in group_types:
             if not key == "status":
                 print("%s) %s" % (key,group_types[key]['name']))
 
         group_type_id = utils.ask_question("Please select the group type")
 
-    elif len(group_types.keys()) > 0:
+    elif len(group_types) > 0:
         print("Automatically selected the only group type available")
         group_type_id = group_types.keys()[0]
 
@@ -213,10 +213,10 @@ def get_group_input():
             'group_type_id': group_type_id
         }
 
-    for attribute in group_type_info['form_fields'].keys():
+    for attribute in group_type_info['form_fields']:
         params[attribute] = utils.ask_question(attribute)
 
-    for attribute in group_type_info['auto_form_fields'].keys():
+    for attribute in group_type_info['auto_form_fields']:
         exec("retval = group_form_value_generate_%s(params)" % (attribute))
         params[attribute] = retval[attribute]
 
@@ -227,7 +227,7 @@ def get_user_input():
 
     if user_types['count'] > 1:
         print("")
-        for key in user_types['list'].keys():
+        for key in user_types['list']:
             if not key == "status":
                 print("%s) %s" % (key,user_types['list'][key]['name']))
 
@@ -256,7 +256,7 @@ def get_user_input():
     must_attrs = []
     may_attrs = []
 
-    for attribute in user_type_info['form_fields'].keys():
+    for attribute in user_type_info['form_fields']:
         if isinstance(user_type_info['form_fields'][attribute], dict):
             if user_type_info['form_fields'][attribute].has_key('optional') and user_type_info['form_fields'][attribute]['optional']:
                 may_attrs.append(attribute)
@@ -300,7 +300,7 @@ def get_user_input():
         else:
             params[attribute] = utils.ask_question(attribute)
 
-    for attribute in user_type_info['fields'].keys():
+    for attribute in user_type_info['fields']:
         params[attribute] = user_type_info['fields'][attribute]
 
     exec("retval = user_form_value_generate(params)")
@@ -591,7 +591,7 @@ def user_edit(user = None, attributes={}):
 
     user_info = request('GET', 'user.info', get=get)
 
-    for attribute in attributes.keys():
+    for attribute in attributes:
         user_info[attribute] = attributes[attribute]
 
     post = json.dumps(user_info)
