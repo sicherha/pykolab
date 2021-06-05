@@ -103,11 +103,11 @@ def execute(*args, **kw):
 
     primary_recipient = auth.get_entry_attributes(primary_rcpt_domain, primary_recipient_dn, rcpt_attrs)
 
-    if not primary_recipient.has_key(primary_rcpt_attr):
+    if primary_rcpt_attr not in primary_recipient:
         print(_("Recipient %r is not the primary recipient for address %r") % (primary_recipient, primary_rcpt_address), file=sys.stderr)
         sys.exit(1)
 
-    if not primary_recipient.has_key(secondary_rcpt_attr):
+    if secondary_rcpt_attr not in primary_recipient:
         auth.set_entry_attributes(primary_rcpt_domain, primary_recipient_dn, {secondary_rcpt_attr: [ secondary_rcpt_address ] })
     else:
         if isinstance(primary_recipient[secondary_rcpt_attr], basestring):

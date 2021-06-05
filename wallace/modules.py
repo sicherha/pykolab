@@ -133,10 +133,10 @@ def execute(name, *args, **kw):
         log.exception(_("Module %r - Unknown error occurred; %r") % (name, errmsg))
 
 def heartbeat(name, *args, **kw):
-    if not modules.has_key(name):
+    if name not in modules:
         log.warning(_("No such module %r in modules %r (1).") % (name, modules))
 
-    if modules[name].has_key('heartbeat'):
+    if 'heartbeat' in modules[name]:
         return modules[name]['heartbeat'](*args, **kw)
 
 def _sendmail(sender, recipients, msg):
@@ -426,7 +426,7 @@ def register(name, func, group=None, description=None, aliases=[], heartbeat=Non
     if isinstance(aliases, basestring):
         aliases = [aliases]
 
-    if modules.has_key(module):
+    if module in modules:
         log.fatal(_("Module '%s' already registered") % (module))
         sys.exit(1)
 

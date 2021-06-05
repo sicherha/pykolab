@@ -227,12 +227,12 @@ def execute(*args, **kw):
     imap = IMAP()
 
     # ignore calls on lock files
-    if '/locks/' in filepath or kw.has_key('stage') and kw['stage'] == 'locks':
+    if '/locks/' in filepath or 'stage' in kw and kw['stage'] == 'locks':
         return False
 
     log.debug("Invitation policy executing for %r, %r" % (filepath, '/locks/' in filepath), level=8)
 
-    if kw.has_key('stage'):
+    if 'stage' in kw:
         log.debug(_("Issuing callback after processing to stage %s") % (kw['stage']), level=8)
 
         log.debug(_("Testing cb_action_%s()") % (kw['stage']), level=8)
@@ -292,7 +292,7 @@ def execute(*args, **kw):
         log.debug(_("iTip objects attached to this message contain the following information: %r") % (itip_events), level=8)
 
     # See if any iTip actually allocates a user.
-    if any_itips and len([x['uid'] for x in itip_events if x.has_key('attendees') or x.has_key('organizer')]) > 0:
+    if any_itips and len([x['uid'] for x in itip_events if 'attendees' in x or 'organizer' in x]) > 0:
         auth.connect()
 
         # we're looking at the first itip object
@@ -329,7 +329,7 @@ def execute(*args, **kw):
     # for replies, the organizer is the recipient
     if itip_event['method'] == 'REPLY':
         # Outlook can send iTip replies without an organizer property
-        if itip_event.has_key('organizer'):
+        if 'organizer' in itip_event:
             organizer_mailto = str(itip_event['organizer']).split(':')[-1]
             user_attendees = [organizer_mailto] if organizer_mailto in recipient_emails else []
         else:
@@ -337,10 +337,10 @@ def execute(*args, **kw):
 
     else:
         # Limit the attendees to the one that is actually invited with the current message.
-        attendees = [str(a).split(':')[-1] for a in (itip_event['attendees'] if itip_event.has_key('attendees') else [])]
+        attendees = [str(a).split(':')[-1] for a in (itip_event['attendees'] if 'attendees' in itip_event else [])]
         user_attendees = [a for a in attendees if a in recipient_emails]
 
-        if itip_event.has_key('organizer'):
+        if 'organizer' in itip_event:
             sender_email = itip_event['xml'].get_organizer().email()
 
     # abort if no attendee matches the envelope recipient
@@ -354,7 +354,7 @@ def execute(*args, **kw):
     recipient_email = user_attendees[0]
 
     # change gettext language to the preferredlanguage setting of the receiving user
-    if receiving_user.has_key('preferredlanguage'):
+    if 'preferredlanguage' in receiving_user:
         pykolab.translate.setUserLanguage(receiving_user['preferredlanguage'])
 
     # find user's kolabInvitationPolicy settings and the matching policy values
@@ -369,7 +369,7 @@ def execute(*args, **kw):
     }
 
     done = None
-    if method_processing_map.has_key(itip_event['method']):
+    if itip_event['method'] in method_processing_map:
         processor_func = method_processing_map[itip_event['method']]
 
         # connect as cyrus-admin
@@ -486,7 +486,7 @@ def process_itip_request(itip_event, policy, recipient_email, sender_email, rece
     # if RSVP, send an iTip REPLY
     if rsvp or scheduling_required:
         # set attendee's CN from LDAP record if yet missing
-        if not receiving_attendee.get_name() and receiving_user.has_key('cn'):
+        if not receiving_attendee.get_name() and 'cn' in receiving_user:
             receiving_attendee.set_name(receiving_user['cn'])
 
         # send iTip reply
@@ -693,7 +693,7 @@ def user_dn_from_email_address(email_address):
         auth.connect()
 
     # return cached value
-    if user_dn_from_email_address.cache.has_key(email_address):
+    if email_address in user_dn_from_email_address.cache:
         return user_dn_from_email_address.cache[email_address]
 
     local_domains = auth.list_domains()
@@ -724,7 +724,7 @@ user_dn_from_email_address.cache = {}
 
 def get_matching_invitation_policies(receiving_user, sender_email, type_condition=COND_TYPE_ALL):
     # get user's kolabInvitationPolicy settings
-    policies = receiving_user['kolabinvitationpolicy'] if receiving_user.has_key('kolabinvitationpolicy') else []
+    policies = receiving_user['kolabinvitationpolicy'] if 'kolabinvitationpolicy' in receiving_user else []
     if policies and not isinstance(policies, list):
         policies = [policies]
 
@@ -742,7 +742,7 @@ def get_matching_invitation_policies(receiving_user, sender_email, type_conditio
 
         if domain == '' or domain == '*' or str(sender_email).endswith(domain):
             value = value.upper()
-            if policy_name_map.has_key(value):
+            if value in policy_name_map:
                 val = policy_name_map[value]
                 # append if type condition matches
                 if val & type_condition:
@@ -767,7 +767,7 @@ def imap_proxy_auth(user_rec):
 
     mail_attribute = mail_attribute.lower()
 
-    if not user_rec.has_key(mail_attribute):
+    if mail_attribute not in user_rec:
         log.error(_("User record doesn't have the mailbox attribute %r set" % (mail_attribute)))
         return False
 
@@ -961,7 +961,7 @@ def check_availability(itip_event, receiving_user):
     conflict = False
 
     # return previously detected conflict
-    if itip_event.has_key('_conflicts'):
+    if '_conflicts' in itip_event:
         return not itip_event['_conflicts']
 
     for folder in list_user_folders(receiving_user, 'event'):
@@ -1087,12 +1087,12 @@ def store_object(object, user_rec, targetfolder=None, master=None):
         oc = object.get_classification()
 
         # use *.confidential/private folder for confidential/private invitations
-        if oc == kolabformat.ClassConfidential and user_rec.has_key('_confidential_folder'):
+        if oc == kolabformat.ClassConfidential and '_confidential_folder' in user_rec:
             targetfolder = user_rec['_confidential_folder']
-        elif oc == kolabformat.ClassPrivate and user_rec.has_key('_private_folder'):
+        elif oc == kolabformat.ClassPrivate and '_private_folder' in user_rec:
             targetfolder = user_rec['_private_folder']
         # use *.default folder if exists
-        elif user_rec.has_key('_default_folder'):
+        elif '_default_folder' in user_rec:
             targetfolder = user_rec['_default_folder']
         # fallback to any existing folder of specified type
         elif targetfolders is not None and len(targetfolders) > 0:
@@ -1205,7 +1205,7 @@ def send_update_notification(object, receiving_user, old=None, reply=True, sende
 
         for attendee in object.get_attendees():
             parstat = attendee.get_participant_status(True)
-            if partstats.has_key(parstat):
+            if parstat in partstats:
                 partstats[parstat].append(attendee.get_displayname())
             else:
                 partstats['PENDING'].append(attendee.get_displayname())

@@ -70,7 +70,7 @@ def authenticate(username=None, password=None, domain=None):
     if not response:
         return False
 
-    if response.has_key('session_token'):
+    if 'session_token' in response:
         session_id = response['session_token']
         return True
 
@@ -203,7 +203,7 @@ def get_group_input():
         print("No group types available")
         sys.exit(1)
 
-    if group_types.has_key(group_type_id):
+    if group_type_id in group_types:
         group_type_info = group_types[group_type_id]['attributes']
     else:
         print("No such group type")
@@ -242,7 +242,7 @@ def get_user_input():
         print("No user types available")
         sys.exit(1)
 
-    if user_types['list'].has_key(user_type_id):
+    if user_type_id in user_types['list']:
         user_type_info = user_types['list'][user_type_id]['attributes']
     else:
         print("No such user type")
@@ -258,7 +258,7 @@ def get_user_input():
 
     for attribute in user_type_info['form_fields']:
         if isinstance(user_type_info['form_fields'][attribute], dict):
-            if user_type_info['form_fields'][attribute].has_key('optional') and user_type_info['form_fields'][attribute]['optional']:
+            if 'optional' in user_type_info['form_fields'][attribute] and user_type_info['form_fields'][attribute]['optional']:
                 may_attrs.append(attribute)
             else:
                 must_attrs.append(attribute)
@@ -267,14 +267,14 @@ def get_user_input():
 
     for attribute in must_attrs:
         if isinstance(user_type_info['form_fields'][attribute], dict) and \
-                user_type_info['form_fields'][attribute].has_key('type'):
+                'type' in user_type_info['form_fields'][attribute]:
 
             if user_type_info['form_fields'][attribute]['type'] == 'select':
-                if not user_type_info['form_fields'][attribute].has_key('values'):
+                if 'values' not in user_type_info['form_fields'][attribute]:
                     attribute_values = form_value_select_options('user', user_type_id, attribute)
 
                     default = ''
-                    if attribute_values[attribute].has_key('default'):
+                    if 'default' in attribute_values[attribute]:
                         default = attribute_values[attribute]['default']
 
                     params[attribute] = utils.ask_menu(
@@ -285,7 +285,7 @@ def get_user_input():
 
                 else:
                     default = ''
-                    if user_type_info['form_fields'][attribute].has_key('default'):
+                    if 'default' in user_type_info['form_fields'][attribute]:
                         default = user_type_info['form_fields'][attribute]['default']
 
                     params[attribute] = utils.ask_menu(
@@ -497,7 +497,7 @@ def role_delete(params=None):
                 'role': role.keys()[0]
             }
 
-    if not params.has_key('role'):
+    if 'role' not in params:
         role = role_find_by_attribute(params)
         params = {
                 'role': role.keys()[0]

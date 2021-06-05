@@ -25,7 +25,7 @@ participant_status_labels = {
     }
 
 def participant_status_label(status):
-    return _(participant_status_labels[status]) if participant_status_labels.has_key(status) else _(status)
+    return _(participant_status_labels[status]) if status in participant_status_labels else _(status)
 
 
 class Attendee(kolabformat.Attendee):
@@ -92,7 +92,7 @@ class Attendee(kolabformat.Attendee):
         if isinstance(rsvp, bool):
             self.setRSVP(rsvp)
         else:
-            if self.rsvp_map.has_key(rsvp):
+            if rsvp in self.rsvp_map:
                 self.setRSVP(self.rsvp_map[rsvp])
 
         if not role == None:
@@ -101,10 +101,10 @@ class Attendee(kolabformat.Attendee):
         if not cutype == None:
             self.set_cutype(cutype)
 
-        if ical_params and ical_params.has_key('DELEGATED-FROM'):
+        if ical_params and 'DELEGATED-FROM' in ical_params:
             self.delegate_from(Attendee(str(ical_params['DELEGATED-FROM']), role=self.get_role(), cutype=self.get_cutype()))
 
-        if ical_params and ical_params.has_key('DELEGATED-TO'):
+        if ical_params and 'DELEGATED-TO' in ical_params:
             self.delegate_to(Attendee(str(ical_params['DELEGATED-TO'])))
 
         if not participant_status == None:
@@ -211,7 +211,7 @@ class Attendee(kolabformat.Attendee):
 
     def _translate_value(self, val, map):
         name_map = dict([(v, k) for (k, v) in map.iteritems()])
-        return name_map[val] if name_map.has_key(val) else 'UNKNOWN'
+        return name_map[val] if val in name_map else 'UNKNOWN'
 
     def set_cutype(self, cutype):
         if cutype in self.cutype_map:

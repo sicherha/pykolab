@@ -43,7 +43,7 @@ class KolabDefaultfolders(object):
             user_folder - user folder
         """
 
-        if not kw.has_key('additional_folders'):
+        if 'additional_folders' not in kw:
             log.error(_("Plugin %s called without required keyword %s.") % ("defaultfolders", "additional_folders"))
             return {}
 

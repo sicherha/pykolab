@@ -39,7 +39,7 @@ def event_from_message(message):
                 event = event_from_string(payload)
 
             # append attachment parts to Event object
-            elif event and part.has_key('Content-ID'):
+            elif event and 'Content-ID' in part:
                 event._attachment_parts.append(part)
 
     return event
@@ -353,7 +353,7 @@ class Event(object):
                     break
 
         # use the libkolab calendaring bindings to load the full iCal data
-        if ical_event.has_key('RRULE') or ical_event.has_key('ATTACH') \
+        if 'RRULE' in ical_event or 'ATTACH' in ical_event \
              or [part for part in ical_event.walk() if part.name == 'VALARM']:
             if raw is None or raw == "":
                 raw = ical if isinstance(ical, str) else ical.to_ical()
@@ -364,20 +364,20 @@ class Event(object):
         # TODO: Clause the timestamps for zulu suffix causing datetime.datetime
         # to fail substitution.
         for attr in list(set(ical_event.required)):
-            if ical_event.has_key(attr):
+            if attr in ical_event:
                 self.set_from_ical(attr.lower(), ical_event[attr])
 
         # NOTE: Make sure to list(set()) or duplicates may arise
         # NOTE: Keep the original order e.g. to read DTSTART before RECURRENCE-ID
         for attr in list(OrderedDict.fromkeys(ical_event.singletons)):
-            if ical_event.has_key(attr):
+            if attr in ical_event:
                 if isinstance(ical_event[attr], list):
                     ical_event[attr] = ical_event[attr][0];
                 self.set_from_ical(attr.lower(), ical_event[attr])
 
         # NOTE: Make sure to list(set()) or duplicates may arise
         for attr in list(set(ical_event.multiple)):
-            if ical_event.has_key(attr):
+            if attr in ical_event:
                 self.set_from_ical(attr.lower(), ical_event[attr])
 
     def _xml_from_ical(self, ical):
@@ -904,27 +904,27 @@ class Event(object):
                 else:
                     params = {}
 
-                if params.has_key('CN'):
+                if 'CN' in params:
                     name = ustr(params['CN'])
                 else:
                     name = None
 
-                if params.has_key('ROLE'):
+                if 'ROLE' in params:
                     role = params['ROLE']
                 else:
                     role = None
 
-                if params.has_key('PARTSTAT'):
+                if 'PARTSTAT' in params:
                     partstat = params['PARTSTAT']
                 else:
                     partstat = None
 
-                if params.has_key('RSVP'):
+                if 'RSVP' in params:
                     rsvp = params['RSVP']
                 else:
                     rsvp = None
 
-                if params.has_key('CUTYPE'):
+                if 'CUTYPE' in params:
                     cutype = params['CUTYPE']
                 else:
                     cutype = kolabformat.CutypeIndividual
@@ -963,7 +963,7 @@ class Event(object):
         else:
             params = {}
 
-        if params.has_key('CN'):
+        if 'CN' in params:
             cn = ustr(params['CN'])
 
         self.set_organizer(str(address), name=cn)
@@ -1177,7 +1177,7 @@ class Event(object):
 
     def _translate_value(self, val, map):
         name_map = dict([(v, k) for (k, v) in map.iteritems()])
-        return name_map[val] if name_map.has_key(val) else 'UNKNOWN'
+        return name_map[val] if val in name_map else 'UNKNOWN'
 
     def to_message(self, creator=None):
         from email.MIMEMultipart import MIMEMultipart

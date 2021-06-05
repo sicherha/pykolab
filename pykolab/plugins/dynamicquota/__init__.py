@@ -53,7 +53,7 @@ class KolabDynamicquota(object):
         """
 
         for keyword in [ 'used', 'imap_quota', 'ldap_quota', 'default_quota' ]:
-            if not kw.has_key(keyword):
+            if keyword not in kw:
                 log.warning(
                         _("No keyword %s passed to set_user_folder_quota") % (
                                 keyword

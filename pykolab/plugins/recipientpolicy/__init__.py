@@ -56,12 +56,12 @@ class KolabRecipientpolicy(object):
 
         user_attrs = utils.normalize(kw['entry'])
 
-        if not user_attrs.has_key('domain'):
+        if 'domain' not in user_attrs:
             user_attrs['domain'] = kw['primary_domain']
         elif not user_attrs['domain'] == kw['primary_domain']:
             user_attrs['domain'] = kw['primary_domain']
 
-        if not user_attrs.has_key('preferredlanguage'):
+        if 'preferredlanguage' not in user_attrs:
             default_locale = conf.get(user_attrs['domain'], 'default_locale')
             if default_locale == None:
                 default_locale = conf.get('kolab', 'default_locale')
@@ -77,7 +77,7 @@ class KolabRecipientpolicy(object):
             return mail
         except KeyError:
             log.warning(_("Attribute substitution for 'mail' failed in Recipient Policy"))
-            if user_attrs.has_key('mail'):
+            if 'mail' in user_attrs:
                 return user_attrs['mail']
             else:
                 return None
@@ -96,12 +96,12 @@ class KolabRecipientpolicy(object):
 
         user_attrs = utils.normalize(kw['entry'])
 
-        if not user_attrs.has_key('domain'):
+        if 'domain' not in user_attrs:
             user_attrs['domain'] = kw['primary_domain']
         elif not user_attrs['domain'] == kw['primary_domain']:
             user_attrs['domain'] = kw['primary_domain']
 
-        if not user_attrs.has_key('preferredlanguage'):
+        if 'preferredlanguage' not in user_attrs:
             default_locale = conf.get(user_attrs['domain'], 'default_locale')
             if default_locale == None:
                 default_locale = conf.get(user_attrs['domain'], 'default_locale')

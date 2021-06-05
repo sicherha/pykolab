@@ -17,7 +17,7 @@ class DNSync(ldap.ldapobject.LDAPObject,ldap.syncrepl.SyncreplConsumer):
     callback = None
 
     def __init__(self, filename, *args, **kwargs):
-        if kwargs.has_key('callback'):
+        if 'callback' in kwargs:
             self.callback = kwargs['callback']
             del kwargs['callback']
 

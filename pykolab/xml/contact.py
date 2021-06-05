@@ -23,7 +23,7 @@ def contact_from_message(message):
                 contact = contact_from_string(payload)
 
             # append attachment parts to Contact object
-            elif contact and part.has_key('Content-ID'):
+            elif contact and 'Content-ID' in part:
                 contact._attachment_parts.append(part)
 
     return contact
@@ -161,7 +161,7 @@ class Contact(kolabformat.Contact):
 
     def _translate_value(self, val, map):
         name_map = dict([(v, k) for (k, v) in map.iteritems()])
-        return name_map[val] if name_map.has_key(val) else 'UNKNOWN'
+        return name_map[val] if val in name_map else 'UNKNOWN'
 
     def to_dict(self):
         if not self.isValid():
@@ -198,7 +198,7 @@ class Contact(kolabformat.Contact):
         affiliations = self.affiliations()
         if len(affiliations) > 0:
             _affiliation = self._affiliation2dict(affiliations[0])
-            if _affiliation.has_key('address'):
+            if 'address' in _affiliation:
                 data['address'].extend(_affiliation['address'])
                 _affiliation.pop('address', None)
             data.update(_affiliation)
@@ -299,7 +299,7 @@ class Contact(kolabformat.Contact):
             val = rel.uri() if rel.type() == kolabformat.Related.Uid else rel.text()
             if reltype and val is not None:
                 if aslist:
-                    if not data.has_key(reltype):
+                    if reltype not in data:
                         data[reltype] = []
                     data[reltype].append(val)
                 else:

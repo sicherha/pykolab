@@ -81,10 +81,10 @@ def list_commands(*args, **kw):
     _commands.sort()
 
     for _command in _commands:
-        if __commands[_command].has_key('group'):
+        if 'group' in __commands[_command]:
             continue
 
-        if __commands[_command].has_key('function'):
+        if 'function' in __commands[_command]:
             # This is a top-level command
             if not __commands[_command]['description'] == None:
                 print("%-25s - %s" % (_command.replace('_','-'),__commands[_command]['description']))
@@ -92,7 +92,7 @@ def list_commands(*args, **kw):
                 print("%-25s" % (_command.replace('_','-')))
 
     for _command in _commands:
-        if not __commands[_command].has_key('function'):
+        if 'function' not in __commands[_command]:
             # This is a nested command
             print("\n" + _("Command Group: %s") % (_command) + "\n")
             ___commands = __commands[_command].keys()
@@ -108,16 +108,16 @@ def execute(cmd_name, *args, **kw):
         execute("help")
         sys.exit(0)
 
-    if not commands.has_key(cmd_name):
+    if cmd_name not in commands:
         log.error(_("No such command."))
         sys.exit(1)
 
-    if not commands[cmd_name].has_key('function') and \
-        not commands[cmd_name].has_key('group'):
+    if 'function' not in commands[cmd_name] and \
+        'group' not in commands[cmd_name]:
         log.error(_("No such command."))
         sys.exit(1)
 
-    if commands[cmd_name].has_key('group'):
+    if 'group' in commands[cmd_name]:
         group = commands[cmd_name]['group']
         command_name = commands[cmd_name]['cmd_name']
         try:
@@ -163,7 +163,7 @@ def register(cmd_name, func, group=None, description=None, aliases=[]):
     if isinstance(aliases, basestring):
         aliases = [aliases]
 
-    if commands.has_key(command):
+    if command in commands:
         log.fatal(_("Command '%s' already registered") % (command))
         sys.exit(1)
 

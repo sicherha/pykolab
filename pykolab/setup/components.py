@@ -77,7 +77,7 @@ def list_components(*args, **kw):
     _components.sort()
 
     for _component in _components:
-        if __components[_component].has_key('function'):
+        if 'function' in __components[_component]:
             # This is a top-level component
             if not __components[_component]['description'] == None:
                 print("%-25s - %s" % (_component.replace('_','-'),__components[_component]['description']))
@@ -85,7 +85,7 @@ def list_components(*args, **kw):
                 print("%-25s" % (_component.replace('_','-')))
 
     for _component in _components:
-        if not __components[_component].has_key('function'):
+        if 'function' not in __components[_component]:
             # This is a nested component
             print("\n" + _("Command Group: %s") % (_component) + "\n")
             ___components = __components[_component].keys()
@@ -124,7 +124,7 @@ def cli_options_from_component(component_name, *args, **kw):
     if component_name in components_included_in_cli:
         return
 
-    if components[component_name].has_key('group'):
+    if 'group' in components[component_name]:
         group = components[component_name]['group']
         component_name = components[component_name]['component_name']
         try:
@@ -161,7 +161,7 @@ def execute(component_name, *args, **kw):
                     execute_this = False
 
                 if execute_this:
-                    if components[component].has_key('after'):
+                    if 'after' in components[component]:
                         for _component in components[component]['after']:
                             if not _component in executed_components:
                                 execute_this = False
@@ -183,12 +183,12 @@ def execute(component_name, *args, **kw):
         for component in _list_components():
             cli_options_from_component(component)
 
-    if not components.has_key(component_name):
+    if component_name not in components:
         log.error(_("No such component."))
         sys.exit(1)
 
-    if not components[component_name].has_key('function') and \
-        not components[component_name].has_key('group'):
+    if 'function' not in components[component_name] and \
+        'group' not in components[component_name]:
         log.error(_("No such component."))
         sys.exit(1)
 
@@ -227,7 +227,7 @@ def register(component_name, func, group=None, description=None, aliases=[], aft
     if isinstance(aliases, basestring):
         aliases = [aliases]
 
-    if components.has_key(component):
+    if component in components:
         log.fatal(_("Command '%s' already registered") % (component))
         sys.exit(1)
 

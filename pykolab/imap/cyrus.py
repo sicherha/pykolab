@@ -219,7 +219,7 @@ class Cyrus(cyruslib.CYRUS):
                 level=8
             )
 
-        if self.mbox.has_key(mailfolder):
+        if mailfolder in self.mbox:
             log.debug(
                     _(
                             "Possibly reproducing the find " +
@@ -248,8 +248,8 @@ class Cyrus(cyruslib.CYRUS):
                     ann_path
                 )
 
-            if annotations.has_key(mailfolder):
-                if annotations[mailfolder].has_key(s_ann_path):
+            if mailfolder in annotations:
+                if s_ann_path in annotations[mailfolder]:
                     break
 
             if max_tries <= num_try:

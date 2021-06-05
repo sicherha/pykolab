@@ -58,7 +58,7 @@ class KolabRoundcubedb(object):
         result_attribute = conf.get('cyrus-sasl', 'result_attribute')
 
         # execute Roundcube's bin/deluser.sh script to do the work
-        if kw.has_key('user') and kw['user'].has_key(result_attribute) and os.path.exists(rcpath + 'bin/deluser.sh'):
+        if 'user' in kw and result_attribute in kw['user'] and os.path.exists(rcpath + 'bin/deluser.sh'):
             proc = subprocess.Popen([ 'sudo -u apache', rcpath + 'bin/deluser.sh', kw['user'][result_attribute] ], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
             procout, procerr = proc.communicate()
             if proc.returncode != 0:

@@ -689,7 +689,7 @@ class CYRUS:
                 key = annotation.split('"')[3].replace('"','').replace("'","").strip()
                 _annot = annotation.split('(')[1].split(')')[0].strip()
 
-            if not ann.has_key(folder):
+            if folder not in ann:
                 ann[folder] = {}
 
             try:

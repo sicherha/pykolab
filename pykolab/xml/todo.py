@@ -29,7 +29,7 @@ def todo_from_message(message):
                 todo = todo_from_string(payload)
 
             # append attachment parts to Todo object
-            elif todo and part.has_key('Content-ID'):
+            elif todo and 'Content-ID' in part:
                 todo._attachment_parts.append(part)
 
     return todo
@@ -82,11 +82,11 @@ class Todo(Event):
                     ical_todo = c
                     break
 
-        log.debug("Todo.from_ical(); %r, %r, %r" % (type(ical_todo), ical_todo.has_key('ATTACH'), ical_todo.has_key('ATTENDEE')), level=8)
+        log.debug("Todo.from_ical(); %r, %r, %r" % (type(ical_todo), 'ATTACH' in ical_todo, 'ATTENDEE' in ical_todo), level=8)
 
         # DISABLED: use the libkolab calendaring bindings to load the full iCal data
         # TODO: this requires support for iCal parsing in the kolab.calendaring bindings
-        if False and ical_todo.has_key('ATTACH') or [part for part in ical_todo.walk() if part.name == 'VALARM']:
+        if False and 'ATTACH' in ical_todo or [part for part in ical_todo.walk() if part.name == 'VALARM']:
             if raw is None or raw == "":
                 raw = ical if isinstance(ical, str) else ical.to_ical()
             self._xml_from_ical(raw)
@@ -94,21 +94,21 @@ class Todo(Event):
             self.event = kolabformat.Todo()
 
         for attr in list(set(ical_todo.required)):
-            if ical_todo.has_key(attr):
+            if attr in ical_todo:
                 self.set_from_ical(attr.lower(), ical_todo[attr])
 
         for attr in list(set(ical_todo.singletons)):
-            if ical_todo.has_key(attr):
+            if attr in ical_todo:
                 if isinstance(ical_todo[attr], list):
                     ical_todo[attr] = ical_todo[attr][0];
                 self.set_from_ical(attr.lower(), ical_todo[attr])
 
         for attr in list(set(ical_todo.multiple)):
-            if ical_todo.has_key(attr):
+            if attr in ical_todo:
                 self.set_from_ical(attr.lower(), ical_todo[attr])
 
         # although specified by RFC 2445/5545, icalendar doesn't have this property listed
-        if ical_todo.has_key('PERCENT-COMPLETE'):
+        if 'PERCENT-COMPLETE' in ical_todo:
             self.set_from_ical('percentcomplete', ical_todo['PERCENT-COMPLETE'])
 
     def _xml_from_ical(self, ical):
@@ -122,16 +122,16 @@ class Todo(Event):
             params = {}
 
         _attachment = kolabformat.Attachment()
-        if params.has_key('FMTTYPE'):
+        if 'FMTTYPE' in params:
             mimetype = str(params['FMTTYPE'])
         else:
             mimetype = 'application/octet-stream'
 
-        if params.has_key('X-LABEL'):
+        if 'X-LABEL' in params:
             _attachment.setLabel(str(params['X-LABEL']))
 
         decode = False
-        if params.has_key('ENCODING'):
+        if 'ENCODING' in params:
             if params['ENCODING'] == "BASE64" or params['ENCODING'] == "B":
                 decode = True
 

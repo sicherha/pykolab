@@ -48,7 +48,7 @@ frequency_labels = {
 }
 
 def frequency_label(freq):
-    return _(frequency_labels[freq]) if frequency_labels.has_key(freq) else _(freq)
+    return _(frequency_labels[freq]) if freq in frequency_labels else _(freq)
 
 
 class RecurrenceRule(kolabformat.RecurrenceRule):
@@ -114,11 +114,11 @@ class RecurrenceRule(kolabformat.RecurrenceRule):
         }
 
         for prop,setter in vectorimap.items():
-            if vrecur.has_key(prop):
+            if prop in vrecur:
                 getattr(self, setter)([int(v) for v in vrecur[prop]])
 
         for prop,setter in settermap.items():
-            if vrecur.has_key(prop):
+            if prop in vrecur:
                 getattr(self, setter)(vrecur[prop])
 
     def set_count(self, count):
@@ -150,7 +150,7 @@ class RecurrenceRule(kolabformat.RecurrenceRule):
             occurrence = int(wday.relative)
             if str(wday)[0] == '-':
                 occurrence = occurrence * -1
-            if self.weekday_map.has_key(weekday):
+            if weekday in self.weekday_map:
                 daypos.append(kolabformat.DayPos(occurrence, self.weekday_map[weekday]))
         self.setByday(daypos)
 
@@ -182,7 +182,7 @@ class RecurrenceRule(kolabformat.RecurrenceRule):
 
     def _translate_value(self, val, map):
         name_map = dict([(v, k) for (k, v) in map.iteritems()])
-        return name_map[val] if name_map.has_key(val) else 'UNKNOWN'
+        return name_map[val] if val in name_map else 'UNKNOWN'
 
     def to_ical(self):
         rrule = icalendar.vRecur(dict((k,v) for k,v in self.to_dict(True).items() if not (type(v) == str and v == '' or type(v) == list and len(v) == 0)))

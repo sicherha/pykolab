@@ -57,7 +57,7 @@ def execute(*args, **kw):
     # TODO: Test for correct call.
     filepath = args[0]
 
-    if kw.has_key('stage'):
+    if 'stage' in kw:
         log.debug(_("Issuing callback after processing to stage %s") % (kw['stage']), level=8)
         log.debug(_("Testing cb_action_%s()") % (kw['stage']), level=8)
         if hasattr(modules, 'cb_action_%s' % (kw['stage'])):

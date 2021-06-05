@@ -158,7 +158,7 @@ def property_label(propname):
     """
         Return a localized name for the given object property
     """
-    return _(property_labels[propname]) if property_labels.has_key(propname) else _(propname)
+    return _(property_labels[propname]) if propname in property_labels else _(propname)
 
 
 def property_to_string(propname, value):
@@ -186,18 +186,18 @@ def property_to_string(propname, value):
     if isinstance(value, dict):
         if propname == 'attendee':
             from . import attendee
-            name = value['name'] if value.has_key('name') and not value['name'] == '' else value['email']
+            name = value['name'] if 'name' in value and not value['name'] == '' else value['email']
             return "%s, %s" % (name, attendee.participant_status_label(value['partstat']))
 
         elif propname == 'organizer':
-            return value['name'] if value.has_key('name') and not value['name'] == '' else value['email']
+            return value['name'] if 'name' in value and not value['name'] == '' else value['email']
 
         elif propname == 'rrule':
             from . import recurrence_rule
             rrule = recurrence_rule.frequency_label(value['freq']) % (value['interval'])
-            if value.has_key('count') and value['count'] > 0:
+            if 'count' in value and value['count'] > 0:
                 rrule += " " + _("for %d times") % (value['count'])
-            elif value.has_key('until') and (isinstance(value['until'], datetime.datetime) or isinstance(value['until'], datetime.date)):
+            elif 'until' in value and (isinstance(value['until'], datetime.datetime) or isinstance(value['until'], datetime.date)):
                 rrule += " " + _("until %s") % (value['until'].strftime(date_format))
             return rrule
 
@@ -235,7 +235,7 @@ def property_to_string(propname, value):
             return alarm
 
         elif propname == 'attach':
-            return value['label'] if value.has_key('label') else value['fmttype']
+            return value['label'] if 'label' in value else value['fmttype']
 
     return None
 
@@ -250,8 +250,8 @@ def compute_diff(a, b, reduced=False):
     properties.extend([x for x in b if x not in properties])
 
     for prop in properties:
-        aa = a[prop] if a.has_key(prop) else None
-        bb = b[prop] if b.has_key(prop) else None
+        aa = a[prop] if prop in a else None
+        bb = b[prop] if prop in b else None
 
         # compare two lists
         if isinstance(aa, list) or isinstance(bb, list):
@@ -339,7 +339,7 @@ def compare_values(aa, bb, partial=False):
         # accept partial match
         if partial:
             for k,v in aa.iteritems():
-                if bb.has_key(k) and bb[k] == v:
+                if k in bb and bb[k] == v:
                     return True
 
             return False
@@ -358,7 +358,7 @@ def reduce_properties(aa, bb):
     properties.extend([x for x in bb if x not in properties])
 
     for prop in properties:
-        if not aa.has_key(prop) or not bb.has_key(prop):
+        if prop not in aa or prop not in bb:
             continue
         if isinstance(aa[prop], dict) and isinstance(bb[prop], dict):
             (aa[prop], bb[prop]) = reduce_properties(aa[prop], bb[prop])

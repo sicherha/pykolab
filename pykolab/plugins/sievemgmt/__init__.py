@@ -47,7 +47,7 @@ class KolabSievemgmt(object):
 
             user - the user identifier
         """
-        if not len(kw) == 1 or not kw.has_key('user'):
+        if not len(kw) == 1 or 'user' not in kw:
             log.error(_("Wrong number of arguments for sieve management plugin"))
             return
         else:
@@ -137,28 +137,28 @@ class KolabSievemgmt(object):
 
         if not vacation_text_attr == None:
 
-            if user.has_key(vacation_active_attr):
+            if vacation_active_attr in user:
                 vacation_active = utils.true_or_false(user[vacation_active_attr])
             else:
                 vacation_active = False
 
-            if user.has_key(vacation_text_attr):
+            if vacation_text_attr in user:
                 vacation_text = user[vacation_text_attr]
             else:
                 vacation_active = False
 
-            if user.has_key(vacation_uce_attr):
+            if vacation_uce_attr in user:
                 vacation_uce = utils.true_or_false(user[vacation_uce_attr])
             else:
                 vacation_uce = False
 
-            if user.has_key(vacation_react_domains_attr):
+            if vacation_react_domains_attr in user:
                 if isinstance(user[vacation_react_domains_attr], list):
                     vacation_react_domains = user[vacation_react_domains_attr]
                 else:
                     vacation_react_domains = [ user[vacation_react_domains_attr] ]
             else:
-                if user.has_key(vacation_noreact_domains_attr):
+                if vacation_noreact_domains_attr in user:
                     if isinstance(user[vacation_noreact_domains_attr], list):
                         vacation_noreact_domains = user[vacation_noreact_domains_attr]
                     else:
@@ -171,7 +171,7 @@ class KolabSievemgmt(object):
         #
         dtf_active_attr = conf.get('sieve', 'deliver_to_folder_active')
         if not dtf_active_attr == None:
-            if user.has_key(dtf_active_attr):
+            if dtf_active_attr in user:
                 dtf_active = utils.true_or_false(user[dtf_active_attr])
             else:
                 dtf_active = False
@@ -184,7 +184,7 @@ class KolabSievemgmt(object):
         if dtf_active:
             dtf_folder_name_attr = conf.get('sieve', 'deliver_to_folder_attr')
             if not dtf_folder_name_attr == None:
-                if user.has_key(dtf_folder_name_attr):
+                if dtf_folder_name_attr in user:
                     dtf_folder = user[dtf_folder_name_attr]
                 else:
                     log.warning(_("Delivery to folder active, but no folder name attribute available for user %r") % (user))
@@ -216,14 +216,14 @@ class KolabSievemgmt(object):
 
         forward_active_attr = conf.get('sieve', 'forward_address_active')
         if not forward_active_attr == None:
-            if user.has_key(forward_active_attr):
+            if forward_active_attr in user:
                 forward_active = utils.true_or_false(user[forward_active_attr])
             else:
                 forward_active = False
 
         if not forward_active == False:
             forward_address_attr = conf.get('sieve', 'forward_address_attr')
-            if user.has_key(forward_address_attr):
+            if forward_address_attr in user:
                 if isinstance(user[forward_address_attr], basestring):
                     forward_addresses = [ user[forward_address_attr] ]
                 elif isinstance(user[forward_address_attr], str):
@@ -236,14 +236,14 @@ class KolabSievemgmt(object):
 
             forward_keepcopy_attr = conf.get('sieve', 'forward_keepcopy_active')
             if not forward_keepcopy_attr == None:
-                if user.has_key(forward_keepcopy_attr):
+                if forward_keepcopy_attr in user:
                     forward_keepcopy = utils.true_or_false(user[forward_keepcopy_attr])
                 else:
                     forward_keepcopy = False
 
             forward_uce_attr = conf.get('sieve', 'forward_uce_active')
             if not forward_uce_attr == None:
-                if user.has_key(forward_uce_attr):
+                if forward_uce_attr in user:
                     forward_uce = utils.true_or_false(user[forward_uce_attr])
                 else:
                     forward_uce = False

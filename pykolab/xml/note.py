@@ -19,7 +19,7 @@ def note_from_message(message):
                 note = note_from_string(payload)
 
             # append attachment parts to Note object
-            elif note and part.has_key('Content-ID'):
+            elif note and 'Content-ID' in part:
                 note._attachment_parts.append(part)
 
     return note
@@ -100,7 +100,7 @@ class Note(kolabformat.Note):
 
     def _translate_value(self, val, map):
         name_map = dict([(v, k) for (k, v) in map.iteritems()])
-        return name_map[val] if name_map.has_key(val) else 'UNKNOWN'
+        return name_map[val] if val in name_map else 'UNKNOWN'
 
     def to_dict(self):
         if not self.isValid():

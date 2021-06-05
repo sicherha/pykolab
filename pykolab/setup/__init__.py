@@ -37,7 +37,7 @@ class Setup(object):
         for arg in sys.argv[1:]:
             arg_num += 1
             if not arg.startswith('-') and len(sys.argv) >= arg_num:
-                if components.components.has_key(sys.argv[arg_num].replace('-','_')):
+                if sys.argv[arg_num].replace('-','_') in components.components:
                     to_execute.append(sys.argv[arg_num].replace('-','_'))
 
     def run(self):

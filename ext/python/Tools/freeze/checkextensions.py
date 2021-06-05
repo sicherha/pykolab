@@ -18,7 +18,7 @@ def checkextensions(unknown, extensions):
     for mod in unknown:
         for e in extensions:
             (mods, vars), liba = edict[e]
-            if not mods.has_key(mod):
+            if mod not in mods:
                 continue
             modules.append(mod)
             if liba:
@@ -84,7 +84,7 @@ def expandvars(str, vars):
                 break
             var = str[i:j]
             i = j+1
-        if vars.has_key(var):
+        if var in vars:
             str = str[:k] + vars[var] + str[i:]
             i = k
     return str

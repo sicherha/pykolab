@@ -139,7 +139,7 @@ def _synchronize(*args, **kw):
     imap.connect()
 
     if not imap.user_mailbox_exists(entry[mailbox_attribute]):
-        if entry.has_key('mailhost'):
+        if 'mailhost' in entry:
             server = entry['mailhost']
         else:
             server = None

@@ -51,12 +51,12 @@ class Cli(object):
         for arg in sys.argv[1:]:
             arg_num += 1
             if not arg.startswith('-') and len(sys.argv) >= arg_num:
-                if commands.commands.has_key(sys.argv[arg_num].replace('-','_')):
+                if sys.argv[arg_num].replace('-','_') in commands.commands:
                     to_execute.append(sys.argv[arg_num].replace('-','_'))
                     
-                if commands.commands.has_key("%s_%s" % (
+                if "%s_%s" % (
                         '_'.join(to_execute),sys.argv[arg_num].replace('-','_')
-                    )):
+                    ) in commands.commands:
 
                     to_execute.append(sys.argv[arg_num].replace('-','_'))
 
