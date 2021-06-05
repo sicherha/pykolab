@@ -138,7 +138,7 @@ policy_name_map = {
     'ACT_SAVE_AND_FORWARD':           ACT_SAVE_AND_FORWARD + COND_TYPE_EVENT,
 }
 
-policy_value_map = dict([(v &~ COND_TYPE_ALL, k) for (k, v) in policy_name_map.iteritems()])
+policy_value_map = dict([(v &~ COND_TYPE_ALL, k) for (k, v) in policy_name_map.items()])
 
 object_type_conditons = {
     'event': COND_TYPE_EVENT,
@@ -1243,7 +1243,7 @@ def send_update_notification(object, receiving_user, old=None, reply=True, sende
         if itip_comment is not None:
             roundup += "\n" + itip_comment
 
-        for status,attendees in partstats.iteritems():
+        for status,attendees in partstats.items():
             if len(attendees) > 0:
                 roundup += "\n" + participant_status_label(status) + ":\n\t" + "\n\t".join(attendees) + "\n"
     else:

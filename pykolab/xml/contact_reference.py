@@ -44,7 +44,7 @@ class ContactReference(kolabformat.ContactReference):
     def to_dict(self):
         data = dict()
 
-        for p, getter in self.properties_map.iteritems():
+        for p, getter in self.properties_map.items():
             val = None
             if hasattr(self, getter):
                 val = getattr(self, getter)()

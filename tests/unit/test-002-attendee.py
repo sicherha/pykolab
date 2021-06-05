@@ -48,13 +48,13 @@ class TestEventXML(unittest.TestCase):
 
     def test_007_participant_status_map_reverse_lookup(self):
         # Reverse lookups
-        self.assertEqual([k for k, v in self.attendee.participant_status_map.iteritems() if v == 0][0], "NEEDS-ACTION")
-        self.assertEqual([k for k, v in self.attendee.participant_status_map.iteritems() if v == 1][0], "ACCEPTED")
-        self.assertEqual([k for k, v in self.attendee.participant_status_map.iteritems() if v == 2][0], "DECLINED")
-        self.assertEqual([k for k, v in self.attendee.participant_status_map.iteritems() if v == 3][0], "TENTATIVE")
-        self.assertEqual([k for k, v in self.attendee.participant_status_map.iteritems() if v == 4][0], "DELEGATED")
-        self.assertEqual([k for k, v in self.attendee.participant_status_map.iteritems() if v == 5][0], "IN-PROCESS")
-        self.assertEqual([k for k, v in self.attendee.participant_status_map.iteritems() if v == 6][0], "COMPLETED")
+        self.assertEqual([k for k, v in self.attendee.participant_status_map.items() if v == 0][0], "NEEDS-ACTION")
+        self.assertEqual([k for k, v in self.attendee.participant_status_map.items() if v == 1][0], "ACCEPTED")
+        self.assertEqual([k for k, v in self.attendee.participant_status_map.items() if v == 2][0], "DECLINED")
+        self.assertEqual([k for k, v in self.attendee.participant_status_map.items() if v == 3][0], "TENTATIVE")
+        self.assertEqual([k for k, v in self.attendee.participant_status_map.items() if v == 4][0], "DELEGATED")
+        self.assertEqual([k for k, v in self.attendee.participant_status_map.items() if v == 5][0], "IN-PROCESS")
+        self.assertEqual([k for k, v in self.attendee.participant_status_map.items() if v == 6][0], "COMPLETED")
 
     def test_008_default_rsvp(self):
         self.assertEqual(self.attendee.get_rsvp(), 0)
@@ -71,12 +71,12 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(self.attendee.rsvp_map["FALSE"], 0)
 
     def test_012_rsvp_map_reverse_lookup_boolean(self):
-        self.assertEqual([k for k, v in self.attendee.rsvp_map.iteritems() if v is True][0], "TRUE")
-        self.assertEqual([k for k, v in self.attendee.rsvp_map.iteritems() if v is False][0], "FALSE")
+        self.assertEqual([k for k, v in self.attendee.rsvp_map.items() if v is True][0], "TRUE")
+        self.assertEqual([k for k, v in self.attendee.rsvp_map.items() if v is False][0], "FALSE")
 
     def test_013_rsvp_map_reverse_lookup_integer(self):
-        self.assertEqual([k for k, v in self.attendee.rsvp_map.iteritems() if v == 1][0], "TRUE")
-        self.assertEqual([k for k, v in self.attendee.rsvp_map.iteritems() if v == 0][0], "FALSE")
+        self.assertEqual([k for k, v in self.attendee.rsvp_map.items() if v == 1][0], "TRUE")
+        self.assertEqual([k for k, v in self.attendee.rsvp_map.items() if v == 0][0], "FALSE")
 
     def test_014_default_role(self):
         self.assertEqual(self.attendee.get_role(), 0)
@@ -91,10 +91,10 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(self.attendee.role_map["NON-PARTICIPANT"], 3)
 
     def test_017_role_map_reverse_lookup(self):
-        self.assertEqual([k for k, v in self.attendee.role_map.iteritems() if v == 0][0], "REQ-PARTICIPANT")
-        self.assertEqual([k for k, v in self.attendee.role_map.iteritems() if v == 1][0], "CHAIR")
-        self.assertEqual([k for k, v in self.attendee.role_map.iteritems() if v == 2][0], "OPT-PARTICIPANT")
-        self.assertEqual([k for k, v in self.attendee.role_map.iteritems() if v == 3][0], "NON-PARTICIPANT")
+        self.assertEqual([k for k, v in self.attendee.role_map.items() if v == 0][0], "REQ-PARTICIPANT")
+        self.assertEqual([k for k, v in self.attendee.role_map.items() if v == 1][0], "CHAIR")
+        self.assertEqual([k for k, v in self.attendee.role_map.items() if v == 2][0], "OPT-PARTICIPANT")
+        self.assertEqual([k for k, v in self.attendee.role_map.items() if v == 3][0], "NON-PARTICIPANT")
 
     def test_015_cutype_map_length(self):
         self.assertEqual(len(self.attendee.cutype_map), 5)
@@ -107,11 +107,11 @@ class TestEventXML(unittest.TestCase):
         self.assertEqual(self.attendee.cutype_map["UNKNOWN"], kolabformat.CutypeUnknown)
 
     def test_017_cutype_map_reverse_lookup(self):
-        self.assertEqual([k for k, v in self.attendee.cutype_map.iteritems() if v == kolabformat.CutypeGroup][0], "GROUP")
-        self.assertEqual([k for k, v in self.attendee.cutype_map.iteritems() if v == kolabformat.CutypeIndividual][0], "INDIVIDUAL")
-        self.assertEqual([k for k, v in self.attendee.cutype_map.iteritems() if v == kolabformat.CutypeResource][0], "RESOURCE")
-        self.assertEqual([k for k, v in self.attendee.cutype_map.iteritems() if v == kolabformat.CutypeRoom][0], "ROOM")
-        self.assertEqual([k for k, v in self.attendee.cutype_map.iteritems() if v == kolabformat.CutypeUnknown][0], "UNKNOWN")
+        self.assertEqual([k for k, v in self.attendee.cutype_map.items() if v == kolabformat.CutypeGroup][0], "GROUP")
+        self.assertEqual([k for k, v in self.attendee.cutype_map.items() if v == kolabformat.CutypeIndividual][0], "INDIVIDUAL")
+        self.assertEqual([k for k, v in self.attendee.cutype_map.items() if v == kolabformat.CutypeResource][0], "RESOURCE")
+        self.assertEqual([k for k, v in self.attendee.cutype_map.items() if v == kolabformat.CutypeRoom][0], "ROOM")
+        self.assertEqual([k for k, v in self.attendee.cutype_map.items() if v == kolabformat.CutypeUnknown][0], "UNKNOWN")
 
     def test_018_partstat_label(self):
         self.assertEqual(participant_status_label('NEEDS-ACTION'), "Needs Action")

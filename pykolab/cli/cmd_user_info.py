@@ -55,7 +55,7 @@ def execute(*args, **kw):
 
     unic_attrs = ['displayname', 'givenname', 'cn', 'sn', 'ou', 'entrydn']
 
-    for (k,v) in user_info.iteritems():
+    for (k,v) in user_info.items():
         if k in unic_attrs:
             print("%s: %s" % (k,v))
         else:

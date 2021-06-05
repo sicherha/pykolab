@@ -337,7 +337,7 @@ def group_form_value_generate_mail(params=None):
 def group_find(params=None):
     post = { 'search': { 'params': {} } }
 
-    for (k,v) in params.iteritems():
+    for (k,v) in params.items():
         post['search']['params'][k] = { 'value': v, 'type': 'exact' }
 
     return request('POST', 'group.find', post=json.dumps(post))
@@ -371,7 +371,7 @@ def ou_edit(params={}):
 def ou_find(params=None):
     post = { 'search': { 'params': {} } }
 
-    for (k,v) in params.iteritems():
+    for (k,v) in params.items():
         post['search']['params'][k] = { 'value': v, 'type': 'exact' }
 
     return request('POST', 'ou.find', post=json.dumps(post))
@@ -459,7 +459,7 @@ def resource_delete(params=None):
 def resource_find(params=None):
     post = { 'search': { 'params': {} } }
 
-    for (k,v) in params.iteritems():
+    for (k,v) in params.items():
         post['search']['params'][k] = { 'value': v, 'type': 'exact' }
 
     return request('POST', 'resource.find', post=json.dumps(post))
@@ -615,7 +615,7 @@ def user_find(attribs=None):
     else:
         post = { 'search': { 'params': {} } }
 
-        for (k,v) in attribs.iteritems():
+        for (k,v) in attribs.items():
             post['search']['params'][k] = { 'value': v, 'type': 'exact' }
 
     post = json.dumps(post)

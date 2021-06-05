@@ -160,7 +160,7 @@ class Contact(kolabformat.Contact):
         return _gender
 
     def _translate_value(self, val, map):
-        name_map = dict([(v, k) for (k, v) in map.iteritems()])
+        name_map = dict([(v, k) for (k, v) in map.items()])
         return name_map[val] if val in name_map else 'UNKNOWN'
 
     def to_dict(self):
@@ -169,7 +169,7 @@ class Contact(kolabformat.Contact):
 
         data = self._names2dict(self.nameComponents())
 
-        for p, getter in self.properties_map.iteritems():
+        for p, getter in self.properties_map.items():
             val = None
             if hasattr(self, getter):
                 val = getattr(self, getter)()
@@ -223,7 +223,7 @@ class Contact(kolabformat.Contact):
 
         data = dict()
 
-        for p, getter in names_map.iteritems():
+        for p, getter in names_map.items():
             val = None
             if hasattr(namecomp, getter):
                 val = getattr(namecomp, getter)()
@@ -243,7 +243,7 @@ class Contact(kolabformat.Contact):
 
         data = dict()
 
-        for p, getter in props_map.iteritems():
+        for p, getter in props_map.items():
             val = None
             if hasattr(affiliation, getter):
                 val = getattr(affiliation, getter)()
@@ -269,7 +269,7 @@ class Contact(kolabformat.Contact):
             'code':     'code',
             'country':  'country',
         }
-        addresstype_map = dict([(v, k) for (k, v) in self.addresstype_map.iteritems()])
+        addresstype_map = dict([(v, k) for (k, v) in self.addresstype_map.items()])
 
         data = dict()
 
@@ -279,7 +279,7 @@ class Contact(kolabformat.Contact):
         if adrtype is not None:
             data['type'] = adrtype
 
-        for p, getter in props_map.iteritems():
+        for p, getter in props_map.items():
             val = None
             if hasattr(adr, getter):
                 val = getattr(adr, getter)()
@@ -293,7 +293,7 @@ class Contact(kolabformat.Contact):
     def _relateds2dict(self, relateds, aslist=True):
         data = dict()
 
-        related_map = dict([(v, k) for (k, v) in self.related_map.iteritems()])
+        related_map = dict([(v, k) for (k, v) in self.related_map.items()])
         for rel in relateds:
             reltype = related_map.get(rel.relationTypes(), None)
             val = rel.uri() if rel.type() == kolabformat.Related.Uid else rel.text()
@@ -308,7 +308,7 @@ class Contact(kolabformat.Contact):
         return data
 
     def _struct2dict(self, struct, propname, map):
-        type_map = dict([(v, k) for (k, v) in map.iteritems()])
+        type_map = dict([(v, k) for (k, v) in map.items()])
         result = dict()
 
         if hasattr(struct, 'types'):

@@ -163,7 +163,7 @@ def execute(*args, **kw):  # noqa: C901
     if not signature_html and not signature_text and signature_rules is not None:
         for signature_rule in signature_rules:
             try:
-                for attr, regex in signature_rule.iteritems():
+                for attr, regex in signature_rule.items():
                     if attr == "html":
                         if not os.path.exists(signature_rule['html']):
                             raise ValueError

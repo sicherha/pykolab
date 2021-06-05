@@ -99,7 +99,7 @@ class Note(kolabformat.Note):
         self.setCategories(_categories)
 
     def _translate_value(self, val, map):
-        name_map = dict([(v, k) for (k, v) in map.iteritems()])
+        name_map = dict([(v, k) for (k, v) in map.items()])
         return name_map[val] if val in name_map else 'UNKNOWN'
 
     def to_dict(self):
@@ -108,7 +108,7 @@ class Note(kolabformat.Note):
 
         data = dict()
 
-        for p, getter in self.properties_map.iteritems():
+        for p, getter in self.properties_map.items():
             val = None
             if hasattr(self, getter):
                 val = getattr(self, getter)()

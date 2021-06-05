@@ -554,28 +554,28 @@ class Event(object):
             if rsvp in attendee.rsvp_map:
                 _rsvp = rsvp
             elif rsvp in attendee.rsvp_map.values():
-                _rsvp = [k for k, v in attendee.rsvp_map.iteritems() if v == rsvp][0]
+                _rsvp = [k for k, v in attendee.rsvp_map.items() if v == rsvp][0]
             else:
                 _rsvp = None
 
             if role in attendee.role_map:
                 _role = role
             elif role in attendee.role_map.values():
-                _role = [k for k, v in attendee.role_map.iteritems() if v == role][0]
+                _role = [k for k, v in attendee.role_map.items() if v == role][0]
             else:
                 _role = None
 
             if partstat in attendee.participant_status_map:
                 _partstat = partstat
             elif partstat in attendee.participant_status_map.values():
-                _partstat = [k for k, v in attendee.participant_status_map.iteritems() if v == partstat][0]
+                _partstat = [k for k, v in attendee.participant_status_map.items() if v == partstat][0]
             else:
                 _partstat = None
 
             if cutype in attendee.cutype_map:
                 _cutype = cutype
             elif cutype in attendee.cutype_map.values():
-                _cutype = [k for k, v in attendee.cutype_map.iteritems() if v == cutype][0]
+                _cutype = [k for k, v in attendee.cutype_map.items() if v == cutype][0]
             else:
                 _cutype = None
 
@@ -611,7 +611,7 @@ class Event(object):
         if attendee.get_participant_status() in attendee.participant_status_map:
             return attendee.get_participant_status()
         elif attendee.get_participant_status() in attendee.participant_status_map.values():
-            return [k for k, v in attendee.participant_status_map.iteritems() if v == attendee.get_participant_status()][0]
+            return [k for k, v in attendee.participant_status_map.items() if v == attendee.get_participant_status()][0]
         else:
             raise ValueError(_("Invalid participant status"))
 
@@ -1116,7 +1116,7 @@ class Event(object):
     def to_dict(self):
         data = dict()
 
-        for p, getter in self.properties_map.iteritems():
+        for p, getter in self.properties_map.items():
             val = None
             if hasattr(self, getter):
                 val = getattr(self, getter)()
@@ -1176,7 +1176,7 @@ class Event(object):
         return ret
 
     def _translate_value(self, val, map):
-        name_map = dict([(v, k) for (k, v) in map.iteritems()])
+        name_map = dict([(v, k) for (k, v) in map.items()])
         return name_map[val] if val in name_map else 'UNKNOWN'
 
     def to_message(self, creator=None):

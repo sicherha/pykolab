@@ -338,7 +338,7 @@ def compare_values(aa, bb, partial=False):
 
         # accept partial match
         if partial:
-            for k,v in aa.iteritems():
+            for k,v in aa.items():
                 if k in bb and bb[k] == v:
                     return True
 
