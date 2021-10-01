@@ -647,13 +647,7 @@ class LDAP(Base):
         if len(_filter) <= 6:
             return None
 
-        config_base_dn = self.config_get('resource_base_dn')
-        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
-
-        if ldap_base_dn is not None and not ldap_base_dn == config_base_dn:
-            resource_base_dn = ldap_base_dn
-        else:
-            resource_base_dn = config_base_dn
+        resource_base_dn = self._object_base_dn('resource')
 
         _results = self.ldap.search_s(
             resource_base_dn,
@@ -801,13 +795,7 @@ class LDAP(Base):
         if len(_filter) <= 6:
             return None
 
-        config_base_dn = self.config_get('resource_base_dn')
-        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
-
-        if ldap_base_dn is not None and not ldap_base_dn == config_base_dn:
-            resource_base_dn = ldap_base_dn
-        else:
-            resource_base_dn = config_base_dn
+        resource_base_dn = self._object_base_dn('resource')
 
         _results = self.ldap.search_s(
             resource_base_dn,
@@ -2470,9 +2458,7 @@ class LDAP(Base):
 
         conf_prefix = 'kolab_' if kolabuser else ''
 
-        user_base_dn = self.config_get(conf_prefix + 'user_base_dn')
-        if user_base_dn is None:
-            user_base_dn = self.config_get('base_dn')
+        user_base_dn = self._object_base_dn('user', conf_prefix)
 
         auth_attrs = self.config_get_list('auth_attributes')
 
@@ -2683,6 +2669,26 @@ class LDAP(Base):
             domains.append((primary_domain, secondary_domains))
 
         return domains
+
+    def _object_base_dn(self, objectType, prefix=''):
+        """
+           Get configured base DN for specified Kolab object type
+        """
+        object_base_dn = self.config_get(prefix + objectType + '_base_dn')
+        config_base_dn = self.config_get('base_dn')
+        ldap_base_dn = self._kolab_domain_root_dn(self.domain)
+
+        if ldap_base_dn is not None and not ldap_base_dn == config_base_dn:
+            base_dn = ldap_base_dn
+        else:
+            base_dn = config_base_dn
+
+        if object_base_dn is None:
+            object_base_dn = base_dn
+        else:
+            object_base_dn = object_base_dn % ({'base_dn': base_dn})
+
+        return object_base_dn
 
     def _synchronize_callback(self, *args, **kw):
         """
