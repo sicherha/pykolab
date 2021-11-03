@@ -18,6 +18,7 @@
 #
 
 import os
+import re
 import tempfile
 import time
 
@@ -41,6 +42,29 @@ def __init__():
 
 def description():
     return """Append a footer to messages."""
+
+def append_footer(content, footer, position=None, isHtml=False):
+    if (isHtml):
+        append = "\n<!-- footer appended by Wallace -->\n" + footer + "\n<!-- footer end -->\n"
+        if position == 'top':
+            match = re.search('(<body[^>]*>)', content, re.IGNORECASE | re.DOTALL)
+            if match:
+                content = content.replace(match.group(0), match.group(0) + append)
+            else:
+                content = "<html><body>" + append + content + "</body></html>"
+        else:
+            match = re.search('(</body>)', content, re.IGNORECASE | re.DOTALL)
+            if match:
+                content = content.replace(match.group(0), append + match.group(0))
+            else:
+                content = "<html><body>" + content + append + "</body></html>"
+    else:
+        if position == 'top':
+            content = footer + "\n\n" + content
+        else:
+            content += "\n\n-- \n" + footer
+
+    return content
 
 def set_part_content(part, content):
     # Reset old encoding and use quoted-printable (#5414)
@@ -87,6 +111,7 @@ def execute(*args, **kw):
 
     footer = {}
 
+    footer_position = conf.get('wallace', 'footer_position')
     footer_html_file = conf.get('wallace', 'footer_html')
     footer_text_file = conf.get('wallace', 'footer_text')
 
@@ -140,16 +165,12 @@ def execute(*args, **kw):
 
         if content_type == "text/plain":
             content = part.get_payload(decode=True)
-            content += "\n\n-- \n%s" % (footer['plain'])
+            content = append_footer(content, footer['plain'], footer_position, false)
             footer_added = set_part_content(part, content)
 
         elif content_type == "text/html":
             content = part.get_payload(decode=True)
-            append = "\n<!-- footer appended by Wallace -->\n" + footer['html']
-            if "</body>" in content:
-                content = content.replace("</body>", append + "</body>")
-            else:
-                content = "<html><body>" + content + append + "</body></html>"
+            content = append_footer(content, footer['html'], footer_position, true)
             footer_added = set_part_content(part, content)
 
     if footer_added:
