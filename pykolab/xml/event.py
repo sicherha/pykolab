@@ -1273,7 +1273,7 @@ class Event(object):
         from email import charset
         charset.add_charset('utf-8', charset.SHORTEST, charset.QP)
 
-        msg = MIMEMultipart()
+        msg = MIMEMultipart("alternative")
 
         msg_from = None
         attendees = None
@@ -1353,7 +1353,6 @@ class Event(object):
 
         part.set_payload(self.as_string_itip(method=method))
 
-        part.add_header('Content-Disposition', 'attachment; filename="event.ics"')
         part.add_header('Content-Transfer-Encoding', '8bit')
 
         msg.attach(part)
