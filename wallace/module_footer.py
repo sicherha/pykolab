@@ -165,12 +165,12 @@ def execute(*args, **kw):
 
         if content_type == "text/plain":
             content = part.get_payload(decode=True)
-            content = append_footer(content, footer['plain'], footer_position, false)
+            content = append_footer(content, footer['plain'], footer_position, False)
             footer_added = set_part_content(part, content)
 
         elif content_type == "text/html":
             content = part.get_payload(decode=True)
-            content = append_footer(content, footer['html'], footer_position, true)
+            content = append_footer(content, footer['html'], footer_position, True)
             footer_added = set_part_content(part, content)
 
     if footer_added:
