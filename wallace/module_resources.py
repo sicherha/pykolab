@@ -58,14 +58,17 @@ COND_NOTIFY = 256
 ACT_MANUAL = 1
 ACT_ACCEPT = 2
 ACT_REJECT = 8
+ACT_STORE = 16
 ACT_ACCEPT_AND_NOTIFY = ACT_ACCEPT + COND_NOTIFY
+ACT_STORE_AND_NOTIFY = ACT_STORE + COND_NOTIFY
 
 # noqa: E241
 policy_name_map = {
     'ACT_MANUAL':            ACT_MANUAL,  # noqa: E241
     'ACT_ACCEPT':            ACT_ACCEPT,  # noqa: E241
     'ACT_REJECT':            ACT_REJECT,  # noqa: E241
-    'ACT_ACCEPT_AND_NOTIFY': ACT_ACCEPT_AND_NOTIFY
+    'ACT_ACCEPT_AND_NOTIFY': ACT_ACCEPT_AND_NOTIFY,
+    'ACT_STORE_AND_NOTIFY': ACT_STORE_AND_NOTIFY
 }
 
 # pylint: disable=invalid-name
@@ -1031,11 +1034,14 @@ def accept_reservation_request(
 ):
     """
         Accepts the given iTip event by booking it into the resource's
-        calendar. Then set the attendee status of the given resource to
-        ACCEPTED and sends an iTip reply message to the organizer.
+        calendar. Then, depending on the policy, set the attendee status of the given resource to
+        ACCEPTED/TENTATIVE and send an iTip reply message to the organizer, or set the status to
+        NEEDS-ACTION and don't send a reply to the organizer.
     """
     owner = get_resource_owner(resource)
     confirmation_required = False
+    do_send_response = True
+    partstat = 'ACCEPTED'
 
     if not confirmed and owner:
         if invitationpolicy is None:
@@ -1046,9 +1052,13 @@ def accept_reservation_request(
             for policy in invitationpolicy:
                 if policy & ACT_MANUAL and owner['mail']:
                     confirmation_required = True
+                    partstat = 'TENTATIVE'
                     break
-
-    partstat = 'TENTATIVE' if confirmation_required else 'ACCEPTED'
+                if policy & ACT_STORE:
+                    partstat = 'NEEDS-ACTION'
+                    # Do not send an immediate response to the organizer
+                    do_send_response = False
+                    break
 
     itip_event['xml'].set_transparency(False)
     itip_event['xml'].set_attendee_participant_status(
@@ -1063,7 +1073,7 @@ def accept_reservation_request(
         level=8
     )
 
-    if saved:
+    if saved and do_send_response:
         send_response(delegator['mail'] if delegator else resource['mail'], itip_event, owner)
 
     if owner and confirmation_required:
@@ -1110,7 +1120,6 @@ def save_resource_event(itip_event, resource):
     """
     try:
         save_event = itip_event['xml']
-        targetfolder = imap.folder_quote(resource['kolabtargetfolder'])
 
         # add exception to existing recurring main event
         if resource.get('existing_master') is not None:
@@ -1132,18 +1141,17 @@ def save_resource_event(itip_event, resource):
 
         else:
             imap.set_acl(
-                targetfolder,
+                resource['kolabtargetfolder'],
                 conf.get(conf.get('kolab', 'imap_backend'), 'admin_login'),
                 "lrswipkxtecda"
             )
 
         # append new version
-        result = imap.imap.m.append(
-            targetfolder,
-            None,
-            None,
+        result = imap.append(
+            resource['kolabtargetfolder'],
             save_event.to_message(creator="Kolab Server <wallace@localhost>").as_string()
         )
+
         return result
 
     # pylint: disable=broad-except
@@ -1642,16 +1650,21 @@ def send_owner_notification(resource, owner, itip_event, success=True):
         if 'preferredlanguage' in owner:
             pykolab.translate.setUserLanguage(owner['preferredlanguage'])
 
-        message_text = owner_notification_text(resource, owner, itip_event['xml'], success)
+        message_text = owner_notification_text(resource, owner, itip_event['xml'], success, status)
 
         msg = MIMEText(utils.stripped_message(message_text), _charset='utf-8')
 
         msg['To'] = owner['mail']
         msg['From'] = resource['mail']
         msg['Date'] = formatdate(localtime=True)
-        msg['Subject'] = utils.str2unicode(_('Booking for %s has been %s') % (
-            resource['cn'], participant_status_label(status) if success else _('failed')
-        ))
+        if status == 'NEEDS-ACTION':
+            msg['Subject'] = utils.str2unicode(_('New booking request for %s') % (
+                resource['cn']
+            ))
+        else:
+            msg['Subject'] = utils.str2unicode(_('Booking for %s has been %s') % (
+                resource['cn'], participant_status_label(status) if success else _('failed')
+            ))
 
         seed = random.randint(0, 6)
         alarm_after = (seed * 10) + 60
@@ -1663,19 +1676,37 @@ def send_owner_notification(resource, owner, itip_event, success=True):
         signal.alarm(0)
 
 
-def owner_notification_text(resource, owner, event, success):
+def owner_notification_text(resource, owner, event, success, status):
     organizer = event.get_organizer()
     status = event.get_attendee_by_email(resource['mail']).get_participant_status(True)
+    domain = resource['mail'].split('@')[1]
+    url = conf.get('wallace', 'webmail_url')
 
     if success:
-        message_text = _(
-            """
-                The resource booking for %(resource)s by %(orgname)s <%(orgemail)s> has been
-                %(status)s for %(date)s.
+        if status == 'NEEDS-ACTION':
+            message_text = _(
+                """
+                    The resource booking request is for %(resource)s by %(orgname)s <%(orgemail)s> for %(date)s.
 
-                *** This is an automated message, sent to you as the resource owner. ***
-            """
-        )
+                    *** This is an automated message, sent to you as the resource owner. ***
+                """
+            )
+        else:
+            message_text = _(
+                """
+                    The resource booking for %(resource)s by %(orgname)s <%(orgemail)s> has been
+                    %(status)s for %(date)s.
+
+                    *** This is an automated message, sent to you as the resource owner. ***
+                """
+            )
+
+
+        if url:
+            message_text += (
+                "\n                "
+                + _("You can change the status via %(url)s") % { 'url': url } + '?_task=calendar'
+            )
     else:
         message_text = _(
             """
@@ -1695,7 +1726,8 @@ def owner_notification_text(resource, owner, event, success):
         'date': event.get_date_text(),
         'status': participant_status_label(status),
         'orgname': organizer.name(),
-        'orgemail': organizer.email()
+        'orgemail': organizer.email(),
+        'domain': domain
     }
 
 

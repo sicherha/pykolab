@@ -3,6 +3,7 @@ import logging
 import datetime
 
 from pykolab import itip
+from pykolab.imap import IMAP
 from icalendar import Calendar
 from email import message
 from email import message_from_string
@@ -41,7 +42,7 @@ CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
 UID:626421779C777FBE9C9B85A80D04DDFA-A4BF5BBB9FEAA271
-DTSTAMP:20120713T1254140
+DTSTAMP:20120713T125414
 DTSTART;TZID=3DEurope/London:20120713T100000
 DTEND;TZID=3DEurope/London:20120713T110000
 SUMMARY:test
@@ -75,7 +76,7 @@ CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
 UID:626421779C777FBE9C9B85A80D04DDFA-A4BF5BBB9FEAA271
-DTSTAMP:20120713T1254140
+DTSTAMP:20120713T125414
 DTSTART;TZID=3DEurope/London:20120713T100000
 DTEND;TZID=3DEurope/London:20120713T110000
 SUMMARY:test
@@ -105,6 +106,12 @@ class TestWallaceResources(unittest.TestCase):
         self.patch(pykolab.auth.Auth, "get_entry_attributes", self._mock_get_entry_attributes)
         self.patch(pykolab.auth.Auth, "search_entry_by_attribute", self._mock_search_entry_by_attribute)
 
+        # Mock IMAP operations
+        self.patch(pykolab.imap.IMAP, "connect", self._mock_nop)
+        self.patch(pykolab.imap.IMAP, "disconnect", self._mock_nop)
+        self.patch(pykolab.imap.IMAP, "set_acl", self._mock_nop)
+        self.patch(pykolab.imap.IMAP, "append", self._mock_imap_append)
+
         # intercept calls to smtplib.SMTP.sendmail()
         import smtplib
         self.patch(smtplib.SMTP, "__init__", self._mock_smtp_init)
@@ -113,8 +120,9 @@ class TestWallaceResources(unittest.TestCase):
         self.patch(smtplib.SMTP, "sendmail", self._mock_smtp_sendmail)
 
         self.smtplog = []
+        self.imap_append_log = []
 
-    def _mock_nop(self, domain=None):
+    def _mock_nop(self, domain=None, arg3=None, arg4=None):
         pass
 
     def _mock_find_resource(self, address):
@@ -141,6 +149,10 @@ class TestWallaceResources(unittest.TestCase):
     def _mock_smtp_sendmail(self, from_addr, to_addr, message, mail_options=None, rcpt_options=None):
         self.smtplog.append((from_addr, to_addr, message))
         return []
+
+    def _mock_imap_append(self, folder, msg):
+        self.imap_append_log.append((folder, msg))
+        return True
 
     def _get_ics_part(self, message):
         ics_part = None
@@ -234,3 +246,41 @@ class TestWallaceResources(unittest.TestCase):
         self.assertIn("ACCEPTED".lower(), response2['subject'].lower(), "Delegation message subject: %r" % (response2['subject']))
         self.assertEqual(ical2['attendee'].__str__(), "MAILTO:resource-car-audi-a4@example.org")
         self.assertEqual(ical2['attendee'].params['PARTSTAT'], u"ACCEPTED")
+
+    def test_007_accept_reservation_request_store_and_notify(self):
+        itip_event = itip.events_from_message(message_from_string(itip_multipart))[0]
+
+        resource = {
+            'mail': 'resource-collection-car@example.org',
+            'kolabtargetfolder': 'shared/Resources/Test@example.org',
+            'dn': 'cn=cars,ou=Resources,cd=example,dc=org',
+            'cn': 'Cars',
+            'owner': 'uid=foo,ou=People,cd=example,dc=org',
+            'kolabinvitationpolicy': [module_resources.ACT_STORE_AND_NOTIFY]
+        }
+
+        conf.command_set('wallace', 'webmail_url', 'https://%(domain)s/roundcube')
+        module_resources.imap = IMAP()
+
+        module_resources.accept_reservation_request(itip_event, resource)
+
+        # Assert no reply message sent to the organizer
+        self.assertEqual(len(self.smtplog), 1)
+        self.assertEqual(len(self.imap_append_log), 1)
+
+        # Assert the notification sent to the resource owner
+        mail = message_from_string(self.smtplog[0][2])
+
+        self.assertEqual("resource-collection-car@example.org", self.smtplog[0][0])
+        self.assertEqual("resource-collection-car@example.org", mail['from'])
+        self.assertEqual("foo@example.org", self.smtplog[0][1])
+        self.assertEqual("foo@example.org", mail['to'])
+        self.assertFalse(mail.is_multipart())
+        self.assertIn("New booking request for Cars", mail['subject'])
+        body = mail.get_payload(decode=True)
+        self.assertIn("The resource booking request is for Cars by Doe, John <doe@example.org>", body)
+        self.assertIn("You can change the status via https://example.org/roundcube?_task=calendar", body)
+
+        # Assert the message appended to the resource folder
+        self.assertEqual(resource['kolabtargetfolder'], self.imap_append_log[0][0])
+        self.assertIn("<text>NEEDS-ACTION</text>", self.imap_append_log[0][1])

@@ -285,6 +285,9 @@ class IMAP(object):
         else:
             raise AttributeError(_("%r has no attribute %s") % (self, name))
 
+    def append(self, folder, message):
+        return self.imap.m.append(self.folder_utf7(folder), None, None, message)
+
     def folder_utf7(self, folder):
         from pykolab import imap_utf7
         return imap_utf7.encode(folder)
